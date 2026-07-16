@@ -5,7 +5,8 @@ import json
 # CONFIGURAÇÕES PAGBANK (Ambiente Seguro)
 # ==========================================
 # Quando for para a loja real, trocará este token pelo seu Token de Produção
-TOKEN_PAGBANK = "SEU_TOKEN_DE_TESTE_AQUI" 
+import os
+TOKEN_PAGBANK = os.getenv("TOKEN_PAGBANK")
 URL_PAGBANK = "https://sandbox.api.pagseguro.com/checkouts" # Sandbox = Ambiente de Teste
 
 def criar_checkout_pagbank(pedido_id, valor_total, nome_cliente, itens_carrinho):
