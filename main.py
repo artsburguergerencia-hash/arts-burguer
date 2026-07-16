@@ -206,20 +206,26 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
     for item in itens_carrinho:
         processar_baixa_estoque(db, produto_id=item["produto_id"], quantidade_vendida=item["quantidade"])
     
-    # 🔔 NOTIFICA O CLIENTE QUE O PEDIDO CAIU NO SISTEMA
+    # 🔔 NOTIFICA O CLIENTE
     notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido.id, "RECEBIDO")
     
-    # ... código anterior de registrar_venda_pdv ...
-    
-    if forma_pagamento == "pix" or forma_pagamento == "credito":
-        # Gera o link do PagBank e devolve para o front-end redirecionar o cliente
-        link_pagamento = criar_checkout_pagbank(novo_pedido.id, novo_pedido.total_pago, cliente.nome, itens_carrinho)
+    if forma_pagamento in ["pix", "credito"]:
+        # Prepara os detalhes dos itens para o PagBank
+        detalhes_itens = []
+        for item in pedido_web.itens:
+            prod = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
+            detalhes_itens.append({
+                "nome": prod.nome if prod else "Produto",
+                "quantidade": item.quantidade,
+                "preco": float(prod.preco_venda) if prod else 0.0
+            })
+            
+        link_pagamento = criar_checkout_pagbank(novo_pedido.id, novo_pedido.total_pago, cliente.nome, detalhes_itens)
         if link_pagamento:
             return {"status": "checkout", "checkout_url": link_pagamento}
         else:
             raise HTTPException(status_code=500, detail="Falha ao gerar link de pagamento.")
     
-    # Se for pagamento na entrega, processa normalmente
     return {"status": "entrega", "mensagem": "Pedido confirmado!"}
 
 @app.post("/api/webhooks/pagbank")
