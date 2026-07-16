@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Art's Burguer | Menu Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .modal-up { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans pb-24">
+
+    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+        <div class="px-4 py-3 flex justify-between items-center max-w-2xl mx-auto">
+            <div class="flex items-center space-x-2">
+                <i class="ph-fill ph-hamburger text-brand-500 text-2xl"></i>
+                <h1 class="font-bold text-lg tracking-tight">Art's Burguer</h1>
+            </div>
+            
+            <div id="area-auth">
+                <button onclick="abrirModalAuth()" class="text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full font-medium transition-colors flex items-center">
+                    <i class="ph ph-user mr-2"></i> Entrar
+                </button>
+            </div>
+        </div>
+
+        <div id="barra-fidelidade" class="hidden bg-slate-800 px-4 py-2 text-sm border-t border-slate-700">
+            <div class="max-w-2xl mx-auto flex justify-between items-center">
+                <span class="text-amber-400 font-bold flex items-center"><i class="ph-fill ph-star mr-1"></i> <span id="fid-pontos">0</span> pts</span>
+                <span class="text-green-400 font-bold flex items-center"><i class="ph-fill ph-money mr-1"></i> Cashback: R$ <span id="fid-cashback">0,00</span></span>
+            </div>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow-sm z-20 py-3 px-4 overflow-x-auto no-scrollbar flex space-x-3 whitespace-nowrap border-b border-slate-100">
+        <a href="#categoria-Burger" class="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-semibold">🍔 Burgers</a>
+        <a href="#categoria-Porcao" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-full text-sm font-semibold border border-slate-200">🍟 Porções</a>
+        <a href="#categoria-Bebida" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-full text-sm font-semibold border border-slate-200">🥤 Bebidas</a>
+    </nav>
+
+    <main class="p-4 max-w-2xl mx-auto space-y-8" id="container-cardapio">
+        <div class="text-center py-10">
+            <i class="ph ph-spinner animate-spin text-4xl text-brand-500 mb-3"></i>
+            <p class="text-slate-500 font-medium">A carregar as delícias...</p>
+        </div>
+    </main>
+
+    <div id="barra-carrinho" class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-10px_20px_-15px_rgba(0,0,0,0.1)] transition-transform duration-300 transform translate-y-full z-30">
+        <div class="max-w-2xl mx-auto">
+            <button onclick="abrirCarrinho()" class="w-full bg-brand-500 text-white rounded-xl p-4 flex justify-between items-center shadow-lg active:scale-95 transition-transform">
+                <div class="flex items-center">
+                    <div class="bg-white/20 px-3 py-1 rounded-lg mr-3 font-bold" id="carrinho-qtd">0</div>
+                    <span class="font-semibold">Ver Carrinho</span>
+                </div>
+                <span class="font-bold text-lg" id="carrinho-total-flutuante">R$ 0,00</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-produto" class="fixed inset-0 bg-slate-900/50 z-40 hidden flex items-end justify-center backdrop-blur-sm">
+        <div class="bg-white w-full max-w-2xl rounded-t-3xl max-h-[90vh] flex flex-col modal-up overflow-hidden">
+            <div class="relative h-48 bg-slate-200 shrink-0">
+                <img id="modal-prod-img" src="" class="w-full h-full object-cover hidden">
+                <button onclick="fecharModalProduto()" class="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 backdrop-blur-md">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto no-scrollbar flex-1 bg-slate-50">
+                <h2 id="modal-prod-nome" class="text-2xl font-black text-slate-800 leading-tight mb-1">Nome</h2>
+                <p id="modal-prod-desc" class="text-sm text-slate-500 mb-4">Descrição do produto vai aqui.</p>
+                <div class="text-xl font-bold text-brand-500 mb-6">R$ <span id="modal-prod-preco">0,00</span></div>
+                
+                <div id="area-complementos" class="space-y-6">
+                    </div>
+                
+                <div class="mt-6 pt-4 border-t border-slate-200">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Alguma observação?</label>
+                    <textarea id="modal-prod-obs" rows="2" placeholder="Tirar cebola, ponto da carne..." class="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none resize-none"></textarea>
+                </div>
+            </div>
+            <div class="p-4 bg-white border-t border-slate-200 shadow-md">
+                <button onclick="confirmarAdicaoProduto()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg flex justify-center items-center active:scale-95 transition-transform">
+                    Adicionar <span class="mx-2">•</span> R$ <span id="modal-prod-total-btn">0,00</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative modal-up">
+            <button onclick="fecharModalAuth()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
+            
+            <div class="flex border-b border-slate-100 mb-6 mt-2">
+                <button onclick="alternarAbaAuth('login')" id="aba-login" class="flex-1 pb-3 text-brand-500 font-bold border-b-2 border-brand-500">Entrar</button>
+                <button onclick="alternarAbaAuth('cadastro')" id="aba-cadastro" class="flex-1 pb-3 text-slate-400 font-semibold border-b-2 border-transparent">Criar Conta</button>
+            </div>
+
+            <form id="form-login" onsubmit="fazerLogin(event)" class="space-y-4">
+                <input type="tel" id="log-tel" placeholder="Seu Telefone (Apenas números)" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                <input type="password" id="log-senha" placeholder="Sua Senha" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                <button type="submit" class="w-full bg-brand-500 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95">Acessar Cardápio</button>
+            </form>
+
+            <form id="form-cadastro" onsubmit="fazerCadastro(event)" class="space-y-4 hidden h-[60vh] overflow-y-auto no-scrollbar px-1">
+                <input type="text" id="cad-nome" placeholder="Nome Completo" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                <input type="tel" id="cad-tel" placeholder="Telefone / WhatsApp" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                <input type="password" id="cad-senha" placeholder="Crie uma Senha" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="cad-cpf" placeholder="CPF (Opcional)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                    <input type="text" id="cad-nasc" placeholder="Aniversário (DD/MM)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <h3 class="text-xs font-bold text-slate-400 uppercase pt-2">Endereço de Entrega</h3>
+                <input type="text" id="cad-cep" placeholder="CEP" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                <div class="grid grid-cols-3 gap-3">
+                    <input type="text" id="cad-rua" placeholder="Rua" class="col-span-2 w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                    <input type="text" id="cad-num" placeholder="Nº" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <input type="text" id="cad-bairro" placeholder="Bairro" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                <input type="text" id="cad-comp" placeholder="Complemento (Ex: Casa 2)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 mb-2">
+                
+                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95">Finalizar Cadastro</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DO CARRINHO FINAL -->
+    <div id="modal-carrinho" class="fixed inset-0 bg-slate-900/50 z-40 hidden flex items-end justify-center backdrop-blur-sm">
+        <div class="bg-white w-full max-w-2xl rounded-t-3xl h-[85vh] flex flex-col modal-up">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100">
+                <h2 class="text-xl font-bold text-slate-800"><i class="ph-fill ph-shopping-bag text-brand-500 mr-2"></i> Seu Pedido</h2>
+                <button onclick="fecharCarrinho()" class="bg-slate-100 p-2 rounded-full hover:bg-slate-200"><i class="ph ph-x"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-5 bg-slate-50">
+                <div id="lista-carrinho-modal" class="space-y-4 mb-6"></div>
+                
+                <!-- ÁREA PARA VISITANTES (Quem não fez login) -->
+                <div id="area-guest" class="space-y-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mb-2">
+                        <p class="text-xs text-amber-700 font-semibold"><i class="ph-fill ph-star text-amber-500"></i> Dica: Faça login para ganhar Pontos e Cashback nesta compra!</p>
+                    </div>
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Dados para Entrega</label>
+                    <input type="text" id="guest-nome" placeholder="Seu Nome" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                    <input type="tel" id="guest-tel" placeholder="WhatsApp (DDD + Número)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                    <textarea id="guest-end" rows="2" placeholder="Rua, Número, Bairro e Complemento..." class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="p-5 bg-white border-t border-slate-200 shadow-[0_-10px_20px_-15px_rgba(0,0,0,0.05)]">
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Forma de Pagamento</label>
+                    <select id="forma-pag-online" class="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none font-semibold text-slate-700">
+                        <option value="pix">⚡ Pix (Aprovação Imediata)</option>
+                        <option value="credito">💳 Cartão de Crédito</option>
+                        <option value="entrega">💵 Pagar na Entrega</option>
+                    </select>
+                </div>
+                <button onclick="finalizarPedidoOnline()" id="btn-finalizar-online" class="w-full bg-green-500 text-white font-bold py-4 rounded-xl flex justify-center items-center text-lg active:scale-95 transition-transform">
+                    Confirmar Pedido <span class="mx-2">•</span> <span id="carrinho-total-final">R$ 0,00</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let produtosServer = [];
+        let carrinho = [];
+        let clienteLogado = null;
+        let produtoSendoMontado = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarSessao();
+            carregarCardapioDigital();
+        });
+
+        // ==========================
+        // AUTOCOMPLETAR CEP (ViaCEP)
+        // ==========================
+        document.getElementById('cad-cep').addEventListener('blur', async (e) => {
+            let cep = e.target.value.replace(/\D/g, ''); // Remove traços
+            if (cep.length === 8) {
+                try {
+                    document.getElementById('cad-rua').value = "Buscando...";
+                    let res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    let data = await res.json();
+                    if (!data.erro) {
+                        document.getElementById('cad-rua').value = data.logradouro;
+                        document.getElementById('cad-bairro').value = data.bairro;
+                        document.getElementById('cad-num').focus(); // Joga o cursor para o número
+                    } else {
+                        document.getElementById('cad-rua').value = "";
+                        alert("CEP não encontrado.");
+                    }
+                } catch (err) {
+                    document.getElementById('cad-rua').value = "";
+                }
+            }
+        });
+
+        // ==========================
+        // SISTEMA DE AUTH E CRM
+        // ==========================
+        function verificarSessao() {
+            const dados = localStorage.getItem('arts_cliente');
+            if (dados) {
+                clienteLogado = JSON.parse(dados);
+                document.getElementById('area-auth').innerHTML = `
+                    <div class="flex items-center cursor-pointer" onclick="alert('Menu de cliente (Meus Pedidos, Editar Endereço) virá na Fase 2!')">
+                        <div class="text-right mr-3">
+                            <p class="text-xs text-slate-400">Olá,</p>
+                            <p class="text-sm font-bold leading-none">${clienteLogado.nome.split(' ')[0]}</p>
+                        </div>
+                        <img src="https://ui-avatars.com/api/?name=${clienteLogado.nome}&background=ff4757&color=fff" class="w-10 h-10 rounded-full border-2 border-slate-700">
+                    </div>
+                `;
+                document.getElementById('barra-fidelidade').classList.remove('hidden');
+                document.getElementById('fid-pontos').innerText = clienteLogado.pontos;
+                document.getElementById('fid-cashback').innerText = clienteLogado.cashback.toFixed(2).replace('.', ',');
+                
+                // Esconde os campos manuais do carrinho (pois já temos os dados dele)
+                const areaGuest = document.getElementById('area-guest');
+                if(areaGuest) areaGuest.classList.add('hidden');
+            } else {
+                // Mostra os campos manuais para visitantes
+                const areaGuest = document.getElementById('area-guest');
+                if(areaGuest) areaGuest.classList.remove('hidden');
+            }
+        }
+
+        function abrirModalAuth() { document.getElementById('modal-auth').classList.remove('hidden'); document.getElementById('modal-auth').classList.add('flex'); }
+        function fecharModalAuth() { document.getElementById('modal-auth').classList.add('hidden'); document.getElementById('modal-auth').classList.remove('flex'); }
+        
+        function alternarAbaAuth(aba) {
+            const isLogin = aba === 'login';
+            document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+            document.getElementById('form-cadastro').classList.toggle('hidden', isLogin);
+            
+            document.getElementById('aba-login').className = isLogin ? "flex-1 pb-3 text-brand-500 font-bold border-b-2 border-brand-500" : "flex-1 pb-3 text-slate-400 font-semibold border-b-2 border-transparent";
+            document.getElementById('aba-cadastro').className = !isLogin ? "flex-1 pb-3 text-brand-500 font-bold border-b-2 border-brand-500" : "flex-1 pb-3 text-slate-400 font-semibold border-b-2 border-transparent";
+        }
+
+        async function fazerLogin(e) {
+            e.preventDefault();
+            const payload = { telefone: document.getElementById('log-tel').value, senha: document.getElementById('log-senha').value };
+            try {
+                const res = await fetch('/api/cliente/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(res.ok) {
+                    localStorage.setItem('arts_cliente', JSON.stringify(data.cliente));
+                    fecharModalAuth();
+                    verificarSessao();
+                } else { alert(data.detail); }
+            } catch(err) { alert("Erro de conexão"); }
+        }
+
+        async function fazerCadastro(e) {
+            e.preventDefault();
+            const payload = {
+                nome: document.getElementById('cad-nome').value, telefone: document.getElementById('cad-tel').value,
+                senha: document.getElementById('cad-senha').value, cpf: document.getElementById('cad-cpf').value,
+                data_nascimento: document.getElementById('cad-nasc').value, cep: document.getElementById('cad-cep').value,
+                logradouro: document.getElementById('cad-rua').value, numero: document.getElementById('cad-num').value,
+                bairro: document.getElementById('cad-bairro').value, complemento: document.getElementById('cad-comp').value
+            };
+            try {
+                const res = await fetch('/api/cliente/registrar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                if(res.ok) { alert("Sucesso! Faça login agora."); alternarAbaAuth('login'); }
+                else { const data = await res.json(); alert(data.detail); }
+            } catch(err) { alert("Erro de conexão"); }
+        }
+
+        // ==========================
+        // CARDÁPIO E PRODUTOS (Imagens Inseridas)
+        // ==========================
+        async function carregarCardapioDigital() {
+            try {
+                const res = await fetch('/api/cardapio');
+                produtosServer = await res.json();
+                renderizarCardapio();
+            } catch (e) { document.getElementById('container-cardapio').innerHTML = '<p class="text-center text-red-500">Erro ao carregar cardápio.</p>'; }
+        }
+
+        function renderizarCardapio() {
+            const container = document.getElementById('container-cardapio');
+            container.innerHTML = '';
+            if(produtosServer.length === 0) return;
+
+            const categorias = [...new Set(produtosServer.map(p => p.categoria))];
+            categorias.forEach(cat => {
+                const produtos = produtosServer.filter(p => p.categoria === cat);
+                let html = `<div id="categoria-${cat}" class="pt-2 scroll-mt-20"><h2 class="text-xl font-bold mb-4 flex items-center"><span class="bg-brand-500 w-1.5 h-6 rounded-full mr-2"></span> ${cat}</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                
+                produtos.forEach(p => {
+                    const imgUrl = p.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500&auto=format&fit=crop";
+                    html += `
+                        <div onclick="abrirModalMontagem(${p.id})" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 flex cursor-pointer hover:shadow-md transition-shadow">
+                            <div class="w-1/3 bg-slate-200 shrink-0"><img src="${imgUrl}" class="w-full h-full object-cover"></div>
+                            <div class="p-4 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 leading-tight mb-1">${p.nome}</h3>
+                                    <p class="text-[10px] text-slate-400 line-clamp-2 leading-tight">${p.descricao || 'Delicioso '+p.categoria+' do Art\'s Burguer'}</p>
+                                </div>
+                                <div class="flex justify-between items-end mt-2">
+                                    <span class="font-black text-brand-500">R$ ${p.preco_venda.toFixed(2).replace('.', ',')}</span>
+                                    <div class="bg-slate-50 w-8 h-8 rounded-full flex items-center justify-center border border-slate-200 text-brand-500"><i class="ph ph-plus font-bold"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div></div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        // ==========================
+        // MONTAGEM DE LANCHE (MODAL)
+        // ==========================
+        let complementosAtuais = []; // A memória do lanche selecionado
+
+        async function abrirModalMontagem(id) {
+            produtoSendoMontado = produtosServer.find(p => p.id === id);
+            document.getElementById('modal-prod-nome').innerText = produtoSendoMontado.nome;
+            document.getElementById('modal-prod-desc').innerText = produtoSendoMontado.descricao || "Toque especial do chef.";
+            document.getElementById('modal-prod-preco').innerText = produtoSendoMontado.preco_venda.toFixed(2).replace('.', ',');
+            document.getElementById('modal-prod-total-btn').innerText = produtoSendoMontado.preco_venda.toFixed(2).replace('.', ',');
+            
+            const imgEl = document.getElementById('modal-prod-img');
+            imgEl.src = produtoSendoMontado.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
+            imgEl.classList.remove('hidden');
+            document.getElementById('modal-prod-obs').value = "";
+            
+            // LÓGICA DE BUSCA DE EXTRAS
+            const areaComp = document.getElementById('area-complementos');
+            areaComp.innerHTML = '<p class="text-center text-slate-400 text-sm py-4"><i class="ph ph-spinner animate-spin"></i> A preparar opções...</p>';
+            document.getElementById('modal-produto').classList.remove('hidden');
+
+            try {
+                const res = await fetch(`/api/produtos/${id}/complementos`);
+                complementosAtuais = await res.json();
+                renderizarComplementos();
+            } catch(e) { areaComp.innerHTML = ''; }
+        }
+
+        function renderizarComplementos() {
+            const areaComp = document.getElementById('area-complementos');
+            areaComp.innerHTML = complementosAtuais.map((grupo, gIndex) => `
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-bold text-slate-800">${grupo.nome}</h4>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${grupo.obrigatorio ? 'bg-brand-50 text-brand-600 border border-brand-200' : 'bg-slate-100 text-slate-500'}">
+                            ${grupo.obrigatorio ? 'Obrigatório' : 'Opcional'}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-3">Escolha de ${grupo.min} até ${grupo.max} opções.</p>
+                    <div class="space-y-2">
+                        ${grupo.itens.map((item, iIndex) => {
+                            // Se maximo for 1, usamos Radio Button (Bolotinha). Se for mais, usamos Checkbox (Quadrado).
+                            const type = grupo.max === 1 ? 'radio' : 'checkbox';
+                            const precoText = item.preco > 0 ? `+ R$ ${item.preco.toFixed(2).replace('.', ',')}` : 'Grátis';
+                            return `
+                                <label class="flex justify-between items-center p-3 border border-slate-100 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                                    <div class="flex items-center">
+                                        <input type="${type}" name="grupo_${gIndex}" value="${item.id}" data-nome="${item.nome}" data-preco="${item.preco}" onchange="recalcularTotalModal()" class="w-4 h-4 text-brand-500 focus:ring-brand-500">
+                                        <span class="ml-3 text-sm font-semibold text-slate-700">${item.nome}</span>
+                                    </div>
+                                    <span class="text-xs font-black text-brand-500">${precoText}</span>
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+            recalcularTotalModal();
+        }
+
+        function recalcularTotalModal() {
+            let totalAdicionais = 0;
+            const inputs = document.querySelectorAll('#area-complementos input:checked');
+            inputs.forEach(input => { totalAdicionais += parseFloat(input.dataset.preco); });
+            
+            const totalGeral = produtoSendoMontado.preco_venda + totalAdicionais;
+            document.getElementById('modal-prod-total-btn').innerText = totalGeral.toFixed(2).replace('.', ',');
+        }
+
+        function fecharModalProduto() { document.getElementById('modal-produto').classList.add('hidden'); }
+
+        function confirmarAdicaoProduto() {
+            let totalAdicionais = 0;
+            let strAdicionais = [];
+            let inputsInvalidos = false;
+
+            // 1. Validação de Regras e Soma dos Preços Extras
+            complementosAtuais.forEach((grupo, gIndex) => {
+                const selecionados = document.querySelectorAll(`input[name="grupo_${gIndex}"]:checked`);
+                if(grupo.obrigatorio && selecionados.length < grupo.min) {
+                    alert(`⚠️ Atenção: Você precisa escolher pelo menos ${grupo.min} opção em "${grupo.nome}".`);
+                    inputsInvalidos = true;
+                }
+                if(selecionados.length > grupo.max) {
+                    alert(`⚠️ Atenção: Você pode escolher no máximo ${grupo.max} opções em "${grupo.nome}".`);
+                    inputsInvalidos = true;
+                }
+                
+                selecionados.forEach(sel => {
+                    totalAdicionais += parseFloat(sel.dataset.preco);
+                    const precoAdd = parseFloat(sel.dataset.preco) > 0 ? `(+R$ ${parseFloat(sel.dataset.preco).toFixed(2)})` : '';
+                    strAdicionais.push(`-> ${sel.dataset.nome} ${precoAdd}`);
+                });
+            });
+
+            if(inputsInvalidos) return;
+
+            // 2. Monta o pacote final que vai para o KDS e Impressora!
+            const obsBase = document.getElementById('modal-prod-obs').value;
+            const obsFinal = strAdicionais.length > 0 
+                ? `Opções Extras: ${strAdicionais.join(' | ')}. ${obsBase ? 'Observação: ' + obsBase : ''}` 
+                : obsBase;
+            const precoFinal = produtoSendoMontado.preco_venda + totalAdicionais;
+
+            // A Mágica: Se comprar 2 lanches iguais, mas com bebidas diferentes, o sistema separa-os!
+            const itemExistente = carrinho.find(i => i.produto_id === produtoSendoMontado.id && i.observacao === obsFinal);
+            if (itemExistente) { itemExistente.quantidade++; } 
+            else { carrinho.push({ produto_id: produtoSendoMontado.id, nome: produtoSendoMontado.nome, preco: precoFinal, quantidade: 1, observacao: obsFinal }); }
+            
+            fecharModalProduto();
+            atualizarContadores();
+        }
+
+        // ==========================
+        // CARRINHO E CHECKOUT
+        // ==========================
+        function atualizarContadores() {
+            const total = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+            const qtd = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
+            const form = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            
+            document.getElementById('carrinho-total-flutuante').innerText = form;
+            document.getElementById('carrinho-total-final').innerText = form;
+            document.getElementById('carrinho-qtd').innerText = qtd;
+            
+            const barra = document.getElementById('barra-carrinho');
+            qtd > 0 ? barra.classList.remove('translate-y-full') : barra.classList.add('translate-y-full');
+            if(qtd === 0) fecharCarrinho();
+        }
+
+        function abrirCarrinho() {
+            const lista = document.getElementById('lista-carrinho-modal');
+            lista.innerHTML = carrinho.map((item, index) => `
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between shadow-sm">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-slate-800 text-sm">${item.quantidade}x ${item.nome}</h4>
+                        ${item.observacao ? `<p class="text-[10px] text-amber-500 font-semibold mt-1 bg-amber-50 inline-block px-1 rounded">⚠️ ${item.observacao}</p>` : ''}
+                        <p class="font-bold text-brand-500 text-sm mt-1">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</p>
+                    </div>
+                    <button onclick="removerItem(${index})" class="text-red-400 hover:text-red-600"><i class="ph-fill ph-trash text-xl"></i></button>
+                </div>
+            `).join('');
+            document.getElementById('modal-carrinho').classList.remove('hidden');
+        }
+
+        function removerItem(index) { carrinho.splice(index, 1); atualizarContadores(); abrirCarrinho(); }
+        function fecharCarrinho() { document.getElementById('modal-carrinho').classList.add('hidden'); }
+
+        // ==========================
+        // FINALIZAR PEDIDO (Visitante x Logado)
+        // ==========================
+        async function finalizarPedidoOnline() {
+            let nome, tel, end, cliente_id;
+
+            // Define quem está comprando
+            if (clienteLogado) {
+                nome = clienteLogado.nome;
+                tel = clienteLogado.telefone;
+                end = `${clienteLogado.logradouro}, ${clienteLogado.numero} - ${clienteLogado.bairro}`;
+                cliente_id = clienteLogado.id;
+            } else {
+                nome = document.getElementById('guest-nome').value.trim();
+                tel = document.getElementById('guest-tel').value.trim();
+                end = document.getElementById('guest-end').value.trim();
+                cliente_id = null; // Backend entenderá que precisa procurar ou criar o cliente
+
+                if (!nome || !tel || !end) {
+                    alert("⚠️ Preencha o seu Nome, WhatsApp e Endereço para entregarmos o pedido.");
+                    return;
+                }
+            }
+
+            const tipoPgto = document.getElementById('forma-pag-online').value;
+            const payload = {
+                cliente_id: cliente_id,
+                nome_cliente: nome,
+                telefone_cliente: tel,
+                endereco_cliente: end,
+                itens: carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao }))
+            };
+
+            const btn = document.getElementById('btn-finalizar-online');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-2xl"></i> Processando...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/pedidos/online?forma_pagamento=${tipoPgto}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    if (data.status === "pix") {
+                        alert("O seu PIX foi gerado! Enviaremos a chave para o seu WhatsApp.");
+                    } else if (data.status === "checkout") {
+                        window.location.href = data.checkout_url;
+                        return;
+                    } else {
+                        alert("✅ Pedido enviado para a cozinha!\nAcompanhe o status pelo seu WhatsApp.");
+                    }
+                    window.location.reload();
+                } else { 
+                    alert("Erro: " + (data.detail || "Falha ao enviar pedido.")); 
+                    btn.disabled = false;
+                    btn.innerHTML = 'Confirmar Pedido <span class="mx-2">•</span> <span id="carrinho-total-final">R$ ' + carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0).toFixed(2).replace('.', ',') + '</span>';
+                }
+            } catch(e) { 
+                alert("Falha na conexão."); 
+                btn.disabled = false;
+                btn.innerHTML = 'Tentar Novamente';
+            }
+        }
+    </script>
+</body>
+</html>

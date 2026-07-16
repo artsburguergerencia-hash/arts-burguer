@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>
+    const cargo = localStorage.getItem('funcionario_cargo');
+    if (!cargo || (cargo !== '1' && cargo !== '2')) {
+        alert("⛔ Acesso Restrito: Apenas Caixas e Administradores.");
+        window.location.replace('/login');
+    }
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Gerencial - Art's Burguer</title>
+    <style>
+        :root { --cor-escura: #2f3542; --cor-destaque: #ff4757; --fundo: #f1f2f6; --card: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--fundo); color: var(--cor-escura); margin: 0; padding: 0; }
+        header { background-color: var(--cor-escura); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin: 0; font-size: 1.5rem; }
+        .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        
+        /* Estilo dos Cards de Resumo */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .kpi-card { background-color: var(--card); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid var(--cor-destaque); }
+        .kpi-card h3 { margin: 0 0 0.5rem 0; font-size: 1rem; color: #747d8c; text-transform: uppercase; }
+        .kpi-card .valor { font-size: 2rem; font-weight: bold; color: var(--cor-escura); }
+        
+        /* Estilo da Tabela de CMV */
+        .tabela-container { background-color: var(--card); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #dfe4ea; }
+        th { background-color: #f8f9fa; color: #57606f; font-weight: 600; }
+        .lucro-bom { color: #2ed573; font-weight: bold; }
+        .lucro-alerta { color: #ffa502; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📊 Art's Burguer - Centro de Comando</h1>
+    <span>Visão Geral do Negócio</span>
+</header>
+
+<div class="container">
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <h3>Faturamento Bruto</h3>
+            <div class="valor" id="kpi-faturamento">R$ 0,00</div>
+        </div>
+        <div class="kpi-card" style="border-left-color: #2ed573;">
+            <h3>Ticket Médio</h3>
+            <div class="valor" id="kpi-ticket">R$ 0,00</div>
+        </div>
+        <div class="kpi-card" style="border-left-color: #3742fa;">
+            <h3>Total de Pedidos</h3>
+            <div class="valor" id="kpi-pedidos">0</div>
+        </div>
+    </div>
+
+    <div class="tabela-container">
+        <h2>Rentabilidade por Produto (Ficha Técnica)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Lanche</th>
+                    <th>Preço de Venda</th>
+                    <th>Custo de Produção</th>
+                    <th>Lucro Líquido</th>
+                    <th>Margem de Lucro (%)</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-cmv-body">
+                <tr><td colspan="5">Carregando inteligência de dados...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Função para formatar moeda
+    const formatarMoeda = (valor) => 'R$ ' + valor.toFixed(2).replace('.', ',');
+
+    // 1. Busca as métricas gerais de vendas
+    async function carregarMetricas() {
+        try {
+            const response = await fetch('/api/dashboard/metricas');
+            const dados = await response.json();
+            
+            document.getElementById('kpi-faturamento').innerText = formatarMoeda(dados.faturamento_bruto_reais);
+            document.getElementById('kpi-ticket').innerText = formatarMoeda(dados.ticket_medio_reais);
+            document.getElementById('kpi-pedidos').innerText = dados.total_pedidos_realizados;
+        } catch (error) {
+            console.error("Erro ao carregar métricas:", error);
+        }
+    }
+
+    // 2. Busca o relatório detalhado de CMV
+    async function carregarCMV() {
+        try {
+            const response = await fetch('/api/dashboard/cmv');
+            const produtos = await response.json();
+            
+            const tbody = document.getElementById('tabela-cmv-body');
+            tbody.innerHTML = '';
+
+            produtos.forEach(prod => {
+                // Destaca visualmente se a margem de lucro está boa (acima de 50%) ou perigosa
+                const classeLucro = prod.margem_porcentagem >= 50 ? 'lucro-bom' : 'lucro-alerta';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${prod.lanche}</strong></td>
+                        <td>${formatarMoeda(prod.preco_venda)}</td>
+                        <td>${formatarMoeda(prod.custo_montagem)}</td>
+                        <td class="${classeLucro}">${formatarMoeda(prod.lucro_reais)}</td>
+                        <td class="${classeLucro}">${prod.margem_porcentagem}%</td>
+                    </tr>
+                `;
+            });
+        } catch (error) {
+            document.getElementById('tabela-cmv-body').innerHTML = '<tr><td colspan="5">Erro ao carregar dados de CMV.</td></tr>';
+        }
+    }
+
+    // Executa as funções ao abrir a página
+    window.onload = () => {
+        carregarMetricas();
+        carregarCMV();
+    };
+</script>
+
+</body>
+</html>

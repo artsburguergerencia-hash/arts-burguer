@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logística e Expedição - Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
+    </script>
+</head>
+<body class="bg-slate-50 flex flex-col h-screen overflow-hidden text-slate-800 font-sans">
+
+    <header class="bg-slate-900 text-white h-16 flex items-center justify-between px-6 shadow-md z-10 shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-brand-500/20 p-2 rounded-lg border border-brand-500/30">
+                <i class="ph-fill ph-moped text-2xl text-brand-500"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight uppercase tracking-wide">Central de Expedição</h1>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Controle de Frota & Delivery (Uber / 99)</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button onclick="buscarPedidosLogistica()" class="text-sm bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg transition-colors flex items-center text-slate-300">
+                <i class="ph ph-arrows-clockwise mr-2"></i> Atualizar
+            </button>
+            <a href="/gestao" class="text-slate-400 hover:text-white transition-colors flex items-center text-sm ml-4 border-l border-slate-700 pl-4">
+                <i class="ph ph-sign-out mr-2"></i> Sair do Painel
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-hidden p-6 lg:p-10 flex flex-col lg:flex-row gap-8">
+        
+        <section class="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-amber-50 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center">
+                    <i class="ph-fill ph-package text-amber-500 mr-2 text-2xl"></i> Prontos para Entrega
+                </h2>
+                <span id="badge-prontos" class="bg-amber-100 text-amber-700 font-black px-3 py-1 rounded-full text-xs">0</span>
+            </div>
+            
+            <div id="lista-prontos" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
+                <div class="h-full flex flex-col items-center justify-center text-slate-400">
+                    <i class="ph ph-spinner animate-spin text-4xl mb-3"></i>
+                    <p class="text-sm font-medium">A buscar pacotes...</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center">
+                    <i class="ph-fill ph-map-pin-line text-blue-500 mr-2 text-2xl"></i> Em Rota
+                </h2>
+                <span id="badge-rota" class="bg-blue-100 text-blue-700 font-black px-3 py-1 rounded-full text-xs">0</span>
+            </div>
+
+            <div id="lista-rota" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
+                </div>
+        </section>
+
+    </main>
+
+    <script>
+       // Atualiza a tela a cada 5 segundos automaticamente
+        setInterval(buscarPedidosLogistica, 5000);
+        document.addEventListener('DOMContentLoaded', buscarPedidosLogistica);
+
+        async function buscarPedidosLogistica() {
+            try {
+                const response = await fetch('/api/logistica/pedidos');
+                const dados = await response.json();
+                
+                renderizarProntos(dados.prontos);
+                renderizarEmRota(dados.em_rota);
+                
+                document.getElementById('badge-prontos').innerText = dados.prontos.length;
+                document.getElementById('badge-rota').innerText = dados.em_rota.length;
+
+            } catch (error) {
+                console.error("Erro ao buscar dados logísticos:", error);
+            }
+        }
+
+        function renderizarProntos(pedidos) {
+            const container = document.getElementById('lista-prontos');
+            if (pedidos.length === 0) {
+                container.innerHTML = `
+                    // Garanta que no renderizarProntos está assim:
+<div class="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4 text-sm text-slate-600">
+    <i class="ph-fill ph-map-pin mr-1 text-brand-500"></i> ${p.endereco || 'Endereço não informado'}
+</div>`;
+                return;
+            }
+
+            container.innerHTML = pedidos.map(p => `
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-xs font-black text-amber-500 bg-amber-50 px-2 py-1 rounded tracking-widest uppercase">Pedido #${p.id}</span>
+                            <h3 class="font-bold text-slate-800 text-lg mt-1">${p.cliente}</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4 text-sm text-slate-600">
+    <i class="ph-fill ph-map-pin mr-1 text-brand-500"></i> 
+    ${p.endereco ? p.endereco : 'Endereço não informado'}
+</div>
+                    
+                    <div class="flex space-x-2 mt-2">
+                        <button onclick="copilotoDespacho(${p.id}, 'Uber', '${p.endereco.replace(/'/g, "\\'")}')" id="btn-uber-${p.id}" class="flex-1 bg-black hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-sm shadow-sm">
+                            <i class="ph-fill ph-paper-plane-right mr-2 text-lg"></i> Abrir Uber
+                        </button>
+                        
+                        <button onclick="copilotoDespacho(${p.id}, '99', '${p.endereco.replace(/'/g, "\\'")}')" id="btn-99-${p.id}" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-sm shadow-sm">
+                            <i class="ph-fill ph-paper-plane-right mr-2 text-lg"></i> Abrir 99
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderizarEmRota(pedidos) {
+            const container = document.getElementById('lista-rota');
+            if (pedidos.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
+                        <i class="ph ph-motorcycle text-6xl mb-3"></i>
+                        <p class="text-sm font-medium">Nenhum motoboy na rua agora.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = pedidos.map(p => `
+                <div class="bg-white border border-blue-100 rounded-xl p-5 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-black text-blue-500 tracking-widest uppercase">Pedido #${p.id}</span>
+                        <span class="flex items-center text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
+                            <i class="ph ph-clock mr-1"></i> A caminho
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg">${p.cliente}</h3>
+                </div>
+            `).join('');
+        }
+
+        // A Mágica dos Deep Links (Copiloto)
+        async function copilotoDespacho(pedidoId, plataforma, enderecoFormatado) {
+            const isUber = plataforma === 'Uber';
+            
+            // 1. PULO DO GATO: Copia o endereço silenciosamente!
+            try {
+                await navigator.clipboard.writeText(enderecoFormatado.replace('Endereço: ', ''));
+            } catch(e) { console.log("Cópia silenciosa falhou."); }
+
+            // 2. Abre os aplicativos nativos do telemóvel
+            if (isUber) {
+                const urlUber = `uber://?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(enderecoFormatado.replace('Endereço: ', ''))}`;
+                window.location.href = urlUber;
+            } else {
+                alert("Endereço copiado! 📋\\nA 99 vai abrir. Se o endereço não aparecer automático, basta clicar em 'Colar'!");
+                window.location.href = "taxis99://";
+            }
+
+            // 3. Pergunta se a corrida foi pedida com sucesso
+            setTimeout(async () => {
+                const confirmacao = confirm(`Já pediu a corrida no app da ${plataforma} para este cliente?\\nSe sim, clique em OK para avisar a equipa e mover para 'Em Rota'.`);
+                if(!confirmacao) return;
+
+                const btn = document.getElementById(isUber ? `btn-uber-${pedidoId}` : `btn-99-${pedidoId}`);
+                btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i>';
+
+                try {
+                    const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome_motoboy: `App Pessoal (${plataforma})` })
+                    });
+
+                    if(res.ok) { 
+                        buscarPedidosLogistica(); 
+                    } else { 
+                        alert("Erro ao registar despacho."); 
+                    }
+                } catch(e) { 
+                    alert("Falha de conexão."); 
+                }
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

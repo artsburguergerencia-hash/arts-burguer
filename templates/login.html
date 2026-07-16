@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art's Burguer | Acesso Restrito</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 h-screen flex items-center justify-center">
+
+    <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="bg-red-100 text-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph-fill ph-hamburger text-3xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800">Art's Burguer</h1>
+            <p class="text-slate-500 text-sm mt-1">Acesso ao ERP Corporativo</p>
+        </div>
+
+        <form id="form-login" onsubmit="entrarNoSistema(event)" class="space-y-5">
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Usuário</label>
+                <div class="relative">
+                    <i class="ph ph-user absolute left-3 top-3 text-slate-400 text-lg"></i>
+                    <input type="text" id="login-usuario" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none bg-slate-50">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Senha</label>
+                <div class="relative">
+                    <i class="ph ph-lock absolute left-3 top-3 text-slate-400 text-lg"></i>
+                    <input type="password" id="login-senha" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none bg-slate-50">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center">
+                <i class="ph ph-sign-in text-xl mr-2"></i> Entrar
+            </button>
+        </form>
+    </div>
+
+    <script>
+        async function entrarNoSistema(event) {
+            event.preventDefault();
+            
+            const usuario = document.getElementById('login-usuario').value;
+            const senha = document.getElementById('login-senha').value;
+            
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, senha })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    // Salva o crachá do funcionário no navegador
+                    localStorage.setItem('funcionario_nome', data.nome);
+                    localStorage.setItem('funcionario_cargo', data.cargo_id);
+                    
+                    // A CATRACA: Direciona cada cargo para a sua tela correta
+                    if (data.cargo_id === 1) {
+                        window.location.href = '/gestao'; // Administrador
+                    } else if (data.cargo_id === 2) {
+                        window.location.href = '/pdv'; // Caixa
+                    } else if (data.cargo_id === 3) {
+                        window.location.href = '/kds'; // Cozinha
+                    } else if (data.cargo_id === 4) {
+                        window.location.href = '/logistica'; // Motoboy
+                    } else {
+                        alert("Cargo não reconhecido.");
+                    }
+                } else {
+                    alert("❌ " + data.detail);
+                }
+            } catch(e) {
+                alert("Erro de conexão com o servidor.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>
+        const cargoAtual = localStorage.getItem('funcionario_cargo');
+        if (!cargoAtual || cargoAtual !== '1') {
+            alert("⛔ Acesso Negado! Área restrita para Administradores.");
+            window.location.replace('/login');
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art's Burguer | ERP Corporativo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .painel { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .painel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
+
+    <div id="alerta-novo-pedido" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center transform translate-x-[150%] transition-transform duration-500 z-50">
+        <div class="bg-white/20 p-2 rounded-full mr-4 animate-bounce">
+            <i class="ph-fill ph-bell-ringing text-2xl"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-lg">Novo Pedido Recebido!</h4>
+            <p class="text-sm font-medium text-green-100">Verifique a fila da cozinha (KDS).</p>
+        </div>
+    </div>
+
+    <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-10 shrink-0">
+        <div class="h-20 flex items-center px-8 border-b border-slate-800">
+            <i class="ph-fill ph-hamburger text-3xl text-brand-500 mr-3"></i>
+            <div>
+                <h1 class="text-white font-bold text-xl tracking-tight">Art's Burguer</h1>
+                <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold">ERP System</p>
+            </div>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <button onclick="abrirAba('aba-relatorios', this)" class="menu-item active w-full flex items-center bg-brand-500 text-white p-3 rounded-xl transition-all mb-2">
+                <i class="ph ph-chart-line-up text-xl mr-3"></i> Relatórios de Lucro
+            </button>
+            <button onclick="abrirAba('aba-cardapio', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
+                <i class="ph ph-list-magnifying-glass text-xl mr-3"></i> Gestão de Cardápio
+            </button>
+            <button onclick="abrirAba('aba-estoque', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
+                <i class="ph ph-package text-xl mr-3"></i> Entrada de Estoque
+            </button>
+            <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
+                <i class="ph ph-invoice text-xl mr-3"></i> Contas a Pagar
+            </button>
+            <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
+                <i class="ph ph-users text-xl mr-3"></i> Colaboradores
+            </button>
+            <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
+                <i class="ph ph-gear text-xl mr-3"></i> Configurações da Loja
+            </button>
+            <button onclick="abrirAba('aba-clientes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
+                <i class="ph ph-users-three text-xl mr-3"></i> Clientes & Fidelidade
+            </button>
+        </nav>
+        
+        <div class="p-6 border-t border-slate-800 shrink-0">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=ff4757&color=fff" alt="Admin" class="h-10 w-10 rounded-full border-2 border-slate-700" id="foto-admin-lateral">
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-white" id="nome-admin-lateral">Administrador</p>
+                        <p class="text-xs text-slate-500">Acesso Total</p>
+                    </div>
+                </div>
+                <button onclick="sairDoSistema()" class="text-slate-400 hover:text-brand-500 transition-colors" title="Sair do Sistema">
+                    <i class="ph ph-sign-out text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto">
+        <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-slate-200 shadow-sm sticky top-0 z-10">
+            <h2 id="titulo-painel" class="text-xl font-semibold text-slate-800">Relatórios de Lucratividade</h2>
+        </header>
+
+        <div class="p-8 max-w-5xl mx-auto pb-24">
+            
+            <div id="aba-relatorios" class="painel active">
+                <div class="mb-8 border-b border-slate-200 pb-5 flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Saúde Financeira</h3>
+                        <p class="text-sm text-slate-500">Acompanhe o faturamento, as despesas e o lucro real do Art's Burguer.</p>
+                    </div>
+                    <button onclick="gerarPDF('aba-relatorios', 'Relatorio_Financeiro_ArtsBurguer')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center shadow-sm">
+                        <i class="ph ph-file-pdf mr-2 text-lg text-brand-500"></i> Exportar PDF
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-2"><p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Faturamento</p><i class="ph ph-trend-up text-green-500 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-slate-800" id="rel-faturamento">R$ 0,00</h3>
+                        <p class="text-xs text-slate-400 mt-2">Total de vendas recebidas</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-2"><p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Custo Empresa</p><i class="ph ph-trend-down text-red-500 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-slate-800" id="rel-despesas-empresa">R$ 0,00</h3>
+                        <p class="text-xs text-slate-400 mt-2">Insumos, aluguel, etc.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-2"><p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Margem Operacional</p><i class="ph ph-chart-pie-slice text-blue-500 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-blue-600" id="rel-margem">0%</h3>
+                        <p class="text-xs text-slate-400 mt-2">Percentual de lucro</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-2"><p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Despesas Pessoais</p><i class="ph ph-house text-amber-500 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-slate-800" id="rel-despesas-casa">R$ 0,00</h3>
+                        <p class="text-xs text-slate-400 mt-2">Dinheiro retirado do caixa</p>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 font-medium uppercase tracking-widest text-sm mb-1">Lucro Líquido Real (Retenção Final)</p>
+                        <h2 class="text-4xl font-bold text-green-400" id="rel-lucro-real">R$ 0,00</h2>
+                        <p class="text-slate-300 text-sm mt-2" id="rel-diagnostico">Calculando a saúde financeira da empresa...</p>
+                    </div>
+                    <div class="mt-6 md:mt-0 bg-white/10 p-4 rounded-xl border border-white/20"><i class="ph ph-piggy-bank text-5xl text-white/80"></i></div>
+                </div>
+                
+                <div id="painel-alertas-estoque" class="mt-8 hidden">
+                    <div class="bg-red-50 border border-red-200 rounded-2xl p-6 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <i class="ph-fill ph-warning-circle text-red-500 text-2xl mr-3 animate-pulse"></i>
+                            <h3 class="text-lg font-bold text-red-700">Atenção: Insumos Críticos!</h3>
+                            <p class="text-sm text-red-500 ml-3 hidden md:block">Estes itens atingiram o limite mínimo e precisam de reposição urgente.</p>
+                        </div>
+                        <div id="lista-alertas-estoque" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aba-cardapio" class="painel hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                    <div class="mb-8 border-b border-slate-100 pb-5">
+                        <h3 class="text-lg font-bold text-slate-800">Adicionar Novo Lanche</h3>
+                        <p class="text-sm text-slate-500">Cadastre um novo item associando os insumos para a baixa automática de stock.</p>
+                    </div>
+                    <form id="form-cardapio" onsubmit="salvarProduto(event)" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nome do Produto</label>
+                                <input type="text" id="prod-nome" placeholder="Ex: Smash Bacon Duplo" required class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">URL da Imagem (Foto)</label>
+                                <input type="text" id="prod-img" placeholder="https://link-da-foto.com/lanche.jpg" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Descrição do Lanche (Aparece no Cardápio)</label>
+                            <textarea id="prod-desc" rows="2" placeholder="Pão brioche, 2x carnes smash 80g, queijo cheddar..." class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50 resize-none"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Preço de Venda (R$)</label>
+                                <input type="number" step="0.01" id="prod-preco" placeholder="0.00" required class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Categoria</label>
+                                <select id="prod-categoria" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50">
+                                    <option value="Burger">Burger Artesanal</option>
+                                    <option value="Bebida">Bebidas</option>
+                                    <option value="Porcao">Porções & Fritas</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-100 pt-6">
+                            <label class="block text-sm font-bold text-slate-800 mb-2"><i class="ph ph-receipt text-lg mr-1 inline-block align-text-bottom"></i> Composição do Lanche (Ficha Técnica)</label>
+                            <p class="text-xs text-slate-400 mb-4">Selecione os ingredientes e as quantidades que este lanche gasta para o sistema dar baixa automaticamente a cada venda.</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Selecione o Ingrediente</label>
+                                    <select id="select-insumo" class="w-full px-3 py-2 rounded-lg border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-brand-500">
+                                        <option value="">Carregando ingredientes...</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Quantidade Gasta</label>
+                                    <input type="number" id="input-qtd-insumo" step="0.01" placeholder="Ex: 1 ou 0.150" class="w-full px-3 py-2 rounded-lg border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <button type="button" onclick="adicionarIngredienteNaLista()" class="bg-slate-900 hover:bg-brand-500 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center shadow-sm">
+                                    <i class="ph ph-plus mr-1"></i> Vincular Item
+                                </button>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl border border-slate-200 p-4">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Ingredientes da Receita</p>
+                                <ul id="lista-ingredientes-produto" class="space-y-2">
+                                    <li class="text-slate-400 text-xs italic" id="item-vazio-ficha">Nenhum ingrediente associado a este lanche ainda.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex justify-end">
+                            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-3 px-8 rounded-lg shadow-md transition-all flex items-center">
+                                <i class="ph ph-check-circle text-lg mr-2"></i> Criar Produto no Cardápio
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mt-8">
+                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="text-lg font-bold text-slate-800">Cardápio Atual</h3>
+                        <button onclick="carregarCardapio()" class="text-sm text-brand-500 hover:text-brand-600 font-semibold flex items-center">
+                            <i class="ph ph-arrows-clockwise mr-1"></i> Atualizar Lista
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white text-xs uppercase text-slate-400 font-semibold border-b border-slate-100">
+                                    <th class="py-4 px-6">Lanche / Produto</th>
+                                    <th class="py-4 px-6">Categoria</th>
+                                    <th class="py-4 px-6">Preço</th>
+                                    <th class="py-4 px-6 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-cardapio" class="text-sm text-slate-600">
+                                <tr><td colspan="4" class="text-center py-6 text-slate-400">Carregando cardápio...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aba-estoque" class="painel hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                    <div class="mb-8 border-b border-slate-100 pb-5">
+                        <h3 class="text-lg font-bold text-slate-800">Entrada de Insumos</h3>
+                        <p class="text-sm text-slate-500">Alimente a base de dados para o controle da Ficha Técnica e automação de stock.</p>
+                    </div>
+                    <form id="form-estoque" onsubmit="salvarInsumo(event)" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nome do Insumo</label>
+                            <input type="text" id="ins-nome" placeholder="Ex: Pão Brioche Artesanal" required class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-slate-700">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Unidade de Medida</label>
+                                <select id="ins-unidade" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-slate-700">
+                                    <option value="un">Unidade (un)</option>
+                                    <option value="g">Gramas (g)</option>
+                                    <option value="ml">Mililitros (ml)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Quantidade Adquirida</label>
+                                <input type="number" step="0.1" id="ins-qtd" placeholder="100" required class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-slate-700">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Alerta de Estoque Mínimo</label>
+                                <input type="number" step="0.1" id="ins-min" placeholder="20" required class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-slate-700">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Custo Unitário (R$)</label>
+                                <input type="number" step="0.01" id="ins-custo" placeholder="0.00" required class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-slate-700">
+                            </div>
+                        </div>
+                        <div class="pt-4 flex justify-end">
+                            <button type="submit" class="bg-slate-900 hover:bg-brand-500 text-white font-medium py-3 px-8 rounded-lg shadow-md transition-all flex items-center">
+                                <i class="ph ph-package text-lg mr-2"></i> Dar Entrada no Estoque
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mt-8">
+                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="text-lg font-bold text-slate-800">Despensa Atual</h3>
+                        <button onclick="carregarEstoque()" class="text-sm text-brand-500 hover:text-brand-600 font-semibold flex items-center">
+                            <i class="ph ph-arrows-clockwise mr-1"></i> Atualizar Prateleiras
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white text-xs uppercase text-slate-400 font-semibold border-b border-slate-100">
+                                    <th class="py-4 px-6">Insumo</th>
+                                    <th class="py-4 px-6">Qtd. Atual</th>
+                                    <th class="py-4 px-6">Qtd. Mínima</th>
+                                    <th class="py-4 px-6 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-estoque" class="text-sm text-slate-600">
+                                <tr><td colspan="4" class="text-center py-6 text-slate-400">Carregando despensa...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aba-financeiro" class="painel hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg"><p class="text-slate-400 text-sm font-medium">Total Empresa (Hamburgueria)</p><h3 class="text-3xl font-bold mt-1" id="fin-total-empresa">R$ 0,00</h3></div>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"><p class="text-slate-500 text-sm font-medium">Total Casa (Pessoal)</p><h3 class="text-3xl font-bold mt-1 text-slate-800" id="fin-total-casa">R$ 0,00</h3></div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6">Nova Conta a Pagar</h3>
+                    <form id="form-financeiro" onsubmit="lancarConta(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="text" id="fin-desc" placeholder="Descrição" required class="md:col-span-2 px-4 py-3 rounded-lg border border-slate-200">
+                        <input type="number" id="fin-valor" step="0.01" placeholder="R$ 0,00" required class="px-4 py-3 rounded-lg border border-slate-200">
+                        <select id="fin-tipo" class="px-4 py-3 rounded-lg border border-slate-200"><option value="Empresa">Empresa</option><option value="Casa">Casa</option></select>
+                        <input type="date" id="fin-venc" required class="px-4 py-3 rounded-lg border border-slate-200">
+                        <button type="submit" class="md:col-span-4 bg-brand-500 text-white py-3 rounded-lg font-semibold hover:bg-brand-600 transition-all">Registrar Boleto</button>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead><tr class="bg-slate-50 text-slate-400 text-xs uppercase"><th class="py-4 px-6">Descrição</th><th class="py-4 px-6">Vencimento</th><th class="py-4 px-6">Categoria</th><th class="py-4 px-6">Valor</th></tr></thead>
+                        <tbody id="lista-financeiro"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="aba-colaboradores" class="painel hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                    <h3 class="text-lg font-bold">Equipe</h3>
+                    <p class="text-sm text-slate-500">Integrado no ecossistema de gestão de funcionários (Em desenvolvimento).</p>
+                </div>
+            </div>
+            
+            <div id="aba-configuracoes" class="painel hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-4xl">
+                    <div class="mb-8 border-b border-slate-100 pb-5 flex items-center">
+                        <i class="ph-fill ph-storefront text-brand-500 text-3xl mr-3"></i>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">Parâmetros da Loja</h3>
+                            <p class="text-sm text-slate-500">Controle o funcionamento do seu Delivery e Plataforma.</p>
+                        </div>
+                    </div>
+
+                    <form id="form-config" onsubmit="salvarConfiguracoesLoja(event)" class="space-y-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">URL da Logo (Imagem)</label>
+                                <input type="text" id="conf-logo" placeholder="https://link-da-sua-logo.com/imagem.png" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Tempo de Preparo Estimado (min)</label>
+                                <input type="number" id="conf-tempo" value="30" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" id="conf-delivery" class="w-5 h-5 text-brand-500 rounded focus:ring-brand-500">
+                                <span class="font-semibold text-slate-700">Aceitar Delivery</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" id="conf-retirada" class="w-5 h-5 text-brand-500 rounded focus:ring-brand-500">
+                                <span class="font-semibold text-slate-700">Aceitar Retirada</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" id="conf-auto" class="w-5 h-5 text-brand-500 rounded focus:ring-brand-500">
+                                <span class="font-semibold text-slate-700">Aceite Automático</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Formas de Pagamento Aceites (Separadas por vírgula)</label>
+                            <input type="text" id="conf-pagamentos" placeholder="Pix, Dinheiro, Cartão de Crédito" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+
+                        <div class="pt-4 flex justify-end">
+                            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-3 px-8 rounded-lg shadow-md transition-all flex items-center">
+                                <i class="ph ph-floppy-disk text-lg mr-2"></i> Salvar Configurações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="aba-clientes" class="painel hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                    <div class="mb-8 border-b border-slate-100 pb-5 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="ph-fill ph-users-three text-brand-500 text-3xl mr-3"></i>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800">Base de Clientes</h3>
+                                <p class="text-sm text-slate-500">Gestão de fidelidade, cashback e bloqueios.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <button onclick="gerarPDF('aba-clientes', 'Relatorio_Clientes_ArtsBurguer')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center shadow-sm">
+                                <i class="ph ph-file-pdf mr-2 text-lg text-brand-500"></i> Exportar PDF
+                            </button>
+                            <button onclick="carregarClientesPainel()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                                <i class="ph ph-arrows-clockwise mr-1"></i> Atualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200">
+                                    <th class="py-4 px-6">Nome / Contato</th>
+                                    <th class="py-4 px-6 text-center">Pontos</th>
+                                    <th class="py-4 px-6 text-center">Cashback</th>
+                                    <th class="py-4 px-6 text-center">Status</th>
+                                    <th class="py-4 px-6 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-clientes-painel" class="text-sm text-slate-600">
+                                <tr><td colspan="5" class="text-center py-6 text-slate-400">Carregando clientes...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div> 
+
+        </div> 
+    </main>
+
+    <button onclick="ativarSom()" id="btn-som" class="fixed bottom-5 right-5 bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-full shadow-lg z-50 flex items-center text-sm font-bold transition-all">
+        <i class="ph ph-speaker-slash mr-2 text-xl"></i> Ativar Alertas Sonoros
+    </button>
+
+    <div id="modal-add-grupo" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl relative modal-up">
+            <button onclick="fecharModalGrupo()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
+            <h2 class="text-xl font-bold text-slate-800 mb-1">Extras para: <span id="add-grupo-prod-nome" class="text-brand-500">Lanche</span></h2>
+            <p class="text-sm text-slate-500 mb-4">Ex: "Escolha o molho", "Adicionais", etc.</p>
+            
+            <form id="form-add-grupo" onsubmit="salvarGrupoComplemento(event)" class="space-y-4">
+                <input type="hidden" id="add-grupo-prod-id">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Título do Menu</label>
+                    <input type="text" id="add-grupo-nome" placeholder="Ex: Escolha sua Bebida" required class="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50">
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Obrigatório?</label>
+                        <select id="add-grupo-obrig" class="w-full px-3 py-2 rounded-lg border border-slate-200 outline-none bg-slate-50">
+                            <option value="false">Não</option><option value="true">Sim</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Min Opções</label>
+                        <input type="number" id="add-grupo-min" value="0" min="0" class="w-full px-3 py-2 rounded-lg border border-slate-200 outline-none bg-slate-50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Max Opções</label>
+                        <input type="number" id="add-grupo-max" value="1" min="1" class="w-full px-3 py-2 rounded-lg border border-slate-200 outline-none bg-slate-50">
+                    </div>
+                </div>
+                
+                <div class="border-t border-slate-100 pt-4">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Itens Disponíveis neste Menu</label>
+                    <div id="lista-add-itens" class="space-y-2 mb-3"></div>
+                    <div class="flex space-x-2">
+                        <input type="text" id="add-item-nome" placeholder="Nome (Ex: Fanta Uva)" class="flex-1 px-3 py-2 rounded-lg border border-slate-200 outline-none text-sm bg-slate-50">
+                        <input type="number" step="0.01" id="add-item-preco" placeholder="R$ 0,00" class="w-24 px-3 py-2 rounded-lg border border-slate-200 outline-none text-sm bg-slate-50">
+                        <button type="button" onclick="adicionarItemAoGrupoLocal()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg transition-colors"><i class="ph ph-plus font-bold"></i></button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl mt-4 shadow-lg active:scale-95 transition-all">Salvar Complementos no Lanche</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let ingredientesFicha = [];
+        let itensDoGrupoLocal = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const nomeLogado = localStorage.getItem('funcionario_nome') || "Administrador";
+            document.getElementById('nome-admin-lateral').innerText = nomeLogado;
+            carregarRelatorios();
+            carregarInsumosParaSelect();
+        });
+
+        // NAVEGAÇÃO ENTRE ABAS
+        const titulos = { 
+            'aba-relatorios': 'Relatórios de Lucratividade', 
+            'aba-cardapio': 'Gestão de Cardápio', 
+            'aba-estoque': 'Entrada de Estoque', 
+            'aba-financeiro': 'Contas a Pagar', 
+            'aba-colaboradores': 'Gestão de Colaboradores',
+            'aba-configuracoes': 'Configurações da Loja',
+            'aba-clientes': 'Clientes & Fidelidade'
+        };
+
+        function abrirAba(idAba, elementoClicado) {
+            document.querySelectorAll('.painel').forEach(p => { p.classList.remove('active'); p.classList.add('hidden'); });
+            document.querySelectorAll('.menu-item').forEach(m => { m.classList.remove('bg-brand-500', 'text-white', 'active'); m.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white'); });
+            
+            const alvo = document.getElementById(idAba);
+            if (alvo) { alvo.classList.remove('hidden'); alvo.classList.add('active'); }
+            if (elementoClicado) { elementoClicado.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white'); elementoClicado.classList.add('bg-brand-500', 'text-white', 'active'); }
+            if (titulos[idAba]) { document.getElementById('titulo-painel').innerText = titulos[idAba]; }
+            
+            if(idAba === 'aba-relatorios') { carregarRelatorios(); }
+            if(idAba === 'aba-financeiro') { carregarFinanceiro(); }
+            if(idAba === 'aba-cardapio') { carregarInsumosParaSelect(); carregarCardapio(); }
+            if(idAba === 'aba-estoque') { carregarEstoque(); }
+            if(idAba === 'aba-configuracoes') { carregarConfiguracoes(); }
+            if(idAba === 'aba-clientes') { carregarClientesPainel(); }
+        }
+
+        // ==========================
+        // LÓGICA DA FICHA TÉCNICA E CARDÁPIO
+        // ==========================
+        async function carregarInsumosParaSelect() {
+            try {
+                const res = await fetch('/api/gestao/insumos');
+                const insumos = await res.json();
+                const select = document.getElementById('select-insumo');
+                if (insumos.length === 0) { select.innerHTML = '<option value="">Nenhum insumo no stock</option>'; return; }
+                select.innerHTML = '<option value="">-- Selecione o Insumo --</option>' + insumos.map(i => `<option value="${i.id}">${i.nome} (${i.unidade})</option>`).join('');
+            } catch (e) { console.error("Erro ao carregar insumos", e); }
+        }
+
+        function adicionarIngredienteNaLista() {
+            const select = document.getElementById('select-insumo');
+            const inputQtd = document.getElementById('input-qtd-insumo');
+            const insumoId = parseInt(select.value);
+            const quantidade = parseFloat(inputQtd.value);
+
+            if (!insumoId || isNaN(quantidade) || quantidade <= 0) { alert("Selecione um ingrediente e informe uma quantidade válida."); return; }
+            if (ingredientesFicha.some(i => i.insumo_id === insumoId)) { alert("Este ingrediente já foi adicionado à receita!"); return; }
+
+            const nomeInsumo = select.options[select.selectedIndex].text;
+            ingredientesFicha.push({ insumo_id: insumoId, quantidade: quantidade, nome: nomeInsumo });
+            
+            atualizarListaVisualFicha();
+            inputQtd.value = ""; select.value = "";
+        }
+
+        function removerIngredienteDaLista(index) { ingredientesFicha.splice(index, 1); atualizarListaVisualFicha(); }
+
+        function atualizarListaVisualFicha() {
+            const ul = document.getElementById('lista-ingredientes-produto');
+            if (ingredientesFicha.length === 0) { ul.innerHTML = '<li class="text-slate-400 text-xs italic">Nenhum ingrediente associado.</li>'; return; }
+            ul.innerHTML = ingredientesFicha.map((item, index) => `
+                <li class="flex justify-between items-center bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 text-sm">
+                    <span class="font-medium text-slate-700">${item.nome} — Gasta: <b class="text-brand-500">${item.quantidade}</b></span>
+                    <button type="button" onclick="removerIngredienteDaLista(${index})" class="text-slate-400 hover:text-red-500 transition-colors"><i class="ph ph-trash text-lg"></i></button>
+                </li>
+            `).join('');
+        }
+
+        async function salvarProduto(event) { 
+            event.preventDefault(); 
+            const payload = { 
+                nome: document.getElementById('prod-nome').value, 
+                descricao: document.getElementById('prod-desc').value,
+                imagem_url: document.getElementById('prod-img').value,
+                preco: parseFloat(document.getElementById('prod-preco').value), 
+                categoria: document.getElementById('prod-categoria').value,
+                fichas: ingredientesFicha.map(i => ({ insumo_id: i.insumo_id, quantidade: i.quantidade }))
+            };
+            try {
+                const res = await fetch('/api/gestao/produto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(res.ok) { 
+                    alert("🍔 " + data.mensagem); 
+                    document.getElementById('form-cardapio').reset(); 
+                    ingredientesFicha = []; atualizarListaVisualFicha(); carregarCardapio();
+                } else { alert("❌ Erro: " + data.detail); }
+            } catch(e) { console.error(e); }
+        }
+
+        async function carregarCardapio() {
+            try {
+                const res = await fetch('/api/cardapio');
+                const produtos = await res.json();
+                const tabela = document.getElementById('lista-cardapio');
+                tabela.innerHTML = '';
+                
+                if(produtos.length === 0) { tabela.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Nenhum produto cadastrado.</td></tr>'; return; }
+
+                produtos.forEach(p => {
+                    const temFoto = p.imagem_url && p.imagem_url.length > 5 ? '<i class="ph-fill ph-image text-brand-500 ml-2" title="Possui Foto"></i>' : '';
+                    const linha = `
+                        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                            <td class="py-4 px-6 font-medium text-slate-800 flex items-center">${p.nome} ${temFoto}</td>
+                            <td class="py-4 px-6 text-slate-500"><span class="px-2 py-1 bg-slate-100 rounded-md text-xs">${p.categoria}</span></td>
+                            <td class="py-4 px-6 font-bold text-green-600">R$ ${p.preco_venda.toFixed(2).replace('.', ',')}</td>
+                            <td class="py-4 px-6 text-center space-x-3">
+                                <button onclick="abrirModalCriarGrupo(${p.id}, '${p.nome}')" class="text-blue-500 hover:text-blue-700 transition-colors" title="Criar Opções Extras"><i class="ph ph-plus-circle text-xl"></i></button>
+                                <button onclick="excluirProduto(${p.id}, '${p.nome}')" class="text-slate-400 hover:text-red-500 transition-colors" title="Excluir"><i class="ph ph-trash text-xl"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tabela.insertAdjacentHTML('beforeend', linha);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        async function excluirProduto(id, nome) {
+            if(!confirm(`⚠️ Excluir o lanche "${nome}" do cardápio?`)) return;
+            try {
+                const res = await fetch(`/api/gestao/produto/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if(res.ok) { alert("🗑️ " + data.mensagem); carregarCardapio(); } else { alert("❌ Erro: " + data.detail); }
+            } catch(e) { alert("❌ Falha de conexão."); }
+        }
+
+        // ==========================
+        // LÓGICA DE COMPLEMENTOS (EXTRAS)
+        // ==========================
+        function abrirModalCriarGrupo(produtoId, produtoNome) {
+            document.getElementById('add-grupo-prod-id').value = produtoId;
+            document.getElementById('add-grupo-prod-nome').innerText = produtoNome;
+            itensDoGrupoLocal = []; atualizarItensGrupoLocal();
+            document.getElementById('modal-add-grupo').classList.remove('hidden'); document.getElementById('modal-add-grupo').classList.add('flex');
+        }
+
+        function fecharModalGrupo() { document.getElementById('modal-add-grupo').classList.add('hidden'); document.getElementById('modal-add-grupo').classList.remove('flex'); document.getElementById('form-add-grupo').reset(); }
+
+        function adicionarItemAoGrupoLocal() {
+            const nome = document.getElementById('add-item-nome').value;
+            const preco = parseFloat(document.getElementById('add-item-preco').value) || 0.0;
+            if(!nome) return;
+            itensDoGrupoLocal.push({ nome, preco_adicional: preco });
+            document.getElementById('add-item-nome').value = ''; document.getElementById('add-item-preco').value = '';
+            atualizarItensGrupoLocal();
+        }
+
+        function atualizarItensGrupoLocal() {
+            const div = document.getElementById('lista-add-itens');
+            div.innerHTML = itensDoGrupoLocal.map((it, idx) => `
+                <div class="flex justify-between items-center bg-slate-50 px-3 py-2 rounded border border-slate-200 text-sm">
+                    <span class="font-semibold text-slate-700">${it.nome} <b class="text-brand-500 ml-2">R$ ${it.preco_adicional.toFixed(2)}</b></span>
+                    <button type="button" onclick="removerItemGrupoLocal(${idx})" class="text-red-500 hover:text-red-700"><i class="ph-fill ph-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function removerItemGrupoLocal(idx) { itensDoGrupoLocal.splice(idx, 1); atualizarItensGrupoLocal(); }
+
+        async function salvarGrupoComplemento(e) {
+            e.preventDefault();
+            if(itensDoGrupoLocal.length === 0) { alert("Adicione pelo menos 1 item à lista!"); return; }
+            const payload = {
+                produto_id: parseInt(document.getElementById('add-grupo-prod-id').value),
+                nome: document.getElementById('add-grupo-nome').value,
+                obrigatorio: document.getElementById('add-grupo-obrig').value === 'true',
+                minimo_opcoes: parseInt(document.getElementById('add-grupo-min').value),
+                maximo_opcoes: parseInt(document.getElementById('add-grupo-max').value),
+                itens: itensDoGrupoLocal
+            };
+            const res = await fetch('/api/gestao/complementos', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            if(res.ok) { alert("✅ Complementos ativados com sucesso!"); fecharModalGrupo(); } else { alert("Erro ao salvar opções."); }
+        }
+
+        // ==========================
+        // DEMAIS FUNÇÕES DO SISTEMA
+        // ==========================
+        async function carregarRelatorios() {
+            try {
+                const resFin = await fetch('/api/gestao/financeiro/lucratividade');
+                const data = await resFin.json();
+                
+                document.getElementById('rel-faturamento').innerText = `R$ ${data.faturamento.toFixed(2).replace('.', ',')}`;
+                document.getElementById('rel-despesas-empresa').innerText = `R$ ${data.despesas_empresa.toFixed(2).replace('.', ',')}`;
+                document.getElementById('rel-despesas-casa').innerText = `R$ ${data.despesas_casa.toFixed(2).replace('.', ',')}`;
+                document.getElementById('rel-margem').innerText = `${data.margem_lucro}%`;
+                
+                const elemLucroReal = document.getElementById('rel-lucro-real');
+                const elemDiag = document.getElementById('rel-diagnostico');
+                elemLucroReal.innerText = `R$ ${data.lucro_liquido.toFixed(2).replace('.', ',')}`;
+                
+                if (data.lucro_liquido <= 0) {
+                    elemLucroReal.className = "text-4xl font-bold text-red-400";
+                    elemDiag.innerText = "⚠️ Alerta: A empresa não está a gerar lucro livre suficiente para cobrir os gastos.";
+                } else if (data.despesas_casa > data.lucro_operacional * 0.5) {
+                    elemLucroReal.className = "text-4xl font-bold text-amber-400";
+                    elemDiag.innerText = "⚠️ Cuidado: Retiradas pessoais altas estão a sufocar o caixa da empresa.";
+                } else {
+                    elemLucroReal.className = "text-4xl font-bold text-green-400";
+                    elemDiag.innerText = "✅ Empresa saudável! Dinheiro a sobrar no caixa após todas as despesas.";
+                }
+
+                const resEst = await fetch('/api/gestao/insumos');
+                const insumos = await resEst.json();
+                const itensCriticos = insumos.filter(i => i.quantidade_atual <= i.quantidade_minima);
+                const painelAlertas = document.getElementById('painel-alertas-estoque');
+                const listaAlertas = document.getElementById('lista-alertas-estoque');
+                
+                if (itensCriticos.length > 0) {
+                    painelAlertas.classList.remove('hidden'); 
+                    listaAlertas.innerHTML = itensCriticos.map(i => {
+                        const zerado = i.quantidade_atual <= 0;
+                        return `
+                            <div class="bg-white p-4 rounded-xl border ${zerado ? 'border-red-300' : 'border-amber-300'} flex items-center justify-between transition-all hover:shadow-md">
+                                <div>
+                                    <p class="font-bold text-slate-800 text-sm truncate">${i.nome}</p>
+                                    <p class="text-xs text-slate-500 mt-1">Na prateleira: <span class="${zerado ? 'text-red-600' : 'text-amber-600'} font-black text-sm">${i.quantidade_atual} ${i.unidade}</span></p>
+                                </div>
+                                <span class="px-3 py-1 text-[10px] font-bold uppercase rounded-full ${zerado ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}">
+                                    ${zerado ? 'Zerad!' : 'Comprar'}
+                                </span>
+                            </div>
+                        `;
+                    }).join('');
+                } else { painelAlertas.classList.add('hidden'); }
+            } catch (error) { console.error(error); }
+        }
+
+        async function carregarFinanceiro() {
+            const res = await fetch('/api/gestao/financeiro/resumo');
+            const data = await res.json();
+            document.getElementById('fin-total-empresa').innerText = `R$ ${data.total_empresa.toFixed(2)}`;
+            document.getElementById('fin-total-casa').innerText = `R$ ${data.total_casa.toFixed(2)}`;
+            const tbody = document.getElementById('lista-financeiro');
+            tbody.innerHTML = data.contas.map(c => `
+                <tr class="border-b border-slate-50">
+                    <td class="py-4 px-6 font-medium">${c.descricao}</td>
+                    <td class="py-4 px-6">${c.vencimento}</td>
+                    <td class="py-4 px-6"><span class="px-2 py-1 rounded ${c.tipo === 'Empresa' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'} text-xs">${c.tipo}</span></td>
+                    <td class="py-4 px-6 font-bold text-slate-800">R$ ${c.valor.toFixed(2)}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function lancarConta(e) {
+            e.preventDefault();
+            const payload = { descricao: document.getElementById('fin-desc').value, valor: parseFloat(document.getElementById('fin-valor').value), vencimento: document.getElementById('fin-venc').value, tipo_despesa: document.getElementById('fin-tipo').value };
+            const res = await fetch('/api/gestao/conta', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            if(res.ok) { alert("Conta registrada com sucesso!"); document.getElementById('form-financeiro').reset(); carregarFinanceiro(); }
+        }
+
+        async function salvarInsumo(event) {
+            event.preventDefault(); 
+            const payload = { nome: document.getElementById('ins-nome').value, unidade: document.getElementById('ins-unidade').value, quantidade: parseFloat(document.getElementById('ins-qtd').value), minimo: parseFloat(document.getElementById('ins-min').value), custo: parseFloat(document.getElementById('ins-custo').value) };
+            try {
+                const res = await fetch('/api/gestao/insumo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if(res.ok) { alert("📦 Insumo registado com sucesso!"); document.getElementById('form-estoque').reset(); carregarEstoque(); }
+            } catch(e) { console.error(e); }
+        }
+
+        async function carregarEstoque() {
+            try {
+                const res = await fetch('/api/gestao/insumos');
+                const insumos = await res.json();
+                const tabela = document.getElementById('lista-estoque');
+                tabela.innerHTML = '';
+                if(insumos.length === 0) { tabela.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Nenhum insumo.</td></tr>'; return; }
+
+                insumos.forEach(i => {
+                    let statusHtml = i.quantidade_atual <= 0 ? '<span class="px-3 py-1 bg-red-100 text-red-600 font-semibold text-xs rounded-full">Zerad!</span>' : (i.quantidade_atual <= i.quantidade_minima ? '<span class="px-3 py-1 bg-amber-100 text-amber-600 font-semibold text-xs rounded-full">Comprar</span>' : '<span class="px-3 py-1 bg-green-100 text-green-600 font-semibold text-xs rounded-full">OK</span>');
+                    let linhaClass = i.quantidade_atual <= 0 ? 'bg-red-50/40' : '';
+                    tabela.insertAdjacentHTML('beforeend', `
+                        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors ${linhaClass}">
+                            <td class="py-4 px-6 font-medium text-slate-800">${i.nome}</td>
+                            <td class="py-4 px-6 font-bold ${i.quantidade_atual <= i.quantidade_minima ? 'text-red-500' : 'text-slate-700'}">${i.quantidade_atual} ${i.unidade}</td>
+                            <td class="py-4 px-6 text-slate-400">${i.quantidade_minima} ${i.unidade}</td>
+                            <td class="py-4 px-6 text-center">${statusHtml}</td>
+                        </tr>
+                    `);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        async function carregarConfiguracoes() {
+            try {
+                const res = await fetch('/api/gestao/configuracoes');
+                const conf = await res.json();
+                document.getElementById('conf-logo').value = conf.logo_url || '';
+                document.getElementById('conf-tempo').value = conf.tempo_preparo || 30;
+                document.getElementById('conf-delivery').checked = conf.aceita_delivery;
+                document.getElementById('conf-retirada').checked = conf.aceita_retirada;
+                document.getElementById('conf-auto').checked = conf.aceite_automatico;
+                document.getElementById('conf-pagamentos').value = conf.formas_pagamento || '';
+            } catch (e) { }
+        }
+
+        async function salvarConfiguracoesLoja(e) {
+            e.preventDefault();
+            const payload = { logo_url: document.getElementById('conf-logo').value, tempo_preparo: parseInt(document.getElementById('conf-tempo').value), aceita_delivery: document.getElementById('conf-delivery').checked, aceita_retirada: document.getElementById('conf-retirada').checked, aceite_automatico: document.getElementById('conf-auto').checked, formas_pagamento: document.getElementById('conf-pagamentos').value };
+            const res = await fetch('/api/gestao/configuracoes', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            if(res.ok) alert("✅ Configurações salvas!");
+        }
+
+        async function carregarClientesPainel() {
+            try {
+                const res = await fetch('/api/gestao/clientes');
+                const clientes = await res.json();
+                const tbody = document.getElementById('lista-clientes-painel');
+                if(clientes.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">Nenhum cliente cadastrado ainda.</td></tr>'; return; }
+
+                tbody.innerHTML = clientes.map(c => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50 ${c.bloqueado ? 'bg-red-50/30' : ''}">
+                        <td class="py-4 px-6"><p class="font-bold text-slate-800">${c.nome}</p><p class="text-xs text-slate-400">${c.telefone}</p></td>
+                        <td class="py-4 px-6 text-center font-bold text-amber-600">${c.pontos}</td>
+                        <td class="py-4 px-6 text-center font-bold text-green-600">R$ ${c.cashback.toFixed(2).replace('.', ',')}</td>
+                        <td class="py-4 px-6 text-center">${c.bloqueado ? '<span class="text-red-500 font-bold text-xs">BLOQUEADO</span>' : '<span class="text-green-500 font-bold text-xs">ATIVO</span>'}</td>
+                        <td class="py-4 px-6 text-center space-x-2">
+                            <button onclick="ajustarCliente(${c.id}, '${c.nome}', ${c.pontos}, ${c.cashback})" class="text-blue-500 hover:text-blue-700" title="Editar"><i class="ph ph-pencil-simple text-lg"></i></button>
+                            <button onclick="alternarBloqueioCliente(${c.id})" class="text-slate-500 hover:text-slate-700" title="Bloquear"><i class="ph ph-lock-key text-lg"></i></button>
+                            <button onclick="deletarCliente(${c.id}, '${c.nome}')" class="text-red-500 hover:text-red-700" title="Excluir"><i class="ph ph-trash text-lg"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {}
+        }
+
+        async function ajustarCliente(id, nome, pontos, cashback) {
+            const novoNome = prompt("Editar Nome:", nome);
+            if (novoNome === null) return;
+            const novosPontos = prompt("Ajustar Pontos:", pontos);
+            const novoCashback = prompt("Ajustar Cashback (R$):", cashback);
+            const res = await fetch(`/api/gestao/clientes/${id}/editar`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome: novoNome, pontos: novosPontos, cashback: novoCashback }) });
+            if(res.ok) carregarClientesPainel();
+        }
+
+        async function deletarCliente(id, nome) { if(confirm(`⚠️ Remover o cliente ${nome} permanentemente?`)) { await fetch(`/api/gestao/clientes/${id}`, { method: 'DELETE' }); carregarClientesPainel(); } }
+        async function alternarBloqueioCliente(id) { await fetch(`/api/gestao/clientes/${id}/bloqueio`, { method: 'PUT' }); carregarClientesPainel(); }
+        function sairDoSistema() { localStorage.removeItem('funcionario_nome'); localStorage.removeItem('funcionario_cargo'); window.location.replace('/login'); }
+
+        // ==========================
+        // ALARMES E RADAR DA COZINHA
+        // ==========================
+        let ultimaQtdPedidos = 0;
+        let somAtivado = false;
+        const somSino = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_c6ccf3232f.mp3?filename=message-incoming-132126.mp3');
+
+        function ativarSom() {
+            somAtivado = true;
+            somSino.play().then(() => { somSino.pause(); somSino.currentTime = 0; }).catch(e => console.log("Áudio bloqueado"));
+            const btn = document.getElementById('btn-som');
+            btn.innerHTML = '<i class="ph ph-speaker-high mr-2 text-xl"></i> Som Ativado';
+            btn.classList.replace('bg-slate-800', 'bg-green-500');
+        }
+
+        setInterval(async () => {
+            try {
+                const res = await fetch('/api/kds/pedidos');
+                const pedidos = await res.json();
+                const qtd_novos = pedidos.filter(p => p.status === 'RECEBIDO').length;
+                if (qtd_novos > ultimaQtdPedidos) { dispararAlerta(); }
+                ultimaQtdPedidos = qtd_novos;
+            } catch (e) { }
+        }, 5000);
+
+        function dispararAlerta() {
+            if (somAtivado) somSino.play().catch(e => {});
+            const alerta = document.getElementById('alerta-novo-pedido');
+            if (alerta) {
+                alerta.classList.remove('translate-x-[150%]');
+                setTimeout(() => { alerta.classList.add('translate-x-[150%]'); }, 5000);
+            }
+        }
+
+        // ==========================
+        // GERAÇÃO DE PDF
+        // ==========================
+        function gerarPDF(idElemento, nomeArquivo) {
+            const elemento = document.getElementById(idElemento);
+            const btnClicado = event.currentTarget;
+            const btnOriginal = btnClicado.innerHTML;
+            
+            btnClicado.innerHTML = '<i class="ph ph-spinner animate-spin mr-2"></i> Gerando...';
+            btnClicado.disabled = true;
+
+            const animationOriginal = elemento.style.animation;
+            const bgOriginal = elemento.style.backgroundColor;
+            elemento.style.animation = 'none';
+            elemento.style.backgroundColor = '#f8fafc'; 
+
+            html2canvas(elemento, { scale: 2, useCORS: true, backgroundColor: '#f8fafc', logging: false }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4');
+                const margin = 10;
+                const finalWidth = pdf.internal.pageSize.getWidth() - (margin * 2);
+                const finalHeight = (canvas.height * finalWidth) / canvas.width;
+
+                pdf.addImage(imgData, 'JPEG', margin, margin, finalWidth, finalHeight);
+                const dataHoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+                pdf.save(`${nomeArquivo}_${dataHoje}.pdf`);
+                
+                btnClicado.innerHTML = btnOriginal; btnClicado.disabled = false;
+                elemento.style.backgroundColor = bgOriginal; elemento.style.animation = animationOriginal;
+            }).catch(e => {
+                alert("Erro ao gerar PDF.");
+                btnClicado.innerHTML = btnOriginal; btnClicado.disabled = false;
+                elemento.style.backgroundColor = bgOriginal; elemento.style.animation = animationOriginal;
+            });
+        }
+    </script>
+</body>
+</html>
