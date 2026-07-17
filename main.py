@@ -12,7 +12,7 @@ from sqlalchemy import Column, Integer, String, Boolean, Float
 
 # Importações dos nossos módulos do Art's Burguer
 from integracao_99food import router_99food
-from pagamentos_pagbank import gerar_pagamento_pix, criar_checkout_pagbank
+from pagamentos_pagbank import criar_checkout_asaas
 from database import SessionLocal, ProdutoModel, ProdutoCreateInput, criar_produto_com_ficha, cadastrar_insumo, engine, Base, FuncionarioModel, Cargo, InsumoModel, processar_baixa_estoque
 from vendas_pdv import ClienteModel, registrar_venda_pdv, TipoPedido, PedidoModel
 from financeiro import lancar_conta_pagar, FornecedorModel, ContaPagarModel
@@ -220,7 +220,7 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
                 "preco": float(prod.preco_venda) if prod else 0.0
             })
             
-        link_pagamento = criar_checkout_pagbank(novo_pedido.id, novo_pedido.total_pago, cliente.nome, detalhes_itens)
+        link_pagamento = criar_checkout_asaas(novo_pedido.id, novo_pedido.total_pago, cliente.nome, detalhes_itens)
         if link_pagamento:
             return {"status": "checkout", "checkout_url": link_pagamento}
         else:
@@ -228,25 +228,30 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
     
     return {"status": "entrega", "mensagem": "Pedido confirmado!"}
 
-@app.post("/api/webhooks/pagbank")
-async def webhook_do_pagbank(payload: dict, db: Session = Depends(get_db)):
-    """
-    O PagBank bate aqui assim que o cliente paga.
-    """
+@app.post("/api/webhooks/asaas")
+async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
+    """ O Asaas avisa aqui assim que o dinheiro do Pix ou Cartão cai na conta! """
     try:
-        # Pega a referência que enviámos (pedido_id)
-        pedido_id = payload.get("reference_id")
-        status = payload.get("status")
+        evento = payload.get("event")
         
-        pedido = db.query(PedidoModel).filter(PedidoModel.id == int(pedido_id)).first()
-        
-        if pedido and status == "PAID":
-            pedido.status = "RECEBIDO" # Agora sim, entra na fila da cozinha
-            db.commit()
-            print(f"✅ PAGAMENTO CONFIRMADO! Pedido #{pedido_id} liberado para a cozinha.")
+        if evento in ["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]:
+            pagamento = payload.get("payment", {})
+            descricao = pagamento.get("description", "")
             
+            # O sistema lê a descrição para descobrir qual era o pedido (ex: "Pedido #102 ...")
+            if "#" in descricao:
+                pedido_id_str = descricao.split("#")[1].split(" ")[0]
+                pedido_id = int(pedido_id_str)
+                
+                pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+                if pedido and str(pedido.status).split('.')[-1].upper() != "RECEBIDO":
+                    pedido.status = "RECEBIDO" # Joga direto pra tela da Cozinha (KDS)
+                    db.commit()
+                    print(f"✅ PAGAMENTO ASAAS CONFIRMADO! Pedido #{pedido_id} liberado.")
+                    
         return {"status": "ok"}
     except Exception as e:
+        print(f"❌ Erro Webhook Asaas: {e}")
         return {"status": "erro"}
 
 @app.get("/api/pdv/cliente/{telefone}")
