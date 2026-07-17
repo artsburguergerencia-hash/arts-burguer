@@ -1,39 +1,48 @@
 import requests
 import os
 
-# O .strip() garante que nenhum espaço em branco copiado sem querer quebre a sua chave
-TOKEN_ASAAS = os.getenv("TOKEN_ASAAS", "").strip() 
+TOKEN_PAGBANK = os.getenv("TOKEN_PAGBANK", "").strip()
+# ATENÇÃO: Se for usar a conta real depois, mude a URL de 'sandbox.api' para apenas 'api'
+URL_PAGBANK = "https://sandbox.api.pagseguro.com/orders" 
 
-# URL CORRETA DO ASAAS (sem o /api no meio)
-URL_ASAAS = "https://api.asaas.com/v3"
-
-# Adicionamos a forma_pagamento aqui
-def criar_checkout_asaas(pedido_id, valor_total, nome_cliente, detalhes_itens=None, forma_pagamento="pix"):
+def criar_pagamento_pix_pagbank(pedido_id, valor_total, nome_cliente, cpf_cliente):
     headers = {
-        "access_token": TOKEN_ASAAS,
-        "Content-Type": "application/json",
-        "User-Agent": "ArtsBurguer/1.0"
+        "Authorization": f"Bearer {TOKEN_PAGBANK}",
+        "Content-Type": "application/json"
     }
     
-    # O sistema decide sozinho se é Cartão ou Pix
-    tipo_cobranca = "CREDIT_CARD" if forma_pagamento == "credito" else "PIX"
+    # Limpa o CPF (tira pontos e traços se vier do site)
+    cpf_limpo = "".join(filter(str.isdigit, str(cpf_cliente)))
+    valor_em_centavos = int(float(valor_total) * 100)
     
     payload = {
-        "name": f"Pedido #{pedido_id} - {nome_cliente}",
-        "description": f"Pagamento do pedido #{pedido_id} no Art's Burguer",
-        "value": float(valor_total),
-        "billingType": tipo_cobranca, # Agora o bloqueio saiu, o sistema é livre!
-        "chargeType": "DETACHED",
-        "dueDateLimitDays": 1
+        "reference_id": f"PEDIDO_{pedido_id}",
+        "customer": {
+            "name": nome_cliente,
+            "email": "cliente@artsburguer.com.br", # O nosso e-mail "fantasma" para não pedir ao cliente!
+            "tax_id": cpf_limpo
+        },
+        "qr_codes": [
+            {
+                "amount": {
+                    "value": valor_em_centavos
+                }
+            }
+        ]
     }
     
     try:
-        response = requests.post(f"{URL_ASAAS}/paymentLinks", headers=headers, json=payload)
-        if response.status_code == 200:
-            return response.json().get("url")
-        else:
-            print(f"❌ Erro Asaas (Status {response.status_code}): {response.text}")
-            return None
+        response = requests.post(URL_PAGBANK, headers=headers, json=payload)
+        if response.status_code in [200, 201]:
+            dados = response.json()
+            # Pega a lista de QRs gerados
+            qr_codes = dados.get("qr_codes", [])
+            if qr_codes:
+                # Retorna apenas o texto do "Copia e Cola"
+                return qr_codes[0].get("text")
+                
+        print(f"❌ Erro PagBank: {response.text}")
+        return None
     except Exception as e:
-        print(f"❌ Erro de Conexão Asaas: {e}")
+        print(f"❌ Erro de Conexão PagBank: {e}")
         return None
