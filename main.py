@@ -220,7 +220,7 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
                 "preco": float(prod.preco_venda) if prod else 0.0
             })
             
-        link_pagamento = criar_checkout_asaas(novo_pedido.id, novo_pedido.total_pago, cliente.nome, detalhes_itens)
+        link_pagamento = criar_checkout_asaas(novo_pedido.id, novo_pedido.total_pago, cliente.nome, detalhes_itens, forma_pagamento)
         if link_pagamento:
             return {"status": "checkout", "checkout_url": link_pagamento}
         else:
