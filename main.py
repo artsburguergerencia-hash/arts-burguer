@@ -12,7 +12,7 @@ from sqlalchemy import Column, Integer, String, Boolean, Float
 
 # Importações dos nossos módulos do Art's Burguer
 from integracao_99food import router_99food
-from pagamentos_pagbank import criar_pagamento_pix_pagbank
+from pagamentos_pagbank import criar_pagamento_pix_mp
 from database import SessionLocal, ProdutoModel, ProdutoCreateInput, criar_produto_com_ficha, cadastrar_insumo, engine, Base, FuncionarioModel, Cargo, InsumoModel, processar_baixa_estoque
 from vendas_pdv import ClienteModel, registrar_venda_pdv, TipoPedido, PedidoModel
 from financeiro import lancar_conta_pagar, FornecedorModel, ContaPagarModel
@@ -214,13 +214,13 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         if not pedido_web.cpf:
             raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
             
-        copia_e_cola = criar_pagamento_pix_pagbank(novo_pedido.id, novo_pedido.total_pago, cliente.nome, pedido_web.cpf)
+        # AQUI É A LINHA QUE MUDA!
+        copia_e_cola = criar_pagamento_pix_mp(novo_pedido.id, novo_pedido.total_pago, cliente.nome, pedido_web.cpf)
         
         if copia_e_cola:
-            # Mandamos o status de checkout transparente e o código do Pix direto pro site!
             return {"status": "checkout_transparente", "copia_e_cola": copia_e_cola}
         else:
-            raise HTTPException(status_code=500, detail="Falha ao gerar o código Pix no PagBank.")
+            raise HTTPException(status_code=500, detail="Falha ao gerar o código Pix no Mercado Pago.")
     
     return {"status": "entrega", "mensagem": "Pedido confirmado!"}
 
