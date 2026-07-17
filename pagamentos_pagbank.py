@@ -1,55 +1,34 @@
 import requests
-import json
-
-# ==========================================
-# CONFIGURAÇÕES PAGBANK (Ambiente Seguro)
-# ==========================================
-# Quando for para a loja real, trocará este token pelo seu Token de Produção
 import os
-TOKEN_PAGBANK = os.getenv("TOKEN_PAGBANK")
-URL_PAGBANK = "https://sandbox.api.pagseguro.com/checkouts" # Sandbox = Ambiente de Teste
 
-def criar_checkout_pagbank(pedido_id, valor_total, nome_cliente, itens_carrinho):
+# A chave do Asaas que você configurou nas variáveis de ambiente do Render
+TOKEN_ASAAS = os.getenv("TOKEN_ASAAS")
+URL_ASAAS = "https://api.asaas.com/api/v3"
+
+def criar_checkout_asaas(pedido_id, valor_total, nome_cliente, detalhes_itens=None):
     headers = {
-        "Authorization": f"Bearer {TOKEN_PAGBANK}",
+        "access_token": TOKEN_ASAAS,
         "Content-Type": "application/json"
     }
-    valor_em_centavos = int(valor_total * 100)
     
-    # Mapeia os itens do carrinho para o formato do PagBank
-    lista_itens = []
-    for item in itens_carrinho:
-        lista_itens.append({
-            "name": item["nome"] if "nome" in item else "Produto",
-            "quantity": item["quantidade"],
-            "unit_amount": int(item["preco"] * 100)
-        })
-    
+    # Criamos um Link de Pagamento avulso (O Asaas NÃO exige CPF aqui!)
     payload = {
-        "reference_id": str(pedido_id),
-        "customer": {
-            "name": nome_cliente,
-            "email": "cliente@artsburguer.com.br"
-        },
-        "items": lista_itens, # Agora envia os itens reais
-        "payment_methods": [
-            {"type": "CREDIT_CARD"},
-            {"type": "PIX"}
-        ],
-        "redirect_url": f"http://seu-dominio-aqui.com.br/pedido-sucesso?id={pedido_id}"
+        "name": f"Pedido #{pedido_id} - {nome_cliente}",
+        "description": f"Pagamento do pedido #{pedido_id} no Art's Burguer",
+        "value": float(valor_total),
+        "billingType": "UNDEFINED", # Permite que o cliente escolha entre Pix ou Cartão
+        "chargeType": "DETACHED",
+        "dueDateLimitDays": 1
     }
     
     try:
-        response = requests.post(URL_PAGBANK, headers=headers, json=payload)
-        if response.status_code in [200, 201]:
+        response = requests.post(f"{URL_ASAAS}/paymentLinks", headers=headers, json=payload)
+        if response.status_code == 200:
             dados = response.json()
-            for link in dados.get("links", []):
-                if link.get("rel") == "PAY": return link.get("href")
-        return None
+            return dados.get("url") # Retorna o link mágico para o cliente
+        else:
+            print(f"❌ Erro Asaas: {response.text}")
+            return None
     except Exception as e:
-        print(f"❌ Erro PagBank: {e}")
+        print(f"❌ Erro na integração Asaas: {e}")
         return None
-
-def gerar_pagamento_pix(valor, pedido_id, nome_cliente):
-    # Função mantida por segurança para garantir que rotas antigas não quebram
-    return {"qr_code": "00020126580014br.gov.bcb.pix...", "copia_e_cola": "PIX_COPIA_E_COLA_AQUI"}
