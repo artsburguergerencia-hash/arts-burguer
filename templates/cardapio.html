@@ -479,11 +479,11 @@
         function removerItem(index) { carrinho.splice(index, 1); atualizarContadores(); abrirCarrinho(); }
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.add('hidden'); }
 
-        // ==========================
+       // ==========================
         // FINALIZAR PEDIDO (Visitante x Logado)
         // ==========================
         async function finalizarPedidoOnline() {
-            let nome, tel, end, cliente_id;
+            let nome, tel, end, cliente_id, cpf;
 
             // Define quem está comprando
             if (clienteLogado) {
@@ -491,11 +491,14 @@
                 tel = clienteLogado.telefone;
                 end = `${clienteLogado.logradouro}, ${clienteLogado.numero} - ${clienteLogado.bairro}`;
                 cliente_id = clienteLogado.id;
+                // Pega o CPF do cliente logado se existir, se não fica vazio
+                cpf = clienteLogado.cpf || ""; 
             } else {
                 nome = document.getElementById('guest-nome').value.trim();
                 tel = document.getElementById('guest-tel').value.trim();
                 end = document.getElementById('guest-end').value.trim();
-                cliente_id = null; // Backend entenderá que precisa procurar ou criar o cliente
+                cpf = document.getElementById('guest-cpf').value.trim(); // CAPTURA O CPF NOVO
+                cliente_id = null;
 
                 if (!nome || !tel || !end) {
                     alert("⚠️ Preencha o seu Nome, WhatsApp e Endereço para entregarmos o pedido.");
@@ -504,11 +507,20 @@
             }
 
             const tipoPgto = document.getElementById('forma-pag-online').value;
+            
+            // Impede de tentar gerar Pix sem CPF
+            if (tipoPgto === 'pix' && !cpf) {
+                alert("⚠️ O CPF é obrigatório para gerar o pagamento via Pix de forma segura.");
+                if(!clienteLogado) document.getElementById('guest-cpf').focus();
+                return;
+            }
+
             const payload = {
                 cliente_id: cliente_id,
                 nome_cliente: nome,
                 telefone_cliente: tel,
                 endereco_cliente: end,
+                cpf: cpf, // ENVIA O CPF NO PACOTE
                 itens: carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao }))
             };
 
@@ -523,15 +535,18 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    if (data.status === "pix") {
-                        alert("O seu PIX foi gerado! Enviaremos a chave para o seu WhatsApp.");
+                    if (data.status === "checkout_transparente") {
+                        // AQUI ACONTECE A MÁGICA DO PIX NA TELA!
+                        prompt("✅ SEU PIX FOI GERADO COM SUCESSO!\n\nCopie o código abaixo e pague no aplicativo do seu banco:", data.copia_e_cola);
+                        window.location.reload();
+                        return;
                     } else if (data.status === "checkout") {
                         window.location.href = data.checkout_url;
                         return;
                     } else {
                         alert("✅ Pedido enviado para a cozinha!\nAcompanhe o status pelo seu WhatsApp.");
+                        window.location.reload();
                     }
-                    window.location.reload();
                 } else { 
                     alert("Erro: " + (data.detail || "Falha ao enviar pedido.")); 
                     btn.disabled = false;
