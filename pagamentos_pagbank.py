@@ -7,18 +7,22 @@ TOKEN_ASAAS = os.getenv("TOKEN_ASAAS", "").strip()
 # URL CORRETA DO ASAAS (sem o /api no meio)
 URL_ASAAS = "https://api.asaas.com/v3"
 
-def criar_checkout_asaas(pedido_id, valor_total, nome_cliente, detalhes_itens=None):
+# Adicionamos a forma_pagamento aqui
+def criar_checkout_asaas(pedido_id, valor_total, nome_cliente, detalhes_itens=None, forma_pagamento="pix"):
     headers = {
         "access_token": TOKEN_ASAAS,
         "Content-Type": "application/json",
-        "User-Agent": "ArtsBurguer/1.0" # Evita que o firewall do banco bloqueie a requisição
+        "User-Agent": "ArtsBurguer/1.0"
     }
+    
+    # O sistema decide sozinho se é Cartão ou Pix
+    tipo_cobranca = "CREDIT_CARD" if forma_pagamento == "credito" else "PIX"
     
     payload = {
         "name": f"Pedido #{pedido_id} - {nome_cliente}",
         "description": f"Pagamento do pedido #{pedido_id} no Art's Burguer",
         "value": float(valor_total),
-        "billingType": "PIX", # Forçamos apenas PIX para ignorar a restrição de valor mínimo do cartão
+        "billingType": tipo_cobranca, # Agora o bloqueio saiu, o sistema é livre!
         "chargeType": "DETACHED",
         "dueDateLimitDays": 1
     }
@@ -26,10 +30,8 @@ def criar_checkout_asaas(pedido_id, valor_total, nome_cliente, detalhes_itens=No
     try:
         response = requests.post(f"{URL_ASAAS}/paymentLinks", headers=headers, json=payload)
         if response.status_code == 200:
-            dados = response.json()
-            return dados.get("url")
+            return response.json().get("url")
         else:
-            # Imprime o erro exato no log do Render
             print(f"❌ Erro Asaas (Status {response.status_code}): {response.text}")
             return None
     except Exception as e:
