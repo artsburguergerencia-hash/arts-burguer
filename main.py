@@ -12,7 +12,7 @@ from sqlalchemy import Column, Integer, String, Boolean, Float
 
 # Importações dos nossos módulos do Art's Burguer
 from integracao_99food import router_99food
-from pagamentos_pagbank import criar_checkout_asaas
+from pagamentos_pagbank import criar_pagamento_pix_pagbank
 from database import SessionLocal, ProdutoModel, ProdutoCreateInput, criar_produto_com_ficha, cadastrar_insumo, engine, Base, FuncionarioModel, Cargo, InsumoModel, processar_baixa_estoque
 from vendas_pdv import ClienteModel, registrar_venda_pdv, TipoPedido, PedidoModel
 from financeiro import lancar_conta_pagar, FornecedorModel, ContaPagarModel
@@ -69,7 +69,8 @@ class CheckoutPedido(BaseModel):
     telefone_cliente: str
     nome_cliente: str
     itens: List[ItemCarrinho]
-    endereco_cliente: str = "" 
+    endereco_cliente: str = ""
+    cpf: str = "" # NOVO CAMPO AQUI!
 
 class NovoInsumo(BaseModel):
     nome: str
@@ -209,22 +210,17 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
     # 🔔 NOTIFICA O CLIENTE
     notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido.id, "RECEBIDO")
     
-    if forma_pagamento in ["pix", "credito"]:
-        # Prepara os detalhes dos itens para o PagBank
-        detalhes_itens = []
-        for item in pedido_web.itens:
-            prod = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
-            detalhes_itens.append({
-                "nome": prod.nome if prod else "Produto",
-                "quantidade": item.quantidade,
-                "preco": float(prod.preco_venda) if prod else 0.0
-            })
+    if forma_pagamento == "pix":
+        if not pedido_web.cpf:
+            raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
             
-        link_pagamento = criar_checkout_asaas(novo_pedido.id, novo_pedido.total_pago, cliente.nome, detalhes_itens, forma_pagamento)
-        if link_pagamento:
-            return {"status": "checkout", "checkout_url": link_pagamento}
+        copia_e_cola = criar_pagamento_pix_pagbank(novo_pedido.id, novo_pedido.total_pago, cliente.nome, pedido_web.cpf)
+        
+        if copia_e_cola:
+            # Mandamos o status de checkout transparente e o código do Pix direto pro site!
+            return {"status": "checkout_transparente", "copia_e_cola": copia_e_cola}
         else:
-            raise HTTPException(status_code=500, detail="Falha ao gerar link de pagamento.")
+            raise HTTPException(status_code=500, detail="Falha ao gerar o código Pix no PagBank.")
     
     return {"status": "entrega", "mensagem": "Pedido confirmado!"}
 
