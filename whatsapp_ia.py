@@ -10,7 +10,7 @@ WA_TOKEN = os.getenv("WA_TOKEN")
 
 def enviar_mensagem_whatsapp(telefone: str, mensagem: str):
     # DEFINIÇÃO FORÇADA PARA EVITAR O CACHE DO DOCKER
-    WA_API_URL = "http://192.168.3.67:8083/message/sendText/Baileys"
+    WA_API_URL = "[https://coziness-unable-letter.ngrok-free.dev/message/sendText/Baileys](https://coziness-unable-letter.ngrok-free.dev/message/sendText/Baileys)"
     WA_TOKEN = "5EE027BB2D93-4E25-907C-D45EC31F03F1"
     
     print(f"\n--- 🚀 TENTANDO ENVIAR PARA: {telefone} EM {WA_API_URL} ---", flush=True)
