@@ -3,7 +3,7 @@ import os
 
 TOKEN_PAGBANK = os.getenv("TOKEN_PAGBANK", "").strip()
 # ATENÇÃO: Se for usar a conta real depois, mude a URL de 'sandbox.api' para apenas 'api'
-URL_PAGBANK = "https://sandbox.api.pagseguro.com/orders" 
+URL_PAGBANK = "https://api.pagseguro.com/orders" 
 
 def criar_pagamento_pix_pagbank(pedido_id, valor_total, nome_cliente, cpf_cliente):
     headers = {
