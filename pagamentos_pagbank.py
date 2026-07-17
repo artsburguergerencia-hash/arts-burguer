@@ -1,48 +1,44 @@
 import requests
 import os
+import uuid # O Mercado Pago exige isso para não cobrar o cliente duas vezes por acidente
 
-TOKEN_PAGBANK = os.getenv("TOKEN_PAGBANK", "").strip()
-# ATENÇÃO: Se for usar a conta real depois, mude a URL de 'sandbox.api' para apenas 'api'
-URL_PAGBANK = "https://api.pagseguro.com/orders" 
+TOKEN_MP = os.getenv("TOKEN_MERCADOPAGO", "").strip()
+URL_MP = "https://api.mercadopago.com/v1/payments"
 
-def criar_pagamento_pix_pagbank(pedido_id, valor_total, nome_cliente, cpf_cliente):
+def criar_pagamento_pix_mp(pedido_id, valor_total, nome_cliente, cpf_cliente):
     headers = {
-        "Authorization": f"Bearer {TOKEN_PAGBANK}",
-        "Content-Type": "application/json"
+        "Authorization": f"Bearer {TOKEN_MP}",
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": str(uuid.uuid4()) # Chave de segurança única para cada tentativa
     }
     
-    # Limpa o CPF (tira pontos e traços se vier do site)
+    # Limpa o CPF (tira pontos e traços)
     cpf_limpo = "".join(filter(str.isdigit, str(cpf_cliente)))
-    valor_em_centavos = int(float(valor_total) * 100)
     
     payload = {
-        "reference_id": f"PEDIDO_{pedido_id}",
-        "customer": {
-            "name": nome_cliente,
-            "email": "cliente@artsburguer.com.br", # O nosso e-mail "fantasma" para não pedir ao cliente!
-            "tax_id": cpf_limpo
-        },
-        "qr_codes": [
-            {
-                "amount": {
-                    "value": valor_em_centavos
-                }
+        "transaction_amount": float(valor_total),
+        "description": f"Pedido #{pedido_id} - Art's Burguer",
+        "payment_method_id": "pix",
+        "payer": {
+            "email": "cliente@artsburguer.com.br", # E-mail fantasma para o cliente não precisar digitar
+            "first_name": nome_cliente,
+            "identification": {
+                "type": "CPF",
+                "number": cpf_limpo
             }
-        ]
+        }
     }
     
     try:
-        response = requests.post(URL_PAGBANK, headers=headers, json=payload)
+        response = requests.post(URL_MP, headers=headers, json=payload)
         if response.status_code in [200, 201]:
             dados = response.json()
-            # Pega a lista de QRs gerados
-            qr_codes = dados.get("qr_codes", [])
-            if qr_codes:
-                # Retorna apenas o texto do "Copia e Cola"
-                return qr_codes[0].get("text")
-                
-        print(f"❌ Erro PagBank: {response.text}")
+            # O Mercado Pago esconde o "Copia e Cola" dentro de várias pastas, aqui nós pescamos ele:
+            copia_e_cola = dados.get("point_of_interaction", {}).get("transaction_data", {}).get("qr_code")
+            return copia_e_cola
+            
+        print(f"❌ Erro Mercado Pago (Status {response.status_code}): {response.text}")
         return None
     except Exception as e:
-        print(f"❌ Erro de Conexão PagBank: {e}")
+        print(f"❌ Erro de Conexão Mercado Pago: {e}")
         return None
