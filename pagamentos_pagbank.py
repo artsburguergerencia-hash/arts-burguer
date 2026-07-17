@@ -4,9 +4,8 @@ import os
 # O .strip() garante que nenhum espaço em branco copiado sem querer quebre a sua chave
 TOKEN_ASAAS = os.getenv("TOKEN_ASAAS", "").strip() 
 
-# IMPORTANTE: Se a sua conta do Asaas for de testes (Sandbox), 
-# troque a URL abaixo para: "https://sandbox.asaas.com/api/v3"
-URL_ASAAS = "https://api.asaas.com/api/v3"
+# URL CORRETA DO ASAAS (sem o /api no meio)
+URL_ASAAS = "https://api.asaas.com/v3"
 
 def criar_checkout_asaas(pedido_id, valor_total, nome_cliente, detalhes_itens=None):
     headers = {
@@ -30,7 +29,7 @@ def criar_checkout_asaas(pedido_id, valor_total, nome_cliente, detalhes_itens=No
             dados = response.json()
             return dados.get("url")
         else:
-            # Agora o log vai nos mostrar o número do erro e o texto exato da recusa!
+            # Imprime o erro exato no log do Render
             print(f"❌ Erro Asaas (Status {response.status_code}): {response.text}")
             return None
     except Exception as e:
