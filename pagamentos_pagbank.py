@@ -26,11 +26,6 @@ def criar_pagamento_pix_mp(pedido_id, valor_total, nome_cliente, cpf_cliente):
         "external_reference": str(pedido_id),
         "payer": {
             "name": nome_cliente,
-            "email": "cliente@artsburguer.com.br" 
-        },
-        "payment_methods": {
-            "excluded_payment_types": [
-                {"id": "ticket"} # Bloqueia Boleto e Lotérica
-            ]
+            "email": "cliente@artsburguer.com.br"
         }
     }
