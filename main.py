@@ -214,17 +214,14 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         if not pedido_web.cpf:
             raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
             
-        # AQUI É A LINHA QUE MUDA!
         copia_e_cola = criar_pagamento_pix_mp(novo_pedido.id, novo_pedido.total_pago, cliente.nome, pedido_web.cpf)
         
         if copia_e_cola:
             return {"status": "checkout_transparente", "copia_e_cola": copia_e_cola}
         else:
             raise HTTPException(status_code=500, detail="Falha ao gerar o código Pix no Mercado Pago.")
-    
-    return {"status": "entrega", "mensagem": "Pedido confirmado!"}
-    
-    # --- NOVA REGRA DO CARTÃO AQUI ---
+            
+    # --- A REGRA DO CARTÃO SOBE E FICA COLADA NO IF ---
     elif forma_pagamento == "credito":
         link_checkout = criar_link_pagamento_mp(novo_pedido.id, novo_pedido.total_pago, cliente.nome)
         
@@ -233,6 +230,9 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
             return {"status": "checkout", "checkout_url": link_checkout}
         else:
             raise HTTPException(status_code=500, detail="Falha ao gerar link de pagamento no cartão.")
+            
+    # --- O RETORNO DE ENTREGA CAI PARA O FINAL DE TUDO ---
+    return {"status": "entrega", "mensagem": "Pedido confirmado!"}
             
 @app.post("/api/webhooks/asaas")
 async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
