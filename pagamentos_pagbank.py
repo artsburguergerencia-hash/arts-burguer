@@ -5,15 +5,13 @@ import uuid # O Mercado Pago exige isso para não cobrar o cliente duas vezes po
 TOKEN_MP = os.getenv("TOKEN_MERCADOPAGO", "").strip()
 URL_MP = "https://api.mercadopago.com/v1/payments"
 
-def criar_pagamento_pix_mp(pedido_id, valor_total, nome_cliente, cpf_cliente):
+def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
     headers = {
         "Authorization": f"Bearer {TOKEN_MP}",
-        "Content-Type": "application/json",
-        "X-Idempotency-Key": str(uuid.uuid4()) # Chave de segurança única para cada tentativa
+        "Content-Type": "application/json"
     }
     
-    # Limpa o CPF (tira pontos e traços)
-    cpf_limpo = "".join(filter(str.isdigit, str(cpf_cliente)))
+    URL_PREF = "https://api.mercadopago.com/checkout/preferences"
     
     payload = {
         "items": [
@@ -25,7 +23,18 @@ def criar_pagamento_pix_mp(pedido_id, valor_total, nome_cliente, cpf_cliente):
         ],
         "external_reference": str(pedido_id),
         "payer": {
-            "name": nome_cliente,
-            "email": "cliente@artsburguer.com.br"
+            "name": nome_cliente
         }
     }
+    
+    try:
+        response = requests.post(URL_PREF, headers=headers, json=payload)
+        if response.status_code in [200, 201]:
+            dados = response.json()
+            return dados.get("init_point") 
+            
+        print(f"❌ Erro MP Cartão: {response.text}")
+        return None
+    except Exception as e:
+        print(f"❌ Erro Conexão MP Cartão: {e}")
+        return None
