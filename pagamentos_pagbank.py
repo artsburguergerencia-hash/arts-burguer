@@ -42,3 +42,39 @@ def criar_pagamento_pix_mp(pedido_id, valor_total, nome_cliente, cpf_cliente):
     except Exception as e:
         print(f"❌ Erro de Conexão Mercado Pago: {e}")
         return None
+
+def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
+    headers = {
+        "Authorization": f"Bearer {TOKEN_MP}",
+        "Content-Type": "application/json"
+    }
+    
+    # Rota de 'Preferences' (Checkout Pro) do Mercado Pago
+    URL_PREF = "https://api.mercadopago.com/checkout/preferences"
+    
+    payload = {
+        "items": [
+            {
+                "title": f"Pedido #{pedido_id} - Art's Burguer",
+                "quantity": 1,
+                "unit_price": float(valor_total)
+            }
+        ],
+        "external_reference": str(pedido_id),
+        "payer": {
+            "name": nome_cliente
+        }
+    }
+    
+    try:
+        response = requests.post(URL_PREF, headers=headers, json=payload)
+        if response.status_code in [200, 201]:
+            dados = response.json()
+            # Retorna a URL do link de pagamento para redirecionar o cliente
+            return dados.get("init_point") 
+            
+        print(f"❌ Erro MP Cartão: {response.text}")
+        return None
+    except Exception as e:
+        print(f"❌ Erro Conexão MP Cartão: {e}")
+        return None
