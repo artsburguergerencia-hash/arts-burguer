@@ -6,8 +6,11 @@ TOKEN_MP = os.getenv("TOKEN_MERCADOPAGO", "").strip()
 URL_MP = "https://api.mercadopago.com/v1/payments"
 
 def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
+    # Puxa o token exato que está salvo lá no Render
+    token = os.getenv("TOKEN_MERCADOPAGO")
+    
     headers = {
-        "Authorization": f"Bearer {TOKEN_MP}",
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
     
