@@ -12,7 +12,7 @@ from sqlalchemy import Column, Integer, String, Boolean, Float
 
 # Importações dos nossos módulos do Art's Burguer
 from integracao_99food import router_99food
-from pagamentos_pagbank import criar_pagamento_pix_mp
+from pagamentos_pagbank import criar_pagamento_pix_mp, criar_link_pagamento_mp
 from database import SessionLocal, ProdutoModel, ProdutoCreateInput, criar_produto_com_ficha, cadastrar_insumo, engine, Base, FuncionarioModel, Cargo, InsumoModel, processar_baixa_estoque
 from vendas_pdv import ClienteModel, registrar_venda_pdv, TipoPedido, PedidoModel
 from financeiro import lancar_conta_pagar, FornecedorModel, ContaPagarModel
@@ -223,7 +223,17 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
             raise HTTPException(status_code=500, detail="Falha ao gerar o código Pix no Mercado Pago.")
     
     return {"status": "entrega", "mensagem": "Pedido confirmado!"}
-
+    
+    # --- NOVA REGRA DO CARTÃO AQUI ---
+    elif forma_pagamento == "credito":
+        link_checkout = criar_link_pagamento_mp(novo_pedido.id, novo_pedido.total_pago, cliente.nome)
+        
+        if link_checkout:
+            # O front-end (cardapio.html) já está programado para receber "checkout_url" e redirecionar a tela
+            return {"status": "checkout", "checkout_url": link_checkout}
+        else:
+            raise HTTPException(status_code=500, detail="Falha ao gerar link de pagamento no cartão.")
+            
 @app.post("/api/webhooks/asaas")
 async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
     """ O Asaas avisa aqui assim que o dinheiro do Pix ou Cartão cai na conta! """
