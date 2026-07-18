@@ -63,18 +63,11 @@ def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
         "external_reference": str(pedido_id),
         "payer": {
             "name": nome_cliente
+        },
+        "payment_methods": {
+            "excluded_payment_types": [
+                {"id": "ticket"},         # Bloqueia Boleto e pagamentos em Lotérica
+                {"id": "bank_transfer"}   # Bloqueia o Pix (pois você já tem o Pix na tela do site)
+            ]
         }
     }
-    
-    try:
-        response = requests.post(URL_PREF, headers=headers, json=payload)
-        if response.status_code in [200, 201]:
-            dados = response.json()
-            # Retorna a URL do link de pagamento para redirecionar o cliente
-            return dados.get("init_point") 
-            
-        print(f"❌ Erro MP Cartão: {response.text}")
-        return None
-    except Exception as e:
-        print(f"❌ Erro Conexão MP Cartão: {e}")
-        return None
