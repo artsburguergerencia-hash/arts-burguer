@@ -16,43 +16,6 @@ def criar_pagamento_pix_mp(pedido_id, valor_total, nome_cliente, cpf_cliente):
     cpf_limpo = "".join(filter(str.isdigit, str(cpf_cliente)))
     
     payload = {
-        "transaction_amount": float(valor_total),
-        "description": f"Pedido #{pedido_id} - Art's Burguer",
-        "payment_method_id": "pix",
-        "payer": {
-            "email": "cliente@artsburguer.com.br", # E-mail fantasma para o cliente não precisar digitar
-            "first_name": nome_cliente,
-            "identification": {
-                "type": "CPF",
-                "number": cpf_limpo
-            }
-        }
-    }
-    
-    try:
-        response = requests.post(URL_MP, headers=headers, json=payload)
-        if response.status_code in [200, 201]:
-            dados = response.json()
-            # O Mercado Pago esconde o "Copia e Cola" dentro de várias pastas, aqui nós pescamos ele:
-            copia_e_cola = dados.get("point_of_interaction", {}).get("transaction_data", {}).get("qr_code")
-            return copia_e_cola
-            
-        print(f"❌ Erro Mercado Pago (Status {response.status_code}): {response.text}")
-        return None
-    except Exception as e:
-        print(f"❌ Erro de Conexão Mercado Pago: {e}")
-        return None
-
-def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
-    headers = {
-        "Authorization": f"Bearer {TOKEN_MP}",
-        "Content-Type": "application/json"
-    }
-    
-    # Rota de 'Preferences' (Checkout Pro) do Mercado Pago
-    URL_PREF = "https://api.mercadopago.com/checkout/preferences"
-    
-    payload = {
         "items": [
             {
                 "title": f"Pedido #{pedido_id} - Art's Burguer",
@@ -62,12 +25,15 @@ def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
         ],
         "external_reference": str(pedido_id),
         "payer": {
-            "name": nome_cliente
+            "name": nome_cliente,
+            "email": "cliente@artsburguer.com.br" # O Mercado Pago exige isso quando bloqueamos o boleto
         },
         "payment_methods": {
             "excluded_payment_types": [
-                {"id": "ticket"},         # Bloqueia Boleto e pagamentos em Lotérica
-                {"id": "bank_transfer"}   # Bloqueia o Pix (pois você já tem o Pix na tela do site)
+                {"id": "ticket"} # Bloqueia Boleto e Lotérica
+            ],
+            "excluded_payment_methods": [
+                {"id": "pix"}    # Bloqueia o Pix (já temos na sua tela)
             ]
         }
     }
