@@ -1,24 +1,38 @@
-import requests
 import os
-import uuid # O Mercado Pago exige isso para não cobrar o cliente duas vezes por acidente
+import requests
 
-TOKEN_MP = os.getenv("TOKEN_MERCADOPAGO", "").strip()
-URL_MP = "https://api.mercadopago.com/v1/payments"
+# === 1. A FUNÇÃO DO PIX (Que desapareceu) ===
+def criar_pagamento_pix_mp(pedido_id, valor, nome, cpf):
+    token = os.getenv("TOKEN_MERCADOPAGO")
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    URL = "https://api.mercadopago.com/v1/payments"
+    
+    payload = {
+        "transaction_amount": float(valor),
+        "description": f"Pedido #{pedido_id} - Art's Burguer",
+        "payment_method_id": "pix",
+        "payer": {
+            "email": "cliente@artsburguer.com.br",
+            "first_name": nome,
+            "identification": {"type": "CPF", "number": cpf}
+        }
+    }
+    try:
+        resp = requests.post(URL, headers=headers, json=payload)
+        if resp.status_code in [200, 201]:
+            return resp.json()["point_of_interaction"]["transaction_data"]["qr_code"]
+        return None
+    except:
+        return None
 
+
+# === 2. A FUNÇÃO DO CARTÃO (Blindada pela Eli) ===
 def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
     token = os.getenv("TOKEN_MERCADOPAGO")
-    
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
-    
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     URL_PREF = "https://api.mercadopago.com/checkout/preferences"
     
-    # Armadura 1: Força exatamente 2 casas decimais (ex: 24.90)
     valor_arredondado = round(float(valor_total), 2)
-    
-    # Armadura 2: Evita nomes vazios que o banco possa rejeitar
     nome_seguro = str(nome_cliente) if nome_cliente else "Cliente Delivery"
     
     payload = {
@@ -26,27 +40,24 @@ def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
             {
                 "title": f"Pedido #{pedido_id} - Art's Burguer",
                 "quantity": 1,
-                "currency_id": "BRL", # Armadura 3: Confirma a moeda
+                "currency_id": "BRL",
                 "unit_price": valor_arredondado
             }
         ],
         "external_reference": str(pedido_id),
         "payer": {
             "name": nome_seguro,
-            "email": "cliente@artsburguer.com.br" # Armadura 4: E-mail garantido
+            "email": "cliente@artsburguer.com.br" 
         }
     }
     
     try:
         response = requests.post(URL_PREF, headers=headers, json=payload)
-        
-        # Isso força o Render a cuspir a resposta no painel na mesma hora!
         print(f"--- STATUS MERCADO PAGO: {response.status_code} ---", flush=True)
         print(f"--- DETALHE: {response.text} ---", flush=True)
         
         if response.status_code in [200, 201]:
-            dados = response.json()
-            return dados.get("init_point") 
+            return response.json().get("init_point") 
             
         return None
     except Exception as e:
