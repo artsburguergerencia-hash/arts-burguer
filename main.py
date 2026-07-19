@@ -9,6 +9,8 @@ from sqlalchemy import desc
 import uvicorn
 from passlib.context import CryptContext
 from sqlalchemy import Column, Integer, String, Boolean, Float
+from pagamentos_pagbank import criar_pagamento_pix_mp, criar_link_pagamento_mp, criar_pagamento_cartao_mp
+from typing import Optional # Caso ainda não tenha importado no topo do arquivo
 
 # Importações dos nossos módulos do Art's Burguer
 from integracao_99food import router_99food
@@ -71,6 +73,10 @@ class CheckoutPedido(BaseModel):
     itens: List[ItemCarrinho]
     endereco_cliente: str = ""
     cpf: str = "" # NOVO CAMPO AQUI!
+    # Adicione estas 3 linhas para o cartão:
+    token_cartao: Optional[str] = None
+    payment_method_id: Optional[str] = None
+    parcelas: Optional[int] = 1
 
 class NovoInsumo(BaseModel):
     nome: str
