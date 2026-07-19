@@ -227,15 +227,28 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         else:
             raise HTTPException(status_code=500, detail="Falha ao gerar o código Pix no Mercado Pago.")
             
-    # --- A REGRA DO CARTÃO SOBE E FICA COLADA NO IF ---
+    # --- A NOVA REGRA DO CARTÃO (CHECKOUT TRANSPARENTE) ---
     elif forma_pagamento == "credito":
-        link_checkout = criar_link_pagamento_mp(novo_pedido.id, novo_pedido.total_pago, cliente.nome)
+        if not pedido_web.token_cartao or not pedido_web.cpf:
+            raise HTTPException(status_code=400, detail="Faltam dados do cartão ou CPF para processar o pagamento.")
+            
+        resposta_pagamento = criar_pagamento_cartao_mp(
+            pedido_id=novo_pedido.id, 
+            valor_total=novo_pedido.total_pago, 
+            token_cartao=pedido_web.token_cartao, 
+            email_cliente="cliente@artsburguer.com.br", 
+            payment_method_id=pedido_web.payment_method_id, 
+            parcelas=pedido_web.parcelas, 
+            cpf_cliente=pedido_web.cpf
+        )
         
-        if link_checkout:
-            # O front-end (cardapio.html) já está programado para receber "checkout_url" e redirecionar a tela
-            return {"status": "checkout", "checkout_url": link_checkout}
+        # Verifica se o banco aprovou ou colocou em análise (status approved ou in_process)
+        if resposta_pagamento and resposta_pagamento.get("status") in ["approved", "in_process"]:
+            return {"status": "sucesso", "mensagem": "Pagamento aprovado!"}
         else:
-            raise HTTPException(status_code=500, detail="Falha ao gerar link de pagamento no cartão.")
+            # O banco recusou o cartão ou deu erro de conexão
+            detalhe_erro = resposta_pagamento.get("status_detail", "Pagamento recusado pelo banco.") if resposta_pagamento else "Falha ao comunicar com o Mercado Pago."
+            raise HTTPException(status_code=400, detail=f"Atenção: {detalhe_erro}")
             
     # --- O RETORNO DE ENTREGA CAI PARA O FINAL DE TUDO ---
     return {"status": "entrega", "mensagem": "Pedido confirmado!"}
