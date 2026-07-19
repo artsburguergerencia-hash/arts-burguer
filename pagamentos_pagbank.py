@@ -23,7 +23,13 @@ def criar_pagamento_pix_mp(pedido_id, valor, nome, cpf):
         },
         "payment_methods": {
             "excluded_payment_types": [
-                {"id": "ticket"} # A regra que bloqueia Boleto e Lotérica
+                {"id": "ticket"},          # Bloqueia boletos em geral
+                {"id": "bank_transfer"}    # Bloqueia transferências em geral
+            ],
+            "excluded_payment_methods": [
+                {"id": "pix"},             # Bloqueia o Pix especificamente
+                {"id": "bolbradesco"},     # Bloqueia o boleto Bradesco
+                {"id": "pec"}              # Bloqueia pagamento em Lotérica
             ]
         }
     }
