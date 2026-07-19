@@ -503,31 +503,124 @@
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.add('hidden'); }
 
        // ==========================
-        // FINALIZAR PEDIDO (Visitante x Logado)
+        // CONTROLE DA TELA DO CARTÃO
+        // ==========================
+        function toggleAreaCartao() {
+            const forma = document.getElementById('forma-pag-online').value;
+            const area = document.getElementById('area-cartao');
+            forma === 'credito' ? area.classList.remove('hidden') : area.classList.add('hidden');
+        }
+
+        // ==========================
+        // FINALIZAR PEDIDO (TURBINADO)
         // ==========================
         async function finalizarPedidoOnline() {
             let nome, tel, end, cliente_id, cpf;
 
-            // Define quem está comprando
             if (clienteLogado) {
-                nome = clienteLogado.nome;
-                tel = clienteLogado.telefone;
+                nome = clienteLogado.nome; tel = clienteLogado.telefone;
                 end = `${clienteLogado.logradouro}, ${clienteLogado.numero} - ${clienteLogado.bairro}`;
-                cliente_id = clienteLogado.id;
-                // Pega o CPF do cliente logado se existir, se não fica vazio
-                cpf = clienteLogado.cpf || ""; 
+                cliente_id = clienteLogado.id; cpf = clienteLogado.cpf || ""; 
             } else {
                 nome = document.getElementById('guest-nome').value.trim();
                 tel = document.getElementById('guest-tel').value.trim();
                 end = document.getElementById('guest-end').value.trim();
-                cpf = document.getElementById('guest-cpf').value.trim(); // CAPTURA O CPF NOVO
+                cpf = document.getElementById('guest-cpf').value.trim();
                 cliente_id = null;
 
                 if (!nome || !tel || !end) {
-                    alert("⚠️ Preencha o seu Nome, WhatsApp e Endereço para entregarmos o pedido.");
-                    return;
+                    alert("⚠️ Preencha o seu Nome, WhatsApp e Endereço."); return;
                 }
             }
+
+            const tipoPgto = document.getElementById('forma-pag-online').value;
+            
+            if ((tipoPgto === 'pix' || tipoPgto === 'credito') && !cpf) {
+                alert("⚠️ O CPF é obrigatório para gerar a cobrança online de forma segura.");
+                if(!clienteLogado) document.getElementById('guest-cpf').focus();
+                return;
+            }
+
+            const payload = {
+                cliente_id: cliente_id, nome_cliente: nome, telefone_cliente: tel, endereco_cliente: end, cpf: cpf,
+                itens: carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao }))
+            };
+
+            const btn = document.getElementById('btn-finalizar-online');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-2xl"></i> Processando Pagamento...';
+            btn.disabled = true;
+
+            // === A MÁGICA DA BLINDAGEM DO CARTÃO AQUI ===
+            if (tipoPgto === 'credito') {
+                const numCartao = document.getElementById('cc-num').value.replace(/\D/g, '');
+                const nomeCartao = document.getElementById('cc-nome').value;
+                const valCartao = document.getElementById('cc-val').value;
+                const cvvCartao = document.getElementById('cc-cvv').value;
+
+                if(!numCartao || !nomeCartao || !valCartao || !cvvCartao) {
+                    alert("⚠️ Preencha todos os dados do cartão de crédito!");
+                    btn.disabled = false; btn.innerHTML = txtOriginal; return;
+                }
+
+                try {
+                    // ATENÇÃO: COLOQUE A SUA PUBLIC KEY DO MERCADO PAGO AQUI!
+                    const mp = new MercadoPago('APP_USR-xxxx-xxxx-xxxx-xxxx'); 
+                    
+                    // 1. Descobre a bandeira do cartão (Visa, Master, etc)
+                    const metodos = await mp.getPaymentMethods({ bin: numCartao.substring(0, 6) });
+                    if(metodos.results.length === 0) throw new Error();
+                    
+                    // 2. Transforma o cartão em um Token seguro
+                    const tokenRes = await mp.createCardToken({
+                        cardNumber: numCartao,
+                        cardholderName: nomeCartao,
+                        cardExpirationMonth: valCartao.split('/')[0],
+                        cardExpirationYear: valCartao.split('/')[1].length === 2 ? "20" + valCartao.split('/')[1] : valCartao.split('/')[1],
+                        securityCode: cvvCartao,
+                        identificationType: "CPF",
+                        identificationNumber: cpf.replace(/\D/g, '')
+                    });
+
+                    if(tokenRes.error) throw new Error();
+
+                    // 3. Embala o Token no nosso pacote para o Python
+                    payload.token_cartao = tokenRes.id;
+                    payload.payment_method_id = metodos.results[0].id;
+                    payload.parcelas = document.getElementById('cc-parcelas').value;
+
+                } catch (e) {
+                    alert("⚠️ Erro: Dados do cartão incorretos ou banco recusou a validação inicial.");
+                    btn.disabled = false; btn.innerHTML = txtOriginal; return;
+                }
+            }
+            // ============================================
+
+            // Enviando o pacote pronto para o Backend
+            try {
+                const res = await fetch(`/api/pedidos/online?forma_pagamento=${tipoPgto}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    if (data.status === "checkout_transparente") {
+                        prompt("✅ SEU PIX FOI GERADO COM SUCESSO!\n\nCopie o código abaixo:", data.copia_e_cola);
+                    } else if (tipoPgto === 'credito') {
+                        alert("✅ PAGAMENTO APROVADO!\nSeu hambúrguer já está sendo preparado.");
+                    } else {
+                        alert("✅ Pedido enviado para a cozinha!");
+                    }
+                    window.location.reload();
+                } else { 
+                    alert("Erro: " + (data.detail || "Pagamento recusado pelo banco.")); 
+                    btn.disabled = false; btn.innerHTML = txtOriginal;
+                }
+            } catch(e) { 
+                alert("Falha na conexão."); 
+                btn.disabled = false; btn.innerHTML = txtOriginal;
+            }
+        }
 
             const tipoPgto = document.getElementById('forma-pag-online').value;
             
