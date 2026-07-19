@@ -23,7 +23,7 @@ def criar_pagamento_pix_mp(pedido_id, valor, nome, cpf):
         },
         "payment_methods": {
             "excluded_payment_types": [
-                {"id": "ticket"} # Essa é a regra mágica que mata o boleto!
+                {"id": "ticket"} # A regra que bloqueia Boleto e Lotérica
             ]
         }
     }
