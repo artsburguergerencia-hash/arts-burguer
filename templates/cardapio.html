@@ -621,59 +621,6 @@
                 btn.disabled = false; btn.innerHTML = txtOriginal;
             }
         }
-
-            const tipoPgto = document.getElementById('forma-pag-online').value;
-            
-            // Impede de tentar gerar Pix sem CPF
-            if (tipoPgto === 'pix' && !cpf) {
-                alert("⚠️ O CPF é obrigatório para gerar o pagamento via Pix de forma segura.");
-                if(!clienteLogado) document.getElementById('guest-cpf').focus();
-                return;
-            }
-
-            const payload = {
-                cliente_id: cliente_id,
-                nome_cliente: nome,
-                telefone_cliente: tel,
-                endereco_cliente: end,
-                cpf: cpf, // ENVIA O CPF NO PACOTE
-                itens: carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao }))
-            };
-
-            const btn = document.getElementById('btn-finalizar-online');
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-2xl"></i> Processando...';
-            btn.disabled = true;
-
-            try {
-                const res = await fetch(`/api/pedidos/online?forma_pagamento=${tipoPgto}`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                
-                if (res.ok) {
-                    if (data.status === "checkout_transparente") {
-                        // AQUI ACONTECE A MÁGICA DO PIX NA TELA!
-                        prompt("✅ SEU PIX FOI GERADO COM SUCESSO!\n\nCopie o código abaixo e pague no aplicativo do seu banco:", data.copia_e_cola);
-                        window.location.reload();
-                        return;
-                    } else if (data.status === "checkout") {
-                        window.location.href = data.checkout_url;
-                        return;
-                    } else {
-                        alert("✅ Pedido enviado para a cozinha!\nAcompanhe o status pelo seu WhatsApp.");
-                        window.location.reload();
-                    }
-                } else { 
-                    alert("Erro: " + (data.detail || "Falha ao enviar pedido.")); 
-                    btn.disabled = false;
-                    btn.innerHTML = 'Confirmar Pedido <span class="mx-2">•</span> <span id="carrinho-total-final">R$ ' + carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0).toFixed(2).replace('.', ',') + '</span>';
-                }
-            } catch(e) { 
-                alert("Falha na conexão."); 
-                btn.disabled = false;
-                btn.innerHTML = 'Tentar Novamente';
-            }
-        }
     </script>
 </body>
 </html>
