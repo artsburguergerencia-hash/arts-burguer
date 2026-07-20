@@ -565,7 +565,7 @@
 
                 try {
                     // ATENÇÃO: COLOQUE A SUA PUBLIC KEY DO MERCADO PAGO AQUI!
-                    const mp = new MercadoPago('APP_USR-xxxx-xxxx-xxxx-xxxx'); 
+                    const mp = new MercadoPago('APP_USR-848cf42a-5349-4310-9ba5-b8c42f1ee022'); 
                     
                     // 1. Descobre a bandeira do cartão (Visa, Master, etc)
                     const metodos = await mp.getPaymentMethods({ bin: numCartao.substring(0, 6) });
