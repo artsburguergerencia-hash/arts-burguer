@@ -59,8 +59,8 @@
                 <i class="ph ph-package text-xl mr-3"></i> Entrada de Estoque
             </button>
             <button onclick="abrirAba('aba-fornecedores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
-    <i class="ph ph-truck text-xl mr-3"></i> Fornecedores
-</button>
+                <i class="ph ph-truck text-xl mr-3"></i> Fornecedores
+            </button>
             <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
                 <i class="ph ph-invoice text-xl mr-3"></i> Contas a Pagar
             </button>
@@ -98,6 +98,7 @@
 
         <div class="p-8 max-w-5xl mx-auto pb-24">
             
+            <!-- RELATÓRIOS -->
             <div id="aba-relatorios" class="painel active">
                 <div class="mb-8 border-b border-slate-200 pb-5 flex justify-between items-start">
                     <div>
@@ -152,6 +153,7 @@
                 </div>
             </div>
 
+            <!-- CARDÁPIO -->
             <div id="aba-cardapio" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
                     <div class="mb-8 border-b border-slate-100 pb-5">
@@ -169,28 +171,6 @@
                                 <input type="text" id="prod-img" placeholder="https://link-da-foto.com/lanche.jpg" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50">
                             </div>
                         </div>
-
-            <!-- ABA FORNECEDORES -->
-            <div id="aba-fornecedores" class="painel hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="ph ph-truck text-brand-500 mr-2"></i> Cadastro de Fornecedor</h3>
-                    <form id="form-fornecedor" onsubmit="cadastrarFornecedor(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="forn-nome" placeholder="Nome Fantasia / Empresa" required class="px-4 py-3 rounded-lg border border-slate-200">
-                        <input type="text" id="forn-cnpj" placeholder="CNPJ (Opcional)" class="px-4 py-3 rounded-lg border border-slate-200">
-                        <input type="text" id="forn-cat" placeholder="Categoria (Ex: Carnes, Embalagens)" class="px-4 py-3 rounded-lg border border-slate-200">
-                        <input type="text" id="forn-contato" placeholder="Telefone / Contato" class="px-4 py-3 rounded-lg border border-slate-200">
-                        <button type="submit" class="md:col-span-2 bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 rounded-lg">Salvar Fornecedor</button>
-                    </form>
-                </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="p-4 bg-slate-50 font-bold border-b border-slate-200">Fornecedores Cadastrados</div>
-                    <table class="w-full text-left">
-                        <thead><tr class="bg-white text-slate-400 text-xs uppercase border-b"><th class="py-3 px-6">Fornecedor</th><th class="py-3 px-6">Categoria</th><th class="py-3 px-6">Contato</th><th class="py-3 px-6">CNPJ</th></tr></thead>
-                        <tbody id="lista-fornecedores"></tbody>
-                    </table>
-                </div>
-            </div>
-                        
 
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Descrição do Lanche (Aparece no Cardápio)</label>
@@ -273,6 +253,7 @@
                 </div>
             </div>
 
+            <!-- ESTOQUE -->
             <div id="aba-estoque" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
                     <div class="mb-8 border-b border-slate-100 pb-5">
@@ -339,29 +320,54 @@
                 </div>
             </div>
 
+            <!-- FORNECEDORES -->
+            <div id="aba-fornecedores" class="painel hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="ph ph-truck text-brand-500 mr-2"></i> Cadastro de Fornecedor</h3>
+                    <form id="form-fornecedor" onsubmit="cadastrarFornecedor(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="forn-nome" placeholder="Nome Fantasia / Empresa" required class="px-4 py-3 rounded-lg border border-slate-200">
+                        <input type="text" id="forn-cnpj" placeholder="CNPJ (Opcional)" class="px-4 py-3 rounded-lg border border-slate-200">
+                        <input type="text" id="forn-cat" placeholder="Categoria (Ex: Carnes, Embalagens)" class="px-4 py-3 rounded-lg border border-slate-200">
+                        <input type="text" id="forn-contato" placeholder="Telefone / Contato" class="px-4 py-3 rounded-lg border border-slate-200">
+                        <button type="submit" class="md:col-span-2 bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 rounded-lg">Salvar Fornecedor</button>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-4 bg-slate-50 font-bold border-b border-slate-200">Fornecedores Cadastrados</div>
+                    <table class="w-full text-left">
+                        <thead><tr class="bg-white text-slate-400 text-xs uppercase border-b"><th class="py-3 px-6">Fornecedor</th><th class="py-3 px-6">Categoria</th><th class="py-3 px-6">Contato</th><th class="py-3 px-6">CNPJ</th></tr></thead>
+                        <tbody id="lista-fornecedores"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- FINANCEIRO -->
             <div id="aba-financeiro" class="painel hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg"><p class="text-slate-400 text-sm font-medium">Total Empresa (Hamburgueria)</p><h3 class="text-3xl font-bold mt-1" id="fin-total-empresa">R$ 0,00</h3></div>
                     <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"><p class="text-slate-500 text-sm font-medium">Total Casa (Pessoal)</p><h3 class="text-3xl font-bold mt-1 text-slate-800" id="fin-total-casa">R$ 0,00</h3></div>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8">
-                    <h3 class="text-lg font-bold text-slate-800 mb-6">Nova Conta a Pagar</h3>
-                    <form id="form-financeiro" onsubmit="lancarConta(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <input type="text" id="fin-desc" placeholder="Descrição" required class="md:col-span-2 px-4 py-3 rounded-lg border border-slate-200">
-                        <input type="number" id="fin-valor" step="0.01" placeholder="R$ 0,00" required class="px-4 py-3 rounded-lg border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6">Nova Conta a Pagar (Vinculada a Fornecedor)</h3>
+                    <form id="form-financeiro" onsubmit="lancarConta(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="text" id="fin-desc" placeholder="Descrição do Boleto / Despesa" required class="md:col-span-2 px-4 py-3 rounded-lg border border-slate-200">
+                        <select id="fin-fornecedor" class="px-4 py-3 rounded-lg border border-slate-200"><option value="">Selecione o Fornecedor...</option></select>
+                        <input type="number" id="fin-valor" step="0.01" placeholder="Valor R$" required class="px-4 py-3 rounded-lg border border-slate-200">
                         <select id="fin-tipo" class="px-4 py-3 rounded-lg border border-slate-200"><option value="Empresa">Empresa</option><option value="Casa">Casa</option></select>
                         <input type="date" id="fin-venc" required class="px-4 py-3 rounded-lg border border-slate-200">
-                        <button type="submit" class="md:col-span-4 bg-brand-500 text-white py-3 rounded-lg font-semibold hover:bg-brand-600 transition-all">Registrar Boleto</button>
+                        <button type="submit" class="md:col-span-3 bg-brand-500 text-white py-3 rounded-lg font-semibold hover:bg-brand-600">Registrar Conta a Pagar</button>
                     </form>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-4 bg-slate-50 font-bold border-b border-slate-200">Contas Lançadas (Baixe o pagamento ao quitar)</div>
                     <table class="w-full text-left">
-                        <thead><tr class="bg-slate-50 text-slate-400 text-xs uppercase"><th class="py-4 px-6">Descrição</th><th class="py-4 px-6">Vencimento</th><th class="py-4 px-6">Categoria</th><th class="py-4 px-6">Valor</th></tr></thead>
+                        <thead><tr class="bg-slate-50 text-slate-400 text-xs uppercase"><th class="py-4 px-6">Descrição</th><th class="py-4 px-6">Vencimento</th><th class="py-4 px-6">Tipo</th><th class="py-4 px-6">Valor</th><th class="py-4 px-6 text-center">Ação / Baixa</th></tr></thead>
                         <tbody id="lista-financeiro"></tbody>
                     </table>
                 </div>
             </div>
             
+            <!-- COLABORADORES -->
             <div id="aba-colaboradores" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
                     <h3 class="text-lg font-bold">Equipe</h3>
@@ -369,6 +375,7 @@
                 </div>
             </div>
             
+            <!-- CONFIGURAÇÕES -->
             <div id="aba-configuracoes" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-4xl">
                     <div class="mb-8 border-b border-slate-100 pb-5 flex items-center">
@@ -420,6 +427,7 @@
                 </div>
             </div>
 
+            <!-- CLIENTES -->
             <div id="aba-clientes" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
                     <div class="mb-8 border-b border-slate-100 pb-5 flex items-center justify-between">
@@ -522,7 +530,7 @@
             carregarInsumosParaSelect();
         });
 
-        // NAVEGAÇÃO ENTRE ABAS
+        // NAVEGAÇÃO ENTRE ABAS COM A VÍRGULA CORRIGIDA
         const titulos = { 
             'aba-relatorios': 'Relatórios de Lucratividade', 
             'aba-cardapio': 'Gestão de Cardápio', 
@@ -530,7 +538,7 @@
             'aba-financeiro': 'Contas a Pagar', 
             'aba-colaboradores': 'Gestão de Colaboradores',
             'aba-configuracoes': 'Configurações da Loja',
-            'aba-clientes': 'Clientes & Fidelidade'
+            'aba-clientes': 'Clientes & Fidelidade',
             'aba-fornecedores': 'Gestão de Fornecedores'
         };
 
@@ -544,12 +552,12 @@
             if (titulos[idAba]) { document.getElementById('titulo-painel').innerText = titulos[idAba]; }
             
             if(idAba === 'aba-relatorios') { carregarRelatorios(); }
-            if(idAba === 'aba-financeiro') { carregarFinanceiro(); }
+            if(idAba === 'aba-financeiro') { carregarFornecedoresParaSelect(); carregarFinanceiro(); }
             if(idAba === 'aba-cardapio') { carregarInsumosParaSelect(); carregarCardapio(); }
             if(idAba === 'aba-estoque') { carregarEstoque(); }
             if(idAba === 'aba-configuracoes') { carregarConfiguracoes(); }
             if(idAba === 'aba-clientes') { carregarClientesPainel(); }
-            if(idAba === 'aba-fornecedores') carregarFornecedores();
+            if(idAba === 'aba-fornecedores') { carregarFornecedores(); }
         }
 
         // ==========================
@@ -700,8 +708,20 @@
         }
 
         // ==========================
-        // DEMAIS FUNÇÕES DO SISTEMA
+        // DEMAIS FUNÇÕES DO SISTEMA E FORNECEDORES
         // ==========================
+        async function carregarFornecedoresParaSelect() {
+            try {
+                const res = await fetch('/api/gestao/fornecedores');
+                const dados = await res.json();
+                const select = document.getElementById('fin-fornecedor');
+                if(select) {
+                    select.innerHTML = '<option value="">-- Sem vínculo com Fornecedor --</option>' + 
+                        dados.map(f => `<option value="${f.id}">${f.nome_fantasia} (${f.categoria})</option>`).join('');
+                }
+            } catch(e) {}
+        }
+
         async function carregarRelatorios() {
             try {
                 const resFin = await fetch('/api/gestao/financeiro/lucratividade');
@@ -759,19 +779,38 @@
             document.getElementById('fin-total-empresa').innerText = `R$ ${data.total_empresa.toFixed(2)}`;
             document.getElementById('fin-total-casa').innerText = `R$ ${data.total_casa.toFixed(2)}`;
             const tbody = document.getElementById('lista-financeiro');
-            tbody.innerHTML = data.contas.map(c => `
-                <tr class="border-b border-slate-50">
+            
+            if(!data.contas || data.contas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-6 px-6 text-center text-slate-400">Nenhuma conta registrada.</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = data.contas.map(c => {
+                const badgeStatus = c.status === 'PAGO' 
+                    ? '<span class="text-green-600 font-bold text-[10px] uppercase bg-green-50 px-2 py-1 rounded border border-green-200">Quitado</span>' 
+                    : `<button onclick="baixarConta(${c.id})" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all shadow-sm">Pagar Conta</button>`;
+
+                return `
+                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                     <td class="py-4 px-6 font-medium">${c.descricao}</td>
-                    <td class="py-4 px-6">${c.vencimento}</td>
-                    <td class="py-4 px-6"><span class="px-2 py-1 rounded ${c.tipo === 'Empresa' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'} text-xs">${c.tipo}</span></td>
+                    <td class="py-4 px-6">${c.vencimento.split('-').reverse().join('/')}</td>
+                    <td class="py-4 px-6"><span class="px-2 py-1 rounded ${c.tipo === 'Empresa' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'} text-xs font-bold">${c.tipo}</span></td>
                     <td class="py-4 px-6 font-bold text-slate-800">R$ ${c.valor.toFixed(2)}</td>
+                    <td class="py-4 px-6 text-center">${badgeStatus}</td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         async function lancarConta(e) {
             e.preventDefault();
-            const payload = { descricao: document.getElementById('fin-desc').value, valor: parseFloat(document.getElementById('fin-valor').value), vencimento: document.getElementById('fin-venc').value, tipo_despesa: document.getElementById('fin-tipo').value };
+            const fornecedorVal = document.getElementById('fin-fornecedor').value;
+            const payload = { 
+                descricao: document.getElementById('fin-desc').value, 
+                valor: parseFloat(document.getElementById('fin-valor').value), 
+                vencimento: document.getElementById('fin-venc').value, 
+                tipo_despesa: document.getElementById('fin-tipo').value,
+                fornecedor_id: fornecedorVal ? parseInt(fornecedorVal) : null
+            };
             const res = await fetch('/api/gestao/conta', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
             if(res.ok) { alert("Conta registrada com sucesso!"); document.getElementById('form-financeiro').reset(); carregarFinanceiro(); }
         }
