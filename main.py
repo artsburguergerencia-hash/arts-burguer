@@ -110,6 +110,7 @@ class NovaConta(BaseModel):
     valor: float
     vencimento: str 
     tipo_despesa: str = "Empresa"
+    fornecedor_id: Optional[int] = None
 
 class DespachoMotoboy(BaseModel):
     nome_motoboy: str    
@@ -492,14 +493,36 @@ def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
 @app.post("/api/gestao/conta")
 def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
     try:
-        fornecedor = db.query(FornecedorModel).first()
-        if not fornecedor:
-            fornecedor = FornecedorModel(nome_fantasia="Diversos", categoria="Geral")
-            db.add(fornecedor); db.commit(); db.refresh(fornecedor)
+        fornecedor_id = conta.fornecedor_id
+        if not fornecedor_id:
+            fornecedor = db.query(FornecedorModel).first()
+            if not fornecedor:
+                fornecedor = FornecedorModel(nome_fantasia="Diversos", categoria="Geral")
+                db.add(fornecedor); db.commit(); db.refresh(fornecedor)
+            fornecedor_id = fornecedor.id
+            
         data_venc = datetime.strptime(conta.vencimento, "%Y-%m-%d").date()
-        lancar_conta_pagar(db=db, fornecedor_id=fornecedor.id, descricao=conta.descricao, valor=conta.valor, vencimento=data_venc, tipo_despesa=conta.tipo_despesa)
+        lancar_conta_pagar(
+            db=db, 
+            fornecedor_id=fornecedor_id, 
+            descricao=conta.descricao, 
+            valor=conta.valor, 
+            vencimento=data_venc, 
+            tipo_despesa=conta.tipo_despesa
+        )
         return {"status": "sucesso"}
-    except Exception as e: db.rollback(); raise HTTPException(status_code=500)
+    except Exception as e: 
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/gestao/contas/{conta_id}/pagar")
+def pagar_conta(conta_id: int, db: Session = Depends(get_db)):
+    conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
+    if not conta:
+        raise HTTPException(status_code=404, detail="Conta não encontrada")
+    conta.status = "PAGO"
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Conta paga e baixada do caixa com sucesso!"}
 
 @app.get("/api/gestao/financeiro/resumo")
 def resumo_financeiro(db: Session = Depends(get_db)):
