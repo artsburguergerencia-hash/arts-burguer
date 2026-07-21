@@ -201,7 +201,45 @@
             </div>
         </div>
     </div>
-
+                <!-- MODAL DO PERFIL DO CLIENTE (ÁREA VIP) -->
+    <div id="modal-perfil" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl relative modal-up flex flex-col max-h-[85vh]">
+            <div class="bg-slate-900 p-6 text-white shrink-0">
+                <button onclick="fecharModalPerfil()" class="absolute top-4 right-4 text-white/50 hover:text-white"><i class="ph ph-x text-xl"></i></button>
+                <div class="flex items-center mb-4">
+                    <img id="vip-foto" src="" class="w-14 h-14 rounded-full border-2 border-brand-500 mr-4">
+                    <div>
+                        <h2 id="vip-nome" class="text-xl font-black tracking-tight">Nome</h2>
+                        <p id="vip-tel" class="text-sm text-slate-400">Telefone</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white/10 rounded-xl p-3 border border-white/10">
+                        <p class="text-xs text-amber-400 font-bold uppercase mb-1"><i class="ph-fill ph-star"></i> Pontos</p>
+                        <p id="vip-pontos" class="text-2xl font-black">0</p>
+                    </div>
+                    <div class="bg-white/10 rounded-xl p-3 border border-white/10">
+                        <p class="text-xs text-green-400 font-bold uppercase mb-1"><i class="ph-fill ph-money"></i> Cashback</p>
+                        <p id="vip-cashback" class="text-2xl font-black">R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-5 flex-1 overflow-y-auto bg-slate-50 no-scrollbar">
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4"><i class="ph-fill ph-clock-counter-clockwise mr-1"></i> Últimos Pedidos</h3>
+                <div id="lista-historico" class="space-y-3">
+                    <!-- O histórico gerado pelo Javascript entra aqui -->
+                </div>
+            </div>
+            
+            <div class="p-4 bg-white border-t border-slate-100 shrink-0">
+                <button onclick="fazerLogout()" class="w-full py-3 text-red-500 font-bold bg-red-50 rounded-xl hover:bg-red-100 transition-colors active:scale-95">
+                    <i class="ph ph-sign-out mr-2"></i> Sair da minha conta
+                </button>
+            </div>
+        </div>
+    </div>
+        
     <script>
         let produtosServer = [];
         let carrinho = [];
