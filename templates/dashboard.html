@@ -1,132 +1,271 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script>
-    const cargo = localStorage.getItem('funcionario_cargo');
-    if (!cargo || (cargo !== '1' && cargo !== '2')) {
-        alert("⛔ Acesso Restrito: Apenas Caixas e Administradores.");
-        window.location.replace('/login');
-    }
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Gerencial - Art's Burguer</title>
-    <style>
-        :root { --cor-escura: #2f3542; --cor-destaque: #ff4757; --fundo: #f1f2f6; --card: #ffffff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--fundo); color: var(--cor-escura); margin: 0; padding: 0; }
-        header { background-color: var(--cor-escura); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        h1 { margin: 0; font-size: 1.5rem; }
-        .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
-        
-        /* Estilo dos Cards de Resumo */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .kpi-card { background-color: var(--card); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid var(--cor-destaque); }
-        .kpi-card h3 { margin: 0 0 0.5rem 0; font-size: 1rem; color: #747d8c; text-transform: uppercase; }
-        .kpi-card .valor { font-size: 2rem; font-weight: bold; color: var(--cor-escura); }
-        
-        /* Estilo da Tabela de CMV */
-        .tabela-container { background-color: var(--card); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #dfe4ea; }
-        th { background-color: #f8f9fa; color: #57606f; font-weight: 600; }
-        .lucro-bom { color: #2ed573; font-weight: bold; }
-        .lucro-alerta { color: #ffa502; font-weight: bold; }
-    </style>
+    <title>Painel do Chefe - Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
+    </script>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans h-screen flex overflow-hidden">
 
-<header>
-    <h1>📊 Art's Burguer - Centro de Comando</h1>
-    <span>Visão Geral do Negócio</span>
-</header>
-
-<div class="container">
-    <div class="kpi-grid">
-        <div class="kpi-card">
-            <h3>Faturamento Bruto</h3>
-            <div class="valor" id="kpi-faturamento">R$ 0,00</div>
+    <!-- MENU LATERAL (SIDEBAR) -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 shadow-2xl z-20">
+        <div class="p-6 border-b border-slate-800 flex items-center justify-center">
+            <h1 class="text-2xl font-black text-white tracking-tight flex items-center">
+                <i class="ph-fill ph-hamburger text-brand-500 mr-2"></i> Art's Admin
+            </h1>
         </div>
-        <div class="kpi-card" style="border-left-color: #2ed573;">
-            <h3>Ticket Médio</h3>
-            <div class="valor" id="kpi-ticket">R$ 0,00</div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="mudarAba('visao-geral')" id="btn-visao-geral" class="w-full flex items-center px-4 py-3 bg-brand-500 text-white rounded-xl font-bold transition-colors">
+                <i class="ph ph-chart-pie-slice text-xl mr-3"></i> Visão Geral
+            </button>
+            <button onclick="mudarAba('cardapio-admin')" id="btn-cardapio-admin" class="w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-bold transition-colors">
+                <i class="ph ph-book-open text-xl mr-3"></i> Cardápio
+            </button>
+            <button onclick="mudarAba('financeiro')" id="btn-financeiro" class="w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-bold transition-colors">
+                <i class="ph ph-currency-dollar text-xl mr-3"></i> Financeiro
+            </button>
+        </nav>
+        <div class="p-4 border-t border-slate-800 text-xs text-center text-slate-500 font-medium">
+            Art's Burguer OS v1.0<br>Painel Administrativo
         </div>
-        <div class="kpi-card" style="border-left-color: #3742fa;">
-            <h3>Total de Pedidos</h3>
-            <div class="valor" id="kpi-pedidos">0</div>
-        </div>
-    </div>
+    </aside>
 
-    <div class="tabela-container">
-        <h2>Rentabilidade por Produto (Ficha Técnica)</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Lanche</th>
-                    <th>Preço de Venda</th>
-                    <th>Custo de Produção</th>
-                    <th>Lucro Líquido</th>
-                    <th>Margem de Lucro (%)</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-cmv-body">
-                <tr><td colspan="5">Carregando inteligência de dados...</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 shrink-0">
+            <h2 id="titulo-pagina" class="text-xl font-black text-slate-800">Visão Geral</h2>
+            <div class="flex items-center space-x-4">
+                <a href="/" target="_blank" class="text-sm font-bold text-brand-500 hover:text-brand-600 transition-colors flex items-center">
+                    <i class="ph ph-storefront mr-1 text-lg"></i> Ver Loja
+                </a>
+                <div class="h-8 w-8 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600">
+                    <i class="ph ph-user"></i>
+                </div>
+            </div>
+        </header>
 
-<script>
-    // Função para formatar moeda
-    const formatarMoeda = (valor) => 'R$ ' + valor.toFixed(2).replace('.', ',');
-
-    // 1. Busca as métricas gerais de vendas
-    async function carregarMetricas() {
-        try {
-            const response = await fetch('/api/dashboard/metricas');
-            const dados = await response.json();
+        <div class="flex-1 overflow-y-auto p-8 no-scrollbar">
             
-            document.getElementById('kpi-faturamento').innerText = formatarMoeda(dados.faturamento_bruto_reais);
-            document.getElementById('kpi-ticket').innerText = formatarMoeda(dados.ticket_medio_reais);
-            document.getElementById('kpi-pedidos').innerText = dados.total_pedidos_realizados;
-        } catch (error) {
-            console.error("Erro ao carregar métricas:", error);
-        }
-    }
+            <!-- ABA 1: VISÃO GERAL -->
+            <div id="aba-visao-geral" class="space-y-6 block">
+                <!-- CARDS DE MÉTRICAS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-blue-50 text-blue-500 rounded-xl"><i class="ph-fill ph-trend-up text-2xl"></i></div>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500 uppercase">Faturamento (Bruto)</p>
+                        <h3 class="text-3xl font-black text-slate-800 mt-1" id="dash-faturamento">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-red-50 text-red-500 rounded-xl"><i class="ph-fill ph-trend-down text-2xl"></i></div>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500 uppercase">Despesas (Empresa + Casa)</p>
+                        <h3 class="text-3xl font-black text-slate-800 mt-1" id="dash-despesas">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-green-50 text-green-500 rounded-xl"><i class="ph-fill ph-wallet text-2xl"></i></div>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500 uppercase">Lucro Líquido</p>
+                        <h3 class="text-3xl font-black text-green-500 mt-1" id="dash-lucro">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-purple-50 text-purple-500 rounded-xl"><i class="ph-fill ph-chart-line-up text-2xl"></i></div>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500 uppercase">Margem de Lucro</p>
+                        <h3 class="text-3xl font-black text-slate-800 mt-1" id="dash-margem">0%</h3>
+                    </div>
+                </div>
+            </div>
 
-    // 2. Busca o relatório detalhado de CMV
-    async function carregarCMV() {
-        try {
-            const response = await fetch('/api/dashboard/cmv');
-            const produtos = await response.json();
-            
-            const tbody = document.getElementById('tabela-cmv-body');
-            tbody.innerHTML = '';
-
-            produtos.forEach(prod => {
-                // Destaca visualmente se a margem de lucro está boa (acima de 50%) ou perigosa
-                const classeLucro = prod.margem_porcentagem >= 50 ? 'lucro-bom' : 'lucro-alerta';
+            <!-- ABA 2: CARDÁPIO (PRODUTOS) -->
+            <div id="aba-cardapio-admin" class="hidden space-y-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">Gerenciar Produtos</h3>
+                    <button onclick="alert('Na Fase 2 você poderá adicionar produtos pelo painel! Por enquanto eles são carregados do banco.')" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center">
+                        <i class="ph ph-plus mr-2 text-lg"></i> Novo Produto
+                    </button>
+                </div>
                 
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${prod.lanche}</strong></td>
-                        <td>${formatarMoeda(prod.preco_venda)}</td>
-                        <td>${formatarMoeda(prod.custo_montagem)}</td>
-                        <td class="${classeLucro}">${formatarMoeda(prod.lucro_reais)}</td>
-                        <td class="${classeLucro}">${prod.margem_porcentagem}%</td>
-                    </tr>
-                `;
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+                                <th class="p-4 font-bold">Produto</th>
+                                <th class="p-4 font-bold">Categoria</th>
+                                <th class="p-4 font-bold">Preço de Venda</th>
+                                <th class="p-4 font-bold text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-produtos" class="divide-y divide-slate-200 text-sm">
+                            <tr><td colspan="4" class="p-8 text-center text-slate-400">Carregando cardápio...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ABA 3: FINANCEIRO (CONTAS A PAGAR) -->
+            <div id="aba-financeiro" class="hidden space-y-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">Contas a Pagar</h3>
+                </div>
+                
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+                                <th class="p-4 font-bold">Descrição</th>
+                                <th class="p-4 font-bold">Vencimento</th>
+                                <th class="p-4 font-bold">Tipo</th>
+                                <th class="p-4 font-bold">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-contas" class="divide-y divide-slate-200 text-sm">
+                            <tr><td colspan="4" class="p-8 text-center text-slate-400">Nenhuma conta cadastrada ou carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarDadosVisaoGeral();
+        });
+
+        // Controle de Abas
+        function mudarAba(abaId) {
+            // Esconde todas
+            ['visao-geral', 'cardapio-admin', 'financeiro'].forEach(id => {
+                document.getElementById(`aba-${id}`).classList.add('hidden');
+                document.getElementById(`aba-${id}`).classList.remove('block');
+                
+                // Reseta estilo dos botões
+                let btn = document.getElementById(`btn-${id}`);
+                btn.className = "w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-bold transition-colors text-slate-300";
             });
-        } catch (error) {
-            document.getElementById('tabela-cmv-body').innerHTML = '<tr><td colspan="5">Erro ao carregar dados de CMV.</td></tr>';
+
+            // Mostra a selecionada
+            document.getElementById(`aba-${abaId}`).classList.remove('hidden');
+            document.getElementById(`aba-${abaId}`).classList.add('block');
+            
+            // Estilo ativo no botão
+            let btnAtivo = document.getElementById(`btn-${abaId}`);
+            btnAtivo.className = "w-full flex items-center px-4 py-3 bg-brand-500 text-white rounded-xl font-bold transition-colors";
+
+            // Atualiza Título
+            const titulos = {
+                'visao-geral': 'Visão Geral',
+                'cardapio-admin': 'Cardápio',
+                'financeiro': 'Financeiro'
+            };
+            document.getElementById('titulo-pagina').innerText = titulos[abaId];
+
+            // Carrega os dados específicos da aba
+            if(abaId === 'visao-geral') carregarDadosVisaoGeral();
+            if(abaId === 'cardapio-admin') carregarProdutosAdmin();
+            if(abaId === 'financeiro') carregarContasFinanceiro();
         }
-    }
 
-    // Executa as funções ao abrir a página
-    window.onload = () => {
-        carregarMetricas();
-        carregarCMV();
-    };
-</script>
+        // Buscar Lucratividade
+        async function carregarDadosVisaoGeral() {
+            try {
+                const res = await fetch('/api/gestao/financeiro/lucratividade');
+                const dados = await res.json();
+                
+                document.getElementById('dash-faturamento').innerText = `R$ ${dados.faturamento.toFixed(2).replace('.', ',')}`;
+                document.getElementById('dash-despesas').innerText = `R$ ${(dados.despesas_empresa + dados.despesas_casa).toFixed(2).replace('.', ',')}`;
+                
+                const lucroEl = document.getElementById('dash-lucro');
+                lucroEl.innerText = `R$ ${dados.lucro_liquido.toFixed(2).replace('.', ',')}`;
+                lucroEl.className = dados.lucro_liquido >= 0 ? "text-3xl font-black text-green-500 mt-1" : "text-3xl font-black text-red-500 mt-1";
+                
+                document.getElementById('dash-margem').innerText = `${dados.margem_lucro}%`;
+            } catch(e) {
+                console.error("Erro ao carregar métricas", e);
+            }
+        }
 
+        // Buscar Produtos do Cardápio
+        async function carregarProdutosAdmin() {
+            try {
+                const res = await fetch('/api/cardapio');
+                const produtos = await res.json();
+                const tbody = document.getElementById('tabela-produtos');
+                
+                if(produtos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400">Nenhum produto cadastrado.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = produtos.map(p => `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-4 font-bold text-slate-800">${p.nome}</td>
+                        <td class="p-4"><span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase">${p.categoria}</span></td>
+                        <td class="p-4 font-bold text-brand-500">R$ ${p.preco_venda.toFixed(2).replace('.', ',')}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="deletarProduto(${p.id})" class="text-slate-400 hover:text-red-500 transition-colors p-2" title="Excluir Produto">
+                                <i class="ph-fill ph-trash text-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {
+                console.error("Erro ao carregar cardápio", e);
+            }
+        }
+
+        // Buscar Contas a Pagar
+        async function carregarContasFinanceiro() {
+            try {
+                const res = await fetch('/api/gestao/financeiro/resumo');
+                const dados = await res.json();
+                const tbody = document.getElementById('tabela-contas');
+                
+                if(!dados.contas || dados.contas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400">Nenhuma despesa lançada.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = dados.contas.map(c => `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-4 font-bold text-slate-800">${c.descricao}</td>
+                        <td class="p-4 text-slate-600">${c.vencimento}</td>
+                        <td class="p-4">
+                            <span class="${c.tipo === 'Empresa' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'} px-2 py-1 rounded text-[10px] font-bold uppercase">${c.tipo}</span>
+                        </td>
+                        <td class="p-4 font-bold text-red-500">R$ ${c.valor.toFixed(2).replace('.', ',')}</td>
+                    </tr>
+                `).join('');
+            } catch(e) {
+                console.error("Erro ao carregar financeiro", e);
+            }
+        }
+
+        async function deletarProduto(id) {
+            if(!confirm("Tem certeza que deseja excluir este produto do cardápio?")) return;
+            try {
+                const res = await fetch(`/api/gestao/produto/${id}`, { method: 'DELETE' });
+                if(res.ok) {
+                    carregarProdutosAdmin(); // Atualiza a tabela na hora
+                } else {
+                    alert("Erro ao excluir produto.");
+                }
+            } catch(e) {
+                alert("Falha na conexão.");
+            }
+        }
+    </script>
 </body>
 </html>
