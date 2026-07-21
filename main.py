@@ -497,8 +497,9 @@ def listar_pedidos_logistica(db: Session = Depends(get_db)):
     for p in pedidos:
         status_atual = str(p.status).split('.')[-1].upper()
         tipo_atual = str(getattr(p, 'tipo_pedido', getattr(p, 'tipo', ''))).split('.')[-1].upper()
-        if tipo_atual != "DELIVERY": continue
-        endereco_completo = 'Endereço não informado'
+        if tipo_atual not in ["DELIVERY", "RETIRADA"]: continue
+        
+        endereco_completo = 'Retirada no Balcão' if tipo_atual == 'RETIRADA' else 'Endereço não informado'
         for item in getattr(p, 'itens', getattr(p, 'itens_pedido', [])):
             obs = getattr(item, 'observacao', getattr(item, 'observacoes', ''))
             if obs and "Endereço: " in obs:
@@ -508,7 +509,14 @@ def listar_pedidos_logistica(db: Session = Depends(get_db)):
                         endereco_completo = parte.replace("Endereço: ", "").strip()
                         break
                 break
-        dados_pedido = { "id": p.id,  "cliente": p.cliente.nome if p.cliente else "Cliente",  "status": status_atual,  "endereco": endereco_completo }
+                
+        dados_pedido = { 
+            "id": p.id,  
+            "cliente": p.cliente.nome if p.cliente else "Cliente",  
+            "status": status_atual,  
+            "endereco": endereco_completo,
+            "tipo": tipo_atual
+        }
         if status_atual == "PRONTO": prontos.append(dados_pedido)
         elif status_atual == "SAIU_PARA_ENTREGA": em_rota.append(dados_pedido)
     return {"prontos": prontos, "em_rota": em_rota}
