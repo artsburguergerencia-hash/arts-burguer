@@ -193,6 +193,29 @@ def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db
         }
     }
 
+@app.get("/api/cliente/{cliente_id}/pedidos")
+def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
+    # Busca os últimos 10 pedidos do cliente, do mais novo para o mais velho
+    pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).order_by(desc(PedidoModel.id)).limit(10).all()
+    
+    historico = []
+    for p in pedidos:
+        resumo_itens = []
+        # Pega o nome dos produtos do pedido para mostrar no histórico
+        for item in getattr(p, 'itens', getattr(p, 'itens_pedido', [])):
+            prod = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
+            nome_prod = prod.nome if prod else "Produto Indisponível"
+            resumo_itens.append(f"{item.quantidade}x {nome_prod}")
+        
+        historico.append({
+            "id": p.id,
+            "status": str(p.status).split('.')[-1].upper(),
+            "total": p.total_pago,
+            "itens_resumo": ", ".join(resumo_itens)
+        })
+        
+    return historico
+
 @app.post("/api/pedidos/online")
 def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_web.telefone_cliente).first()
