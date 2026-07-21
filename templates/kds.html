@@ -44,7 +44,30 @@
 
     </main>
 
+    <!-- Botão de Ativação do Áudio -->
+    <button onclick="ativarSomKDS()" id="btn-som-kds" class="fixed bottom-6 right-6 bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-full shadow-2xl z-50 flex items-center text-sm font-black tracking-wider uppercase transition-all duration-300 border border-slate-700 active:scale-95">
+        <i class="ph-fill ph-speaker-slash mr-2 text-xl text-red-400" id="icone-som-kds"></i> Ativar Alarme
+    </button>
+
     <script>
+        // === CONTROLE DO ALARME SONORO ===
+        let somAtivado = false;
+        let listaPedidosAnteriores = [];
+        // Um som clássico de notificação (você pode trocar a URL por outro arquivo mp3 se preferir)
+        const somNotificacao = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
+        function ativarSomKDS() {
+            somAtivado = true;
+            // O navegador exige que o usuário interaja com a tela antes de tocar sons automáticos
+            somNotificacao.play().then(() => {
+                somNotificacao.pause(); 
+                somNotificacao.currentTime = 0;
+            }).catch(e => console.log("Áudio liberado"));
+            
+            // Esconde o botão após ativado
+            document.getElementById('btn-som-kds').classList.add('hidden');
+        }
+
         // Atualiza o relógio do painel a cada segundo
         setInterval(() => {
             document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR');
@@ -64,6 +87,14 @@
                 
                 contador.innerText = `${pedidos.length} ${pedidos.length === 1 ? 'pedido' : 'pedidos'} em produção`;
 
+                // LÓGICA DO ALARME: Verifica se tem algum pedido novo (status RECEBIDO) que não estava na lista anterior
+                const temPedidoNovo = pedidos.some(p => p.status === 'RECEBIDO' && !listaPedidosAnteriores.includes(p.id));
+                if (temPedidoNovo && somAtivado) {
+                    somNotificacao.play();
+                }
+                // Atualiza a memória de pedidos
+                listaPedidosAnteriores = pedidos.map(p => p.id);
+
                 if (pedidos.length === 0) {
                     esteira.innerHTML = `
                         <div class="w-full h-full flex flex-col items-center justify-center text-slate-600" id="tela-vazia">
@@ -75,17 +106,17 @@
                 }
 
                 esteira.innerHTML = pedidos.map(p => {
-                    const statusRecibido = p.status === 'RECEBIDO';
+                    const statusRecebido = p.status === 'RECEBIDO';
                     
                     // Define cores baseadas no tipo e status do pedido
                     const badgeTipoClass = p.tipo === 'DELIVERY' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-                    const cardBorderClass = statusRecibido ? 'border-red-500/30 ring-1 ring-red-500/10' : 'border-blue-500/30';
-                    const btnClass = statusRecibido 
+                    const cardBorderClass = statusRecebido ? 'border-red-500/30 ring-1 ring-red-500/10' : 'border-blue-500/30';
+                    const btnClass = statusRecebido 
                         ? 'bg-red-600 hover:bg-red-500 shadow-[0_4px_12px_rgba(239,68,68,0.2)]' 
                         : 'bg-blue-600 hover:bg-blue-500 shadow-[0_4px_12px_rgba(59,130,246,0.2)]';
                     
-                    const btnTexto = statusRecibido ? 'COMEÇAR PREPARO' : 'MARCAR COMO PRONTO';
-                    const novoStatus = statusRecibido ? 'EM_PREPARO' : 'PRONTO';
+                    const btnTexto = statusRecebido ? 'COMEÇAR PREPARO' : 'MARCAR COMO PRONTO';
+                    const novoStatus = statusRecebido ? 'EM_PREPARO' : 'PRONTO';
 
                     return `
                         <div class="w-80 bg-slate-900 border ${cardBorderClass} rounded-2xl flex flex-col max-h-full shrink-0 shadow-2xl overflow-hidden transition-all duration-300">
@@ -95,8 +126,8 @@
                                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeTipoClass} uppercase mt-1 inline-block">${p.tipo}</span>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-xs font-black px-2 py-1 rounded bg-slate-800 tracking-wide ${statusRecibido ? 'text-red-400 animate-pulse' : 'text-blue-400'}">
-                                        ${statusRecibido ? 'NOVO' : 'NA CHAPA'}
+                                    <span class="text-xs font-black px-2 py-1 rounded bg-slate-800 tracking-wide ${statusRecebido ? 'text-red-400 animate-pulse' : 'text-blue-400'}">
+                                        ${statusRecebido ? 'NOVO' : 'NA CHAPA'}
                                     </span>
                                 </div>
                             </div>
@@ -135,6 +166,11 @@
 
         async function mudarStatusPedido(id, status) {
             try {
+                // Remove visualmente o pedido se ele foi marcado como PRONTO (para não esperar os 3 segundos do timer)
+                if(status === 'PRONTO') {
+                    // Opcional: Aqui você pode colocar um aviso de "Hambúrguer finalizado!" se quiser no futuro.
+                }
+
                 const response = await fetch(`/api/kds/pedidos/${id}/status`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -151,10 +187,5 @@
             }
         }
     </script>
-    <!-- Botão de Ativação do Áudio -->
-    <button onclick="ativarSomKDS()" id="btn-som-kds" class="fixed bottom-6 right-6 bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-full shadow-2xl z-50 flex items-center text-sm font-black tracking-wider uppercase transition-all duration-300 border border-slate-700 active:scale-95">
-        <i class="ph-fill ph-speaker-slash mr-2 text-xl text-red-400" id="icone-som-kds"></i> Ativar Alarme
-    </button>
-</body>
 </body>
 </html>
