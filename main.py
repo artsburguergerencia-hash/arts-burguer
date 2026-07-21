@@ -135,6 +135,11 @@ class AtualizarFuncionario(BaseModel):
     cargo_id: int
     foto: str = ""
 
+class NovoFornecedor(BaseModel):
+    nome_fantasia: str
+    categoria: str = "Geral"
+    contato: str = ""
+    cnpj: str = ""
 
 # --- ROTAS DE VENDAS E DELIVERY ---
 class LoginClienteData(BaseModel):
@@ -153,6 +158,34 @@ class RegistroClienteData(BaseModel):
     bairro: str = ""
     complemento: str = ""
 
+@app.get("/api/gestao/fornecedores")
+def listar_fornecedores(db: Session = Depends(get_db)):
+    fornecedores = db.query(FornecedorModel).all()
+    return [{
+        "id": f.id, 
+        "nome_fantasia": f.nome_fantasia, 
+        "categoria": f.categoria, 
+        "contato": getattr(f, 'contato', ''), 
+        "cnpj": getattr(f, 'cnpj', '')
+    } for f in fornecedores]
+
+@app.post("/api/gestao/fornecedores")
+def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
+    try:
+        novo = FornecedorModel(
+            nome_fantasia=dados.nome_fantasia, 
+            categoria=dados.categoria, 
+            contato=dados.contato, 
+            cnpj=dados.cnpj
+        )
+        db.add(novo)
+        db.commit()
+        db.refresh(novo)
+        return {"status": "sucesso", "id": novo.id, "mensagem": "Fornecedor cadastrado com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+        
 @app.post("/api/cliente/registrar")
 def registrar_cliente_cardapio(dados: RegistroClienteData, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
