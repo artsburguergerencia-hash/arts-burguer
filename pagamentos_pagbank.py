@@ -2,27 +2,46 @@ import os
 import requests
 
 # === 1. A FUNÇÃO DO PIX (A original e correta) ===
+# === 1. A FUNÇÃO DO PIX (Turbinada com Debug e E-mail Dinâmico) ===
 def criar_pagamento_pix_mp(pedido_id, valor, nome, cpf):
     token = os.getenv("TOKEN_MERCADOPAGO")
+    
+    # 1. Trava: Verifica se o token realmente foi carregado pelo sistema
+    if not token:
+        print("❌ ERRO FATAL: TOKEN_MERCADOPAGO não encontrado nas variáveis de ambiente!", flush=True)
+        return None
+
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     URL = "https://api.mercadopago.com/v1/payments"
+    
+    # 2. Truque Antifraude: Usar o ID do pedido no e-mail para ser sempre único
+    email_dinamico = f"cliente{pedido_id}@artsburguer.com.br"
     
     payload = {
         "transaction_amount": float(valor),
         "description": f"Pedido #{pedido_id} - Art's Burguer",
         "payment_method_id": "pix",
         "payer": {
-            "email": "cliente@artsburguer.com.br",
-            "first_name": nome,
-            "identification": {"type": "CPF", "number": cpf}
+            "email": email_dinamico,
+            "first_name": str(nome),
+            "identification": {"type": "CPF", "number": str(cpf)}
         }
     }
+    
     try:
         resp = requests.post(URL, headers=headers, json=payload)
+        dados = resp.json() # Captura a resposta do Mercado Pago
+        
         if resp.status_code in [200, 201]:
-            return resp.json()["point_of_interaction"]["transaction_data"]["qr_code"]
-        return None
-    except:
+            print(f"✅ PIX GERADO COM SUCESSO! Pedido #{pedido_id}", flush=True)
+            return dados["point_of_interaction"]["transaction_data"]["qr_code"]
+        else:
+            # 3. Se o MP recusar, ele vai cuspir o erro exato na sua tela preta (terminal)!
+            print(f"❌ O MERCADO PAGO RECUSOU O PIX! Status: {resp.status_code}", flush=True)
+            print(f"🕵️ Motivo do Erro: {dados}", flush=True)
+            return None
+    except Exception as e:
+        print(f"❌ ERRO DO SERVIDOR AO CHAMAR O MP: {e}", flush=True)
         return None
 
 
