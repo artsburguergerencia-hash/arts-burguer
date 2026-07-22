@@ -1,22 +1,23 @@
 import os
 import requests
+import uuid # <-- A biblioteca que vai gerar a chave anti-duplicidade exigida pelo MP!
 
-# === 1. A FUNÇÃO DO PIX (A original e correta) ===
-# === 1. A FUNÇÃO DO PIX (Turbinada com Debug e E-mail Dinâmico) ===
+# === 1. A FUNÇÃO DO PIX ===
 def criar_pagamento_pix_mp(pedido_id, valor, nome, cpf):
     token = os.getenv("TOKEN_MERCADOPAGO")
-    
-    # 1. Trava: Verifica se o token realmente foi carregado pelo sistema
     if not token:
-        print("❌ ERRO FATAL: TOKEN_MERCADOPAGO não encontrado nas variáveis de ambiente!", flush=True)
-        return None
+        return {"erro": "Token do Mercado Pago não encontrado no servidor."}
 
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    # A MÁGICA ESTÁ AQUI: Adicionando o X-Idempotency-Key
+    headers = {
+        "Authorization": f"Bearer {token}", 
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": str(uuid.uuid4())
+    }
+    
     URL = "https://api.mercadopago.com/v1/payments"
-    
-    # 2. Truque Antifraude: Usar o ID do pedido no e-mail para ser sempre único
     email_dinamico = f"cliente{pedido_id}@artsburguer.com.br"
-    
+
     payload = {
         "transaction_amount": float(valor),
         "description": f"Pedido #{pedido_id} - Art's Burguer",
@@ -27,28 +28,32 @@ def criar_pagamento_pix_mp(pedido_id, valor, nome, cpf):
             "identification": {"type": "CPF", "number": str(cpf)}
         }
     }
-    
+
     try:
         resp = requests.post(URL, headers=headers, json=payload)
-        dados = resp.json() # Captura a resposta do Mercado Pago
-        
+        dados = resp.json()
+
         if resp.status_code in [200, 201]:
             print(f"✅ PIX GERADO COM SUCESSO! Pedido #{pedido_id}", flush=True)
-            return dados["point_of_interaction"]["transaction_data"]["qr_code"]
+            return {"qr_code": dados["point_of_interaction"]["transaction_data"]["qr_code"]}
         else:
-            # 3. Se o MP recusar, ele vai cuspir o erro exato na sua tela preta (terminal)!
-            print(f"❌ O MERCADO PAGO RECUSOU O PIX! Status: {resp.status_code}", flush=True)
-            print(f"🕵️ Motivo do Erro: {dados}", flush=True)
-            return None
+            msg = dados.get("message", str(dados))
+            if "invalid" in msg.lower() and "identification" in msg.lower():
+                msg = "O CPF informado é inválido (não passou na validação da Receita)."
+            print(f"❌ O MERCADO PAGO RECUSOU O PIX! Motivo: {msg}", flush=True)
+            return {"erro": msg}
     except Exception as e:
         print(f"❌ ERRO DO SERVIDOR AO CHAMAR O MP: {e}", flush=True)
-        return None
+        return {"erro": f"Falha interna do servidor: {e}"}
 
 
-# === 2. A FUNÇÃO DO CARTÃO / LINK (Limpa e sem a regra inútil do boleto) ===
+# === 2. A FUNÇÃO DO LINK DE PAGAMENTO (Se você ainda usar) ===
 def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
     token = os.getenv("TOKEN_MERCADOPAGO")
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bearer {token}", 
+        "Content-Type": "application/json"
+    }
     URL_PREF = "https://api.mercadopago.com/checkout/preferences"
     
     valor_arredondado = round(float(valor_total), 2)
@@ -72,23 +77,22 @@ def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
     
     try:
         response = requests.post(URL_PREF, headers=headers, json=payload)
-        print(f"--- STATUS MERCADO PAGO: {response.status_code} ---", flush=True)
-        
         if response.status_code in [200, 201]:
             return response.json().get("init_point") 
-            
         return None
     except Exception as e:
-        print(f"--- ERRO DO SERVIDOR: {e} ---", flush=True)
         return None
 
 
-# === 3. A NOVA FUNÇÃO DO CHECKOUT TRANSPARENTE (Cartão direto no site) ===
+# === 3. A FUNÇÃO DO CHECKOUT TRANSPARENTE (Cartão direto no site) ===
 def criar_pagamento_cartao_mp(pedido_id, valor_total, token_cartao, email_cliente, payment_method_id, parcelas, cpf_cliente):
     token_mp = os.getenv("TOKEN_MERCADOPAGO")
+    
+    # A MÁGICA ESTÁ AQUI TAMBÉM: Protegendo o pagamento de cartão
     headers = {
         "Authorization": f"Bearer {token_mp}", 
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": str(uuid.uuid4())
     }
     URL = "https://api.mercadopago.com/v1/payments"
     
@@ -102,7 +106,7 @@ def criar_pagamento_cartao_mp(pedido_id, valor_total, token_cartao, email_client
             "email": email_cliente if email_cliente else "cliente@artsburguer.com.br",
             "identification": {
                 "type": "CPF",
-                "number": cpf_cliente
+                "number": str(cpf_cliente)
             }
         }
     }
@@ -110,8 +114,6 @@ def criar_pagamento_cartao_mp(pedido_id, valor_total, token_cartao, email_client
     try:
         response = requests.post(URL, headers=headers, json=payload)
         print(f"--- STATUS PAGAMENTO TRANSPARENTE: {response.status_code} ---", flush=True)
-        
-        # Retorna a resposta completa do banco para o nosso site saber se aprovou
         return response.json() 
     except Exception as e:
         print(f"--- ERRO PAGAMENTO TRANSPARENTE: {e} ---", flush=True)
