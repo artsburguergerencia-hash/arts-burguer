@@ -312,11 +312,19 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         if not pedido_web.cpf:
             raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
             
-        copia_e_cola = criar_pagamento_pix_mp(novo_pedido.id, novo_pedido.total_pago, cliente.nome, pedido_web.cpf)
-        if copia_e_cola:
-            return {"status": "checkout_transparente", "copia_e_cola": copia_e_cola}
+        # O resultado agora é um dicionário {"qr_code": "000201..."} ou {"erro": "..."}
+        resultado_pix = criar_pagamento_pix_mp(novo_pedido.id, novo_pedido.total_pago, cliente.nome, pedido_web.cpf)
+        
+        # Verificamos se o Python recebeu um dicionário e se deu certo
+        if type(resultado_pix) is dict and "qr_code" in resultado_pix:
+            codigo_limpo = resultado_pix["qr_code"] # <-- Aqui nós tiramos o código da "caixa"!
+            return {"status": "checkout_transparente", "copia_e_cola": codigo_limpo}
         else:
-            raise HTTPException(status_code=500, detail="Falha ao gerar o código Pix no Mercado Pago.")
+            # Se deu erro, cancela o pedido na cozinha e mostra na tela o porquê
+            novo_pedido.status = "CANCELADO"
+            db.commit()
+            motivo = resultado_pix.get("erro", "Erro desconhecido") if type(resultado_pix) is dict else "Falha de conexão com o banco."
+            raise HTTPException(status_code=400, detail=f"Mercado Pago recusou: {motivo}")
             
     elif forma_pagamento == "credito" or forma_pagamento == "vr":
         if not pedido_web.token_cartao or not pedido_web.cpf:
