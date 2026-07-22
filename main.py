@@ -11,6 +11,7 @@ from passlib.context import CryptContext
 from sqlalchemy import Column, Integer, String, Boolean, Float
 from pagamentos_pagbank import criar_pagamento_pix_mp, criar_link_pagamento_mp, criar_pagamento_cartao_mp
 from typing import Optional # Caso ainda não tenha importado no topo do arquivo
+from fastapi import Request # Não esqueça de colocar isso no topo do main.py se já não estiver!
 
 # Importações dos nossos módulos do Art's Burguer
 from integracao_99food import router_99food
@@ -250,6 +251,31 @@ def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
         
     return historico
 
+@app.post("/api/webhooks/mercadopago")
+async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
+    """ Rota silenciosa onde o Mercado Pago avisa de madrugada que o Pix foi pago """
+    try:
+        payload = await request.json()
+        
+        # Lógica simplificada: Se o evento for de pagamento atualizado/criado
+        if payload.get("type") == "payment" or payload.get("action") == "payment.created":
+            payment_id = payload.get("data", {}).get("id")
+            
+            # Aqui você chama a função do SDK para ler a "external_reference" que é o ID do pedido
+            # pedido_id = ler_external_reference(payment_id)
+            
+            # pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+            # if pedido and str(pedido.status) == "AGUARDANDO_PAGAMENTO":
+            #     pedido.status = "RECEBIDO"
+            #     db.commit()
+            #     notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, pedido.id, "RECEBIDO")
+            #     print(f"PIX APROVADO! Pedido #{pedido.id} enviado para a cozinha.")
+            pass
+            
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "erro"}
+        
 @app.post("/api/pedidos/online")
 def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_web.telefone_cliente).first()
@@ -270,45 +296,59 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
     for item in itens_carrinho:
         processar_baixa_estoque(db, produto_id=item["produto_id"], quantidade_vendida=item["quantidade"])
     
-    # 🔔 NOTIFICA O CLIENTE
-    notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido.id, "RECEBIDO")
-    
+    # --- 🔒 A TRAVA DE SEGURANÇA AQUI ---
+    if forma_pagamento in ["pix", "credito", "vr"]:
+        # Se for online, fica no LIMBO. A cozinha não apita e o WhatsApp não envia nada ainda.
+        novo_pedido.status = "AGUARDANDO_PAGAMENTO"
+        db.commit()
+    else:
+        # Se for pagar na entrega (dinheiro/maquininha), vai direto para a Cozinha!
+        novo_pedido.status = "RECEBIDO"
+        db.commit()
+        notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido.id, "RECEBIDO")
+
+    # --- PROCESSAMENTO MERCADO PAGO ---
     if forma_pagamento == "pix":
         if not pedido_web.cpf:
             raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
             
         copia_e_cola = criar_pagamento_pix_mp(novo_pedido.id, novo_pedido.total_pago, cliente.nome, pedido_web.cpf)
-        
         if copia_e_cola:
             return {"status": "checkout_transparente", "copia_e_cola": copia_e_cola}
         else:
             raise HTTPException(status_code=500, detail="Falha ao gerar o código Pix no Mercado Pago.")
             
-    # --- A NOVA REGRA DO CARTÃO (CHECKOUT TRANSPARENTE) ---
-    elif forma_pagamento == "credito":
+    elif forma_pagamento == "credito" or forma_pagamento == "vr":
         if not pedido_web.token_cartao or not pedido_web.cpf:
             raise HTTPException(status_code=400, detail="Faltam dados do cartão ou CPF para processar o pagamento.")
             
+        # O MP processa a transação em tempo real
         resposta_pagamento = criar_pagamento_cartao_mp(
             pedido_id=novo_pedido.id, 
             valor_total=novo_pedido.total_pago, 
             token_cartao=pedido_web.token_cartao, 
-            email_cliente="cliente@artsburguer.com.br", 
+            email_cliente=f"cliente{cliente.id}@artsburguer.com", # Email fictício genérico exigido pelo MP
             payment_method_id=pedido_web.payment_method_id, 
             parcelas=pedido_web.parcelas, 
             cpf_cliente=pedido_web.cpf
         )
         
-        # Verifica se o banco aprovou ou colocou em análise (status approved ou in_process)
         if resposta_pagamento and resposta_pagamento.get("status") in ["approved", "in_process"]:
+            # DESTRAVANDO O PEDIDO! O pagamento passou!
+            novo_pedido.status = "RECEBIDO"
+            db.commit()
+            
+            # Agora sim a cozinha recebe o apito e o WhatsApp confirma pro cliente!
+            notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido.id, "RECEBIDO")
             return {"status": "sucesso", "mensagem": "Pagamento aprovado!"}
         else:
-            # O banco recusou o cartão ou deu erro de conexão
-            detalhe_erro = resposta_pagamento.get("status_detail", "Pagamento recusado pelo banco.") if resposta_pagamento else "Falha ao comunicar com o Mercado Pago."
+            # O banco recusou o limite ou dados incorretos
+            novo_pedido.status = "CANCELADO"
+            db.commit()
+            detalhe_erro = resposta_pagamento.get("status_detail", "Pagamento recusado pelo banco.") if resposta_pagamento else "Falha de conexão com a operadora."
             raise HTTPException(status_code=400, detail=f"Atenção: {detalhe_erro}")
             
-    # --- O RETORNO DE ENTREGA CAI PARA O FINAL DE TUDO ---
-    return {"status": "entrega", "mensagem": "Pedido confirmado!"}
+    return {"status": "entrega", "mensagem": "Pedido confirmado para pagamento na entrega!"}
             
 @app.post("/api/webhooks/asaas")
 async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
