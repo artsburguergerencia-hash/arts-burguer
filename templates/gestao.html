@@ -413,9 +413,44 @@
                             </label>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Formas de Pagamento Aceites (Separadas por vírgula)</label>
-                            <input type="text" id="conf-pagamentos" placeholder="Pix, Dinheiro, Cartão de Crédito" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none">
+                        <!-- SUBSTITUA A FORMA DE PAGAMENTO ANTIGA POR ESTE BLOCO -->
+                        <div class="border-t border-slate-100 pt-6">
+                            <h4 class="text-sm font-bold text-slate-800 mb-4"><i class="ph ph-wallet mr-2 text-brand-500"></i> Formas de Pagamento Aceitas</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Pagamentos na Entrega (Balcão/Motoboy) -->
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Pagar na Entrega / Retirada</p>
+                                    <label class="flex items-center space-x-3 cursor-pointer mb-2">
+                                        <input type="checkbox" id="pag-dinheiro" class="w-5 h-5 text-brand-500 rounded border-slate-300">
+                                        <span class="font-semibold text-slate-700 text-sm">💵 Dinheiro (Levar Troco)</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="checkbox" id="pag-maquininha" class="w-5 h-5 text-brand-500 rounded border-slate-300">
+                                        <span class="font-semibold text-slate-700 text-sm">💳 Maquininha (Cartão/VR)</span>
+                                    </label>
+                                </div>
+
+                                <!-- Pagamentos Online (Mercado Pago) -->
+                                <div class="bg-blue-50/30 p-4 rounded-xl border border-blue-100 relative overflow-hidden">
+                                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                                    <div class="flex justify-between items-center mb-3">
+                                        <p class="text-xs font-bold text-blue-500 uppercase tracking-wider">Online (Mercado Pago)</p>
+                                    </div>
+                                    <label class="flex items-center space-x-3 cursor-pointer mb-2">
+                                        <input type="checkbox" id="pag-pix-online" class="w-5 h-5 text-blue-500 rounded border-blue-300">
+                                        <span class="font-semibold text-slate-700 text-sm">⚡ Pix Automático</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 cursor-pointer mb-2">
+                                        <input type="checkbox" id="pag-credito-online" class="w-5 h-5 text-blue-500 rounded border-blue-300">
+                                        <span class="font-semibold text-slate-700 text-sm">💳 Cartão de Crédito</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="checkbox" id="pag-vr-online" class="w-5 h-5 text-blue-500 rounded border-blue-300">
+                                        <span class="font-semibold text-slate-700 text-sm">🎫 Vouchers (VR/VA/Sodexo)</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="pt-4 flex justify-end">
@@ -856,7 +891,14 @@
                 document.getElementById('conf-delivery').checked = conf.aceita_delivery;
                 document.getElementById('conf-retirada').checked = conf.aceita_retirada;
                 document.getElementById('conf-auto').checked = conf.aceite_automatico;
-                document.getElementById('conf-pagamentos').value = conf.formas_pagamento || '';
+                
+                // Lê as configurações de pagamento
+                const pgs = conf.formas_pagamento || "";
+                document.getElementById('pag-dinheiro').checked = pgs.includes('dinheiro');
+                document.getElementById('pag-maquininha').checked = pgs.includes('maquininha');
+                document.getElementById('pag-pix-online').checked = pgs.includes('pix_online');
+                document.getElementById('pag-credito-online').checked = pgs.includes('credito_online');
+                document.getElementById('pag-vr-online').checked = pgs.includes('vr_online');
             } catch (e) { }
         }
 
@@ -902,9 +944,24 @@
 
         async function salvarConfiguracoesLoja(e) {
             e.preventDefault();
-            const payload = { logo_url: document.getElementById('conf-logo').value, tempo_preparo: parseInt(document.getElementById('conf-tempo').value), aceita_delivery: document.getElementById('conf-delivery').checked, aceita_retirada: document.getElementById('conf-retirada').checked, aceite_automatico: document.getElementById('conf-auto').checked, formas_pagamento: document.getElementById('conf-pagamentos').value };
+            // Monta a string de pagamentos aceitos
+            let arr = [];
+            if(document.getElementById('pag-dinheiro').checked) arr.push('dinheiro');
+            if(document.getElementById('pag-maquininha').checked) arr.push('maquininha');
+            if(document.getElementById('pag-pix-online').checked) arr.push('pix_online');
+            if(document.getElementById('pag-credito-online').checked) arr.push('credito_online');
+            if(document.getElementById('pag-vr-online').checked) arr.push('vr_online');
+            
+            const payload = { 
+                logo_url: document.getElementById('conf-logo').value, 
+                tempo_preparo: parseInt(document.getElementById('conf-tempo').value), 
+                aceita_delivery: document.getElementById('conf-delivery').checked, 
+                aceita_retirada: document.getElementById('conf-retirada').checked, 
+                aceite_automatico: document.getElementById('conf-auto').checked, 
+                formas_pagamento: arr.join(',') // Salva tudo com vírgula no banco
+            };
             const res = await fetch('/api/gestao/configuracoes', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            if(res.ok) alert("✅ Configurações salvas!");
+            if(res.ok) alert("✅ Configurações salvas e aplicadas no Cardápio!");
         }
 
         async function carregarClientesPainel() {
