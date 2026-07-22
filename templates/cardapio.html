@@ -17,12 +17,12 @@
         .modal-up { animation: slideUp 0.3s ease-out forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
-    <!-- Adicione esta linha: -->
+    <!-- SDK DO MERCADO PAGO -->
     <script src="https://sdk.mercadopago.com/js/v2"></script>
-</head>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans pb-24">
 
+    <!-- CABEÇALHO E LOGIN -->
     <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
         <div class="px-4 py-3 flex justify-between items-center max-w-2xl mx-auto">
             <div class="flex items-center space-x-2">
@@ -51,6 +51,7 @@
         <a href="#categoria-Bebida" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-full text-sm font-semibold border border-slate-200">🥤 Bebidas</a>
     </nav>
 
+    <!-- LISTA DE PRODUTOS -->
     <main class="p-4 max-w-2xl mx-auto space-y-8" id="container-cardapio">
         <div class="text-center py-10">
             <i class="ph ph-spinner animate-spin text-4xl text-brand-500 mb-3"></i>
@@ -58,6 +59,7 @@
         </div>
     </main>
 
+    <!-- BOTÃO FLUTUANTE CARRINHO -->
     <div id="barra-carrinho" class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-10px_20px_-15px_rgba(0,0,0,0.1)] transition-transform duration-300 transform translate-y-full z-30">
         <div class="max-w-2xl mx-auto">
             <button onclick="abrirCarrinho()" class="w-full bg-brand-500 text-white rounded-xl p-4 flex justify-between items-center shadow-lg active:scale-95 transition-transform">
@@ -70,6 +72,7 @@
         </div>
     </div>
 
+    <!-- MODAL DO PRODUTO E EXTRAS -->
     <div id="modal-produto" class="fixed inset-0 bg-slate-900/50 z-40 hidden flex items-end justify-center backdrop-blur-sm">
         <div class="bg-white w-full max-w-2xl rounded-t-3xl max-h-[90vh] flex flex-col modal-up overflow-hidden">
             <div class="relative h-48 bg-slate-200 shrink-0">
@@ -83,8 +86,7 @@
                 <p id="modal-prod-desc" class="text-sm text-slate-500 mb-4">Descrição do produto vai aqui.</p>
                 <div class="text-xl font-bold text-brand-500 mb-6">R$ <span id="modal-prod-preco">0,00</span></div>
                 
-                <div id="area-complementos" class="space-y-6">
-                    </div>
+                <div id="area-complementos" class="space-y-6"></div>
                 
                 <div class="mt-6 pt-4 border-t border-slate-200">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Alguma observação?</label>
@@ -99,6 +101,7 @@
         </div>
     </div>
 
+    <!-- MODAL LOGIN/CADASTRO -->
     <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative modal-up">
             <button onclick="fecharModalAuth()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
@@ -130,13 +133,12 @@
                 </div>
                 <input type="text" id="cad-bairro" placeholder="Bairro" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
                 <input type="text" id="cad-comp" placeholder="Complemento (Ex: Casa 2)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 mb-2">
-                
                 <button type="submit" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95">Finalizar Cadastro</button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DO CARRINHO FINAL -->
+    <!-- MODAL DO CARRINHO FINAL (COM DADOS DO CLIENTE CONSERTADO) -->
     <div id="modal-carrinho" class="fixed inset-0 bg-slate-900/50 z-40 hidden flex items-end justify-center backdrop-blur-sm">
         <div class="bg-white w-full max-w-2xl rounded-t-3xl h-[85vh] flex flex-col modal-up">
             <div class="flex justify-between items-center p-5 border-b border-slate-100">
@@ -148,7 +150,7 @@
                 <div id="lista-carrinho-modal" class="space-y-4 mb-6"></div>
                 
                 <!-- ÁREA DE DADOS DO CLIENTE E ENTREGA -->
-                <div id="area-dados-cliente" class="space-y-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div id="area-dados-cliente" class="space-y-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-4">
                     <h3 class="text-sm font-bold text-slate-700 border-b border-slate-100 pb-2 mb-3"><i class="ph-fill ph-map-pin mr-1 text-brand-500"></i> Dados de Entrega e Cobrança</h3>
 
                     <!-- FORMULÁRIO PARA QUEM NÃO FEZ LOGIN -->
@@ -176,20 +178,19 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
             <div class="p-5 bg-white border-t border-slate-200 shadow-[0_-10px_20px_-15px_rgba(0,0,0,0.05)]">
                 <div class="mb-4">
                     <label class="text-xs font-bold text-slate-500 uppercase">Forma de Pagamento</label>
-                    
-                    <!-- Adicionamos o evento onchange aqui -->
                     <select id="forma-pag-online" onchange="toggleAreaCartao()" class="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none font-semibold text-slate-700">
                         <option value="pix">⚡ Pix (Aprovação Imediata)</option>
-                        <option value="credito">💳 Cartão de Crédito</option>
+                        <option value="credito">💳 Cartão de Crédito / VR</option>
                         <option value="entrega">💵 Pagar na Entrega</option>
                     </select>
                 </div>
 
-                <!-- NOVA ÁREA DO CARTÃO (Inicia Escondida) -->
+                <!-- ÁREA DO CARTÃO (Inicia Escondida) -->
                 <div id="area-cartao" class="hidden mb-4 p-4 border border-slate-200 rounded-xl bg-slate-50 space-y-3 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
                     <h3 class="text-sm font-bold text-slate-700 mb-2 flex items-center"><i class="ph-fill ph-credit-card mr-2 text-brand-500"></i> Dados do Cartão</h3>
@@ -212,7 +213,8 @@
             </div>
         </div>
     </div>
-                <!-- MODAL DO PERFIL DO CLIENTE (ÁREA VIP) -->
+
+    <!-- MODAL DO PERFIL VIP -->
     <div id="modal-perfil" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl relative modal-up flex flex-col max-h-[85vh]">
             <div class="bg-slate-900 p-6 text-white shrink-0">
@@ -238,9 +240,7 @@
             
             <div class="p-5 flex-1 overflow-y-auto bg-slate-50 no-scrollbar">
                 <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4"><i class="ph-fill ph-clock-counter-clockwise mr-1"></i> Últimos Pedidos</h3>
-                <div id="lista-historico" class="space-y-3">
-                    <!-- O histórico gerado pelo Javascript entra aqui -->
-                </div>
+                <div id="lista-historico" class="space-y-3"></div>
             </div>
             
             <div class="p-4 bg-white border-t border-slate-100 shrink-0">
@@ -266,7 +266,7 @@
         // AUTOCOMPLETAR CEP (ViaCEP)
         // ==========================
         document.getElementById('cad-cep').addEventListener('blur', async (e) => {
-            let cep = e.target.value.replace(/\D/g, ''); // Remove traços
+            let cep = e.target.value.replace(/\D/g, ''); 
             if (cep.length === 8) {
                 try {
                     document.getElementById('cad-rua').value = "Buscando...";
@@ -275,14 +275,12 @@
                     if (!data.erro) {
                         document.getElementById('cad-rua').value = data.logradouro;
                         document.getElementById('cad-bairro').value = data.bairro;
-                        document.getElementById('cad-num').focus(); // Joga o cursor para o número
+                        document.getElementById('cad-num').focus(); 
                     } else {
                         document.getElementById('cad-rua').value = "";
                         alert("CEP não encontrado.");
                     }
-                } catch (err) {
-                    document.getElementById('cad-rua').value = "";
-                }
+                } catch (err) { document.getElementById('cad-rua').value = ""; }
             }
         });
 
@@ -306,33 +304,32 @@
                     </div>
                 `;
                 document.getElementById('barra-fidelidade').classList.remove('hidden');
-                document.getElementById('fid-pontos').innerText = clienteLogado.pontos;
-                document.getElementById('fid-cashback').innerText = clienteLogado.cashback.toFixed(2).replace('.', ',');
+                document.getElementById('fid-pontos').innerText = clienteLogado.pontos || 0;
                 
-                // Esconde o form de visitante e mostra o resumo do logado
+                const cashbackVal = parseFloat(clienteLogado.cashback) || 0;
+                document.getElementById('fid-cashback').innerText = cashbackVal.toFixed(2).replace('.', ',');
+                
+                // Exibe Resumo e esconde Guest
                 if(areaGuest) areaGuest.classList.add('hidden');
                 if(areaLogado) {
                     areaLogado.classList.remove('hidden');
                     document.getElementById('logado-nome-resumo').innerText = clienteLogado.nome;
-                    document.getElementById('logado-end-resumo').innerText = clienteLogado.endereco_completo || "Endereço não cadastrado. Atualize no perfil.";
-                    document.getElementById('logado-cpf').value = clienteLogado.cpf || ""; // Puxa o CPF se já existir
+                    document.getElementById('logado-end-resumo').innerText = clienteLogado.endereco_completo || "Endereço não informado.";
+                    document.getElementById('logado-cpf').value = clienteLogado.cpf || ""; 
                 }
             } else {
-                // Se não estiver logado, mostra o form completo
                 if(areaGuest) areaGuest.classList.remove('hidden');
                 if(areaLogado) areaLogado.classList.add('hidden');
             }
         }
 
-        // ==========================
-        // ÁREA VIP E HISTÓRICO
-        // ==========================
         async function abrirModalPerfil() {
             document.getElementById('vip-nome').innerText = clienteLogado.nome;
             document.getElementById('vip-tel').innerText = clienteLogado.telefone;
             document.getElementById('vip-foto').src = `https://ui-avatars.com/api/?name=${clienteLogado.nome}&background=ff4757&color=fff`;
-            document.getElementById('vip-pontos').innerText = clienteLogado.pontos;
-            document.getElementById('vip-cashback').innerText = "R$ " + clienteLogado.cashback.toFixed(2).replace('.', ',');
+            document.getElementById('vip-pontos').innerText = clienteLogado.pontos || 0;
+            const cashbackVal = parseFloat(clienteLogado.cashback) || 0;
+            document.getElementById('vip-cashback').innerText = "R$ " + cashbackVal.toFixed(2).replace('.', ',');
             
             const listaHistorico = document.getElementById('lista-historico');
             listaHistorico.innerHTML = '<p class="text-center text-slate-400 text-sm py-4"><i class="ph ph-spinner animate-spin text-2xl"></i><br>Buscando histórico...</p>';
@@ -359,7 +356,6 @@
                         "CANCELADO": "bg-red-100 text-red-700"
                     };
                     const cor = statusCores[p.status] || "bg-slate-100 text-slate-600";
-                    
                     return `
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                             <div class="flex justify-between items-center mb-2">
@@ -371,9 +367,7 @@
                         </div>
                     `;
                 }).join('');
-            } catch(e) {
-                listaHistorico.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Erro ao carregar histórico.</p>';
-            }
+            } catch(e) { listaHistorico.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Erro ao carregar histórico.</p>'; }
         }
 
         function fecharModalPerfil() {
@@ -381,10 +375,7 @@
             document.getElementById('modal-perfil').classList.remove('flex');
         }
 
-        function fazerLogout() {
-            localStorage.removeItem('arts_cliente');
-            window.location.reload();
-        }
+        function fazerLogout() { localStorage.removeItem('arts_cliente'); window.location.reload(); }
 
         function abrirModalAuth() { document.getElementById('modal-auth').classList.remove('hidden'); document.getElementById('modal-auth').classList.add('flex'); }
         function fecharModalAuth() { document.getElementById('modal-auth').classList.add('hidden'); document.getElementById('modal-auth').classList.remove('flex'); }
@@ -406,8 +397,7 @@
                 const data = await res.json();
                 if(res.ok) {
                     localStorage.setItem('arts_cliente', JSON.stringify(data.cliente));
-                    fecharModalAuth();
-                    verificarSessao();
+                    fecharModalAuth(); verificarSessao(); window.location.reload();
                 } else { alert(data.detail); }
             } catch(err) { alert("Erro de conexão"); }
         }
@@ -429,7 +419,7 @@
         }
 
         // ==========================
-        // CARDÁPIO E PRODUTOS (Imagens Inseridas)
+        // CARDÁPIO E PRODUTOS
         // ==========================
         async function carregarCardapioDigital() {
             try {
@@ -457,7 +447,7 @@
                             <div class="p-4 flex-1 flex flex-col justify-between">
                                 <div>
                                     <h3 class="font-bold text-slate-800 leading-tight mb-1">${p.nome}</h3>
-                                    <p class="text-[10px] text-slate-400 line-clamp-2 leading-tight">${p.descricao || 'Delicioso '+p.categoria+' do Art\'s Burguer'}</p>
+                                    <p class="text-[10px] text-slate-400 line-clamp-2 leading-tight">${p.descricao || 'Delicioso '+p.categoria}</p>
                                 </div>
                                 <div class="flex justify-between items-end mt-2">
                                     <span class="font-black text-brand-500">R$ ${p.preco_venda.toFixed(2).replace('.', ',')}</span>
@@ -473,10 +463,9 @@
         }
 
         // ==========================
-        // MONTAGEM DE LANCHE (MODAL)
+        // MONTAGEM E EXTRAS
         // ==========================
-        let complementosAtuais = []; // A memória do lanche selecionado
-
+        let complementosAtuais = []; 
         async function abrirModalMontagem(id) {
             produtoSendoMontado = produtosServer.find(p => p.id === id);
             document.getElementById('modal-prod-nome').innerText = produtoSendoMontado.nome;
@@ -489,7 +478,6 @@
             imgEl.classList.remove('hidden');
             document.getElementById('modal-prod-obs').value = "";
             
-            // LÓGICA DE BUSCA DE EXTRAS
             const areaComp = document.getElementById('area-complementos');
             areaComp.innerHTML = '<p class="text-center text-slate-400 text-sm py-4"><i class="ph ph-spinner animate-spin"></i> A preparar opções...</p>';
             document.getElementById('modal-produto').classList.remove('hidden');
@@ -514,7 +502,6 @@
                     <p class="text-xs text-slate-500 mb-3">Escolha de ${grupo.min} até ${grupo.max} opções.</p>
                     <div class="space-y-2">
                         ${grupo.itens.map((item, iIndex) => {
-                            // Se maximo for 1, usamos Radio Button (Bolotinha). Se for mais, usamos Checkbox (Quadrado).
                             const type = grupo.max === 1 ? 'radio' : 'checkbox';
                             const precoText = item.preco > 0 ? `+ R$ ${item.preco.toFixed(2).replace('.', ',')}` : 'Grátis';
                             return `
@@ -537,7 +524,6 @@
             let totalAdicionais = 0;
             const inputs = document.querySelectorAll('#area-complementos input:checked');
             inputs.forEach(input => { totalAdicionais += parseFloat(input.dataset.preco); });
-            
             const totalGeral = produtoSendoMontado.preco_venda + totalAdicionais;
             document.getElementById('modal-prod-total-btn').innerText = totalGeral.toFixed(2).replace('.', ',');
         }
@@ -549,7 +535,6 @@
             let strAdicionais = [];
             let inputsInvalidos = false;
 
-            // 1. Validação de Regras e Soma dos Preços Extras
             complementosAtuais.forEach((grupo, gIndex) => {
                 const selecionados = document.querySelectorAll(`input[name="grupo_${gIndex}"]:checked`);
                 if(grupo.obrigatorio && selecionados.length < grupo.min) {
@@ -560,7 +545,6 @@
                     alert(`⚠️ Atenção: Você pode escolher no máximo ${grupo.max} opções em "${grupo.nome}".`);
                     inputsInvalidos = true;
                 }
-                
                 selecionados.forEach(sel => {
                     totalAdicionais += parseFloat(sel.dataset.preco);
                     const precoAdd = parseFloat(sel.dataset.preco) > 0 ? `(+R$ ${parseFloat(sel.dataset.preco).toFixed(2)})` : '';
@@ -570,20 +554,15 @@
 
             if(inputsInvalidos) return;
 
-            // 2. Monta o pacote final que vai para o KDS e Impressora!
             const obsBase = document.getElementById('modal-prod-obs').value;
-            const obsFinal = strAdicionais.length > 0 
-                ? `Opções Extras: ${strAdicionais.join(' | ')}. ${obsBase ? 'Observação: ' + obsBase : ''}` 
-                : obsBase;
+            const obsFinal = strAdicionais.length > 0 ? `Opções Extras: ${strAdicionais.join(' | ')}. ${obsBase ? 'Obs: ' + obsBase : ''}` : obsBase;
             const precoFinal = produtoSendoMontado.preco_venda + totalAdicionais;
 
-            // A Mágica: Se comprar 2 lanches iguais, mas com bebidas diferentes, o sistema separa-os!
             const itemExistente = carrinho.find(i => i.produto_id === produtoSendoMontado.id && i.observacao === obsFinal);
             if (itemExistente) { itemExistente.quantidade++; } 
             else { carrinho.push({ produto_id: produtoSendoMontado.id, nome: produtoSendoMontado.nome, preco: precoFinal, quantidade: 1, observacao: obsFinal }); }
             
-            fecharModalProduto();
-            atualizarContadores();
+            fecharModalProduto(); atualizarContadores();
         }
 
         // ==========================
@@ -621,9 +600,6 @@
         function removerItem(index) { carrinho.splice(index, 1); atualizarContadores(); abrirCarrinho(); }
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.add('hidden'); }
 
-       // ==========================
-        // CONTROLE DA TELA DO CARTÃO
-        // ==========================
         function toggleAreaCartao() {
             const forma = document.getElementById('forma-pag-online').value;
             const area = document.getElementById('area-cartao');
@@ -631,7 +607,7 @@
         }
 
         // ==========================
-        // FINALIZAR PEDIDO (TURBINADO)
+        // FINALIZAR PEDIDO MERCADO PAGO
         // ==========================
         async function finalizarPedidoOnline() {
             let nome, tel, end, cliente_id, cpf;
@@ -640,7 +616,6 @@
                 nome = clienteLogado.nome; tel = clienteLogado.telefone;
                 end = clienteLogado.endereco_completo || "Retirada/Não informado";
                 cliente_id = clienteLogado.id; 
-                // Puxa o CPF do input novo caso o cliente digite na hora
                 cpf = document.getElementById('logado-cpf').value.trim(); 
             } else {
                 nome = document.getElementById('guest-nome').value.trim();
@@ -649,9 +624,7 @@
                 cpf = document.getElementById('guest-cpf').value.trim();
                 cliente_id = null;
 
-                if (!nome || !tel || !end) {
-                    alert("⚠️ Preencha o seu Nome, WhatsApp e Endereço para entrega."); return;
-                }
+                if (!nome || !tel || !end) { alert("⚠️ Preencha o seu Nome, WhatsApp e Endereço para entrega."); return; }
             }
 
             const tipoPgto = document.getElementById('forma-pag-online').value;
@@ -673,7 +646,6 @@
             btn.innerHTML = '<i class="ph ph-spinner animate-spin text-2xl"></i> Processando...';
             btn.disabled = true;
 
-            // === BLINDAGEM DO CARTÃO ===
             if (tipoPgto === 'credito') {
                 const numCartao = document.getElementById('cc-num').value.replace(/\D/g, '');
                 const nomeCartao = document.getElementById('cc-nome').value;
@@ -702,7 +674,7 @@
                     payload.payment_method_id = metodos.results[0].id;
                     payload.parcelas = document.getElementById('cc-parcelas').value;
                 } catch (e) {
-                    alert("⚠️ Erro: Dados do cartão incorretos ou não validados.");
+                    alert("⚠️ Erro: Dados do cartão incorretos ou não validados pelo Mercado Pago.");
                     btn.disabled = false; btn.innerHTML = txtOriginal; return;
                 }
             }
@@ -728,77 +700,6 @@
                 }
             } catch(e) { 
                 alert("Falha de conexão."); btn.disabled = false; btn.innerHTML = txtOriginal;
-            }
-        }
-
-            // === A MÁGICA DA BLINDAGEM DO CARTÃO AQUI ===
-            if (tipoPgto === 'credito') {
-                const numCartao = document.getElementById('cc-num').value.replace(/\D/g, '');
-                const nomeCartao = document.getElementById('cc-nome').value;
-                const valCartao = document.getElementById('cc-val').value;
-                const cvvCartao = document.getElementById('cc-cvv').value;
-
-                if(!numCartao || !nomeCartao || !valCartao || !cvvCartao) {
-                    alert("⚠️ Preencha todos os dados do cartão de crédito!");
-                    btn.disabled = false; btn.innerHTML = txtOriginal; return;
-                }
-
-                try {
-                    // ATENÇÃO: COLOQUE A SUA PUBLIC KEY DO MERCADO PAGO AQUI!
-                    const mp = new MercadoPago('APP_USR-848cf42a-5349-4310-9ba5-b8c42f1ee022'); 
-                    
-                    // 1. Descobre a bandeira do cartão (Visa, Master, etc)
-                    const metodos = await mp.getPaymentMethods({ bin: numCartao.substring(0, 6) });
-                    if(metodos.results.length === 0) throw new Error();
-                    
-                    // 2. Transforma o cartão em um Token seguro
-                    const tokenRes = await mp.createCardToken({
-                        cardNumber: numCartao,
-                        cardholderName: nomeCartao,
-                        cardExpirationMonth: valCartao.split('/')[0],
-                        cardExpirationYear: valCartao.split('/')[1].length === 2 ? "20" + valCartao.split('/')[1] : valCartao.split('/')[1],
-                        securityCode: cvvCartao,
-                        identificationType: "CPF",
-                        identificationNumber: cpf.replace(/\D/g, '')
-                    });
-
-                    if(tokenRes.error) throw new Error();
-
-                    // 3. Embala o Token no nosso pacote para o Python
-                    payload.token_cartao = tokenRes.id;
-                    payload.payment_method_id = metodos.results[0].id;
-                    payload.parcelas = document.getElementById('cc-parcelas').value;
-
-                } catch (e) {
-                    alert("⚠️ Erro: Dados do cartão incorretos ou banco recusou a validação inicial.");
-                    btn.disabled = false; btn.innerHTML = txtOriginal; return;
-                }
-            }
-            // ============================================
-
-            // Enviando o pacote pronto para o Backend
-            try {
-                const res = await fetch(`/api/pedidos/online?forma_pagamento=${tipoPgto}`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                
-                if (res.ok) {
-                    if (data.status === "checkout_transparente") {
-                        prompt("✅ SEU PIX FOI GERADO COM SUCESSO!\n\nCopie o código abaixo:", data.copia_e_cola);
-                    } else if (tipoPgto === 'credito') {
-                        alert("✅ PAGAMENTO APROVADO!\nSeu hambúrguer já está sendo preparado.");
-                    } else {
-                        alert("✅ Pedido enviado para a cozinha!");
-                    }
-                    window.location.reload();
-                } else { 
-                    alert("Erro: " + (data.detail || "Pagamento recusado pelo banco.")); 
-                    btn.disabled = false; btn.innerHTML = txtOriginal;
-                }
-            } catch(e) { 
-                alert("Falha na conexão."); 
-                btn.disabled = false; btn.innerHTML = txtOriginal;
             }
         }
     </script>
