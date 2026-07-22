@@ -616,12 +616,14 @@
                 nome = clienteLogado.nome; tel = clienteLogado.telefone;
                 end = clienteLogado.endereco_completo || "Retirada/Não informado";
                 cliente_id = clienteLogado.id; 
-                cpf = document.getElementById('logado-cpf').value.trim(); 
+                // Garante que só vai enviar NÚMEROS para o Mercado Pago
+                cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
             } else {
                 nome = document.getElementById('guest-nome').value.trim();
                 tel = document.getElementById('guest-tel').value.trim();
                 end = document.getElementById('guest-end').value.trim();
-                cpf = document.getElementById('guest-cpf').value.trim();
+                // Garante que só vai enviar NÚMEROS para o Mercado Pago
+                cpf = document.getElementById('guest-cpf').value.replace(/\D/g, ''); 
                 cliente_id = null;
 
                 if (!nome || !tel || !end) { alert("⚠️ Preencha o seu Nome, WhatsApp e Endereço para entrega."); return; }
