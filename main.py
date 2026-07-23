@@ -779,6 +779,40 @@ def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso"}
 
+@app.get("/api/gestao/relatorios/curva-abc")
+def obter_relatorio_curva_abc(db: Session = Depends(get_db)):
+    # Busca todos os pedidos que NÃO foram cancelados
+    pedidos = db.query(PedidoModel).filter(PedidoModel.status != "CANCELADO").all()
+    
+    ranking = {}
+    
+    for pedido in pedidos:
+        itens = getattr(pedido, 'itens', getattr(pedido, 'itens_pedido', []))
+        for item in itens:
+            prod_id = item.produto_id
+            qtd = item.quantidade
+            
+            if prod_id not in ranking:
+                produto = db.query(ProdutoModel).filter(ProdutoModel.id == prod_id).first()
+                if produto:
+                    ranking[prod_id] = {
+                        "nome": produto.nome, 
+                        "categoria": produto.categoria,
+                        "quantidade_vendida": 0, 
+                        "faturamento_gerado": 0.0
+                    }
+            
+            if prod_id in ranking:
+                produto_preco = db.query(ProdutoModel).filter(ProdutoModel.id == prod_id).first().preco_venda
+                ranking[prod_id]["quantidade_vendida"] += qtd
+                ranking[prod_id]["faturamento_gerado"] += (qtd * produto_preco)
+                
+    # Transforma o dicionário em lista e ordena do que deu mais dinheiro (maior faturamento) pro menor
+    lista_ranking = list(ranking.values())
+    lista_ranking.sort(key=lambda x: x["faturamento_gerado"], reverse=True)
+    
+    return lista_ranking[:10] # Retorna o TOP 10
+    
 # --- ROTAS VISUAIS (Telas HTML) ---
 @app.get("/login", response_class=HTMLResponse)
 def abrir_tela_login(): return Path("templates/login.html").read_text(encoding="utf-8") if Path("templates/login.html").exists() else "Erro"
