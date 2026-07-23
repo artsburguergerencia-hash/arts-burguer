@@ -139,6 +139,28 @@
                     </div>
                     <div class="mt-6 md:mt-0 bg-white/10 p-4 rounded-xl border border-white/20"><i class="ph ph-piggy-bank text-5xl text-white/80"></i></div>
                 </div>
+
+                <!-- NOVO BLOCO: CURVA ABC (TOP PRODUTOS) -->
+                <div class="mt-8 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="text-lg font-bold text-slate-800"><i class="ph-fill ph-ranking text-brand-500 mr-2"></i> Curva ABC: Top 10 Produtos</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white text-xs uppercase text-slate-400 font-semibold border-b border-slate-100">
+                                    <th class="py-3 px-6">Posição</th>
+                                    <th class="py-3 px-6">Produto</th>
+                                    <th class="py-3 px-6 text-center">Unid. Vendidas</th>
+                                    <th class="py-3 px-6 font-bold text-slate-800 text-right">Faturamento Gerado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-curva-abc" class="text-sm text-slate-600">
+                                <tr><td colspan="4" class="text-center py-6 text-slate-400">Calculando ranking...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 
                 <div id="painel-alertas-estoque" class="mt-8 hidden">
                     <div class="bg-red-50 border border-red-200 rounded-2xl p-6 shadow-sm">
@@ -413,7 +435,6 @@
                             </label>
                         </div>
 
-                        <!-- SUBSTITUA A FORMA DE PAGAMENTO ANTIGA POR ESTE BLOCO -->
                         <div class="border-t border-slate-100 pt-6">
                             <h4 class="text-sm font-bold text-slate-800 mb-4"><i class="ph ph-wallet mr-2 text-brand-500"></i> Formas de Pagamento Aceitas</h4>
                             
@@ -781,6 +802,33 @@
                     elemLucroReal.className = "text-4xl font-bold text-green-400";
                     elemDiag.innerText = "✅ Empresa saudável! Dinheiro a sobrar no caixa após todas as despesas.";
                 }
+
+                // --- NOVA BUSCA: CURVA ABC ---
+                try {
+                    const resAbc = await fetch('/api/gestao/relatorios/curva-abc');
+                    const topProdutos = await resAbc.json();
+                    const tbodyAbc = document.getElementById('lista-curva-abc');
+                    
+                    if(topProdutos.length === 0) {
+                        tbodyAbc.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Nenhuma venda registrada ainda.</td></tr>';
+                    } else {
+                        tbodyAbc.innerHTML = topProdutos.map((p, index) => {
+                            let medalha = `${index + 1}º`;
+                            if(index === 0) medalha = '🥇 1º';
+                            if(index === 1) medalha = '🥈 2º';
+                            if(index === 2) medalha = '🥉 3º';
+                            
+                            return `
+                                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                                    <td class="py-3 px-6 font-black text-slate-400 text-lg">${medalha}</td>
+                                    <td class="py-3 px-6 font-bold text-slate-700">${p.nome} <br><span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-normal uppercase">${p.categoria}</span></td>
+                                    <td class="py-3 px-6 text-center font-bold text-brand-500">${p.quantidade_vendida}x</td>
+                                    <td class="py-3 px-6 text-right font-black text-green-600">R$ ${p.faturamento_gerado.toFixed(2).replace('.', ',')}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                } catch(e) { console.error("Erro na Curva ABC", e); }
 
                 const resEst = await fetch('/api/gestao/insumos');
                 const insumos = await resEst.json();
