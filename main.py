@@ -810,6 +810,22 @@ def checar_novos_pedidos(db: Session = Depends(get_db)):
     qtd_novos = db.query(PedidoModel).filter(PedidoModel.status == "RECEBIDO").count()
     return {"pendentes": qtd_novos}
 
+@app.put("/api/logistica/pedidos/{pedido_id}/entregar")
+def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
+    pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+    if not pedido: 
+        raise HTTPException(status_code=404, detail="Pedido não encontrado")
+    
+    pedido.status = "ENTREGUE"
+    db.commit()
+    
+    # 🔔 A MÁGICA DO PÓS-VENDA: Dispara o WhatsApp Automático
+    if pedido.cliente:
+        # Chama a função que já existe no seu arquivo whatsapp_ia.py
+        notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, pedido.id, "ENTREGUE")
+        
+    return {"status": "sucesso", "mensagem": "Baixa realizada e cliente notificado!"}
+    
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer (Modo Notificações Automatizadas)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
