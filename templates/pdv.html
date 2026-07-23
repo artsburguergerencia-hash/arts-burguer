@@ -335,6 +335,90 @@
                 btn.disabled = false;
             }
         }
+
+        // ==========================
+        // MOTOR DE IMPRESSÃO TÉRMICA
+        // ==========================
+        async function imprimirCupom(pedidoId) {
+            try {
+                // 1. Busca os dados prontos no Backend
+                const res = await fetch(`/api/pedidos/${pedidoId}/recibo`);
+                const dados = await res.json();
+                
+                if (!res.ok) { alert("Erro: " + dados.detail); return; }
+
+                // 2. Monta as linhas dos lanches
+                let itensHtml = dados.itens.map(i => `
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
+                        <span style="font-weight: bold;">${i.quantidade}x ${i.nome}</span>
+                        <span>R$ ${i.subtotal.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    ${i.observacao ? `<div style="font-size: 11px; margin-bottom: 6px; padding-left: 10px; text-transform: uppercase;">-> OBS: ${i.observacao}</div>` : ''}
+                `).join('');
+
+                // 3. Desenha o Cupom no padrão Bobina 80mm
+                const conteudoCupom = `
+                    <html>
+                    <head>
+                        <title>Comanda #${dados.id}</title>
+                        <style>
+                            @page { margin: 0; }
+                            body { font-family: 'Courier New', Courier, monospace; width: 75mm; margin: 0 auto; padding: 10px; color: #000; background: #fff; }
+                            .text-center { text-align: center; }
+                            .font-bold { font-weight: bold; }
+                            .text-lg { font-size: 20px; }
+                            .text-sm { font-size: 13px; }
+                            .divisor { border-bottom: 1px dashed #000; margin: 10px 0; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="text-center font-bold text-lg mb-2">ART'S BURGUER</div>
+                        <div class="text-center text-sm">Pedido #${dados.id}</div>
+                        <div class="text-center text-sm" style="margin-bottom: 10px;">${dados.data_hora}</div>
+                        
+                        <div class="divisor"></div>
+                        <div class="text-sm font-bold">Cliente: ${dados.cliente_nome}</div>
+                        <div class="text-sm font-bold">Tel: ${dados.cliente_telefone}</div>
+                        
+                        <div class="divisor"></div>
+                        <div class="text-sm font-bold text-center" style="font-size: 16px;">TIPO: ${dados.tipo}</div>
+                        ${dados.tipo === 'DELIVERY' ? `<div class="text-sm" style="margin-top: 5px; text-transform: uppercase;"><b>End:</b> ${dados.endereco}</div>` : ''}
+                        <div class="divisor"></div>
+                        
+                        <div class="font-bold text-center mb-2" style="font-size: 14px;">ITENS DO PEDIDO</div>
+                        ${itensHtml}
+                        
+                        <div class="divisor"></div>
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
+                            <span>TOTAL:</span>
+                            <span>R$ ${dados.total.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                        <div class="text-sm mt-2" style="text-transform: uppercase;"><b>PAGAMENTO:</b> ${dados.forma_pagamento}</div>
+                        <div class="divisor"></div>
+                        
+                        <div class="text-center text-sm mt-4">Obrigado pela preferencia!</div>
+                        <div class="text-center text-sm mt-1" style="margin-bottom: 20px;">.</div>
+                    </body>
+                    </html>
+                `;
+
+                // 4. Abre uma janela invisível, imprime e fecha sozinha!
+                const janelaImpressao = window.open('', '', 'width=400,height=600');
+                janelaImpressao.document.write(conteudoCupom);
+                janelaImpressao.document.close();
+                janelaImpressao.focus();
+                
+                // Dá 500ms pro navegador renderizar antes de chamar a caixa de impressão do Windows
+                setTimeout(() => {
+                    janelaImpressao.print();
+                    janelaImpressao.close();
+                }, 500);
+
+            } catch(e) {
+                alert("Falha de conexão com a impressora.");
+                console.error(e);
+            }
+        }
     </script>
 </body>
 </html>
