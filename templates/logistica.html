@@ -3,157 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Logística - Art's Burguer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <title>Logística e Expedição - Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
     </script>
-    <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen w-screen flex flex-col overflow-hidden font-sans">
-    
-    <!-- CABEÇALHO -->
-    <header class="bg-slate-900 border-b border-slate-800 h-16 flex items-center justify-between px-6 shrink-0 shadow-lg text-white z-20">
+<body class="bg-slate-50 flex flex-col h-screen overflow-hidden text-slate-800 font-sans">
+
+    <header class="bg-slate-900 text-white h-16 flex items-center justify-between px-6 shadow-md z-10 shrink-0">
         <div class="flex items-center space-x-3">
             <div class="bg-brand-500/20 p-2 rounded-lg border border-brand-500/30">
-                <i class="ph-fill ph-moped text-2xl text-brand-500 animate-bounce"></i>
+                <i class="ph-fill ph-moped text-2xl text-brand-500"></i>
             </div>
             <div>
-                <h1 class="font-black text-lg tracking-tight uppercase leading-none">Base de Logística</h1>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Controle de Entregas</p>
+                <h1 class="font-bold text-lg leading-tight uppercase tracking-wide">Central de Expedição</h1>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Controle de Frota, Delivery & Retiradas</p>
             </div>
         </div>
-        <button onclick="window.location.replace('/admin')" class="text-slate-400 hover:text-white transition-colors">
-            <i class="ph ph-sign-out text-2xl"></i>
-        </button>
+        <div class="flex items-center space-x-4">
+            <button onclick="buscarPedidosLogistica()" class="text-sm bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg transition-colors flex items-center text-slate-300">
+                <i class="ph ph-arrows-clockwise mr-2"></i> Atualizar
+            </button>
+            <a href="/gestao" class="text-slate-400 hover:text-white transition-colors flex items-center text-sm ml-4 border-l border-slate-700 pl-4">
+                <i class="ph ph-sign-out mr-2"></i> Sair do Painel
+            </a>
+        </div>
     </header>
 
-    <!-- ÁREA DE COLUNAS -->
-    <main class="flex-1 overflow-hidden p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6">
+    <main class="flex-1 overflow-hidden p-6 lg:p-10 flex flex-col lg:flex-row gap-8">
         
-        <!-- Coluna 1: Pacotes Prontos (Aguardando Motoboy) -->
-        <section class="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <header class="p-4 border-b border-slate-100 bg-slate-50">
-                <h2 class="font-black text-slate-700 flex items-center text-lg tracking-tight">
-                    <i class="ph-fill ph-package mr-2 text-blue-500"></i> Aguardando Retirada
+        <!-- PRONTOS -->
+        <section class="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-amber-50 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center">
+                    <i class="ph-fill ph-package text-amber-500 mr-2 text-2xl"></i> Prontos / Aguardando Saída
                 </h2>
-            </header>
-            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar bg-slate-50/50" id="lista-prontos">
-                <div class="h-full flex flex-col justify-center items-center text-slate-400">
-                    <i class="ph ph-spinner animate-spin text-4xl mb-2"></i>
+                <span id="badge-prontos" class="bg-amber-100 text-amber-700 font-black px-3 py-1 rounded-full text-xs">0</span>
+            </div>
+            
+            <div id="lista-prontos" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
+                <div class="h-full flex flex-col items-center justify-center text-slate-400">
+                    <i class="ph ph-spinner animate-spin text-4xl mb-3"></i>
                     <p class="text-sm font-medium">Buscando pacotes...</p>
                 </div>
             </div>
         </section>
 
-        <!-- Coluna 2: Motoboys na Rua (Em Rota) -->
-        <section class="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <header class="p-4 border-b border-slate-100 bg-slate-50">
-                <h2 class="font-black text-slate-700 flex items-center text-lg tracking-tight">
-                    <i class="ph-fill ph-motorcycle mr-2 text-purple-500"></i> Em Rota de Entrega
+        <!-- EM ROTA -->
+        <section class="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center">
+                    <i class="ph-fill ph-map-pin-line text-blue-500 mr-2 text-2xl"></i> Em Rota de Entrega
                 </h2>
-            </header>
-            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar bg-slate-50/50" id="lista-rota">
-                <div class="h-full flex flex-col justify-center items-center text-slate-400">
-                    <i class="ph ph-spinner animate-spin text-4xl mb-2"></i>
-                    <p class="text-sm font-medium">Buscando pacotes...</p>
-                </div>
+                <span id="badge-rota" class="bg-blue-100 text-blue-700 font-black px-3 py-1 rounded-full text-xs">0</span>
+            </div>
+
+            <div id="lista-rota" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
             </div>
         </section>
+
     </main>
 
     <script>
-        // ==========================
-        // MOTOR DE LOGÍSTICA
-        // ==========================
-        async function carregarLogistica() {
+        setInterval(buscarPedidosLogistica, 5000);
+        document.addEventListener('DOMContentLoaded', buscarPedidosLogistica);
+
+        async function buscarPedidosLogistica() {
             try {
-                const res = await fetch('/api/logistica/pedidos');
-                const data = await res.json();
+                const response = await fetch('/api/logistica/pedidos');
+                const dados = await response.json();
                 
-                renderizarProntos(data.prontos);
-                renderizarEmRota(data.em_rota);
-            } catch(e) { console.error("Erro ao carregar dados", e); }
+                renderizarProntos(dados.prontos);
+                renderizarEmRota(dados.em_rota);
+                
+                document.getElementById('badge-prontos').innerText = dados.prontos.length;
+                document.getElementById('badge-rota').innerText = dados.em_rota.length;
+
+            } catch (error) {
+                console.error("Erro ao buscar dados logísticos:", error);
+            }
         }
 
         function renderizarProntos(pedidos) {
-            const div = document.getElementById('lista-prontos');
-            if(pedidos.length === 0) {
-                div.innerHTML = '<div class="h-full flex flex-col justify-center items-center text-slate-300"><i class="ph-fill ph-check-circle text-6xl mb-2"></i><p class="font-medium text-sm">Nenhum pedido aguardando.</p></div>';
+            const container = document.getElementById('lista-prontos');
+            if (pedidos.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
+                        <i class="ph ph-package text-6xl mb-3"></i>
+                        <p class="text-sm font-medium">Nenhum pacote aguardando despacho.</p>
+                    </div>`;
                 return;
             }
-            
-            div.innerHTML = pedidos.map(p => `
-                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                    <div class="absolute left-0 top-0 w-1 h-full bg-blue-500"></div>
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-black text-xl text-slate-800 tracking-tight">#${p.id} - ${p.cliente.split(' ')[0]}</h3>
-                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded uppercase tracking-wider">${p.tipo}</span>
+
+            container.innerHTML = pedidos.map(p => {
+                const isRetirada = p.tipo === 'RETIRADA';
+
+                return `
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-xs font-black ${isRetirada ? 'text-purple-600 bg-purple-50' : 'text-amber-500 bg-amber-50'} px-2 py-1 rounded tracking-widest uppercase">
+                                    ${isRetirada ? 'Retirada no Balcão' : 'Delivery'} • #${p.id}
+                                </span>
+                                <h3 class="font-bold text-slate-800 text-lg mt-1">${p.cliente}</h3>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4 text-sm text-slate-600">
+                            <i class="ph-fill ph-map-pin mr-1 text-brand-500"></i> 
+                            ${p.endereco}
+                        </div>
+                        
+                        ${isRetirada ? `
+                            <button onclick="concluirRetirada(${p.id})" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center transition-colors text-sm shadow-sm">
+                                <i class="ph-fill ph-check-circle mr-2 text-lg"></i> Cliente Retirou (Concluir Pedido)
+                            </button>
+                        ` : `
+                            <div class="space-y-2">
+                                <div class="flex space-x-2">
+                                    <button onclick="copilotoDespacho(${p.id}, 'Uber', '${p.endereco.replace(/'/g, "\\'")}')" id="btn-uber-${p.id}" class="flex-1 bg-black hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm">
+                                        <i class="ph-fill ph-paper-plane-right mr-1 text-base"></i> Uber
+                                    </button>
+                                    
+                                    <button onclick="copilotoDespacho(${p.id}, '99', '${p.endereco.replace(/'/g, "\\'")}')" id="btn-99-${p.id}" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm">
+                                        <i class="ph-fill ph-paper-plane-right mr-1 text-base"></i> 99
+                                    </button>
+                                </div>
+                                <button onclick="despacharMotoboyProprio(${p.id})" id="btn-proprio-${p.id}" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm">
+                                    <i class="ph-fill ph-moped mr-2 text-base text-brand-500"></i> Motoboy Próprio / Da Casa
+                                </button>
+                            </div>
+                        `}
                     </div>
-                    ${p.tipo === 'DELIVERY' ? `<p class="text-xs font-semibold text-slate-500 mb-4 flex items-start leading-relaxed"><i class="ph-fill ph-map-pin text-brand-500 mr-1.5 mt-0.5 text-base"></i> ${p.endereco}</p>` : `<p class="text-xs text-amber-600 bg-amber-50 px-2 py-1 inline-block rounded font-bold mb-4">📍 RETIRADA NO BALCÃO</p>`}
-                    
-                    <button onclick="despacharPedido(${p.id}, '${p.tipo}')" class="w-full bg-slate-900 hover:bg-brand-500 text-white font-black py-3.5 rounded-lg text-sm transition-colors shadow-lg active:scale-95 uppercase tracking-wider">
-                        ${p.tipo === 'DELIVERY' ? 'Entregar ao Motoboy' : 'Entregar ao Cliente'}
-                    </button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function renderizarEmRota(pedidos) {
-            const div = document.getElementById('lista-rota');
-            if(pedidos.length === 0) {
-                div.innerHTML = '<div class="h-full flex flex-col justify-center items-center text-slate-300"><i class="ph-fill ph-motorcycle text-6xl mb-2"></i><p class="font-medium text-sm">Nenhum motoboy na rua.</p></div>';
+            const container = document.getElementById('lista-rota');
+            if (pedidos.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
+                        <i class="ph ph-motorcycle text-6xl mb-3"></i>
+                        <p class="text-sm font-medium">Nenhum motoboy na rua agora.</p>
+                    </div>`;
                 return;
             }
-            
-            div.innerHTML = pedidos.map(p => `
-                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg relative overflow-hidden text-white">
-                    <div class="absolute left-0 top-0 w-1 h-full bg-purple-500"></div>
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-black text-xl tracking-tight">#${p.id} - ${p.cliente.split(' ')[0]}</h3>
+
+            container.innerHTML = pedidos.map(p => `
+                <div class="bg-white border border-blue-100 rounded-xl p-5 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-black text-blue-500 tracking-widest uppercase">Pedido #${p.id}</span>
+                        <span class="flex items-center text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
+                            <i class="ph ph-clock mr-1"></i> A caminho
+                        </span>
                     </div>
-                    <p class="text-xs text-slate-300 font-medium mb-4 flex items-start leading-relaxed"><i class="ph-fill ph-map-pin text-purple-400 mr-1.5 mt-0.5 text-base"></i> ${p.endereco}</p>
+                    <h3 class="font-bold text-slate-800 text-lg mb-3">${p.cliente}</h3>
                     
-                    <div class="flex space-x-2">
-                        <button onclick="abrirGPS('${p.endereco}')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3.5 rounded-lg text-sm transition-colors shadow-sm flex justify-center items-center active:scale-95 border border-slate-600">
-                            <i class="ph-fill ph-navigation-arrow mr-2 text-blue-400 text-lg"></i> GPS
+                    <div class="flex space-x-2 mt-4">
+                        <button onclick="abrirGPS('${p.endereco.replace(/'/g, "\\'")}')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm">
+                            <i class="ph-fill ph-navigation-arrow mr-1 text-blue-400 text-base"></i> GPS
                         </button>
-                        <button onclick="marcarEntregue(${p.id})" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-lg text-sm transition-colors shadow-sm flex justify-center items-center active:scale-95">
-                            <i class="ph-fill ph-check-circle mr-2 text-lg"></i> Entregue
+                        
+                        <button onclick="marcarComoEntregue(${p.id})" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm uppercase tracking-wider">
+                            <i class="ph-fill ph-check-fat mr-1 text-base"></i> Entregue
                         </button>
                     </div>
                 </div>
             `).join('');
-        }
-
-        async function despacharPedido(id, tipo) {
-            // Se for retirada no balcão, pula a viagem de moto e finaliza a venda imediatamente!
-            if(tipo === 'RETIRADA') {
-                marcarEntregue(id);
-                return;
-            }
-            
-            try {
-                const res = await fetch(`/api/logistica/pedidos/${id}/despachar`, {
-                    method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome_motoboy: "Motoboy Express" })
-                });
-                if(res.ok) carregarLogistica();
-            } catch(e) { console.error(e); }
-        }
-
-        async function marcarEntregue(id) {
-            try {
-                const res = await fetch(`/api/logistica/pedidos/${id}/entregar`, { method: 'PUT' });
-                if(res.ok) {
-                    alert("✅ Venda Finalizada! O sistema enviou uma mensagem de agradecimento pelo WhatsApp.");
-                    carregarLogistica();
-                }
-            } catch(e) { console.error(e); }
         }
 
         // ==========================
@@ -161,14 +182,111 @@
         // ==========================
         function abrirGPS(endereco) {
             if(!endereco || endereco.includes('Retirada')) return alert("Endereço inválido para GPS.");
-            // Essa URL universal converte o texto para o formato de busca do Google Maps no app do celular
-            const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
+            // Abre a busca nativa de mapas (funciona no PC abrindo o navegador e no celular abrindo o Maps/Waze)
+            const enderecoLimpo = endereco.replace('Endereço: ', '').trim();
+            const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoLimpo)}`;
             window.open(url, '_blank');
         }
 
-        // Atualiza a tela sozinho a cada 5 segundos
-        setInterval(carregarLogistica, 5000);
-        document.addEventListener('DOMContentLoaded', carregarLogistica);
+        // A Mágica dos Deep Links (Uber / 99)
+        async function copilotoDespacho(pedidoId, plataforma, enderecoFormatado) {
+            const isUber = plataforma === 'Uber';
+            const enderecoLimpo = enderecoFormatado.replace('Endereço: ', '').trim();
+            
+            try {
+                await navigator.clipboard.writeText(enderecoLimpo);
+            } catch(e) { console.log("Cópia silenciosa falhou."); }
+
+            if (isUber) {
+                const urlUber = `uber://?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(enderecoLimpo)}`;
+                window.location.href = urlUber;
+            } else {
+                alert("Endereço copiado! 📋\nA 99 vai abrir. Se o endereço não aparecer automático, basta clicar em 'Colar'!");
+                window.location.href = "taxis99://";
+            }
+
+            setTimeout(async () => {
+                const confirmacao = confirm(`Já pediu a corrida no app da ${plataforma} para este cliente?\nSe sim, clique em OK para mover para 'Em Rota'.`);
+                if(!confirmacao) return;
+
+                const btn = document.getElementById(isUber ? `btn-uber-${pedidoId}` : `btn-99-${pedidoId}`);
+                btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i>';
+
+                try {
+                    const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome_motoboy: `App Pessoal (${plataforma})` })
+                    });
+
+                    if(res.ok) { buscarPedidosLogistica(); } 
+                    else { alert("Erro ao registrar despacho."); }
+                } catch(e) { alert("Falha de conexão."); }
+            }, 4000);
+        }
+
+        // Despacho com Motoboy Próprio
+        async function despacharMotoboyProprio(pedidoId) {
+            const nomeMotoboy = prompt("Nome do Motoboy da Casa:", "Motoboy Próprio");
+            if (nomeMotoboy === null) return;
+
+            try {
+                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome_motoboy: nomeMotoboy })
+                });
+
+                if(res.ok) {
+                    buscarPedidosLogistica();
+                } else {
+                    alert("Erro ao despachar com motoboy próprio.");
+                }
+            } catch(e) {
+                alert("Falha de conexão.");
+            }
+        }
+
+        // Concluir Pedido de Retirada no Balcão
+        async function concluirRetirada(pedidoId) {
+            if(!confirm("Confirmar que o cliente retirou o pedido no balcão? Isso encerrará o pedido e enviará o WhatsApp de agradecimento.")) return;
+
+            try {
+                // ATUALIZADO: Agora bate na rota correta para disparar o WhatsApp
+                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, {
+                    method: 'PUT'
+                });
+
+                if(res.ok) {
+                    buscarPedidosLogistica();
+                } else {
+                    alert("Erro ao concluir retirada.");
+                }
+            } catch(e) {
+                alert("Falha de conexão.");
+            }
+        }
+
+        // Marcar Pedido em Rota como Entregue
+        async function marcarComoEntregue(pedidoId) {
+            if(!confirm("Confirmar que este pedido foi entregue ao cliente? Isso enviará a mensagem final no WhatsApp.")) return;
+
+            try {
+                // ATUALIZADO: Agora bate na rota correta para disparar o WhatsApp
+                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, {
+                    method: 'PUT'
+                });
+
+                if(res.ok) {
+                    alert("✅ Entrega finalizada e WhatsApp de pós-venda enviado!");
+                    buscarPedidosLogistica();
+                } else {
+                    alert("Erro ao atualizar status para entregue.");
+                }
+            } catch(e) {
+                alert("Falha de conexão.");
+            }
+        }
     </script>
 </body>
 </html>
