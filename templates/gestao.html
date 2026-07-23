@@ -391,9 +391,45 @@
             
             <!-- COLABORADORES -->
             <div id="aba-colaboradores" class="painel hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
-                    <h3 class="text-lg font-bold">Equipe</h3>
-                    <p class="text-sm text-slate-500">Integrado no ecossistema de gestão de funcionários (Em desenvolvimento).</p>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="ph ph-identification-card text-brand-500 mr-2"></i> Cadastrar Novo Colaborador</h3>
+                    <form id="form-rh" onsubmit="cadastrarColaborador(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome Completo</label>
+                            <input type="text" id="rh-nome" placeholder="Ex: João da Silva" required class="w-full px-4 py-3 rounded-lg border border-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Usuário de Login</label>
+                            <input type="text" id="rh-usuario" placeholder="Ex: joao.silva" required class="w-full px-4 py-3 rounded-lg border border-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Senha de Acesso</label>
+                            <input type="password" id="rh-senha" placeholder="******" required class="w-full px-4 py-3 rounded-lg border border-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Cargo / Permissão</label>
+                            <select id="rh-cargo" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white">
+                                <option value="2">Gerente (Acesso Total)</option>
+                                <option value="3" selected>Operador de Caixa / PDV</option>
+                                <option value="4">Cozinheiro (KDS)</option>
+                                <option value="5">Motoboy</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="md:col-span-2 bg-slate-900 hover:bg-brand-500 text-white font-bold py-3 rounded-lg transition-colors mt-2">Dar Acesso ao Sistema</button>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-4 bg-slate-50 font-bold border-b border-slate-200 flex justify-between items-center">
+                        Equipe Atual
+                        <button onclick="carregarColaboradores()" class="text-sm text-brand-500 font-semibold"><i class="ph ph-arrows-clockwise"></i> Atualizar</button>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead><tr class="bg-white text-slate-400 text-xs uppercase border-b"><th class="py-3 px-6">Nome</th><th class="py-3 px-6">Usuário (Login)</th><th class="py-3 px-6">Cargo</th><th class="py-3 px-6 text-center">Ações</th></tr></thead>
+                        <tbody id="lista-colaboradores">
+                            <tr><td colspan="4" class="p-4 text-center text-slate-400">Carregando equipe...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
@@ -1117,6 +1153,68 @@
                 btnClicado.innerHTML = btnOriginal; btnClicado.disabled = false;
                 elemento.style.backgroundColor = bgOriginal; elemento.style.animation = animationOriginal;
             });
+        }
+
+        // ==========================
+        // GESTÃO DE RH (COLABORADORES)
+        // ==========================
+        async function cadastrarColaborador(e) {
+            e.preventDefault();
+            const payload = {
+                nome: document.getElementById('rh-nome').value,
+                usuario: document.getElementById('rh-usuario').value,
+                senha: document.getElementById('rh-senha').value,
+                cargo_id: parseInt(document.getElementById('rh-cargo').value),
+                foto: ""
+            };
+
+            try {
+                const res = await fetch('/api/gestao/funcionarios', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(res.ok) {
+                    alert("✅ " + data.mensagem);
+                    document.getElementById('form-rh').reset();
+                    carregarColaboradores();
+                } else {
+                    alert("❌ Erro: " + data.detail);
+                }
+            } catch(error) { alert("Falha na conexão."); }
+        }
+
+        async function carregarColaboradores() {
+            try {
+                const res = await fetch('/api/gestao/funcionarios');
+                const dados = await res.json();
+                const tbody = document.getElementById('lista-colaboradores');
+                if(!tbody) return;
+                
+                if(dados.length === 0) { 
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum funcionário encontrado.</td></tr>'; 
+                    return; 
+                }
+
+                tbody.innerHTML = dados.map(f => {
+                    const btnExcluir = f.id === 1 ? `<span class="text-xs text-slate-400 font-bold">INEXCLUÍVEL</span>` : `<button onclick="demitirColaborador(${f.id}, '${f.nome}')" class="text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 px-2 py-1 rounded">Revogar Acesso</button>`;
+                    const cargoClass = f.id === 1 ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600';
+                    
+                    return `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="py-3 px-6 font-bold text-slate-800">${f.nome}</td>
+                        <td class="py-3 px-6 text-slate-600 font-mono text-sm">${f.usuario}</td>
+                        <td class="py-3 px-6"><span class="px-2 py-1 rounded-md text-xs font-bold ${cargoClass}">${f.cargo}</span></td>
+                        <td class="py-3 px-6 text-center">${btnExcluir}</td>
+                    </tr>
+                `}).join('');
+            } catch(e) {}
+        }
+
+        async function demitirColaborador(id, nome) {
+            if(!confirm(`⚠️ ATENÇÃO: Tem certeza que deseja remover o acesso de ${nome}? Ele não poderá mais entrar no sistema.`)) return;
+            try {
+                const res = await fetch(`/api/gestao/funcionarios/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if(res.ok) { carregarColaboradores(); } else { alert("Erro: " + data.detail); }
+            } catch(e) { alert("Falha ao comunicar com servidor."); }
         }
     </script>
 </body>
