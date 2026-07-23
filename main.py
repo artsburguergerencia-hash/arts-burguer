@@ -592,6 +592,58 @@ def obter_relatorio_lucratividade(db: Session = Depends(get_db)):
     margem_lucro = (lucro_operacional / faturamento_total * 100) if faturamento_total > 0 else 0
     return { "faturamento": faturamento_total, "despesas_empresa": despesas_empresa, "despesas_casa": despesas_casa, "lucro_operacional": lucro_operacional, "lucro_liquido": lucro_liquido_real, "margem_lucro": round(margem_lucro, 2) }
 
+@app.get("/api/pedidos/{pedido_id}/recibo")
+def obter_recibo_pedido(pedido_id: int, db: Session = Depends(get_db)):
+    pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido não encontrado")
+    
+    cliente = pedido.cliente
+    itens_formatados = []
+    
+    for item in getattr(pedido, 'itens', getattr(pedido, 'itens_pedido', [])):
+        prod = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
+        nome_prod = prod.nome if prod else "Produto Indisponível"
+        preco_unit = prod.preco_venda if prod else 0.0
+        obs = getattr(item, 'observacao', getattr(item, 'observacoes', ''))
+        
+        itens_formatados.append({
+            "quantidade": item.quantidade,
+            "nome": nome_prod,
+            "preco_unitario": preco_unit,
+            "subtotal": item.quantidade * preco_unit,
+            "observacao": obs
+        })
+    
+    # Busca o endereço (seja do cadastro ou digitado na hora pelo visitante)
+    endereco = "Retirada no Balcão"
+    tipo_pedido = str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', ''))).split('.')[-1].upper()
+    
+    if tipo_pedido == "DELIVERY":
+        # Verifica se o endereço veio nas observações (Visitante)
+        if itens_formatados and "Endereço:" in itens_formatados[0]["observacao"]:
+            partes = itens_formatados[0]["observacao"].split(" | ")
+            for p in partes:
+                if "Endereço:" in p:
+                    endereco = p.replace("Endereço:", "").strip()
+                    # Limpa a observação para não imprimir o endereço no lugar errado
+                    itens_formatados[0]["observacao"] = itens_formatados[0]["observacao"].replace(p, "").replace("|", "").strip()
+                    break
+        elif cliente and getattr(cliente, 'logradouro', ''):
+            endereco = f"{cliente.logradouro}, {cliente.numero} - {cliente.bairro}"
+
+    return {
+        "id": pedido.id,
+        "data_hora": datetime.now().strftime("%d/%m/%Y %H:%M"),
+        "tipo": tipo_pedido,
+        "cliente_nome": cliente.nome if cliente else "Cliente Avulso",
+        "cliente_telefone": cliente.telefone if cliente else "",
+        "endereco": endereco,
+        "itens": itens_formatados,
+        "total": pedido.total_pago,
+        "forma_pagamento": str(pedido.forma_pagamento).replace('_', ' ').upper()
+    }
+    
 # --- ROTAS DE LOGÍSTICA E KDS ---
 
 @app.get("/api/logistica/pedidos")
