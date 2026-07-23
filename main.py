@@ -437,7 +437,57 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
 
 
 # --- ROTAS DE GESTÃO E ESTOQUE ---
+@app.get("/api/gestao/funcionarios")
+def listar_funcionarios(db: Session = Depends(get_db)):
+    funcionarios = db.query(FuncionarioModel).all()
+    lista = []
+    for f in funcionarios:
+        cargo = db.query(Cargo).filter(Cargo.id == f.cargo_id).first()
+        lista.append({
+            "id": f.id,
+            "nome": f.nome,
+            "usuario": f.usuario,
+            "cargo": cargo.nome if cargo else "Sem Cargo",
+            "cargo_id": f.cargo_id
+        })
+    return lista
 
+@app.post("/api/gestao/funcionarios")
+def cadastrar_funcionario(dados: NovoFuncionario, db: Session = Depends(get_db)):
+    try:
+        # Verifica se o usuário já existe
+        existe = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first()
+        if existe:
+            raise HTTPException(status_code=400, detail="Este nome de usuário já está em uso.")
+            
+        novo_func = FuncionarioModel(
+            nome=dados.nome,
+            usuario=dados.usuario,
+            senha_hash=pwd_context.hash(dados.senha),
+            cargo_id=dados.cargo_id,
+            foto=dados.foto
+        )
+        db.add(novo_func)
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Colaborador cadastrado!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/gestao/funcionarios/{func_id}")
+def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
+    # Proteção para não deletar o Admin principal (ID 1)
+    if func_id == 1:
+        raise HTTPException(status_code=403, detail="Não é possível excluir o Administrador Principal.")
+        
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    if not func:
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
+        
+    db.delete(func)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Acesso revogado com sucesso."}
+    
 @app.post("/api/gestao/complementos")
 def criar_grupo_complemento(payload: GrupoCompSchema, db: Session = Depends(get_db)):
     try:
