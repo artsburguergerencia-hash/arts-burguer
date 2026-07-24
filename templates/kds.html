@@ -3,268 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel da Cozinha (KDS) - Art's Burguer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <title>KDS - Cozinha | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
-    </script>
     <style>
-        /* Esconde a barra de rolagem mas mantém a função ativa */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 h-screen w-screen flex flex-col overflow-hidden font-sans select-none">
+<body class="bg-slate-900 text-white h-screen w-screen flex flex-col overflow-hidden font-sans">
 
-    <header class="bg-slate-900 border-b border-slate-800 h-16 flex items-center justify-between px-6 shrink-0 shadow-lg">
+    <!-- CABEÇALHO KDS -->
+    <header class="bg-black/50 border-b border-slate-800 h-16 flex items-center justify-between px-6 shrink-0 z-20">
         <div class="flex items-center space-x-3">
-            <div class="bg-red-500/10 p-2 rounded-lg border border-red-500/20">
-                <i class="ph-fill ph-fire text-2xl text-red-500 animate-pulse"></i>
-            </div>
+            <i class="ph-fill ph-cooking-pot text-3xl text-brand-500 text-red-500 animate-pulse"></i>
             <div>
-                <h1 class="font-black text-lg tracking-tight uppercase">Monitor de Preparo (KDS)</h1>
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest" id="contador-pedidos">0 pedidos em produção</p>
+                <h1 class="font-black text-lg tracking-tight uppercase leading-none">Monitor KDS</h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Gestão de Cozinha</p>
             </div>
         </div>
         <div class="flex items-center space-x-4">
-            <div id="relogio" class="text-xl font-bold tracking-wider text-slate-400">00:00:00</div>
-            <div class="h-4 w-4 bg-green-500 rounded-full border-2 border-slate-950 shadow-[0_0_10px_#22c55e]"></div>
+            <button onclick="buscarPedidosKDS()" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-lg text-sm font-bold flex items-center">
+                <i class="ph ph-arrows-clockwise mr-2 text-lg"></i> Atualizar
+            </button>
         </div>
     </header>
 
-    <main class="flex-1 overflow-x-auto overflow-y-hidden p-6 flex space-x-6 items-start no-scrollbar bg-gradient-to-b from-slate-950 to-slate-900" id="esteira-pedidos">
+    <!-- ÁREA DE COLUNAS (CORRIGIDO PARA NÃO VAZAR DA TELA) -->
+    <main class="flex-1 overflow-hidden p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6">
         
-        <div class="w-full h-full flex flex-col items-center justify-center text-slate-600" id="tela-vazia">
-            <i class="ph ph-sparkles text-6xl mb-3 opacity-30"></i>
-            <p class="text-lg font-bold tracking-wide">Cozinha Limpa!</p>
-            <p class="text-xs opacity-50">Nenhum pedido pendente no momento.</p>
-        </div>
+        <!-- COLUNA 1: NOVOS PEDIDOS (RECEBIDOS) -->
+        <section class="flex-1 flex flex-col bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
+            <header class="p-3 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
+                <h2 class="font-black text-white flex items-center text-lg"><i class="ph-fill ph-bell-ringing mr-2 text-amber-500"></i> Fila de Preparo</h2>
+                <span id="badge-recebidos" class="bg-amber-500 text-black font-black px-2 py-0.5 rounded text-xs">0</span>
+            </header>
+            <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-800/50">
+                <!-- GRID RESPONSIVO PARA OS CARDS (Quebra a linha automático) -->
+                <div id="lista-recebidos" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-max">
+                    <p class="text-slate-500 col-span-full text-center py-10">Buscando comandas...</p>
+                </div>
+            </div>
+        </section>
 
+        <!-- COLUNA 2: EM PREPARO (CHAPA) -->
+        <section class="flex-1 flex flex-col bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
+            <header class="p-3 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
+                <h2 class="font-black text-white flex items-center text-lg"><i class="ph-fill ph-fire mr-2 text-red-500"></i> Na Chapa</h2>
+                <span id="badge-preparo" class="bg-red-500 text-white font-black px-2 py-0.5 rounded text-xs">0</span>
+            </header>
+            <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-800/50">
+                <!-- GRID RESPONSIVO PARA OS CARDS -->
+                <div id="lista-preparo" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-max">
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Botão de Ativação do Áudio -->
-    <button onclick="ativarSomKDS()" id="btn-som-kds" class="fixed bottom-6 right-6 bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-full shadow-2xl z-50 flex items-center text-sm font-black tracking-wider uppercase transition-all duration-300 border border-slate-700 active:scale-95">
-        <i class="ph-fill ph-speaker-slash mr-2 text-xl text-red-400" id="icone-som-kds"></i> Ativar Alarme
-    </button>
+    <!-- IFRAME INVISÍVEL PARA IMPRESSÃO TÉRMICA 80MM -->
+    <iframe id="iframe-impressao" style="display:none;"></iframe>
 
     <script>
-        // === CONTROLE DO ALARME SONORO ===
-        let somAtivado = false;
-        let listaPedidosAnteriores = [];
-        // Um som clássico de notificação
-        const somNotificacao = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+        async function buscarPedidosKDS() {
+            try {
+                const res = await fetch('/api/kds/pedidos');
+                const pedidos = await res.json();
+                
+                const recebidos = pedidos.filter(p => p.status === 'RECEBIDO');
+                const emPreparo = pedidos.filter(p => p.status === 'EM_PREPARO');
+                
+                document.getElementById('badge-recebidos').innerText = recebidos.length;
+                document.getElementById('badge-preparo').innerText = emPreparo.length;
 
-        function ativarSomKDS() {
-            somAtivado = true;
-            // O navegador exige que o usuário interaja com a tela antes de tocar sons automáticos
-            somNotificacao.play().then(() => {
-                somNotificacao.pause(); 
-                somNotificacao.currentTime = 0;
-            }).catch(e => console.log("Áudio liberado"));
-            
-            // Esconde o botão após ativado
-            document.getElementById('btn-som-kds').classList.add('hidden');
+                renderizarColuna('lista-recebidos', recebidos, 'EM_PREPARO', 'Jogar na Chapa', 'bg-red-600 hover:bg-red-500');
+                renderizarColuna('lista-preparo', emPreparo, 'PRONTO', 'Pedido Pronto!', 'bg-green-600 hover:bg-green-500');
+            } catch(e) { console.log(e); }
         }
 
-        // Atualiza o relógio do painel a cada segundo
-        setInterval(() => {
-            document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR');
-        }, 1000);
-
-        // Dispara a busca de novos pedidos na cozinha a cada 3 segundos
-        setInterval(buscarPedidosCozinha, 3000);
-        document.addEventListener('DOMContentLoaded', buscarPedidosCozinha);
-
-        async function buscarPedidosCozinha() {
-            try {
-                const response = await fetch('/api/kds/pedidos');
-                const pedidos = await response.json();
-                
-                const esteira = document.getElementById('esteira-pedidos');
-                const contador = document.getElementById('contador-pedidos');
-                
-                contador.innerText = `${pedidos.length} ${pedidos.length === 1 ? 'pedido' : 'pedidos'} em produção`;
-
-                // LÓGICA DO ALARME
-                const temPedidoNovo = pedidos.some(p => p.status === 'RECEBIDO' && !listaPedidosAnteriores.includes(p.id));
-                if (temPedidoNovo && somAtivado) {
-                    somNotificacao.play();
-                }
-                listaPedidosAnteriores = pedidos.map(p => p.id);
-
-                if (pedidos.length === 0) {
-                    esteira.innerHTML = `
-                        <div class="w-full h-full flex flex-col items-center justify-center text-slate-600" id="tela-vazia">
-                            <i class="ph ph-sparkles text-6xl mb-3 opacity-30"></i>
-                            <p class="text-lg font-bold tracking-wide">Cozinha Limpa!</p>
-                            <p class="text-xs opacity-50">Nenhum pedido pendente no momento.</p>
-                        </div>`;
-                    return;
-                }
-
-                esteira.innerHTML = pedidos.map(p => {
-                    const statusRecebido = p.status === 'RECEBIDO';
-                    
-                    const badgeTipoClass = p.tipo === 'DELIVERY' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-                    const cardBorderClass = statusRecebido ? 'border-red-500/30 ring-1 ring-red-500/10' : 'border-blue-500/30';
-                    const btnClass = statusRecebido 
-                        ? 'bg-red-600 hover:bg-red-500 shadow-[0_4px_12px_rgba(239,68,68,0.2)]' 
-                        : 'bg-blue-600 hover:bg-blue-500 shadow-[0_4px_12px_rgba(59,130,246,0.2)]';
-                    
-                    const btnTexto = statusRecebido ? 'COMEÇAR PREPARO' : 'MARCAR COMO PRONTO';
-                    const novoStatus = statusRecebido ? 'EM_PREPARO' : 'PRONTO';
-
-                    return `
-                        <div class="w-80 bg-slate-900 border ${cardBorderClass} rounded-2xl flex flex-col max-h-full shrink-0 shadow-2xl overflow-hidden transition-all duration-300">
-                            
-                            <div class="p-4 border-b border-slate-800 bg-slate-900/50 flex justify-between items-start">
-                                <div>
-                                    <h3 class="text-2xl font-black text-white tracking-tight">#${p.id}</h3>
-                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeTipoClass} uppercase mt-1 inline-block">${p.tipo}</span>
-                                </div>
-                                <div class="flex flex-col items-end space-y-2">
-                                    <span class="text-xs font-black px-2 py-1 rounded bg-slate-800 tracking-wide ${statusRecebido ? 'text-red-400 animate-pulse' : 'text-blue-400'}">
-                                        ${statusRecebido ? 'NOVO' : 'NA CHAPA'}
-                                    </span>
-                                    <!-- AQUI ESTÁ O BOTÃO DE IMPRIMIR! -->
-                                    <button onclick="imprimirCupom(${p.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded flex items-center text-[10px] font-bold uppercase transition-colors border border-slate-700 shadow-sm active:scale-95">
-                                        <i class="ph-fill ph-printer mr-1 text-sm"></i> Imprimir
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar min-h-[150px]">
-                                ${p.itens.map(item => `
-                                    <div class="border-b border-slate-800/40 pb-2 last:border-0 last:pb-0">
-                                        <div class="flex items-start">
-                                            <span class="font-black text-xl text-red-500 mr-3 shrink-0 bg-red-500/5 border border-red-500/10 px-2 py-0.5 rounded-lg">${item.quantidade}x</span>
-                                            <div class="flex-1">
-                                                <h4 class="font-extrabold text-slate-200 tracking-tight text-base leading-tight uppercase">${item.nome_produto}</h4>
-                                                ${item.observacao ? `
-                                                    <p class="text-xs font-semibold text-amber-400 mt-1 bg-amber-500/5 border border-amber-500/10 px-2 py-1 rounded">
-                                                        ⚠️ OBS: ${item.observacao}
-                                                    </p>
-                                                ` : ''}
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-
-                            <div class="p-3 bg-slate-900/80 border-t border-slate-800">
-                                <button onclick="mudarStatusPedido(${p.id}, '${novoStatus}')" class="w-full ${btnClass} text-white font-black py-3.5 rounded-xl text-xs tracking-wider uppercase transition-all duration-150 active:scale-[0.98]">
-                                    ${btnTexto}
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error("Erro ao carregar KDS:", error);
+        function renderizarColuna(idElemento, lista, proximoStatus, textoBotao, corBotao) {
+            const div = document.getElementById(idElemento);
+            if(lista.length === 0) {
+                div.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-10 text-slate-600"><i class="ph-fill ph-check-circle text-5xl mb-2"></i><p>Fila limpa!</p></div>`;
+                return;
             }
-        }
 
-        async function mudarStatusPedido(id, status) {
-            try {
-                if(status === 'PRONTO') {}
-
-                const response = await fetch(`/api/kds/pedidos/${id}/status`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: status })
-                });
-
-                if (response.ok) {
-                    buscarPedidosCozinha();
-                } else {
-                    alert("Erro ao atualizar o status do pedido.");
-                }
-            } catch (error) {
-                console.error("Erro ao mudar status:", error);
-            }
-        }
-
-        // ==========================
-        // MOTOR DE IMPRESSÃO TÉRMICA
-        // ==========================
-        async function imprimirCupom(pedidoId) {
-            try {
-                const res = await fetch(`/api/pedidos/${pedidoId}/recibo`);
-                const dados = await res.json();
-                
-                if (!res.ok) { alert("Erro: " + dados.detail); return; }
-
-                let itensHtml = dados.itens.map(i => `
-                    <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
-                        <span style="font-weight: bold;">${i.quantidade}x ${i.nome}</span>
-                        <span>R$ ${i.subtotal.toFixed(2).replace('.', ',')}</span>
+            div.innerHTML = lista.map(p => {
+                const itensHtml = p.itens.map(i => `
+                    <div class="border-b border-slate-700 pb-2 mb-2 last:border-0 last:mb-0 last:pb-0">
+                        <p class="font-bold text-sm leading-tight text-white"><span class="text-amber-500 mr-1">${i.quantidade}x</span> ${i.nome_produto}</p>
+                        ${i.observacao ? `<p class="text-[11px] text-amber-200 bg-amber-900/30 p-1.5 rounded mt-1 border border-amber-700/50 uppercase tracking-wider font-bold">⚠️ ${i.observacao}</p>` : ''}
                     </div>
-                    ${i.observacao ? `<div style="font-size: 11px; margin-bottom: 6px; padding-left: 10px; text-transform: uppercase;">-> OBS: ${i.observacao}</div>` : ''}
                 `).join('');
 
-                const conteudoCupom = `
+                return `
+                    <div class="bg-slate-700 rounded-xl p-3 shadow-lg border-l-4 ${p.tipo === 'DELIVERY' ? 'border-blue-500' : 'border-purple-500'} flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-3 shrink-0">
+                            <div>
+                                <h3 class="font-black text-xl leading-none tracking-tight">#${p.id}</h3>
+                                <p class="text-[10px] font-bold uppercase tracking-widest ${p.tipo === 'DELIVERY' ? 'text-blue-400' : 'text-purple-400'} mt-1">${p.tipo}</p>
+                            </div>
+                            <button onclick="imprimirComanda(${p.id})" class="bg-slate-800 hover:bg-slate-600 text-slate-300 p-2 rounded-lg transition-colors" title="Imprimir Comanda">
+                                <i class="ph ph-printer text-lg"></i>
+                            </button>
+                        </div>
+                        <div class="bg-slate-900/50 p-3 rounded-lg mb-3 flex-1">
+                            ${itensHtml}
+                        </div>
+                        <button onclick="mudarStatus(${p.id}, '${proximoStatus}')" class="w-full ${corBotao} text-white font-black uppercase tracking-wider text-xs py-3 rounded-lg transition-all active:scale-95 shadow-md shrink-0">
+                            ${textoBotao}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function mudarStatus(id, novoStatus) {
+            try {
+                await fetch(`/api/kds/pedidos/${id}/status`, {
+                    method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: novoStatus})
+                });
+                buscarPedidosKDS();
+            } catch(e) {}
+        }
+
+        // MOTOR DE IMPRESSÃO 80MM TÉRMICA CORRIGIDO
+        async function imprimirComanda(pedido_id) {
+            try {
+                const res = await fetch(`/api/pedidos/${pedido_id}/recibo`);
+                const dados = await res.json();
+                
+                const frame = document.getElementById('iframe-impressao');
+                const doc = frame.contentWindow.document;
+                
+                // CSS específico para bobinas de 80mm
+                const conteudoHtml = `
                     <html>
                     <head>
-                        <title>Comanda #${dados.id}</title>
                         <style>
-                            @page { margin: 0; }
-                            body { font-family: 'Courier New', Courier, monospace; width: 75mm; margin: 0 auto; padding: 10px; color: #000; background: #fff; }
-                            .text-center { text-align: center; }
-                            .font-bold { font-weight: bold; }
-                            .text-lg { font-size: 20px; }
-                            .text-sm { font-size: 13px; }
-                            .divisor { border-bottom: 1px dashed #000; margin: 10px 0; }
+                            @page { margin: 0; size: 80mm auto; }
+                            body { font-family: 'Courier New', Courier, monospace; width: 72mm; margin: 0 auto; padding: 5mm 0; color: #000; font-size: 12px; }
+                            h1 { font-size: 18px; text-align: center; margin: 0 0 5px 0; text-transform: uppercase; }
+                            .center { text-align: center; }
+                            .divider { border-top: 1px dashed #000; margin: 8px 0; }
+                            .item { margin-bottom: 6px; }
+                            .item-nome { font-weight: bold; font-size: 14px; }
+                            .obs { font-size: 11px; font-weight: bold; margin-left: 10px; text-transform: uppercase; }
                         </style>
                     </head>
                     <body>
-                        <div class="text-center font-bold text-lg mb-2">ART'S BURGUER</div>
-                        <div class="text-center text-sm">Pedido #${dados.id}</div>
-                        <div class="text-center text-sm" style="margin-bottom: 10px;">${dados.data_hora}</div>
-                        
-                        <div class="divisor"></div>
-                        <div class="text-sm font-bold">Cliente: ${dados.cliente_nome}</div>
-                        <div class="text-sm font-bold">Tel: ${dados.cliente_telefone}</div>
-                        
-                        <div class="divisor"></div>
-                        <div class="text-sm font-bold text-center" style="font-size: 16px;">TIPO: ${dados.tipo}</div>
-                        ${dados.tipo === 'DELIVERY' ? `<div class="text-sm" style="margin-top: 5px; text-transform: uppercase;"><b>End:</b> ${dados.endereco}</div>` : ''}
-                        <div class="divisor"></div>
-                        
-                        <div class="font-bold text-center mb-2" style="font-size: 14px;">ITENS DO PEDIDO</div>
-                        ${itensHtml}
-                        
-                        <div class="divisor"></div>
-                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
-                            <span>TOTAL:</span>
-                            <span>R$ ${dados.total.toFixed(2).replace('.', ',')}</span>
-                        </div>
-                        <div class="text-sm mt-2" style="text-transform: uppercase;"><b>PAGAMENTO:</b> ${dados.forma_pagamento}</div>
-                        <div class="divisor"></div>
-                        
-                        <div class="text-center text-sm mt-4">Obrigado pela preferencia!</div>
-                        <div class="text-center text-sm mt-1" style="margin-bottom: 20px;">.</div>
+                        <h1>ART'S BURGUER</h1>
+                        <div class="center">PEDIDO #${dados.id} - ${dados.tipo}</div>
+                        <div class="center" style="font-size:10px;">${dados.data_hora}</div>
+                        <div class="divider"></div>
+                        <div style="font-weight:bold;">Cliente: ${dados.cliente_nome}</div>
+                        ${dados.tipo === 'DELIVERY' ? `<div>Endereço: ${dados.endereco}</div>` : ''}
+                        <div class="divider"></div>
+                        ${dados.itens.map(i => `
+                            <div class="item">
+                                <span class="item-nome">${i.quantidade}x ${i.nome}</span>
+                                ${i.observacao ? `<div class="obs">⚠️ ${i.observacao}</div>` : ''}
+                            </div>
+                        `).join('')}
+                        <div class="divider"></div>
+                        <div class="center" style="margin-top:15px; font-size:10px;">Cozinha KDS</div>
                     </body>
                     </html>
                 `;
-
-                const janelaImpressao = window.open('', '', 'width=400,height=600');
-                janelaImpressao.document.write(conteudoCupom);
-                janelaImpressao.document.close();
-                janelaImpressao.focus();
                 
+                doc.open();
+                doc.write(conteudoHtml);
+                doc.close();
+                
+                // Aguarda o Iframe carregar e chama a impressão nativa
                 setTimeout(() => {
-                    janelaImpressao.print();
-                    janelaImpressao.close();
+                    frame.contentWindow.focus();
+                    frame.contentWindow.print();
                 }, 500);
 
-            } catch(e) {
-                alert("Falha de conexão com a impressora.");
-                console.error(e);
+            } catch (e) {
+                alert("Erro ao buscar dados para impressão.");
             }
         }
+
+        setInterval(buscarPedidosKDS, 5000);
+        document.addEventListener('DOMContentLoaded', buscarPedidosKDS);
     </script>
 </body>
 </html>
