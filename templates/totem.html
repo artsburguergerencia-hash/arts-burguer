@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Totem de Retirada | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brand: { 200: '#ffb3b8', 600: '#e04050', 800: '#a32a35' } } } } }
+    </script>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+    </style>
+</head>
+<body class="bg-black h-screen w-screen overflow-hidden flex flex-col">
+    <header class="bg-brand-600 h-24 flex items-center justify-center border-b-8 border-brand-800 shrink-0 shadow-2xl z-10 relative">
+        <h1 class="text-white text-5xl font-black tracking-widest uppercase flex items-center">
+            Art's Burguer <span class="bg-brand-800 text-brand-200 text-2xl ml-6 px-4 py-1 rounded-full shadow-inner">Retirada</span>
+        </h1>
+    </header>
+
+    <div class="flex-1 flex text-white relative">
+        <!-- LADO ESQUERDO: PREPARANDO -->
+        <div class="w-1/2 bg-slate-900 border-r-4 border-slate-950 flex flex-col z-10 shadow-2xl">
+            <div class="bg-slate-800 py-6 text-center shadow-lg border-b border-slate-700">
+                <h2 class="text-4xl text-slate-400 tracking-widest font-black">PREPARANDO</h2>
+            </div>
+            <div id="lista-preparando" class="flex-1 p-10 grid grid-cols-2 md:grid-cols-3 gap-8 content-start text-6xl text-slate-300 font-bold text-center">
+                <div class="col-span-full text-2xl text-slate-600 mt-10">Aguardando pedidos...</div>
+            </div>
+        </div>
+
+        <!-- LADO DIREITO: PRONTOS -->
+        <div class="w-1/2 bg-green-700 flex flex-col relative overflow-hidden z-10 shadow-2xl">
+            <!-- Textura de fundo para ficar chique -->
+            <div class="absolute inset-0 bg-green-800 opacity-40 mix-blend-overlay" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
+            
+            <div class="bg-green-800 py-6 text-center shadow-2xl relative z-10 border-b border-green-900">
+                <h2 class="text-4xl text-white tracking-widest font-black blink drop-shadow-md">PRONTO - RETIRE AQUI</h2>
+            </div>
+            <div id="lista-pronto" class="flex-1 p-10 grid grid-cols-2 md:grid-cols-3 gap-8 content-start text-7xl text-white font-black text-center drop-shadow-2xl relative z-10">
+                <!-- Senhas Prontas injetadas aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Áudio de aeroporto/chamada -->
+    <audio id="som-chamada" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_959952a233.mp3?filename=airport-chime-1-105106.mp3" preload="auto"></audio>
+
+    <script>
+        let senhasProntasAnteriores = [];
+
+        async function buscarTotem() {
+            try {
+                const res = await fetch('/api/kds/pedidos');
+                const pedidos = await res.json();
+                
+                // Filtra os pedidos e pega os mais antigos primeiro
+                const preparando = pedidos.filter(p => p.status === 'EM_PREPARO' || p.status === 'RECEBIDO').slice(0, 15);
+                const prontos = pedidos.filter(p => p.status === 'PRONTO').slice(0, 12);
+
+                if(preparando.length > 0) {
+                    document.getElementById('lista-preparando').innerHTML = preparando.map(p => `<div class="bg-slate-800 rounded-2xl py-4 shadow-inner border border-slate-700">${p.senha_diaria || p.id}</div>`).join('');
+                } else {
+                    document.getElementById('lista-preparando').innerHTML = `<div class="col-span-full text-2xl text-slate-600 mt-10">Fila Limpa</div>`;
+                }
+                
+                if(prontos.length > 0) {
+                    document.getElementById('lista-pronto').innerHTML = prontos.map(p => `<div class="bg-green-600 rounded-2xl py-6 shadow-[0_10px_20px_rgba(0,0,0,0.3)] border-b-4 border-green-800 transform transition-transform hover:scale-105">${p.senha_diaria || p.id}</div>`).join('');
+                } else {
+                    document.getElementById('lista-pronto').innerHTML = '';
+                }
+
+                // Toca a campainha se tiver uma senha nova na tela verde
+                const senhasAtuais = prontos.map(p => p.id);
+                const temNovo = senhasAtuais.some(id => !senhasProntasAnteriores.includes(id));
+                
+                if (temNovo) {
+                    document.getElementById('som-chamada').play().catch(e => console.log("Áudio bloqueado pelo navegador. Clique na tela uma vez."));
+                }
+                senhasProntasAnteriores = senhasAtuais;
+
+            } catch (e) { console.log("Aguardando conexão com servidor..."); }
+        }
+
+        setInterval(buscarTotem, 4000); // Atualiza a cada 4 segundos
+        buscarTotem();
+
+        // Truque para liberar o áudio bloqueado do Chrome (Basta clicar em qualquer lugar da tela da TV ao ligar)
+        document.body.addEventListener('click', () => {
+            document.getElementById('som-chamada').play().then(()=> {
+                document.getElementById('som-chamada').pause();
+                document.getElementById('som-chamada').currentTime = 0;
+            }).catch(e=>{});
+        }, { once: true });
+    </script>
+</body>
+</html>
