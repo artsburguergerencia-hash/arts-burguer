@@ -56,3 +56,31 @@ def notificar_status_pedido(telefone: str, nome: str, pedido_id: int, status: st
     msg = mensagens.get(status.upper())
     if msg:
         enviar_mensagem_whatsapp(telefone, msg)
+
+def responder_com_ia(mensagem_cliente: str, telefone: str):
+    """
+    Cérebro da IA para responder os clientes que mandam mensagem no WhatsApp.
+    Você pode no futuro plugar a API da OpenAI (ChatGPT) aqui!
+    """
+    texto = str(mensagem_cliente).lower()
+    resposta = ""
+    
+    # Árvore de decisão inteligente do Chatbot
+    if "cardapio" in texto or "menu" in texto or "pedir" in texto or "fome" in texto:
+        resposta = "Olá! Nosso cardápio é 100% digital e super rápido. Faça seu pedido por aqui: https://artsburguer.com.br 🍔🍟"
+    
+    elif "horario" in texto or "aberto" in texto or "funcionamento" in texto:
+        resposta = "Nossas chapas esquentam de Terça a Domingo, das 18h às 23h59! 🕒🔥"
+    
+    elif "humano" in texto or "atendente" in texto or "problema" in texto or "errado" in texto:
+        resposta = "Entendi! Vou chamar um humano da nossa equipe para falar com você. Só um instante! 👨‍💻"
+    
+    else:
+        resposta = "Oi! Sou a assistente virtual do Art's Burguer 🤖🍔. Para fazer um pedido, acesse nosso link: https://artsburguer.com.br. Posso ajudar com mais alguma dúvida?"
+        
+    print(f"🤖 [IA RESPONDENDO O NÚMERO {telefone}]: {resposta}", flush=True)
+    
+    # Como você já tem a função real de envio, a IA já vai responder o cliente de verdade!
+    enviar_mensagem_whatsapp(telefone, resposta)
+    
+    return resposta
