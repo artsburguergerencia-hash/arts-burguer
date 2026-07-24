@@ -65,7 +65,7 @@
                 <i class="ph ph-invoice text-xl mr-3"></i> Contas a Pagar
             </button>
             <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
-                <i class="ph ph-users text-xl mr-3"></i> Colaboradores
+                <i class="ph ph-users text-xl mr-3"></i> Colaboradores & RH
             </button>
             <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
                 <i class="ph ph-gear text-xl mr-3"></i> Configurações da Loja
@@ -140,7 +140,6 @@
                     <div class="mt-6 md:mt-0 bg-white/10 p-4 rounded-xl border border-white/20"><i class="ph ph-piggy-bank text-5xl text-white/80"></i></div>
                 </div>
 
-                <!-- NOVO BLOCO: CURVA ABC (TOP PRODUTOS) -->
                 <div class="mt-8 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                         <h3 class="text-lg font-bold text-slate-800"><i class="ph-fill ph-ranking text-brand-500 mr-2"></i> Curva ABC: Top 10 Produtos</h3>
@@ -389,47 +388,65 @@
                 </div>
             </div>
             
+            <!-- AQUI ESTÁ A TELA NOVA DE RH! -->
             <!-- COLABORADORES -->
             <div id="aba-colaboradores" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="ph ph-identification-card text-brand-500 mr-2"></i> Cadastrar Novo Colaborador</h3>
-                    <form id="form-rh" onsubmit="cadastrarColaborador(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="ph ph-identification-card text-brand-500 mr-2"></i> Cadastrar Novo Colaborador (RH)</h3>
+                    <form id="form-rh" onsubmit="cadastrarColaborador(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Nome Completo</label>
-                            <input type="text" id="rh-nome" placeholder="Ex: João da Silva" required class="w-full px-4 py-3 rounded-lg border border-slate-200">
+                            <input type="text" id="rh-nome" required class="w-full px-4 py-3 rounded-lg border border-slate-200">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Usuário de Login</label>
-                            <input type="text" id="rh-usuario" placeholder="Ex: joao.silva" required class="w-full px-4 py-3 rounded-lg border border-slate-200">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Senha de Acesso</label>
-                            <input type="password" id="rh-senha" placeholder="******" required class="w-full px-4 py-3 rounded-lg border border-slate-200">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Telefone / Contato</label>
+                            <input type="text" id="rh-tel" placeholder="(00) 00000-0000" class="w-full px-4 py-3 rounded-lg border border-slate-200">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Cargo / Permissão</label>
                             <select id="rh-cargo" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white">
-                                <option value="2">Gerente (Acesso Total)</option>
+                                <option value="2">Gerente</option>
                                 <option value="3" selected>Operador de Caixa / PDV</option>
                                 <option value="4">Cozinheiro (KDS)</option>
                                 <option value="5">Motoboy</option>
                             </select>
                         </div>
-                        <button type="submit" class="md:col-span-2 bg-slate-900 hover:bg-brand-500 text-white font-bold py-3 rounded-lg transition-colors mt-2">Dar Acesso ao Sistema</button>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Salário Base Mensal (R$)</label>
+                            <input type="number" step="0.01" id="rh-salario" placeholder="Ex: 1600.00" class="w-full px-4 py-3 rounded-lg border border-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Escala / Horário Média</label>
+                            <input type="text" id="rh-escala" placeholder="Ex: Terça a Dom - 18h às 02h" class="w-full px-4 py-3 rounded-lg border border-slate-200">
+                        </div>
+                        <div class="col-span-1 md:col-span-3 grid grid-cols-2 gap-4 mt-2 border-t border-slate-100 pt-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Criar Usuário de Login</label>
+                                <input type="text" id="rh-usuario" required placeholder="Ex: joao.silva" class="w-full px-4 py-3 rounded-lg border border-slate-200">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Criar Senha de Acesso</label>
+                                <input type="password" id="rh-senha" required class="w-full px-4 py-3 rounded-lg border border-slate-200">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="md:col-span-3 bg-slate-900 hover:bg-brand-500 text-white font-bold py-3 rounded-lg transition-colors mt-2 shadow-md">Cadastrar na Folha e Dar Acesso</button>
                     </form>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="p-4 bg-slate-50 font-bold border-b border-slate-200 flex justify-between items-center">
-                        Equipe Atual
-                        <button onclick="carregarColaboradores()" class="text-sm text-brand-500 font-semibold"><i class="ph ph-arrows-clockwise"></i> Atualizar</button>
+                        <span class="flex items-center"><i class="ph-fill ph-clock-user mr-2 text-brand-500 text-xl"></i> Controle de Ponto e Folha de Pagamento</span>
+                        <button onclick="carregarColaboradores()" class="text-sm text-brand-500 font-semibold"><i class="ph ph-arrows-clockwise"></i> Atualizar Ponto</button>
                     </div>
-                    <table class="w-full text-left">
-                        <thead><tr class="bg-white text-slate-400 text-xs uppercase border-b"><th class="py-3 px-6">Nome</th><th class="py-3 px-6">Usuário (Login)</th><th class="py-3 px-6">Cargo</th><th class="py-3 px-6 text-center">Ações</th></tr></thead>
-                        <tbody id="lista-colaboradores">
-                            <tr><td colspan="4" class="p-4 text-center text-slate-400">Carregando equipe...</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead><tr class="bg-white text-slate-400 text-xs uppercase border-b"><th class="py-3 px-6">Colaborador</th><th class="py-3 px-6">Cargo / Escala</th><th class="py-3 px-6 text-center">Salário</th><th class="py-3 px-6 text-center">Ponto Hoje (Ao Vivo)</th><th class="py-3 px-6 text-center">Ações</th></tr></thead>
+                            <tbody id="lista-colaboradores">
+                                <tr><td colspan="5" class="p-4 text-center text-slate-400">Carregando folha de pagamento...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             
@@ -622,13 +639,12 @@
             carregarInsumosParaSelect();
         });
 
-        // NAVEGAÇÃO ENTRE ABAS COM A VÍRGULA CORRIGIDA
         const titulos = { 
             'aba-relatorios': 'Relatórios de Lucratividade', 
             'aba-cardapio': 'Gestão de Cardápio', 
             'aba-estoque': 'Entrada de Estoque', 
             'aba-financeiro': 'Contas a Pagar', 
-            'aba-colaboradores': 'Gestão de Colaboradores',
+            'aba-colaboradores': 'Gestão de Colaboradores e Ponto',
             'aba-configuracoes': 'Configurações da Loja',
             'aba-clientes': 'Clientes & Fidelidade',
             'aba-fornecedores': 'Gestão de Fornecedores'
@@ -650,7 +666,90 @@
             if(idAba === 'aba-configuracoes') { carregarConfiguracoes(); }
             if(idAba === 'aba-clientes') { carregarClientesPainel(); }
             if(idAba === 'aba-fornecedores') { carregarFornecedores(); }
-            if(idAba === 'aba-colaboradores') { carregarColaboradores(); } // ADICIONE ESTA LINHA!
+            if(idAba === 'aba-colaboradores') { carregarColaboradores(); }
+        }
+
+        // ==========================
+        // GESTÃO DE RH (COLABORADORES)
+        // ==========================
+        async function cadastrarColaborador(e) {
+            e.preventDefault();
+            const payload = {
+                nome: document.getElementById('rh-nome').value,
+                usuario: document.getElementById('rh-usuario').value,
+                senha: document.getElementById('rh-senha').value,
+                cargo_id: parseInt(document.getElementById('rh-cargo').value),
+                foto: "",
+                telefone: document.getElementById('rh-tel').value,
+                salario: parseFloat(document.getElementById('rh-salario').value) || 0.0,
+                escala: document.getElementById('rh-escala').value
+            };
+
+            try {
+                const res = await fetch('/api/gestao/funcionarios', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(res.ok) {
+                    alert("✅ " + data.mensagem);
+                    document.getElementById('form-rh').reset();
+                    carregarColaboradores();
+                } else { alert("❌ Erro: " + data.detail); }
+            } catch(error) { alert("Falha na conexão."); }
+        }
+
+        async function carregarColaboradores() {
+            try {
+                const res = await fetch('/api/gestao/funcionarios');
+                const dados = await res.json();
+                const tbody = document.getElementById('lista-colaboradores');
+                if(!tbody) return;
+                
+                if(dados.length === 0) { 
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum funcionário encontrado.</td></tr>'; 
+                    return; 
+                }
+
+                tbody.innerHTML = dados.map(f => {
+                    const btnExcluir = f.id === 1 ? `<span class="text-[10px] text-slate-400 font-bold tracking-wider">CHEFE</span>` : `<button onclick="demitirColaborador(${f.id}, '${f.nome}')" class="text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 px-2 py-1.5 rounded uppercase tracking-wider transition-colors shadow-sm">Demitir</button>`;
+                    const cargoClass = f.id === 1 ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600';
+                    
+                    let statusPonto = '';
+                    if (f.id === 1) {
+                        statusPonto = `<span class="text-xs font-bold text-slate-300">Livre</span>`;
+                    } else if (!f.ponto_entrada && !f.ponto_saida) {
+                        statusPonto = `<button onclick="baterPontoRH(${f.id}, 'entrada')" class="bg-blue-500 hover:bg-blue-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-sm"><i class="ph-fill ph-sign-in mr-1"></i> Bater Entrada</button>`;
+                    } else if (f.ponto_entrada && !f.ponto_saida) {
+                        statusPonto = `<span class="text-[10px] font-bold text-green-600 uppercase">In: ${f.ponto_entrada}</span><br><button onclick="baterPontoRH(${f.id}, 'saida')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider mt-1.5 transition-colors shadow-sm"><i class="ph-fill ph-sign-out mr-1"></i> Bater Saída</button>`;
+                    } else {
+                        statusPonto = `<span class="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-1 rounded">In: ${f.ponto_entrada} | Out: ${f.ponto_saida}</span>`;
+                    }
+
+                    return `
+                    <tr class="border-b hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6"><p class="font-bold text-slate-800">${f.nome}</p><p class="text-[10px] text-slate-400 font-medium">${f.telefone || 'Sem telefone'}</p></td>
+                        <td class="py-3 px-6"><span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${cargoClass}">${f.cargo}</span><p class="text-xs font-medium text-slate-500 mt-1">${f.escala || 'Horário livre'}</p></td>
+                        <td class="py-3 px-6 text-center font-bold text-green-600">R$ ${f.salario.toFixed(2).replace('.', ',')}</td>
+                        <td class="py-3 px-6 text-center">${statusPonto}</td>
+                        <td class="py-3 px-6 text-center">${btnExcluir}</td>
+                    </tr>
+                `}).join('');
+            } catch(e) {}
+        }
+
+        async function baterPontoRH(id, tipo) {
+            try {
+                const res = await fetch('/api/gestao/ponto', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({funcionario_id: id, tipo: tipo}) });
+                const data = await res.json();
+                if(res.ok) { carregarColaboradores(); } else { alert("Aviso: " + (data.detail || data.mensagem)); }
+            } catch(e) { alert("Erro de conexão com o relógio de ponto."); }
+        }
+
+        async function demitirColaborador(id, nome) {
+            if(!confirm(`⚠️ ATENÇÃO: Deseja realmente DEMITIR ${nome}?\nIsso vai apagar a pessoa da folha de pagamento e revogar o acesso dela ao sistema para sempre.`)) return;
+            try {
+                const res = await fetch(`/api/gestao/funcionarios/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if(res.ok) { carregarColaboradores(); } else { alert("Erro: " + data.detail); }
+            } catch(e) { alert("Falha ao comunicar com servidor."); }
         }
 
         // ==========================
@@ -752,9 +851,6 @@
             } catch(e) { alert("❌ Falha de conexão."); }
         }
 
-        // ==========================
-        // LÓGICA DE COMPLEMENTOS (EXTRAS)
-        // ==========================
         function abrirModalCriarGrupo(produtoId, produtoNome) {
             document.getElementById('add-grupo-prod-id').value = produtoId;
             document.getElementById('add-grupo-prod-nome').innerText = produtoNome;
@@ -800,9 +896,6 @@
             if(res.ok) { alert("✅ Complementos ativados com sucesso!"); fecharModalGrupo(); } else { alert("Erro ao salvar opções."); }
         }
 
-        // ==========================
-        // DEMAIS FUNÇÕES DO SISTEMA E FORNECEDORES
-        // ==========================
         async function carregarFornecedoresParaSelect() {
             try {
                 const res = await fetch('/api/gestao/fornecedores');
@@ -840,7 +933,6 @@
                     elemDiag.innerText = "✅ Empresa saudável! Dinheiro a sobrar no caixa após todas as despesas.";
                 }
 
-                // --- NOVA BUSCA: CURVA ABC ---
                 try {
                     const resAbc = await fetch('/api/gestao/relatorios/curva-abc');
                     const topProdutos = await resAbc.json();
@@ -977,7 +1069,6 @@
                 document.getElementById('conf-retirada').checked = conf.aceita_retirada;
                 document.getElementById('conf-auto').checked = conf.aceite_automatico;
                 
-                // Lê as configurações de pagamento
                 const pgs = conf.formas_pagamento || "";
                 document.getElementById('pag-dinheiro').checked = pgs.includes('dinheiro');
                 document.getElementById('pag-maquininha').checked = pgs.includes('maquininha');
@@ -1029,7 +1120,6 @@
 
         async function salvarConfiguracoesLoja(e) {
             e.preventDefault();
-            // Monta a string de pagamentos aceitos
             let arr = [];
             if(document.getElementById('pag-dinheiro').checked) arr.push('dinheiro');
             if(document.getElementById('pag-maquininha').checked) arr.push('maquininha');
@@ -1043,7 +1133,7 @@
                 aceita_delivery: document.getElementById('conf-delivery').checked, 
                 aceita_retirada: document.getElementById('conf-retirada').checked, 
                 aceite_automatico: document.getElementById('conf-auto').checked, 
-                formas_pagamento: arr.join(',') // Salva tudo com vírgula no banco
+                formas_pagamento: arr.join(',')
             };
             const res = await fetch('/api/gestao/configuracoes', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
             if(res.ok) alert("✅ Configurações salvas e aplicadas no Cardápio!");
@@ -1154,68 +1244,6 @@
                 btnClicado.innerHTML = btnOriginal; btnClicado.disabled = false;
                 elemento.style.backgroundColor = bgOriginal; elemento.style.animation = animationOriginal;
             });
-        }
-
-        // ==========================
-        // GESTÃO DE RH (COLABORADORES)
-        // ==========================
-        async function cadastrarColaborador(e) {
-            e.preventDefault();
-            const payload = {
-                nome: document.getElementById('rh-nome').value,
-                usuario: document.getElementById('rh-usuario').value,
-                senha: document.getElementById('rh-senha').value,
-                cargo_id: parseInt(document.getElementById('rh-cargo').value),
-                foto: ""
-            };
-
-            try {
-                const res = await fetch('/api/gestao/funcionarios', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                const data = await res.json();
-                if(res.ok) {
-                    alert("✅ " + data.mensagem);
-                    document.getElementById('form-rh').reset();
-                    carregarColaboradores();
-                } else {
-                    alert("❌ Erro: " + data.detail);
-                }
-            } catch(error) { alert("Falha na conexão."); }
-        }
-
-        async function carregarColaboradores() {
-            try {
-                const res = await fetch('/api/gestao/funcionarios');
-                const dados = await res.json();
-                const tbody = document.getElementById('lista-colaboradores');
-                if(!tbody) return;
-                
-                if(dados.length === 0) { 
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum funcionário encontrado.</td></tr>'; 
-                    return; 
-                }
-
-                tbody.innerHTML = dados.map(f => {
-                    const btnExcluir = f.id === 1 ? `<span class="text-xs text-slate-400 font-bold">INEXCLUÍVEL</span>` : `<button onclick="demitirColaborador(${f.id}, '${f.nome}')" class="text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 px-2 py-1 rounded">Revogar Acesso</button>`;
-                    const cargoClass = f.id === 1 ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600';
-                    
-                    return `
-                    <tr class="border-b hover:bg-slate-50">
-                        <td class="py-3 px-6 font-bold text-slate-800">${f.nome}</td>
-                        <td class="py-3 px-6 text-slate-600 font-mono text-sm">${f.usuario}</td>
-                        <td class="py-3 px-6"><span class="px-2 py-1 rounded-md text-xs font-bold ${cargoClass}">${f.cargo}</span></td>
-                        <td class="py-3 px-6 text-center">${btnExcluir}</td>
-                    </tr>
-                `}).join('');
-            } catch(e) {}
-        }
-
-        async function demitirColaborador(id, nome) {
-            if(!confirm(`⚠️ ATENÇÃO: Tem certeza que deseja remover o acesso de ${nome}? Ele não poderá mais entrar no sistema.`)) return;
-            try {
-                const res = await fetch(`/api/gestao/funcionarios/${id}`, { method: 'DELETE' });
-                const data = await res.json();
-                if(res.ok) { carregarColaboradores(); } else { alert("Erro: " + data.detail); }
-            } catch(e) { alert("Falha ao comunicar com servidor."); }
         }
     </script>
 </body>
