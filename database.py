@@ -3,14 +3,13 @@ from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import datetime
 import os
 
-# Preparação Nível Cloud: Usa Postgres se estiver na nuvem, ou SQLite V2 na sua máquina
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./banco_v2.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./banco_v3_rh.db")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# === CONFIGURAÇÕES DA LOJA (Tudo Gerenciável pelo Painel) ===
+# === CONFIGURAÇÕES DA LOJA ===
 class ConfiguracaoLojaModel(Base):
     __tablename__ = "configuracoes_loja"
     id = Column(Integer, primary_key=True, index=True)
@@ -24,11 +23,12 @@ class ConfiguracaoLojaModel(Base):
     aceite_automatico = Column(Boolean, default=False)
     tempo_preparo = Column(Integer, default=30)
     formas_pagamento = Column(String, default="Pix,Dinheiro,Cartão")
-    sistema_fidelidade = Column(String, default="CASHBACK") # Opções: PONTOS, CASHBACK, DESATIVADO
-    categorias_cardapio = Column(String, default="Burger Artesanal,Bebidas,Porções & Fritas,Sobremesas")
-    categorias_fornecedor = Column(String, default="Carnes,Hortifruti,Bebidas,Embalagens,Equipamentos")
+    sistema_fidelidade = Column(String, default="CASHBACK")
+    categorias_cardapio = Column(String, default="Burger Artesanal,Bebidas,Porções")
+    categorias_fornecedor = Column(String, default="Carnes,Hortifruti,Bebidas,Embalagens")
+    planos_saude_opcoes = Column(String, default="Nenhum,Amil Básico,Bradesco Odonto") # NOVO: Configurável via Gestão
 
-# === RECURSOS HUMANOS E ACESSOS ===
+# === RECURSOS HUMANOS (COMPLETO) ===
 class Cargo(Base):
     __tablename__ = "cargos"
     id = Column(Integer, primary_key=True, index=True)
@@ -41,18 +41,44 @@ class FuncionarioModel(Base):
     usuario = Column(String, unique=True, index=True)
     senha_hash = Column(String)
     cargo_id = Column(Integer, ForeignKey("cargos.id"))
-    foto = Column(String, default="")
+    foto_3x4 = Column(String, default="") # Base64 da Foto
+    matricula_cracha = Column(String, unique=True, index=True, nullable=True) # Gerado pelo sistema
 
 class InfoRHModel(Base):
     __tablename__ = "info_rh"
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, unique=True)
+    
+    # Admissão e LGPD
+    status_admissao = Column(String, default="PENDENTE_PREENCHIMENTO") # PENDENTE, ATIVO, DEMITIDO
+    aceite_lgpd = Column(Boolean, default=False)
+    data_aceite_lgpd = Column(String, default="")
+    
+    # Base Contratual
     telefone = Column(String, default="")
     salario = Column(Float, default=0.0)
     escala = Column(String, default="")
-    rg = Column(String, default="") # NOVO
-    cpf = Column(String, default="") # NOVO
-    pis_pasep = Column(String, default="") # NOVO
+    
+    # Dados Pessoais e Identificação
+    data_nascimento = Column(String, default="")
+    naturalidade = Column(String, default="")
+    estado_civil = Column(String, default="")
+    rg = Column(String, default="")
+    cpf = Column(String, default="")
+    pis_pasep = Column(String, default="")
+    titulo_eleitor = Column(String, default="")
+    reservista = Column(String, default="")
+    endereco_completo = Column(String, default="")
+    
+    # Contrato e Benefícios
+    dados_bancarios = Column(String, default="") # Banco, Agência, Conta
+    escolaridade = Column(String, default="")
+    qtd_filhos_menores = Column(Integer, default=0)
+    cnh = Column(String, default="")
+    plano_saude_escolhido = Column(String, default="")
+    
+    # Repositório de Documentos (Link Google Drive/Cloud)
+    link_pasta_documentos = Column(String, default="")
 
 class PontoModel(Base):
     __tablename__ = "pontos_rh"
@@ -84,14 +110,14 @@ class ClienteModel(Base):
 class PedidoModel(Base):
     __tablename__ = "pedidos"
     id = Column(Integer, primary_key=True, index=True)
-    senha_diaria = Column(Integer, default=1) # A SENHA QUE RESETA TODO DIA NA TV DO MCDONALDS
-    data_pedido = Column(Date, default=datetime.utcnow().date) # Registra o dia exato
-    origem = Column(String, default="SITE") # SITE, PDV, IFOOD, 99FOOD
+    senha_diaria = Column(Integer, default=1)
+    data_pedido = Column(Date, default=datetime.utcnow().date)
+    origem = Column(String, default="SITE")
     cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=True)
     total_pago = Column(Float)
     forma_pagamento = Column(String)
     status = Column(String, default="RECEBIDO")
-    tipo = Column(String, default="DELIVERY") # DELIVERY, RETIRADA, BALCAO
+    tipo = Column(String, default="DELIVERY")
     data_criacao = Column(DateTime, default=datetime.utcnow)
     cliente = relationship("ClienteModel", back_populates="pedidos")
     itens = relationship("ItemPedidoModel", backref="pedido", cascade="all, delete-orphan")
@@ -166,19 +192,14 @@ class ContaPagarModel(Base):
     tipo_despesa = Column(String, default="Empresa")
     status = Column(String, default="PENDENTE")
 
-# === INICIALIZADORES DO SISTEMA ===
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
-    
-    # Cria o Administrador Supremo se não existir
     if not db.query(FuncionarioModel).first():
         from passlib.context import CryptContext
         pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-        admin = FuncionarioModel(nome="Admin Supremo", usuario="admin", senha_hash=pwd_context.hash("admin123"), cargo_id=1)
+        admin = FuncionarioModel(nome="Admin Supremo", usuario="admin", senha_hash=pwd_context.hash("admin123"), cargo_id=1, matricula_cracha="0001")
         db.add(admin)
-        
-        # Injeta as configurações default do ERP
         config = ConfiguracaoLojaModel()
         db.add(config)
         db.commit()
@@ -195,6 +216,5 @@ def processar_baixa_estoque(db, produto_id, quantidade_vendida):
     fichas = db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).all()
     for f in fichas:
         insumo = db.query(InsumoModel).filter(InsumoModel.id == f.insumo_id).first()
-        if insumo:
-            insumo.quantidade_atual -= (f.quantidade_necessaria * quantidade_vendida)
+        if insumo: insumo.quantidade_atual -= (f.quantidade_necessaria * quantidade_vendida)
     db.commit()
