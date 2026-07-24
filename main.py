@@ -9,14 +9,13 @@ from sqlalchemy import desc
 import uvicorn
 from passlib.context import CryptContext
 from sqlalchemy import Column, Integer, String, Boolean, Float
-from pagamentos_pagbank import criar_pagamento_pix_mp, criar_link_pagamento_mp, criar_pagamento_cartao_mp
-from typing import Optional # Caso ainda não tenha importado no topo do arquivo
-from fastapi import Request # Não esqueça de colocar isso no topo do main.py se já não estiver!
+from typing import Optional 
+from fastapi import Request 
 
 # Importações dos nossos módulos do Art's Burguer
 from integracao_99food import router_99food
-from pagamentos_pagbank import criar_pagamento_pix_mp, criar_link_pagamento_mp
-from database import SessionLocal, ProdutoModel, ProdutoCreateInput, criar_produto_com_ficha, cadastrar_insumo, engine, Base, FuncionarioModel, Cargo, InsumoModel, processar_baixa_estoque
+from pagamentos_pagbank import criar_pagamento_pix_mp, criar_link_pagamento_mp, criar_pagamento_cartao_mp
+from database import SessionLocal, ProdutoModel, ProdutoCreateInput, criar_produto_com_ficha, cadastrar_insumo, engine, Base, FuncionarioModel, Cargo, InsumoModel, processar_baixa_estoque, FichaTecnicaModel
 from vendas_pdv import ClienteModel, registrar_venda_pdv, TipoPedido, PedidoModel
 from financeiro import lancar_conta_pagar, FornecedorModel, ContaPagarModel
 from dashboard import router_dashboard
@@ -53,7 +52,25 @@ class ConfiguracaoLojaModel(Base):
     tempo_preparo = Column(Integer, default=30)
     formas_pagamento = Column(String, default="Pix,Dinheiro,Cartão")
 
+# === NOVAS TABELAS DE RH E FOLHA DE PAGAMENTO ===
+class InfoRHModel(Base):
+    __tablename__ = "info_rh"
+    id = Column(Integer, primary_key=True, index=True)
+    funcionario_id = Column(Integer, unique=True)
+    telefone = Column(String, default="")
+    salario = Column(Float, default=0.0)
+    escala = Column(String, default="")
+
+class PontoModel(Base):
+    __tablename__ = "pontos_rh"
+    id = Column(Integer, primary_key=True, index=True)
+    funcionario_id = Column(Integer)
+    data = Column(String) 
+    entrada = Column(String, default="")
+    saida = Column(String, default="")
+
 inicializar_banco()
+Base.metadata.create_all(bind=engine) # Cria as novas tabelas de RH sem apagar o resto!
 
 def get_db():
     db = SessionLocal()
@@ -73,8 +90,7 @@ class CheckoutPedido(BaseModel):
     nome_cliente: str
     itens: List[ItemCarrinho]
     endereco_cliente: str = ""
-    cpf: str = "" # NOVO CAMPO AQUI!
-    # Adicione estas 3 linhas para o cartão:
+    cpf: str = ""
     token_cartao: Optional[str] = None
     payment_method_id: Optional[str] = None
     parcelas: Optional[int] = 1
@@ -129,6 +145,13 @@ class NovoFuncionario(BaseModel):
     senha: str
     cargo_id: int
     foto: str = ""
+    telefone: str = ""
+    salario: float = 0.0
+    escala: str = ""
+
+class RegistroPonto(BaseModel):
+    funcionario_id: int
+    tipo: str # "entrada" ou "saida"
 
 class AtualizarFuncionario(BaseModel):
     nome: str
@@ -230,13 +253,10 @@ def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db
 
 @app.get("/api/cliente/{cliente_id}/pedidos")
 def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
-    # Busca os últimos 10 pedidos do cliente, do mais novo para o mais velho
     pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).order_by(desc(PedidoModel.id)).limit(10).all()
-    
     historico = []
     for p in pedidos:
         resumo_itens = []
-        # Pega o nome dos produtos do pedido para mostrar no histórico
         for item in getattr(p, 'itens', getattr(p, 'itens_pedido', [])):
             prod = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
             nome_prod = prod.nome if prod else "Produto Indisponível"
@@ -248,30 +268,15 @@ def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
             "total": p.total_pago,
             "itens_resumo": ", ".join(resumo_itens)
         })
-        
     return historico
 
 @app.post("/api/webhooks/mercadopago")
 async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
-    """ Rota silenciosa onde o Mercado Pago avisa de madrugada que o Pix foi pago """
     try:
         payload = await request.json()
-        
-        # Lógica simplificada: Se o evento for de pagamento atualizado/criado
         if payload.get("type") == "payment" or payload.get("action") == "payment.created":
             payment_id = payload.get("data", {}).get("id")
-            
-            # Aqui você chama a função do SDK para ler a "external_reference" que é o ID do pedido
-            # pedido_id = ler_external_reference(payment_id)
-            
-            # pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
-            # if pedido and str(pedido.status) == "AGUARDANDO_PAGAMENTO":
-            #     pedido.status = "RECEBIDO"
-            #     db.commit()
-            #     notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, pedido.id, "RECEBIDO")
-            #     print(f"PIX APROVADO! Pedido #{pedido.id} enviado para a cozinha.")
             pass
-            
         return {"status": "ok"}
     except Exception as e:
         return {"status": "erro"}
@@ -296,31 +301,23 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
     for item in itens_carrinho:
         processar_baixa_estoque(db, produto_id=item["produto_id"], quantidade_vendida=item["quantidade"])
     
-    # --- 🔒 A TRAVA DE SEGURANÇA AQUI ---
     if forma_pagamento in ["pix", "credito", "vr"]:
-        # Se for online, fica no LIMBO. A cozinha não apita e o WhatsApp não envia nada ainda.
         novo_pedido.status = "AGUARDANDO_PAGAMENTO"
         db.commit()
     else:
-        # Se for pagar na entrega (dinheiro/maquininha), vai direto para a Cozinha!
         novo_pedido.status = "RECEBIDO"
         db.commit()
         notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido.id, "RECEBIDO")
 
-    # --- PROCESSAMENTO MERCADO PAGO ---
     if forma_pagamento == "pix":
-        if not pedido_web.cpf:
-            raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
+        if not pedido_web.cpf: raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
             
-        # O resultado agora é um dicionário {"qr_code": "000201..."} ou {"erro": "..."}
         resultado_pix = criar_pagamento_pix_mp(novo_pedido.id, novo_pedido.total_pago, cliente.nome, pedido_web.cpf)
         
-        # Verificamos se o Python recebeu um dicionário e se deu certo
         if type(resultado_pix) is dict and "qr_code" in resultado_pix:
-            codigo_limpo = resultado_pix["qr_code"] # <-- Aqui nós tiramos o código da "caixa"!
+            codigo_limpo = resultado_pix["qr_code"]
             return {"status": "checkout_transparente", "copia_e_cola": codigo_limpo}
         else:
-            # Se deu erro, cancela o pedido na cozinha e mostra na tela o porquê
             novo_pedido.status = "CANCELADO"
             db.commit()
             motivo = resultado_pix.get("erro", "Erro desconhecido") if type(resultado_pix) is dict else "Falha de conexão com o banco."
@@ -330,27 +327,22 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         if not pedido_web.token_cartao or not pedido_web.cpf:
             raise HTTPException(status_code=400, detail="Faltam dados do cartão ou CPF para processar o pagamento.")
             
-        # O MP processa a transação em tempo real
         resposta_pagamento = criar_pagamento_cartao_mp(
             pedido_id=novo_pedido.id, 
             valor_total=novo_pedido.total_pago, 
             token_cartao=pedido_web.token_cartao, 
-            email_cliente=f"cliente{cliente.id}@artsburguer.com", # Email fictício genérico exigido pelo MP
+            email_cliente=f"cliente{cliente.id}@artsburguer.com",
             payment_method_id=pedido_web.payment_method_id, 
             parcelas=pedido_web.parcelas, 
             cpf_cliente=pedido_web.cpf
         )
         
         if resposta_pagamento and resposta_pagamento.get("status") in ["approved", "in_process"]:
-            # DESTRAVANDO O PEDIDO! O pagamento passou!
             novo_pedido.status = "RECEBIDO"
             db.commit()
-            
-            # Agora sim a cozinha recebe o apito e o WhatsApp confirma pro cliente!
             notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido.id, "RECEBIDO")
             return {"status": "sucesso", "mensagem": "Pagamento aprovado!"}
         else:
-            # O banco recusou o limite ou dados incorretos
             novo_pedido.status = "CANCELADO"
             db.commit()
             detalhe_erro = resposta_pagamento.get("status_detail", "Pagamento recusado pelo banco.") if resposta_pagamento else "Falha de conexão com a operadora."
@@ -360,25 +352,19 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
             
 @app.post("/api/webhooks/asaas")
 async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
-    """ O Asaas avisa aqui assim que o dinheiro do Pix ou Cartão cai na conta! """
     try:
         evento = payload.get("event")
-        
         if evento in ["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]:
             pagamento = payload.get("payment", {})
             descricao = pagamento.get("description", "")
-            
-            # O sistema lê a descrição para descobrir qual era o pedido (ex: "Pedido #102 ...")
             if "#" in descricao:
                 pedido_id_str = descricao.split("#")[1].split(" ")[0]
                 pedido_id = int(pedido_id_str)
-                
                 pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
                 if pedido and str(pedido.status).split('.')[-1].upper() != "RECEBIDO":
-                    pedido.status = "RECEBIDO" # Joga direto pra tela da Cozinha (KDS)
+                    pedido.status = "RECEBIDO" 
                     db.commit()
                     print(f"✅ PAGAMENTO ASAAS CONFIRMADO! Pedido #{pedido_id} liberado.")
-                    
         return {"status": "ok"}
     except Exception as e:
         print(f"❌ Erro Webhook Asaas: {e}")
@@ -436,58 +422,87 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
         raise HTTPException(status_code=500, detail=f"Erro no PDV: {str(e)}")
 
 
-# --- ROTAS DE GESTÃO E ESTOQUE ---
+# --- ROTAS DE GESTÃO DE RH (COLABORADORES E PONTO) ---
 @app.get("/api/gestao/funcionarios")
-def listar_funcionarios(db: Session = Depends(get_db)):
+def listar_funcionarios_rh(db: Session = Depends(get_db)):
     funcionarios = db.query(FuncionarioModel).all()
+    hoje = datetime.now().strftime("%Y-%m-%d")
     lista = []
+    
     for f in funcionarios:
         cargo = db.query(Cargo).filter(Cargo.id == f.cargo_id).first()
+        rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == f.id).first()
+        ponto_hoje = db.query(PontoModel).filter(PontoModel.funcionario_id == f.id, PontoModel.data == hoje).first()
+        
         lista.append({
             "id": f.id,
             "nome": f.nome,
             "usuario": f.usuario,
             "cargo": cargo.nome if cargo else "Sem Cargo",
-            "cargo_id": f.cargo_id
+            "cargo_id": f.cargo_id,
+            "telefone": rh.telefone if rh else "",
+            "salario": rh.salario if rh else 0.0,
+            "escala": rh.escala if rh else "",
+            "ponto_entrada": ponto_hoje.entrada if ponto_hoje else "",
+            "ponto_saida": ponto_hoje.saida if ponto_hoje else ""
         })
     return lista
 
 @app.post("/api/gestao/funcionarios")
 def cadastrar_funcionario(dados: NovoFuncionario, db: Session = Depends(get_db)):
     try:
-        # Verifica se o usuário já existe
         existe = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first()
-        if existe:
-            raise HTTPException(status_code=400, detail="Este nome de usuário já está em uso.")
+        if existe: raise HTTPException(status_code=400, detail="Usuário já em uso.")
             
         novo_func = FuncionarioModel(
-            nome=dados.nome,
-            usuario=dados.usuario,
-            senha_hash=pwd_context.hash(dados.senha),
-            cargo_id=dados.cargo_id,
-            foto=dados.foto
+            nome=dados.nome, usuario=dados.usuario, 
+            senha_hash=pwd_context.hash(dados.senha), cargo_id=dados.cargo_id
         )
         db.add(novo_func)
+        db.flush() # Gera o ID do funcionário
+        
+        info_rh = InfoRHModel(funcionario_id=novo_func.id, telefone=dados.telefone, salario=dados.salario, escala=dados.escala)
+        db.add(info_rh)
         db.commit()
-        return {"status": "sucesso", "mensagem": "Colaborador cadastrado!"}
+        return {"status": "sucesso", "mensagem": "Colaborador cadastrado na Folha de Pagamento!"}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/gestao/funcionarios/{func_id}")
 def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
-    # Proteção para não deletar o Admin principal (ID 1)
-    if func_id == 1:
-        raise HTTPException(status_code=403, detail="Não é possível excluir o Administrador Principal.")
-        
+    if func_id == 1: raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador.")
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
-    if not func:
-        raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
-        
+    if not func: raise HTTPException(status_code=404)
     db.delete(func)
     db.commit()
-    return {"status": "sucesso", "mensagem": "Acesso revogado com sucesso."}
+    return {"status": "sucesso", "mensagem": "Funcionário demitido e acesso revogado."}
+
+@app.post("/api/gestao/ponto")
+def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
+    hoje = datetime.now().strftime("%Y-%m-%d")
+    hora = datetime.now().strftime("%H:%M")
     
+    ponto = db.query(PontoModel).filter(PontoModel.funcionario_id == dados.funcionario_id, PontoModel.data == hoje).first()
+    
+    if not ponto:
+        ponto = PontoModel(funcionario_id=dados.funcionario_id, data=hoje)
+        db.add(ponto)
+        db.flush()
+        
+    if dados.tipo == "entrada":
+        if ponto.entrada: return {"status": "erro", "detail": "Entrada já registrada hoje."}
+        ponto.entrada = hora
+    else:
+        if not ponto.entrada: return {"status": "erro", "detail": "A pessoa precisa Bater a Entrada primeiro."}
+        if ponto.saida: return {"status": "erro", "detail": "Saída já registrada hoje."}
+        ponto.saida = hora
+        
+    db.commit()
+    return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} cravado às {hora}!"}
+
+
+# --- OUTRAS ROTAS GERAIS ---
 @app.post("/api/gestao/complementos")
 def criar_grupo_complemento(payload: GrupoCompSchema, db: Session = Depends(get_db)):
     try:
@@ -496,7 +511,7 @@ def criar_grupo_complemento(payload: GrupoCompSchema, db: Session = Depends(get_
             obrigatorio=payload.obrigatorio, minimo_opcoes=payload.minimo_opcoes, maximo_opcoes=payload.maximo_opcoes
         )
         db.add(grupo)
-        db.flush() # Gera o ID do grupo
+        db.flush() 
         for item in payload.itens:
             db.add(ItemComplementoModel(grupo_id=grupo.id, nome=item.nome, preco_adicional=item.preco_adicional))
         db.commit()
@@ -525,10 +540,6 @@ def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
     cargo = db.query(Cargo).filter(Cargo.id == funcionario.cargo_id).first()
     return { "status": "sucesso", "nome": funcionario.nome, "cargo_id": funcionario.cargo_id, "cargo_nome": cargo.nome if cargo else "Indefinido" }
 
-from database import FichaTecnicaModel # Adicione isto acima das rotas se não existir
-
-from database import FichaTecnicaModel # Adicione isto acima das rotas se não existir
-
 @app.get("/api/cardapio")
 def listar_cardapio_digital(db: Session = Depends(get_db)): 
     produtos = db.query(ProdutoModel).all()
@@ -555,7 +566,7 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
             imagem_url=produto.imagem_url
         )
         db.add(novo_produto)
-        db.flush() # Gera o ID do produto
+        db.flush()
         for f in produto.fichas:
             db.add(FichaTecnicaModel(produto_id=novo_produto.id, insumo_id=f.insumo_id, quantidade_necessaria=f.quantidade))
         db.commit()
@@ -665,18 +676,15 @@ def obter_recibo_pedido(pedido_id: int, db: Session = Depends(get_db)):
             "observacao": obs
         })
     
-    # Busca o endereço (seja do cadastro ou digitado na hora pelo visitante)
     endereco = "Retirada no Balcão"
     tipo_pedido = str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', ''))).split('.')[-1].upper()
     
     if tipo_pedido == "DELIVERY":
-        # Verifica se o endereço veio nas observações (Visitante)
         if itens_formatados and "Endereço:" in itens_formatados[0]["observacao"]:
             partes = itens_formatados[0]["observacao"].split(" | ")
             for p in partes:
                 if "Endereço:" in p:
                     endereco = p.replace("Endereço:", "").strip()
-                    # Limpa a observação para não imprimir o endereço no lugar errado
                     itens_formatados[0]["observacao"] = itens_formatados[0]["observacao"].replace(p, "").replace("|", "").strip()
                     break
         elif cliente and getattr(cliente, 'logradouro', ''):
@@ -734,7 +742,6 @@ def despachar_pedido(pedido_id: int, payload: DespachoMotoboy, db: Session = Dep
     pedido.status = "SAIU_PARA_ENTREGA"
     db.commit()
     
-    # 🔔 NOTIFICA O CLIENTE QUE O MOTOBOY SAIU
     if pedido.cliente:
         notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, pedido.id, "SAIU_PARA_ENTREGA")
         
@@ -761,12 +768,10 @@ def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, db: Session = 
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
     if not pedido: raise HTTPException(status_code=404)
     
-    # Atualiza o status
     novo_status = payload.status.upper()
     pedido.status = novo_status
     db.commit()
     
-    # 🔔 NOTIFICA O CLIENTE SEMPRE QUE A COZINHA MUDAR O STATUS
     if pedido.cliente:
         notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, pedido.id, novo_status)
         
@@ -831,7 +836,6 @@ def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
 
 @app.get("/api/gestao/relatorios/curva-abc")
 def obter_relatorio_curva_abc(db: Session = Depends(get_db)):
-    # Busca todos os pedidos que NÃO foram cancelados
     pedidos = db.query(PedidoModel).filter(PedidoModel.status != "CANCELADO").all()
     
     ranking = {}
@@ -857,11 +861,10 @@ def obter_relatorio_curva_abc(db: Session = Depends(get_db)):
                 ranking[prod_id]["quantidade_vendida"] += qtd
                 ranking[prod_id]["faturamento_gerado"] += (qtd * produto_preco)
                 
-    # Transforma o dicionário em lista e ordena do que deu mais dinheiro (maior faturamento) pro menor
     lista_ranking = list(ranking.values())
     lista_ranking.sort(key=lambda x: x["faturamento_gerado"], reverse=True)
     
-    return lista_ranking[:10] # Retorna o TOP 10
+    return lista_ranking[:10] 
     
 # --- ROTAS VISUAIS (Telas HTML) ---
 @app.get("/login", response_class=HTMLResponse)
@@ -903,9 +906,7 @@ def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
     pedido.status = "ENTREGUE"
     db.commit()
     
-    # 🔔 A MÁGICA DO PÓS-VENDA: Dispara o WhatsApp Automático
     if pedido.cliente:
-        # Chama a função que já existe no seu arquivo whatsapp_ia.py
         notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, pedido.id, "ENTREGUE")
         
     return {"status": "sucesso", "mensagem": "Baixa realizada e cliente notificado!"}
