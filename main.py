@@ -429,25 +429,25 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro no PDV: {str(e)}")
 
-# --- ROTAS DE GESTÃO DE RH (MEGA CORPORATIVO) ---
+# --- ROTAS DE GESTÃO DE RH (MEGA CORPORATIVO V4) ---
 
 class FormularioAdmissao(BaseModel):
-    cpf: str
-    data_nascimento: str
-    naturalidade: str
-    estado_civil: str
-    rg: str
-    pis_pasep: str
-    titulo_eleitor: str
-    reservista: str
-    endereco_completo: str
-    dados_bancarios: str
-    escolaridade: str
-    qtd_filhos_menores: int
-    cnh: str
-    plano_saude_escolhido: str
-    aceite_lgpd: bool
-    foto_3x4: str
+    cpf: str = ""
+    data_nascimento: str = ""
+    naturalidade: str = ""
+    estado_civil: str = ""
+    rg: str = ""
+    pis_pasep: str = ""
+    titulo_eleitor: str = ""
+    reservista: str = ""
+    endereco_completo: str = ""
+    dados_bancarios: str = ""
+    escolaridade: str = ""
+    qtd_filhos_menores: int = 0
+    cnh: str = ""
+    plano_saude_escolhido: str = ""
+    aceite_lgpd: bool = True
+    foto_3x4: str = ""
 
 @app.get("/api/gestao/funcionarios")
 def listar_funcionarios_rh(db: Session = Depends(get_db)):
@@ -478,7 +478,6 @@ def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get
         existe = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first()
         if existe: raise HTTPException(status_code=400, detail="Usuário já em uso.")
             
-        # O gestor cadastra apenas o básico. O resto o funcionário preenche!
         novo_func = FuncionarioModel(
             nome=dados.nome, usuario=dados.usuario, 
             senha_hash=pwd_context.hash(dados.senha), cargo_id=dados.cargo_id
@@ -486,79 +485,105 @@ def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get
         db.add(novo_func)
         db.flush() 
         
-        # Gera matrícula automática (Ex: ART-0005)
         novo_func.matricula_cracha = f"ART-{novo_func.id:04d}"
         
         info_rh = InfoRHModel(
             funcionario_id=novo_func.id, telefone=dados.telefone, 
             salario=dados.salario, escala=dados.escala, cpf=dados.cpf,
-            status_admissao="PENDENTE_PREENCHIMENTO" # Aguardando o formulário do funcionário!
+            status_admissao="PENDENTE_PREENCHIMENTO" 
         )
         db.add(info_rh)
         db.commit()
-        return {"status": "sucesso", "mensagem": f"Cadastro Base criado! Matrícula: {novo_func.matricula_cracha}. Envie o link de admissão para o colaborador preencher o resto."}
+        return {"status": "sucesso", "mensagem": f"Cadastro criado! Matrícula: {novo_func.matricula_cracha}."}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/api/gestao/funcionarios/admissao")
 def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get_db)):
-    """ Rota que o colaborador vai usar no celular dele para mandar os documentos e aceitar a LGPD """
+    """ Rota do funcionário pelo celular dele """
     try:
         rh = db.query(InfoRHModel).filter(InfoRHModel.cpf == dados.cpf).first()
-        if not rh: raise HTTPException(status_code=404, detail="CPF não encontrado na base de pré-contratados.")
+        if not rh: raise HTTPException(status_code=404, detail="CPF não encontrado.")
         if rh.status_admissao == "ATIVO": raise HTTPException(status_code=400, detail="Admissão já foi concluída!")
 
-        # Atualiza a tabela do RH com todos os dados da lei
-        rh.data_nascimento = dados.data_nascimento
-        rh.naturalidade = dados.naturalidade
-        rh.estado_civil = dados.estado_civil
-        rh.rg = dados.rg
-        rh.pis_pasep = dados.pis_pasep
-        rh.titulo_eleitor = dados.titulo_eleitor
-        rh.reservista = dados.reservista
-        rh.endereco_completo = dados.endereco_completo
-        rh.dados_bancarios = dados.dados_bancarios
-        rh.escolaridade = dados.escolaridade
-        rh.qtd_filhos_menores = dados.qtd_filhos_menores
-        rh.cnh = dados.cnh
+        rh.data_nascimento = dados.data_nascimento; rh.naturalidade = dados.naturalidade
+        rh.estado_civil = dados.estado_civil; rh.rg = dados.rg
+        rh.pis_pasep = dados.pis_pasep; rh.titulo_eleitor = dados.titulo_eleitor
+        rh.reservista = dados.reservista; rh.endereco_completo = dados.endereco_completo
+        rh.dados_bancarios = dados.dados_bancarios; rh.escolaridade = dados.escolaridade
+        rh.qtd_filhos_menores = dados.qtd_filhos_menores; rh.cnh = dados.cnh
         rh.plano_saude_escolhido = dados.plano_saude_escolhido
         rh.aceite_lgpd = dados.aceite_lgpd
         rh.data_aceite_lgpd = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
-        rh.status_admissao = "ATIVO" # Torna o funcionário oficial!
+        rh.status_admissao = "ATIVO" 
 
-        # Salva a foto 3x4 no perfil principal
         func = db.query(FuncionarioModel).filter(FuncionarioModel.id == rh.funcionario_id).first()
         if func: func.foto_3x4 = dados.foto_3x4
             
         db.commit()
-        return {"status": "sucesso", "mensagem": "Admissão concluída com sucesso! Bem-vindo ao time."}
+        return {"status": "sucesso", "mensagem": "Admissão concluída!"}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+# --- AS NOVAS ROTAS DO DOSSIÊ PARA O GESTOR ---
+@app.get("/api/gestao/funcionarios/{func_id}/dossie")
+def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    if not rh: raise HTTPException(status_code=404)
+    return {
+        "cpf": rh.cpf, "rg": rh.rg, "pis_pasep": rh.pis_pasep,
+        "data_nascimento": rh.data_nascimento, "estado_civil": rh.estado_civil,
+        "titulo_eleitor": rh.titulo_eleitor, "reservista": rh.reservista,
+        "endereco_completo": rh.endereco_completo, "dados_bancarios": rh.dados_bancarios,
+        "naturalidade": rh.naturalidade, "escolaridade": rh.escolaridade,
+        "qtd_filhos_menores": rh.qtd_filhos_menores, "cnh": rh.cnh,
+        "plano_saude_escolhido": rh.plano_saude_escolhido
+    }
+
+@app.put("/api/gestao/funcionarios/{func_id}/dossie")
+def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = Depends(get_db)):
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    if not rh: raise HTTPException(status_code=404)
+    
+    rh.cpf = dados.cpf
+    rh.rg = dados.rg
+    rh.pis_pasep = dados.pis_pasep
+    rh.data_nascimento = dados.data_nascimento
+    rh.estado_civil = dados.estado_civil
+    rh.titulo_eleitor = dados.titulo_eleitor
+    rh.reservista = dados.reservista
+    rh.endereco_completo = dados.endereco_completo
+    rh.dados_bancarios = dados.dados_bancarios
+    rh.naturalidade = dados.naturalidade
+    rh.escolaridade = dados.escolaridade
+    rh.qtd_filhos_menores = dados.qtd_filhos_menores
+    rh.cnh = dados.cnh
+    rh.plano_saude_escolhido = dados.plano_saude_escolhido
+    
+    # Se o gestor preencher pelo painel, já consideramos o cadastro ativo
+    if rh.status_admissao == "PENDENTE_PREENCHIMENTO":
+        rh.status_admissao = "ATIVO"
+        
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Dossiê do colaborador salvo com sucesso!"}
+
 @app.delete("/api/gestao/funcionarios/{func_id}")
 def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
     if func_id == 1: raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador Supremo.")
-    
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
-    if rh: 
-        rh.status_admissao = "DEMITIDO"
-        
+    if rh: rh.status_admissao = "DEMITIDO"
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
-    if func:
-        # Troca a senha para impedir login, mas NÃO apaga o histórico do banco de dados (Exigência Contábil)
-        func.senha_hash = "REVOGADO" 
-        
+    if func: func.senha_hash = "REVOGADO" 
     db.commit()
-    return {"status": "sucesso", "mensagem": "Acesso revogado e status alterado para DEMITIDO. O histórico contábil foi mantido."}
+    return {"status": "sucesso", "mensagem": "Funcionário demitido e acesso revogado."}
 
 @app.post("/api/gestao/ponto")
 def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
     hoje = datetime.utcnow().date().strftime("%Y-%m-%d")
     hora = datetime.utcnow().strftime("%H:%M")
     
-    # Verifica se está demitido ou pendente
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == dados.funcionario_id).first()
     if not rh or rh.status_admissao != "ATIVO":
         return {"status": "erro", "detail": "Acesso negado. Admissão pendente ou revogada."}
@@ -571,11 +596,11 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
         db.flush()
         
     if dados.tipo == "entrada":
-        if ponto.entrada: return {"status": "erro", "detail": "Entrada já registrada hoje."}
+        if ponto.entrada: return {"status": "erro", "detail": "Entrada já registrada."}
         ponto.entrada = hora
     else:
-        if not ponto.entrada: return {"status": "erro", "detail": "A pessoa precisa Bater a Entrada primeiro."}
-        if ponto.saida: return {"status": "erro", "detail": "Saída já registrada hoje."}
+        if not ponto.entrada: return {"status": "erro", "detail": "Bata a Entrada primeiro."}
+        if ponto.saida: return {"status": "erro", "detail": "Saída já registrada."}
         ponto.saida = hora
         
     db.commit()
@@ -583,7 +608,6 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
 
 @app.get("/admissao", response_class=HTMLResponse)
 def abrir_admissao(): 
-    """ Rota visual que vai carregar o formulário do funcionário no celular dele """
     return Path("templates/admissao.html").read_text(encoding="utf-8") if Path("templates/admissao.html").exists() else "Erro"
 
 # --- OUTRAS ROTAS GERAIS DE CARDÁPIO ---
