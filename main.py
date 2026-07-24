@@ -429,7 +429,26 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro no PDV: {str(e)}")
 
-# --- ROTAS DE GESTÃO DE RH (COLABORADORES E PONTO) ---
+# --- ROTAS DE GESTÃO DE RH (MEGA CORPORATIVO) ---
+
+class FormularioAdmissao(BaseModel):
+    cpf: str
+    data_nascimento: str
+    naturalidade: str
+    estado_civil: str
+    rg: str
+    pis_pasep: str
+    titulo_eleitor: str
+    reservista: str
+    endereco_completo: str
+    dados_bancarios: str
+    escolaridade: str
+    qtd_filhos_menores: int
+    cnh: str
+    plano_saude_escolhido: str
+    aceite_lgpd: bool
+    foto_3x4: str
+
 @app.get("/api/gestao/funcionarios")
 def listar_funcionarios_rh(db: Session = Depends(get_db)):
     funcionarios = db.query(FuncionarioModel).all()
@@ -442,28 +461,24 @@ def listar_funcionarios_rh(db: Session = Depends(get_db)):
         ponto_hoje = db.query(PontoModel).filter(PontoModel.funcionario_id == f.id, PontoModel.data == hoje).first()
         
         lista.append({
-            "id": f.id,
-            "nome": f.nome,
-            "usuario": f.usuario,
-            "cargo": cargo.nome if cargo else "Sem Cargo",
-            "cargo_id": f.cargo_id,
-            "telefone": rh.telefone if rh else "",
-            "salario": rh.salario if rh else 0.0,
-            "escala": rh.escala if rh else "",
-            "rg": rh.rg if rh else "",
-            "cpf": rh.cpf if rh else "",
-            "pis": rh.pis_pasep if rh else "",
+            "id": f.id, "nome": f.nome, "usuario": f.usuario,
+            "cargo": cargo.nome if cargo else "Sem Cargo", "cargo_id": f.cargo_id,
+            "matricula": f.matricula_cracha,
+            "status_admissao": rh.status_admissao if rh else "DESCONHECIDO",
+            "telefone": rh.telefone if rh else "", "salario": rh.salario if rh else 0.0,
+            "escala": rh.escala if rh else "", "cpf": rh.cpf if rh else "",
             "ponto_entrada": ponto_hoje.entrada if ponto_hoje else "",
             "ponto_saida": ponto_hoje.saida if ponto_hoje else ""
         })
     return lista
 
 @app.post("/api/gestao/funcionarios")
-def cadastrar_funcionario(dados: NovoFuncionario, db: Session = Depends(get_db)):
+def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get_db)):
     try:
         existe = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first()
         if existe: raise HTTPException(status_code=400, detail="Usuário já em uso.")
             
+        # O gestor cadastra apenas o básico. O resto o funcionário preenche!
         novo_func = FuncionarioModel(
             nome=dados.nome, usuario=dados.usuario, 
             senha_hash=pwd_context.hash(dados.senha), cargo_id=dados.cargo_id
@@ -471,27 +486,82 @@ def cadastrar_funcionario(dados: NovoFuncionario, db: Session = Depends(get_db))
         db.add(novo_func)
         db.flush() 
         
-        info_rh = InfoRHModel(funcionario_id=novo_func.id, telefone=dados.telefone, salario=dados.salario, escala=dados.escala, rg=dados.rg, cpf=dados.cpf, pis_pasep=dados.pis_pasep)
+        # Gera matrícula automática (Ex: ART-0005)
+        novo_func.matricula_cracha = f"ART-{novo_func.id:04d}"
+        
+        info_rh = InfoRHModel(
+            funcionario_id=novo_func.id, telefone=dados.telefone, 
+            salario=dados.salario, escala=dados.escala, cpf=dados.cpf,
+            status_admissao="PENDENTE_PREENCHIMENTO" # Aguardando o formulário do funcionário!
+        )
         db.add(info_rh)
         db.commit()
-        return {"status": "sucesso", "mensagem": "Colaborador cadastrado na Folha de Pagamento!"}
+        return {"status": "sucesso", "mensagem": f"Cadastro Base criado! Matrícula: {novo_func.matricula_cracha}. Envie o link de admissão para o colaborador preencher o resto."}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/gestao/funcionarios/admissao")
+def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get_db)):
+    """ Rota que o colaborador vai usar no celular dele para mandar os documentos e aceitar a LGPD """
+    try:
+        rh = db.query(InfoRHModel).filter(InfoRHModel.cpf == dados.cpf).first()
+        if not rh: raise HTTPException(status_code=404, detail="CPF não encontrado na base de pré-contratados.")
+        if rh.status_admissao == "ATIVO": raise HTTPException(status_code=400, detail="Admissão já foi concluída!")
+
+        # Atualiza a tabela do RH com todos os dados da lei
+        rh.data_nascimento = dados.data_nascimento
+        rh.naturalidade = dados.naturalidade
+        rh.estado_civil = dados.estado_civil
+        rh.rg = dados.rg
+        rh.pis_pasep = dados.pis_pasep
+        rh.titulo_eleitor = dados.titulo_eleitor
+        rh.reservista = dados.reservista
+        rh.endereco_completo = dados.endereco_completo
+        rh.dados_bancarios = dados.dados_bancarios
+        rh.escolaridade = dados.escolaridade
+        rh.qtd_filhos_menores = dados.qtd_filhos_menores
+        rh.cnh = dados.cnh
+        rh.plano_saude_escolhido = dados.plano_saude_escolhido
+        rh.aceite_lgpd = dados.aceite_lgpd
+        rh.data_aceite_lgpd = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
+        rh.status_admissao = "ATIVO" # Torna o funcionário oficial!
+
+        # Salva a foto 3x4 no perfil principal
+        func = db.query(FuncionarioModel).filter(FuncionarioModel.id == rh.funcionario_id).first()
+        if func: func.foto_3x4 = dados.foto_3x4
+            
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Admissão concluída com sucesso! Bem-vindo ao time."}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/gestao/funcionarios/{func_id}")
 def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
-    if func_id == 1: raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador.")
+    if func_id == 1: raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador Supremo.")
+    
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    if rh: 
+        rh.status_admissao = "DEMITIDO"
+        
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
-    if not func: raise HTTPException(status_code=404)
-    db.delete(func)
+    if func:
+        # Troca a senha para impedir login, mas NÃO apaga o histórico do banco de dados (Exigência Contábil)
+        func.senha_hash = "REVOGADO" 
+        
     db.commit()
-    return {"status": "sucesso", "mensagem": "Funcionário demitido e acesso revogado."}
+    return {"status": "sucesso", "mensagem": "Acesso revogado e status alterado para DEMITIDO. O histórico contábil foi mantido."}
 
 @app.post("/api/gestao/ponto")
 def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
     hoje = datetime.utcnow().date().strftime("%Y-%m-%d")
     hora = datetime.utcnow().strftime("%H:%M")
+    
+    # Verifica se está demitido ou pendente
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == dados.funcionario_id).first()
+    if not rh or rh.status_admissao != "ATIVO":
+        return {"status": "erro", "detail": "Acesso negado. Admissão pendente ou revogada."}
     
     ponto = db.query(PontoModel).filter(PontoModel.funcionario_id == dados.funcionario_id, PontoModel.data == hoje).first()
     
@@ -510,6 +580,11 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
         
     db.commit()
     return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} cravado às {hora}!"}
+
+@app.get("/admissao", response_class=HTMLResponse)
+def abrir_admissao(): 
+    """ Rota visual que vai carregar o formulário do funcionário no celular dele """
+    return Path("templates/admissao.html").read_text(encoding="utf-8") if Path("templates/admissao.html").exists() else "Erro"
 
 # --- OUTRAS ROTAS GERAIS DE CARDÁPIO ---
 @app.post("/api/gestao/complementos")
