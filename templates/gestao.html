@@ -38,52 +38,24 @@
                 <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">ERP Cloud V2</p>
             </div>
         </div>
-        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto no-scrollbar">
             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-4">Configurações & ERP</p>
-            <button onclick="abrirAba('aba-relatorios', this)" class="menu-item active w-full flex items-center bg-brand-500 text-white p-3 rounded-xl transition-all">
-                <i class="ph ph-chart-line-up text-xl mr-3"></i> Relatórios & Painel
-            </button>
-            <button onclick="abrirAba('aba-cardapio', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
-                <i class="ph ph-list-magnifying-glass text-xl mr-3"></i> Produtos & Ficha
-            </button>
-            <button onclick="abrirAba('aba-estoque', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
-                <i class="ph ph-package text-xl mr-3"></i> Estoque Mínimo
-            </button>
-            <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
-                <i class="ph ph-invoice text-xl mr-3"></i> Financeiro
-            </button>
-            <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
-                <i class="ph ph-users text-xl mr-3"></i> Equipe & RH
-            </button>
-            <button onclick="abrirAba('aba-clientes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
-                <i class="ph ph-users-three text-xl mr-3"></i> Base de Clientes
-            </button>
-            <button onclick="abrirAba('aba-fornecedores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
-                <i class="ph ph-truck text-xl mr-3"></i> Fornecedores
-            </button>
-            <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
-                <i class="ph ph-gear text-xl mr-3"></i> Setup da Loja
-            </button>
+            <button onclick="abrirAba('aba-relatorios', this)" class="menu-item active w-full flex items-center bg-brand-500 text-white p-3 rounded-xl transition-all"><i class="ph ph-chart-line-up text-xl mr-3"></i> Relatórios & Painel</button>
+            <button onclick="abrirAba('aba-cardapio', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-list-magnifying-glass text-xl mr-3"></i> Produtos & Ficha</button>
+            <button onclick="abrirAba('aba-estoque', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-package text-xl mr-3"></i> Estoque Mínimo</button>
+            <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-invoice text-xl mr-3"></i> Financeiro</button>
+            <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-users text-xl mr-3"></i> Equipe & RH</button>
+            <button onclick="abrirAba('aba-clientes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-users-three text-xl mr-3"></i> Base de Clientes</button>
+            <button onclick="abrirAba('aba-fornecedores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-truck text-xl mr-3"></i> Fornecedores</button>
+            <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-gear text-xl mr-3"></i> Setup da Loja</button>
 
-            <!-- ATALHOS DA OPERAÇÃO -->
             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-800 pt-4">Operação (Ao Vivo)</p>
-            <a href="/pdv" target="_blank" class="w-full flex items-center text-emerald-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
-                <i class="ph-fill ph-monitor text-xl mr-3"></i> PDV (Caixa) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
-            </a>
-            <a href="/kds" target="_blank" class="w-full flex items-center text-red-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
-                <i class="ph-fill ph-cooking-pot text-xl mr-3"></i> Monitor Cozinha <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
-            </a>
-            <a href="/logistica" target="_blank" class="w-full flex items-center text-purple-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
-                <i class="ph-fill ph-moped text-xl mr-3"></i> Despacho Logística <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
-            </a>
-            <a href="/totem" target="_blank" class="w-full flex items-center text-amber-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
-                <i class="ph-fill ph-monitor-play text-xl mr-3"></i> Totem TV (Salão) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
-            </a>
-            <a href="/" target="_blank" class="w-full flex items-center text-blue-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8">
-                <i class="ph-fill ph-storefront text-xl mr-3"></i> Cardápio Digital <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
-            </a>
+            <a href="/pdv" target="_blank" class="w-full flex items-center text-emerald-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold"><i class="ph-fill ph-monitor text-xl mr-3"></i> PDV (Caixa) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
+            <a href="/kds" target="_blank" class="w-full flex items-center text-red-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold"><i class="ph-fill ph-cooking-pot text-xl mr-3"></i> Monitor Cozinha <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
+            <a href="/logistica" target="_blank" class="w-full flex items-center text-purple-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold"><i class="ph-fill ph-moped text-xl mr-3"></i> Despacho <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
+            <a href="/totem" target="_blank" class="w-full flex items-center text-amber-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold"><i class="ph-fill ph-monitor-play text-xl mr-3"></i> Totem TV (Salão) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
+            <a href="/" target="_blank" class="w-full flex items-center text-blue-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8"><i class="ph-fill ph-storefront text-xl mr-3"></i> Cardápio Online <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
         </nav>
-        
         <div class="p-6 border-t border-slate-800 shrink-0">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
@@ -93,7 +65,7 @@
                         <p class="text-[10px] text-brand-500 font-bold uppercase tracking-wider">Acesso Total</p>
                     </div>
                 </div>
-                <button onclick="sairDoSistema()" class="text-slate-400 hover:text-brand-500 transition-colors" title="Sair do Sistema"><i class="ph ph-sign-out text-2xl"></i></button>
+                <button onclick="sairDoSistema()" class="text-slate-400 hover:text-brand-500 transition-colors" title="Sair"><i class="ph ph-sign-out text-2xl"></i></button>
             </div>
         </div>
     </aside>
@@ -116,11 +88,11 @@
                         <input type="date" id="filtro-inicio" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:border-brand-500">
                         <span class="text-slate-400 text-sm">até</span>
                         <input type="date" id="filtro-fim" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:border-brand-500">
-                        <button onclick="filtrarRelatorios()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center">
-                            <i class="ph ph-funnel mr-2 text-lg"></i> Filtrar
+                        <button onclick="filtrarRelatorios()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors">
+                            <i class="ph ph-funnel mr-2"></i> Filtrar
                         </button>
-                        <button onclick="gerarPDF('area-pdf-relatorio', 'Relatorio_Gerencial')" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-md shadow-brand-500/30">
-                            <i class="ph-fill ph-file-pdf mr-2 text-lg"></i> Exportar
+                        <button onclick="gerarPDF('area-pdf-relatorio', 'Relatorio_Gerencial')" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-md shadow-brand-500/30">
+                            <i class="ph-fill ph-file-pdf mr-2"></i> Exportar
                         </button>
                     </div>
                 </div>
@@ -181,242 +153,69 @@
                 </div>
             </div>
 
-            <!-- CARDÁPIO E PRODUTOS -->
-            <div id="aba-cardapio" class="painel hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-                    <div class="mb-8 border-b border-slate-100 pb-5">
-                        <h3 class="text-xl font-black text-slate-800 tracking-tight">Novo Lanche ou Produto</h3>
-                        <p class="text-sm text-slate-500 font-medium">Cadastre o item, insira a foto e vincule a Ficha Técnica para baixar o estoque automático.</p>
-                    </div>
-                    <form id="form-cardapio" onsubmit="salvarProduto(event)" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nome do Produto</label>
-                                <input type="text" id="prod-nome" placeholder="Ex: Smash Bacon Duplo" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none bg-slate-50 font-medium">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">URL da Imagem (Foto)</label>
-                                <input type="text" id="prod-img" placeholder="https://link.com/foto.jpg" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none bg-slate-50 font-medium">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Descrição no Cardápio</label>
-                            <textarea id="prod-desc" rows="2" placeholder="Pão brioche, 2x carnes smash 80g, queijo cheddar..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none bg-slate-50 font-medium resize-none"></textarea>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Preço de Venda (R$)</label>
-                                <input type="number" step="0.01" id="prod-preco" placeholder="0.00" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none bg-slate-50 font-black text-brand-600">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Categoria</label>
-                                <select id="prod-categoria" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none bg-white font-bold text-slate-700">
-                                    <!-- Preenchido via JS -->
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="border-t border-slate-100 pt-8 mt-4">
-                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-2"><i class="ph-fill ph-receipt text-lg text-brand-500 mr-2"></i>Ficha Técnica (Receita)</h4>
-                            <p class="text-xs text-slate-500 font-medium mb-4 border-l-2 border-amber-400 pl-3">Selecione os ingredientes que este lanche gasta. Quando for vendido, o sistema dará baixa no Estoque sozinho.</p>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Insumo</label>
-                                    <select id="select-insumo" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 outline-none text-sm font-semibold bg-white focus:border-brand-500">
-                                        <option value="">Carregando...</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Quantidade Gasta</label>
-                                    <input type="number" id="input-qtd-insumo" step="0.01" placeholder="Ex: 1 ou 0.150" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 outline-none text-sm font-semibold bg-white focus:border-brand-500">
-                                </div>
-                                <button type="button" onclick="adicionarIngredienteNaLista()" class="bg-slate-900 hover:bg-brand-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-colors shadow-md">
-                                    + Vincular Item
-                                </button>
-                            </div>
-                            
-                            <ul id="lista-ingredientes-produto" class="space-y-2 mt-4">
-                                <li class="text-slate-400 text-xs font-medium italic p-4 border border-dashed border-slate-300 rounded-xl text-center">Nenhum ingrediente adicionado à receita.</li>
-                            </ul>
-                        </div>
-
-                        <div class="pt-6 flex justify-end">
-                            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-black py-4 px-10 rounded-xl shadow-[0_10px_20px_rgba(255,71,87,0.3)] transition-all active:scale-95 flex items-center">
-                                Salvar Produto no Cardápio <i class="ph-bold ph-check ml-2 text-xl"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-8">
-                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="text-lg font-black text-slate-800 tracking-tight">Cardápio Atual</h3>
-                        <button onclick="carregarCardapio()" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-colors"><i class="ph-bold ph-arrows-clockwise mr-1"></i> Atualizar</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead><tr class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Produto</th><th class="py-4 px-6">Categoria</th><th class="py-4 px-6">Preço</th><th class="py-4 px-6 text-center">Ações</th></tr></thead>
-                            <tbody id="lista-cardapio" class="text-sm text-slate-600 font-medium"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ESTOQUE MINIMO -->
-            <div id="aba-estoque" class="painel hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-                    <div class="mb-8 border-b border-slate-100 pb-5">
-                        <h3 class="text-xl font-black text-slate-800 tracking-tight">Entrada de Insumos</h3>
-                        <p class="text-sm text-slate-500 font-medium">Alimente a base de dados para o controle da Ficha Técnica e automação.</p>
-                    </div>
-                    <form id="form-estoque" onsubmit="salvarInsumo(event)" class="space-y-6">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nome do Insumo (Ex: Pão Brioche, Hambúrguer 150g)</label>
-                            <input type="text" id="ins-nome" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none bg-slate-50 font-medium">
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2">Unidade</label>
-                                <select id="ins-unidade" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none bg-slate-50 font-bold text-slate-700">
-                                    <option value="un">Unidade (un)</option>
-                                    <option value="g">Gramas (g)</option>
-                                    <option value="ml">Mililitros (ml)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2">Qtd Adquirida</label>
-                                <input type="number" step="0.1" id="ins-qtd" placeholder="Ex: 100" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none bg-slate-50 font-black text-slate-800">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2">Alerta Mínimo</label>
-                                <input type="number" step="0.1" id="ins-min" placeholder="Ex: 20" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none bg-red-50 font-black text-red-600 border-red-100">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2">Custo Unid. (R$)</label>
-                                <input type="number" step="0.01" id="ins-custo" placeholder="0.00" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none bg-slate-50 font-black text-slate-800">
-                            </div>
-                        </div>
-                        <div class="pt-4 flex justify-end">
-                            <button type="submit" class="bg-slate-900 hover:bg-brand-500 text-white font-black py-4 px-10 rounded-xl shadow-lg transition-all active:scale-95 flex items-center">
-                                <i class="ph-bold ph-package text-xl mr-2"></i> Guardar na Despensa
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-8">
-                    <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Despensa Atual</h3>
-                        <button onclick="carregarEstoque()" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-colors">Atualizar</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead><tr class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Insumo</th><th class="py-4 px-6">Prateleira</th><th class="py-4 px-6">Qtd. Alerta</th><th class="py-4 px-6 text-center">Status / Ação</th></tr></thead>
-                            <tbody id="lista-estoque" class="text-sm text-slate-600 font-medium"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FORNECEDORES -->
-            <div id="aba-fornecedores" class="painel hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
-                    <h3 class="text-xl font-black text-slate-800 tracking-tight mb-6"><i class="ph-fill ph-truck text-brand-500 mr-2"></i> Cadastro de Fornecedor</h3>
-                    <form id="form-fornecedor" onsubmit="cadastrarFornecedor(event)" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <input type="text" id="forn-nome" placeholder="Nome Fantasia / Empresa" required class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-700">
-                        <input type="text" id="forn-cnpj" placeholder="CNPJ (Opcional)" class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium">
-                        <select id="forn-cat" class="px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 outline-none focus:border-brand-500"></select>
-                        <input type="text" id="forn-contato" placeholder="Telefone / Contato (WhatsApp)" class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium">
-                        <button type="submit" class="md:col-span-2 bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95">Salvar Fornecedor</button>
-                    </form>
-                </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-5 bg-slate-50 border-b border-slate-100 text-sm font-black text-slate-800 uppercase tracking-widest">Base de Fornecedores</div>
-                    <table class="w-full text-left">
-                        <thead><tr class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Empresa</th><th class="py-4 px-6">Categoria</th><th class="py-4 px-6">Contato</th><th class="py-4 px-6">CNPJ</th></tr></thead>
-                        <tbody id="lista-fornecedores" class="text-sm font-medium text-slate-600"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- FINANCEIRO & CONTAS -->
-            <div id="aba-financeiro" class="painel hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
-                        <div class="absolute right-0 top-0 opacity-10"><i class="ph-fill ph-buildings text-[150px]"></i></div>
-                        <p class="text-brand-400 text-xs font-black uppercase tracking-widest mb-1">Total a Pagar (Empresa)</p>
-                        <h3 class="text-4xl font-black tracking-tight" id="fin-total-empresa">R$ 0,00</h3>
-                    </div>
-                    <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
-                        <div class="absolute right-0 top-0 opacity-5"><i class="ph-fill ph-house text-[150px]"></i></div>
-                        <p class="text-amber-500 text-xs font-black uppercase tracking-widest mb-1">Total a Pagar (Casa/Pessoal)</p>
-                        <h3 class="text-4xl font-black tracking-tight text-slate-800" id="fin-total-casa">R$ 0,00</h3>
-                    </div>
-                </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
-                    <h3 class="text-lg font-black text-slate-800 mb-6 tracking-tight">Nova Conta a Pagar</h3>
-                    <form id="form-financeiro" onsubmit="lancarConta(event)" class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <input type="text" id="fin-desc" placeholder="Descrição do Boleto / Compra" required class="md:col-span-2 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-700">
-                        <select id="fin-fornecedor" class="px-4 py-3 rounded-xl border border-slate-200 bg-white font-semibold text-slate-600"><option value="">Vincular Fornecedor...</option></select>
-                        <input type="number" id="fin-valor" step="0.01" placeholder="Valor R$ (0.00)" required class="px-4 py-3 rounded-xl border border-slate-200 bg-red-50 text-red-600 font-black focus:border-red-500 outline-none placeholder-red-300">
-                        <select id="fin-tipo" class="px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700"><option value="Empresa">Conta da Empresa</option><option value="Casa">Despesa Pessoal (Casa)</option></select>
-                        <input type="date" id="fin-venc" required class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-600 uppercase text-xs tracking-wider">
-                        <button type="submit" class="md:col-span-3 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-black shadow-lg transition-all active:scale-95">Registrar Conta</button>
-                    </form>
-                </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-5 bg-slate-50 border-b border-slate-100 text-sm font-black text-slate-800 uppercase tracking-widest">Contas Lançadas</div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead><tr class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Descrição</th><th class="py-4 px-6">Vencimento</th><th class="py-4 px-6">Destino</th><th class="py-4 px-6">Valor</th><th class="py-4 px-6 text-center">Status</th></tr></thead>
-                            <tbody id="lista-financeiro" class="text-sm font-medium text-slate-600"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RH E EQUIPE COMPLETO (V3 LGPD) -->
+            <!-- RH E COLABORADORES (V4 COM DOSSIÊ) -->
             <div id="aba-colaboradores" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
                     <div class="mb-6 border-b border-slate-100 pb-4 flex flex-col md:flex-row md:items-center justify-between">
                         <div class="flex items-center">
-                            <div class="w-12 h-12 bg-brand-100 text-brand-600 rounded-xl flex items-center justify-center mr-4"><i class="ph-fill ph-identification-card text-2xl"></i></div>
+                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mr-4"><i class="ph-fill ph-identification-card text-2xl"></i></div>
                             <div>
-                                <h3 class="text-xl font-black text-slate-800 tracking-tight">Recursos Humanos & Admissão</h3>
-                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Pré-Cadastro Base (O funcionário preencherá o resto no celular dele)</p>
+                                <h3 class="text-xl font-black text-slate-800 tracking-tight">Admissão de Colaboradores</h3>
+                                <p class="text-xs font-semibold text-slate-500 mt-1">Preencha o básico e libere o acesso, ou edite o dossiê completo abaixo.</p>
                             </div>
                         </div>
                         <button type="button" onclick="copiarLinkAdmissao()" class="mt-4 md:mt-0 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-4 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-colors flex items-center shadow-sm">
-                            <i class="ph-bold ph-link text-lg mr-2"></i> Copiar Link de Admissão
+                            <i class="ph-bold ph-link text-lg mr-2"></i> Link p/ Funcionário (LGPD)
                         </button>
                     </div>
                     
-                    <form id="form-rh" onsubmit="cadastrarColaborador(event)" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Nome Completo</label><input type="text" id="rh-nome" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold bg-slate-50"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">CPF (Será a chave do funcionário)</label><input type="text" id="rh-cpf" required placeholder="000.000.000-00" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold bg-slate-50"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">WhatsApp de Contato</label><input type="text" id="rh-tel" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium"></div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <form id="form-rh" onsubmit="cadastrarColaborador(event)" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                            <div class="col-span-1 md:col-span-2">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Nome Completo</label>
+                                <input type="text" id="rh-nome" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:border-brand-500 outline-none">
+                            </div>
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Cargo e Permissão</label>
-                                <select id="rh-cargo" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 outline-none">
-                                    <option value="2">Gerente</option><option value="3" selected>Operador de Caixa / PDV</option><option value="4">Cozinheiro (KDS)</option><option value="5">Motoboy</option>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">CPF (Acesso)</label>
+                                <input type="text" id="rh-cpf" required placeholder="000.000.000-00" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:border-brand-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">WhatsApp</label>
+                                <input type="text" id="rh-tel" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium focus:border-brand-500 outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                            <div class="col-span-1 md:col-span-2">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Cargo / Permissão</label>
+                                <select id="rh-cargo" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 outline-none focus:border-brand-500">
+                                    <option value="2">Gerente</option>
+                                    <option value="3" selected>Caixa / PDV</option>
+                                    <option value="4">Cozinheiro</option>
+                                    <option value="5">Motoboy</option>
                                 </select>
                             </div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Salário Base (R$)</label><input type="number" step="0.01" id="rh-salario" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-black text-green-600"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Escala / Turno</label><input type="text" id="rh-escala" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium"></div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Salário (R$)</label>
+                                <input type="number" step="0.01" id="rh-salario" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-black text-green-600 focus:border-brand-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Turno</label>
+                                <input type="text" id="rh-escala" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium focus:border-brand-500 outline-none">
+                            </div>
                         </div>
-                        <div class="border-t border-slate-100 pt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Criar Usuário de Login (Sistema)</label><input type="text" id="rh-usuario" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold bg-slate-50"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Criar Senha Provisória</label><input type="password" id="rh-senha" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold bg-slate-50"></div>
+                        <div class="border-t border-slate-100 pt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Usuário de Login</label>
+                                <input type="text" id="rh-usuario" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:border-brand-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Senha Provisória</label>
+                                <input type="password" id="rh-senha" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:border-brand-500 outline-none">
+                            </div>
                         </div>
-                        <div class="flex justify-end pt-4">
-                            <button type="submit" class="bg-slate-900 hover:bg-brand-500 text-white font-black py-4 px-10 rounded-xl shadow-lg transition-all active:scale-95 flex items-center">
-                                Iniciar Admissão <i class="ph-bold ph-rocket text-xl ml-2"></i>
+                        <div class="flex justify-end pt-2">
+                            <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-black py-4 px-10 rounded-xl shadow-lg transition-colors flex items-center">
+                                Contratar (Acesso Básico) <i class="ph-bold ph-check-circle ml-2 text-xl"></i>
                             </button>
                         </div>
                     </form>
@@ -424,122 +223,225 @@
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest"><i class="ph-fill ph-users text-brand-500 mr-2 text-lg"></i> Painel de Funcionários e Ponto</h3>
-                        <button onclick="carregarColaboradores()" class="text-xs bg-brand-100 text-brand-700 hover:bg-brand-200 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-sm">Atualizar Ponto</button>
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest"><i class="ph-fill ph-users text-brand-500 mr-2 text-lg"></i> Equipe, Documentos e Ponto</h3>
+                        <button onclick="carregarColaboradores()" class="text-xs bg-brand-100 text-brand-700 hover:bg-brand-200 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-sm">
+                            Atualizar Tela
+                        </button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
-                            <thead><tr class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Funcionário</th><th class="py-4 px-6">Status LGPD / Cargo</th><th class="py-4 px-6 text-center">Salário Base</th><th class="py-4 px-6 text-center">Ponto Diário</th><th class="py-4 px-6 text-center">Admin</th></tr></thead>
-                            <tbody id="lista-colaboradores" class="text-sm"></tbody>
+                            <thead>
+                                <tr class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100">
+                                    <th class="py-4 px-6">Funcionário</th>
+                                    <th class="py-4 px-6">Status LGPD / Cargo</th>
+                                    <th class="py-4 px-6 text-center">Salário Base</th>
+                                    <th class="py-4 px-6 text-center">Ponto Diário</th>
+                                    <th class="py-4 px-6 text-center">Gestão (Dossiê)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-colaboradores" class="text-sm">
+                                <tr><td colspan="5" class="text-center py-6 text-slate-400">Carregando equipe...</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- BASE DE CLIENTES VIP -->
-            <div id="aba-clientes" class="painel hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-                    <div class="mb-8 border-b border-slate-100 pb-5 flex items-center justify-between">
-                        <div>
-                            <h3 class="text-xl font-black text-slate-800 tracking-tight flex items-center"><i class="ph-fill ph-users-three text-brand-500 text-3xl mr-3"></i> Base de Clientes VIP</h3>
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1 ml-10">Gestão de bloqueios e ajustes de saldos</p>
+            <!-- CARDÁPIO E PRODUTOS -->
+            <div id="aba-cardapio" class="painel hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight mb-4">Cadastrar Produto</h3>
+                    <form id="form-cardapio" onsubmit="salvarProduto(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="prod-nome" placeholder="Nome do Lanche" required class="px-4 py-3 border border-slate-200 rounded-xl font-bold bg-slate-50 focus:border-brand-500 outline-none">
+                            <input type="text" id="prod-img" placeholder="URL da Foto" class="px-4 py-3 border border-slate-200 rounded-xl font-medium bg-slate-50 focus:border-brand-500 outline-none">
                         </div>
-                        <button onclick="gerarPDF('aba-clientes', 'Base_Clientes')" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center shadow-lg"><i class="ph-fill ph-file-pdf mr-2 text-lg text-brand-400"></i> Exportar Lista</button>
+                        <textarea id="prod-desc" placeholder="Descrição no Cardápio" rows="2" class="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium bg-slate-50 resize-none focus:border-brand-500 outline-none"></textarea>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="number" step="0.01" id="prod-preco" placeholder="Preço (R$)" required class="px-4 py-3 border border-slate-200 rounded-xl font-black text-green-600 bg-slate-50 focus:border-brand-500 outline-none">
+                            <select id="prod-categoria" class="px-4 py-3 border border-slate-200 rounded-xl font-bold bg-white outline-none focus:border-brand-500"></select>
+                        </div>
+                        <div class="border-t pt-4">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Ficha Técnica (Ingredientes Gasto)</label>
+                            <div class="flex space-x-2">
+                                <select id="select-insumo" class="flex-1 px-4 py-3 border border-slate-200 rounded-xl bg-white font-bold text-sm outline-none focus:border-brand-500"></select>
+                                <input type="number" id="input-qtd-insumo" step="0.01" placeholder="Qtd Gasta" class="w-24 px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-bold text-sm outline-none focus:border-brand-500">
+                                <button type="button" onclick="adicionarIngredienteNaLista()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 rounded-xl font-bold text-sm transition-colors">+</button>
+                            </div>
+                            <ul id="lista-ingredientes-produto" class="mt-4 space-y-2"></ul>
+                        </div>
+                        <div class="flex justify-end pt-2"><button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-black py-4 px-10 rounded-xl shadow-lg transition-colors">Salvar Produto</button></div>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center"><h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Cardápio Atual</h3><button onclick="carregarCardapio()" class="text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg font-bold uppercase transition-colors">Atualizar</button></div>
+                    <table class="w-full text-left">
+                        <thead><tr class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Produto</th><th class="py-4 px-6">Categoria</th><th class="py-4 px-6">Preço</th><th class="py-4 px-6 text-center">Ações</th></tr></thead>
+                        <tbody id="lista-cardapio" class="text-sm font-medium text-slate-600"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ESTOQUE MINIMO -->
+            <div id="aba-estoque" class="painel hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight mb-4">Entrada Insumo</h3>
+                    <form id="form-estoque" onsubmit="salvarInsumo(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <input type="text" id="ins-nome" placeholder="Nome do Insumo" required class="col-span-1 md:col-span-2 px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-bold focus:border-brand-500 outline-none">
+                        <select id="ins-unidade" class="px-4 py-3 border border-slate-200 rounded-xl bg-white font-bold outline-none focus:border-brand-500">
+                            <option value="un">Unidades (un)</option>
+                            <option value="g">Gramas (g)</option>
+                            <option value="ml">Mililitros (ml)</option>
+                        </select>
+                        <input type="number" step="0.1" id="ins-qtd" placeholder="Qtd Adquirida" required class="px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-black focus:border-brand-500 outline-none">
+                        <input type="number" step="0.1" id="ins-min" placeholder="Alerta Mínimo" required class="px-4 py-3 border border-red-200 bg-red-50 text-red-600 font-black focus:border-red-500 outline-none">
+                        <input type="number" step="0.01" id="ins-custo" placeholder="Custo Total (R$)" required class="col-span-1 md:col-span-2 px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-black focus:border-brand-500 outline-none">
+                        <button type="submit" class="col-span-1 md:col-span-3 bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl transition-colors">Guardar na Despensa</button>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center"><h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Estoque Atual</h3><button onclick="carregarEstoque()" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 text-xs rounded-lg font-bold uppercase transition-colors">Atualizar</button></div>
+                    <table class="w-full text-left text-sm">
+                        <thead><tr class="text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Insumo</th><th class="py-4 px-6">Prateleira</th><th class="py-4 px-6">Alerta Mín.</th><th class="py-4 px-6 text-center">Ação</th></tr></thead>
+                        <tbody id="lista-estoque" class="font-medium text-slate-600"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- FORNECEDORES -->
+            <div id="aba-fornecedores" class="painel hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight mb-4">Novo Fornecedor</h3>
+                    <form id="form-fornecedor" onsubmit="cadastrarFornecedor(event)" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <input type="text" id="forn-nome" placeholder="Empresa / Nome Fantasia" required class="px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-bold focus:border-brand-500 outline-none">
+                        <input type="text" id="forn-cnpj" placeholder="CNPJ" class="px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-medium focus:border-brand-500 outline-none">
+                        <select id="forn-cat" class="px-4 py-3 border border-slate-200 rounded-xl bg-white font-bold outline-none focus:border-brand-500"></select>
+                        <input type="text" id="forn-contato" placeholder="Contato (Telefone/Email)" class="px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-medium focus:border-brand-500 outline-none">
+                        <button type="submit" class="col-span-1 md:col-span-2 bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-xl transition-colors shadow-lg">Salvar Fornecedor</button>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Empresa</th><th class="py-4 px-6">Categoria</th><th class="py-4 px-6">Contato</th><th class="py-4 px-6">CNPJ</th></thead>
+                        <tbody id="lista-fornecedores" class="font-medium text-slate-600"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- FINANCEIRO E CONTAS -->
+            <div id="aba-financeiro" class="painel hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-slate-900 p-8 rounded-2xl text-white shadow-xl">
+                        <p class="text-brand-400 text-xs font-black uppercase tracking-widest mb-1">Total a Pagar (Empresa)</p>
+                        <h3 class="text-4xl font-black mt-2 tracking-tight" id="fin-total-empresa">R$ 0,00</h3>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead><tr class="bg-slate-50 text-[10px] uppercase text-slate-500 font-black tracking-widest border-b border-slate-200"><th class="py-4 px-6">Nome / Telefone</th><th class="py-4 px-6 text-center">Pontos</th><th class="py-4 px-6 text-center">Cashback (R$)</th><th class="py-4 px-6 text-center">Status da Conta</th><th class="py-4 px-6 text-center">Admin</th></tr></thead>
-                            <tbody id="lista-clientes-painel" class="text-sm font-medium text-slate-600"></tbody>
-                        </table>
+                    <div class="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm">
+                        <p class="text-amber-500 text-xs font-black uppercase tracking-widest mb-1">Total a Pagar (Casa)</p>
+                        <h3 class="text-4xl font-black text-slate-800 mt-2 tracking-tight" id="fin-total-casa">R$ 0,00</h3>
                     </div>
                 </div>
-            </div> 
-
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight mb-6">Lançar Nova Conta</h3>
+                    <form id="form-financeiro" onsubmit="lancarConta(event)" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <input type="text" id="fin-desc" placeholder="Descrição do Boleto" required class="col-span-1 md:col-span-2 px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-bold focus:border-brand-500 outline-none">
+                        <select id="fin-fornecedor" class="px-4 py-3 border border-slate-200 rounded-xl bg-white font-medium outline-none focus:border-brand-500"></select>
+                        <input type="number" step="0.01" id="fin-valor" placeholder="Valor (R$)" required class="px-4 py-3 border border-slate-200 rounded-xl bg-red-50 text-red-600 font-black focus:border-red-500 outline-none">
+                        <select id="fin-tipo" class="px-4 py-3 border border-slate-200 rounded-xl bg-white font-bold outline-none focus:border-brand-500">
+                            <option value="Empresa">Conta da Empresa</option>
+                            <option value="Casa">Despesa Casa</option>
+                        </select>
+                        <input type="date" id="fin-venc" required class="px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-bold text-slate-600 outline-none focus:border-brand-500">
+                        <button type="submit" class="col-span-1 md:col-span-3 bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg transition-colors">Registrar Conta</button>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Conta</th><th class="py-4 px-6">Vencimento</th><th class="py-4 px-6">Tipo</th><th class="py-4 px-6">Valor</th><th class="py-4 px-6 text-center">Status</th></thead>
+                        <tbody id="lista-financeiro" class="font-medium text-slate-600"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- BASE DE CLIENTES VIP -->
+            <div id="aba-clientes" class="painel hidden">
+                <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight mb-4">Base de Clientes</h3>
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100"><th class="py-4 px-6">Nome / Contato</th><th class="py-4 px-6 text-center">Pontos</th><th class="py-4 px-6 text-center">Cashback</th><th class="py-4 px-6 text-center">Status</th><th class="py-4 px-6 text-center">Ações</th></thead>
+                        <tbody id="lista-clientes-painel" class="font-medium text-slate-600"></tbody>
+                    </table>
+                </div>
+            </div>
+            
             <!-- CONFIGURAÇÕES DA LOJA (HUB CENTRAL V2) -->
             <div id="aba-configuracoes" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-5xl mx-auto mb-8">
-                    <div class="mb-8 border-b border-slate-100 pb-6 flex items-center">
-                        <div class="w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center mr-4 shadow-lg"><i class="ph-fill ph-storefront text-2xl text-brand-400"></i></div>
-                        <div>
-                            <h3 class="text-2xl font-black text-slate-800 tracking-tight">Setup Central do Aplicativo</h3>
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Configure todos os parâmetros do seu negócio sem código.</p>
-                        </div>
-                    </div>
-
+                    <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-8">Setup Central do App</h3>
                     <form id="form-config" onsubmit="salvarConfiguracoesLoja(event)" class="space-y-8">
+                        
                         <div class="bg-slate-50 border border-slate-100 p-6 rounded-2xl">
-                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-brand-500 pl-3">Identidade da Empresa</h4>
+                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-brand-500 pl-3">Identidade</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Nome do Restaurante</label><input type="text" id="conf-nome" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-black text-slate-800 focus:border-brand-500 outline-none"></div>
-                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Logomarca (URL Imagem)</label><input type="text" id="conf-logo" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium outline-none"></div>
-                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">CNPJ da Empresa</label><input type="text" id="conf-cnpj" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium outline-none"></div>
-                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Telefone Oficial (WhatsApp)</label><input type="text" id="conf-telefone" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium outline-none"></div>
-                                <div class="col-span-1 md:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Endereço Físico (Sede)</label><input type="text" id="conf-endereco" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium outline-none"></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Nome</label><input type="text" id="conf-nome" class="w-full px-4 py-3 border border-slate-200 rounded-xl font-black focus:border-brand-500 outline-none"></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Logo URL</label><input type="text" id="conf-logo" class="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium focus:border-brand-500 outline-none"></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">CNPJ</label><input type="text" id="conf-cnpj" class="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium focus:border-brand-500 outline-none"></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Telefone</label><input type="text" id="conf-telefone" class="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium focus:border-brand-500 outline-none"></div>
+                                <div class="col-span-1 md:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Endereço Completo</label><input type="text" id="conf-endereco" class="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium focus:border-brand-500 outline-none"></div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl">
                                 <h4 class="text-sm font-black text-blue-900 uppercase tracking-widest mb-4 border-l-4 border-blue-500 pl-3">Regras de Operação</h4>
-                                <div class="space-y-4">
-                                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Tempo de Preparo Médio (Min)</label><input type="number" id="conf-tempo" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-black text-blue-700 bg-white outline-none"></div>
-                                    <div class="pt-2 flex flex-col space-y-3">
-                                        <label class="flex items-center space-x-3 cursor-pointer bg-white p-3 rounded-xl border border-slate-100 shadow-sm"><input type="checkbox" id="conf-delivery" class="w-5 h-5 text-blue-500 rounded"><span class="font-bold text-sm text-slate-700">Ativar Delivery (Site)</span></label>
-                                        <label class="flex items-center space-x-3 cursor-pointer bg-white p-3 rounded-xl border border-slate-100 shadow-sm"><input type="checkbox" id="conf-retirada" class="w-5 h-5 text-blue-500 rounded"><span class="font-bold text-sm text-slate-700">Ativar Retirada Balcão</span></label>
-                                        <label class="flex items-center space-x-3 cursor-pointer bg-white p-3 rounded-xl border border-slate-100 shadow-sm"><input type="checkbox" id="conf-auto" class="w-5 h-5 text-blue-500 rounded"><div><span class="font-bold text-sm text-slate-700 block">Aceite Automático</span><span class="text-[10px] font-medium text-slate-400">Pula "Recebido" e vai direto pra "Chapa"</span></div></label>
-                                    </div>
-                                </div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Tempo (Min)</label>
+                                <input type="number" id="conf-tempo" class="w-full px-4 py-3 border border-slate-200 rounded-xl mb-4 font-black text-blue-700 bg-white focus:border-blue-500 outline-none">
+                                <label class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-slate-100 mb-2 cursor-pointer shadow-sm"><input type="checkbox" id="conf-delivery" class="w-5 h-5 text-blue-500 rounded"><span class="font-bold text-sm text-slate-700">Delivery Site</span></label>
+                                <label class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-slate-100 mb-2 cursor-pointer shadow-sm"><input type="checkbox" id="conf-retirada" class="w-5 h-5 text-blue-500 rounded"><span class="font-bold text-sm text-slate-700">Retirada</span></label>
+                                <label class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-slate-100 cursor-pointer shadow-sm"><input type="checkbox" id="conf-auto" class="w-5 h-5 text-blue-500 rounded"><span class="font-bold text-sm text-slate-700">Aceite Automático</span></label>
                             </div>
-
-                            <div class="bg-amber-50/50 border border-amber-100 p-6 rounded-2xl flex flex-col">
-                                <h4 class="text-sm font-black text-amber-900 uppercase tracking-widest mb-4 border-l-4 border-amber-500 pl-3">Programa de Retenção</h4>
-                                <div class="flex-1">
-                                    <select id="conf-fidelidade" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-black text-amber-700 outline-none shadow-sm mb-4">
-                                        <option value="CASHBACK">Cashback (5% de volta em R$)</option>
-                                        <option value="PONTOS">Pontos (10 compras = 1 Lanche)</option>
-                                        <option value="DESATIVADO">Desligar Fidelidade</option>
-                                    </select>
-                                    <p class="text-xs font-medium text-slate-500 leading-relaxed border border-amber-200/50 bg-amber-100/30 p-3 rounded-lg">Se alterar o programa, os clientes não perdem o saldo antigo, mas passam a acumular na nova modalidade.</p>
-                                </div>
+                            <div class="bg-amber-50/50 border border-amber-100 p-6 rounded-2xl">
+                                <h4 class="text-sm font-black text-amber-900 uppercase tracking-widest mb-4 border-l-4 border-amber-500 pl-3">Fidelidade</h4>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Sistema Ativo</label>
+                                <select id="conf-fidelidade" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white font-black text-amber-700 outline-none focus:border-amber-500">
+                                    <option value="CASHBACK">Cashback</option>
+                                    <option value="PONTOS">Pontos</option>
+                                    <option value="DESATIVADO">Desligar</option>
+                                </select>
                             </div>
                         </div>
 
                         <div class="bg-slate-50 border border-slate-100 p-6 rounded-2xl">
-                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-slate-500 pl-3">Gestão de Categorias e Listas</h4>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-wider">Separe os nomes por vírgula (Ex: Bebidas, Doces, Amil Básico)</p>
+                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-slate-500 pl-3">Listas (Separe por vírgula)</h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Cardápio</label><textarea id="conf-cat-cardapio" rows="2" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-600 outline-none resize-none leading-relaxed"></textarea></div>
-                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Fornecedores</label><textarea id="conf-cat-fornecedor" rows="2" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-600 outline-none resize-none leading-relaxed"></textarea></div>
-                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Opções de Plano de Saúde/Odonto</label><textarea id="conf-planos-saude" rows="2" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-600 outline-none resize-none leading-relaxed"></textarea></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Categorias Cardápio</label><textarea id="conf-cat-cardapio" rows="2" class="w-full px-4 py-3 border border-slate-200 rounded-xl resize-none font-bold text-slate-600 focus:border-brand-500 outline-none"></textarea></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Categorias Fornecedor</label><textarea id="conf-cat-fornecedor" rows="2" class="w-full px-4 py-3 border border-slate-200 rounded-xl resize-none font-bold text-slate-600 focus:border-brand-500 outline-none"></textarea></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Planos Saúde/Odonto</label><textarea id="conf-planos-saude" rows="2" class="w-full px-4 py-3 border border-slate-200 rounded-xl resize-none font-bold text-slate-600 focus:border-brand-500 outline-none"></textarea></div>
                             </div>
                         </div>
 
                         <div class="border-t border-slate-100 pt-8 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div>
-                                <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4"><i class="ph-fill ph-wallet text-green-500 mr-2 text-lg"></i> Checkouts Permitidos</h4>
-                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                                    <label class="flex items-center space-x-3"><input type="checkbox" id="pag-dinheiro" class="w-5 h-5 text-green-500"><span class="font-bold text-sm text-slate-700">Dinheiro (Balcão/Motoboy)</span></label>
-                                    <label class="flex items-center space-x-3"><input type="checkbox" id="pag-maquininha" class="w-5 h-5 text-green-500"><span class="font-bold text-sm text-slate-700">Maquininha Presencial</span></label>
-                                    <div class="divider border-b border-slate-200 my-2"></div>
-                                    <label class="flex items-center space-x-3"><input type="checkbox" id="pag-pix-online" class="w-5 h-5 text-brand-500"><span class="font-bold text-sm text-slate-700">Pix Automático (Mercado Pago)</span></label>
-                                    <label class="flex items-center space-x-3"><input type="checkbox" id="pag-credito-online" class="w-5 h-5 text-brand-500"><span class="font-bold text-sm text-slate-700">Cartão de Crédito Online</span></label>
-                                    <label class="flex items-center space-x-3"><input type="checkbox" id="pag-vr-online" class="w-5 h-5 text-brand-500"><span class="font-bold text-sm text-slate-700">VR / Vouchers Online</span></label>
+                                <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4"><i class="ph-fill ph-wallet text-green-500 mr-2 text-lg"></i> Pagamentos Aceitos</h4>
+                                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="pag-dinheiro" class="w-5 h-5 text-green-500 rounded"><span class="font-bold text-sm text-slate-700">Dinheiro</span></label>
+                                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="pag-maquininha" class="w-5 h-5 text-green-500 rounded"><span class="font-bold text-sm text-slate-700">Maquininha</span></label>
+                                    <div class="border-b border-slate-200 my-3"></div>
+                                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="pag-pix-online" class="w-5 h-5 text-brand-500 rounded"><span class="font-bold text-sm text-slate-700">Pix Automático</span></label>
+                                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="pag-credito-online" class="w-5 h-5 text-brand-500 rounded"><span class="font-bold text-sm text-slate-700">Cartão Online</span></label>
+                                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="pag-vr-online" class="w-5 h-5 text-brand-500 rounded"><span class="font-bold text-sm text-slate-700">VR / Vouchers</span></label>
                                 </div>
                             </div>
                             <div>
                                 <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4"><i class="ph-fill ph-plugs text-purple-500 mr-2 text-lg"></i> Chaves de Integração (APIs)</h4>
                                 <div class="space-y-4">
-                                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Mercado Pago (Access Token)</label><input type="password" placeholder="APP_USR-..." class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-sm font-mono text-slate-400"></div>
-                                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Evolution API (WhatsApp URL)</label><input type="text" placeholder="https://api.whatsapp..." class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-sm font-mono text-slate-400"></div>
-                                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">iFood API (Merchant ID)</label><input type="text" placeholder="12345678-aaaa-bbbb-cccc" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-sm font-mono text-slate-400"></div>
+                                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Mercado Pago</label><input type="password" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-mono text-sm outline-none focus:border-purple-500"></div>
+                                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Evolution API</label><input type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-mono text-sm outline-none focus:border-purple-500"></div>
+                                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">iFood API</label><input type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 font-mono text-sm outline-none focus:border-purple-500"></div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="pt-8 flex justify-center md:justify-end border-t border-slate-200">
-                            <button type="submit" class="w-full md:w-auto bg-slate-900 hover:bg-brand-500 text-white font-black py-4 px-12 rounded-xl shadow-2xl transition-all active:scale-95 text-lg uppercase tracking-widest flex items-center justify-center">
-                                Aplicar na Nuvem <i class="ph-bold ph-cloud-arrow-up ml-3 text-2xl text-brand-400"></i>
-                            </button>
+                        <div class="pt-6 flex justify-end">
+                            <button type="submit" class="bg-slate-900 hover:bg-brand-500 text-white font-black py-4 px-12 rounded-xl shadow-2xl transition-colors text-lg uppercase tracking-widest">Aplicar Setup</button>
                         </div>
                     </form>
                 </div>
@@ -548,521 +450,690 @@
         </div> 
     </main>
 
-    <!-- MODAL GRUPO EXTRAS -->
-    <div id="modal-add-grupo" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl relative modal-up">
-            <button onclick="fecharModalGrupo()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
-            <h2 class="text-xl font-bold text-slate-800 mb-1">Extras para: <span id="add-grupo-prod-nome" class="text-brand-500">Lanche</span></h2>
+    <!-- MEGA MODAL DE DOSSIÊ DO RH (O GESTOR EDITA TUDO AQUI) -->
+    <div id="modal-dossie" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white w-full max-w-4xl rounded-3xl p-8 shadow-2xl relative my-auto">
+            <button onclick="document.getElementById('modal-dossie').classList.replace('flex','hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 transition-colors"><i class="ph ph-x text-2xl"></i></button>
             
-            <form id="form-add-grupo" onsubmit="salvarGrupoComplemento(event)" class="space-y-4 mt-4">
-                <input type="hidden" id="add-grupo-prod-id">
-                <div><label class="block text-sm font-semibold text-slate-700 mb-1">Título do Menu</label><input type="text" id="add-grupo-nome" placeholder="Ex: Escolha sua Bebida" required class="w-full px-4 py-2 rounded-lg border border-slate-200 bg-slate-50"></div>
-                <div class="grid grid-cols-3 gap-3">
-                    <div><label class="block text-xs font-semibold text-slate-700 mb-1">Obrigatório?</label><select id="add-grupo-obrig" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50"><option value="false">Opcional</option><option value="true">Obrigatório</option></select></div>
-                    <div><label class="block text-xs font-semibold text-slate-700 mb-1">Min. Opções</label><input type="number" id="add-grupo-min" value="0" min="0" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50"></div>
-                    <div><label class="block text-xs font-semibold text-slate-700 mb-1">Max. Opções</label><input type="number" id="add-grupo-max" value="1" min="1" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50"></div>
+            <h2 class="text-2xl font-black text-slate-800 mb-6 border-b border-slate-100 pb-4"><i class="ph-fill ph-folder-user text-brand-500 mr-2"></i> Dossiê Oficial do Colaborador</h2>
+            
+            <form id="form-dossie" onsubmit="salvarDossieRH(event)" class="space-y-5">
+                <input type="hidden" id="dos-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CPF</label><input type="text" id="dos-cpf" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold focus:border-brand-500 outline-none"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">RG</label><input type="text" id="dos-rg" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">PIS/PASEP</label><input type="text" id="dos-pis" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                 </div>
-                <div class="border-t border-slate-100 pt-4">
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Itens Disponíveis neste Menu</label>
-                    <div id="lista-add-itens" class="space-y-2 mb-3"></div>
-                    <div class="flex space-x-2">
-                        <input type="text" id="add-item-nome" placeholder="Nome Item" class="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-slate-50">
-                        <input type="number" step="0.01" id="add-item-preco" placeholder="R$ 0,00" class="w-24 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-slate-50">
-                        <button type="button" onclick="adicionarItemAoGrupoLocal()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg"><i class="ph ph-plus font-bold"></i></button>
-                    </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data Nasc.</label><input type="date" id="dos-nasc" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Estado Civil</label><select id="dos-civil" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"><option value="Solteiro">Solteiro</option><option value="Casado">Casado</option><option value="Divorciado">Divorciado</option></select></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Título Eleitor</label><input type="text" id="dos-eleitor" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Reservista</label><input type="text" id="dos-res" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                 </div>
-                <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl shadow-lg mt-4 transition-all">Salvar Complementos</button>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label><input type="text" id="dos-end" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Dados Bancários</label><input type="text" id="dos-banco" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5 border-b border-slate-100 pb-6">
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Naturalidade</label><input type="text" id="dos-nat" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Escolaridade</label><select id="dos-esc" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"><option>Ensino Médio</option><option>Superior</option><option>Fundamental</option></select></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Filhos (< 14)</label><input type="number" id="dos-filhos" value="0" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
+                    <div><label class="block text-[10px] font-bold text-green-600 uppercase tracking-wider mb-1">Plano Saúde/Odonto</label><select id="dos-plano" class="w-full px-4 py-3 rounded-xl border border-green-200 bg-green-50 font-bold text-green-800 outline-none focus:border-green-500"><option value="Nenhum">Nenhum</option></select></div>
+                </div>
+
+                <div class="flex justify-between items-center pt-2">
+                    <p class="text-[10px] font-bold text-amber-500 max-w-sm"><i class="ph-fill ph-info"></i> Ao preencher e salvar os dados via Gestor, a ficha do colaborador será considerada "Ativa" automaticamente pelo sistema.</p>
+                    <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-black py-4 px-10 rounded-xl shadow-[0_10px_20px_rgba(255,71,87,0.3)] transition-all active:scale-95 text-sm uppercase tracking-wider">
+                        Salvar Dossiê Oficial
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- SCRIPTS MANTIDOS E EXPANDIDOS -->
+    <!-- MODAL GRUPO EXTRAS (LANCHES) -->
+    <div id="modal-add-grupo" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl relative modal-up">
+            <button onclick="document.getElementById('modal-add-grupo').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"><i class="ph ph-x text-xl"></i></button>
+            <h2 class="font-bold text-xl mb-4 text-slate-800">Extras: <span id="add-grupo-prod-nome" class="text-brand-500"></span></h2>
+            <form id="form-add-grupo" onsubmit="salvarGrupoComplemento(event)" class="space-y-4">
+                <input type="hidden" id="add-grupo-prod-id">
+                <input type="text" id="add-grupo-nome" placeholder="Ex: Escolha o Molho" required class="w-full border border-slate-200 px-4 py-3 rounded-xl bg-slate-50 font-bold outline-none focus:border-brand-500">
+                <div class="flex space-x-3">
+                    <select id="add-grupo-obrig" class="border border-slate-200 px-4 py-3 rounded-xl bg-slate-50 font-medium outline-none focus:border-brand-500 w-1/3"><option value="false">Opcional</option><option value="true">Obrigatório</option></select>
+                    <input type="number" id="add-grupo-min" value="0" class="border border-slate-200 px-4 py-3 rounded-xl bg-slate-50 font-medium outline-none focus:border-brand-500 w-1/3">
+                    <input type="number" id="add-grupo-max" value="1" class="border border-slate-200 px-4 py-3 rounded-xl bg-slate-50 font-medium outline-none focus:border-brand-500 w-1/3">
+                </div>
+                <div class="border-t border-slate-100 pt-4">
+                    <div id="lista-add-itens" class="mb-3 space-y-2"></div>
+                    <div class="flex space-x-2">
+                        <input type="text" id="add-item-nome" placeholder="Nome Item" class="border border-slate-200 px-4 py-3 rounded-xl flex-1 bg-slate-50 font-medium outline-none focus:border-brand-500">
+                        <input type="number" step="0.01" id="add-item-preco" placeholder="R$ 0,00" class="border border-slate-200 px-4 py-3 rounded-xl w-24 bg-slate-50 font-bold outline-none focus:border-brand-500">
+                        <button type="button" onclick="adicionarItemAoGrupoLocal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 rounded-xl font-black transition-colors">+</button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-xl shadow-lg mt-2 transition-all active:scale-95">Salvar Extras no Lanche</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FUNÇÕES JAVASCRIPT EXPANDIDAS PARA FÁCIL MANUTENÇÃO -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('nome-admin-lateral').innerText = localStorage.getItem('funcionario_nome') || "Administrador";
-            carregarConfiguracoesInit();
+        document.addEventListener('DOMContentLoaded', () => { 
+            document.getElementById('nome-admin-lateral').innerText = localStorage.getItem('funcionario_nome') || "Admin"; 
+            carregarConfiguracoesInit(); 
         });
 
-        function abrirAba(idAba, elementoClicado) {
-            document.querySelectorAll('.painel').forEach(p => { p.classList.remove('active'); p.classList.add('hidden'); });
-            document.querySelectorAll('.menu-item').forEach(m => { m.classList.remove('bg-brand-500', 'text-white', 'active'); m.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white'); });
+        // -------------------------
+        // CONTROLE DE NAVEGAÇÃO
+        // -------------------------
+        function abrirAba(id, el) { 
+            document.querySelectorAll('.painel').forEach(p => { 
+                p.classList.remove('active'); p.classList.add('hidden'); 
+            }); 
+            document.querySelectorAll('.menu-item').forEach(m => { 
+                m.classList.remove('bg-brand-500', 'text-white', 'active'); 
+                m.classList.add('text-slate-300'); 
+            }); 
             
-            const alvo = document.getElementById(idAba);
-            if (alvo) { alvo.classList.remove('hidden'); alvo.classList.add('active'); }
-            if (elementoClicado) { elementoClicado.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white'); elementoClicado.classList.add('bg-brand-500', 'text-white', 'active'); }
+            document.getElementById(id).classList.remove('hidden'); 
+            document.getElementById(id).classList.add('active'); 
             
-            const titulos = { 'aba-relatorios':'Relatórios Executivos', 'aba-cardapio':'Gestão de Produtos', 'aba-estoque':'Centro de Distribuição', 'aba-financeiro':'DRE & Financeiro', 'aba-colaboradores':'Recursos Humanos V3', 'aba-configuracoes':'Setup Central (Hub)', 'aba-clientes':'CRM & Clientes VIP', 'aba-fornecedores':'Supply Chain (Fornecedores)' };
-            if (titulos[idAba]) document.getElementById('titulo-painel').innerText = titulos[idAba];
+            if(el) { 
+                el.classList.remove('text-slate-300'); 
+                el.classList.add('bg-brand-500', 'text-white', 'active'); 
+            } 
             
-            if(idAba === 'aba-relatorios') filtrarRelatorios();
-            if(idAba === 'aba-financeiro') { carregarFornecedoresParaSelect(); carregarFinanceiro(); }
-            if(idAba === 'aba-cardapio') { carregarInsumosParaSelect(); carregarCardapio(); }
-            if(idAba === 'aba-estoque') carregarEstoque();
-            if(idAba === 'aba-configuracoes') carregarConfiguracoesInit();
-            if(idAba === 'aba-clientes') carregarClientesPainel();
-            if(idAba === 'aba-fornecedores') { carregarFornecedores(); carregarCategoriasSelect('forn-cat', 'conf-cat-fornecedor'); }
-            if(idAba === 'aba-colaboradores') carregarColaboradores();
+            if(id==='aba-relatorios') filtrarRelatorios(); 
+            if(id==='aba-financeiro') { carregarFornecedoresParaSelect(); carregarFinanceiro(); } 
+            if(id==='aba-cardapio') { carregarInsumosParaSelect(); carregarCardapio(); } 
+            if(id==='aba-estoque') carregarEstoque(); 
+            if(id==='aba-configuracoes') carregarConfiguracoesInit(); 
+            if(id==='aba-clientes') carregarClientesPainel(); 
+            if(id==='aba-fornecedores') { carregarFornecedores(); carregarCategoriasSelect('forn-cat','conf-cat-fornecedor'); } 
+            if(id==='aba-colaboradores') carregarColaboradores(); 
         }
 
-        // --- CONFIGURAÇÕES DA LOJA ---
+        // -------------------------
+        // SETUP E CONFIGURAÇÕES
+        // -------------------------
         async function carregarConfiguracoesInit() {
             try {
-                const res = await fetch('/api/gestao/configuracoes');
+                const res = await fetch('/api/gestao/configuracoes'); 
                 const conf = await res.json();
                 
-                document.getElementById('conf-nome').value = conf.nome_empresa || "Art's Burguer";
-                document.getElementById('sidebar-nome-loja').innerText = conf.nome_empresa || "Art's Burguer";
-                document.getElementById('conf-cnpj').value = conf.cnpj || "";
+                document.getElementById('conf-nome').value = conf.nome_empresa || ""; 
+                document.getElementById('sidebar-nome-loja').innerText = conf.nome_empresa || "ERP V2";
+                document.getElementById('conf-cnpj').value = conf.cnpj || ""; 
                 document.getElementById('conf-endereco').value = conf.endereco || "";
-                document.getElementById('conf-telefone').value = conf.telefone || "";
+                document.getElementById('conf-telefone').value = conf.telefone || ""; 
                 document.getElementById('conf-logo').value = conf.logo_url || "";
-                document.getElementById('conf-tempo').value = conf.tempo_preparo || 30;
+                document.getElementById('conf-tempo').value = conf.tempo_preparo || 30; 
                 document.getElementById('conf-delivery').checked = conf.aceita_delivery;
-                document.getElementById('conf-retirada').checked = conf.aceita_retirada;
+                document.getElementById('conf-retirada').checked = conf.aceita_retirada; 
                 document.getElementById('conf-auto').checked = conf.aceite_automatico;
-                document.getElementById('conf-fidelidade').value = conf.sistema_fidelidade || "CASHBACK";
-                document.getElementById('conf-cat-cardapio').value = conf.categorias_cardapio || "Burger Artesanal, Bebidas";
-                document.getElementById('conf-cat-fornecedor').value = conf.categorias_fornecedor || "Geral, Carnes";
+                document.getElementById('conf-fidelidade').value = conf.sistema_fidelidade || "CASHBACK"; 
+                document.getElementById('conf-cat-cardapio').value = conf.categorias_cardapio || "";
+                document.getElementById('conf-cat-fornecedor').value = conf.categorias_fornecedor || ""; 
                 document.getElementById('conf-planos-saude').value = conf.planos_saude_opcoes || "Nenhum";
                 
-                const pgs = conf.formas_pagamento || "";
-                document.getElementById('pag-dinheiro').checked = pgs.includes('dinheiro');
-                document.getElementById('pag-maquininha').checked = pgs.includes('maquininha');
-                document.getElementById('pag-pix-online').checked = pgs.includes('pix_online');
-                document.getElementById('pag-credito-online').checked = pgs.includes('credito_online');
+                const pgs = conf.formas_pagamento || ""; 
+                document.getElementById('pag-dinheiro').checked = pgs.includes('dinheiro'); 
+                document.getElementById('pag-maquininha').checked = pgs.includes('maquininha'); 
+                document.getElementById('pag-pix-online').checked = pgs.includes('pix_online'); 
+                document.getElementById('pag-credito-online').checked = pgs.includes('credito_online'); 
                 document.getElementById('pag-vr-online').checked = pgs.includes('vr_online');
-
-                carregarCategoriasSelect('prod-categoria', 'conf-cat-cardapio');
-                carregarCategoriasSelect('forn-cat', 'conf-cat-fornecedor');
                 
-                if(document.getElementById('aba-relatorios').classList.contains('active')) { filtrarRelatorios(); }
-            } catch (e) { console.error(e); }
+                carregarCategoriasSelect('prod-categoria', 'conf-cat-cardapio'); 
+                carregarCategoriasSelect('forn-cat', 'conf-cat-fornecedor');
+                carregarCategoriasSelect('dos-plano', 'conf-planos-saude'); // Popula o modal de Dossiê do RH
+                
+                if(document.getElementById('aba-relatorios').classList.contains('active')) filtrarRelatorios();
+            } catch (e) { console.error("Erro ao carregar setup:", e); }
         }
 
-        function carregarCategoriasSelect(idSelect, idOrigemConfig) {
-            const select = document.getElementById(idSelect);
-            if(!select) return;
-            const strCats = document.getElementById(idOrigemConfig).value;
-            const arrayCats = strCats.split(',').map(c => c.trim()).filter(c => c.length > 0);
-            select.innerHTML = arrayCats.map(c => `<option value="${c}">${c}</option>`).join('');
+        function carregarCategoriasSelect(idSelect, idOrigemConfig) { 
+            const select = document.getElementById(idSelect); 
+            if(!select) return; 
+            const strCats = document.getElementById(idOrigemConfig).value; 
+            select.innerHTML = '<option value="Nenhum">Nenhum</option>' + strCats.split(',').map(c => `<option value="${c.trim()}">${c.trim()}</option>`).join(''); 
         }
 
         async function salvarConfiguracoesLoja(e) {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Salvando...'; btn.disabled = true;
-
-            let arr = [];
-            if(document.getElementById('pag-dinheiro').checked) arr.push('dinheiro');
-            if(document.getElementById('pag-maquininha').checked) arr.push('maquininha');
-            if(document.getElementById('pag-pix-online').checked) arr.push('pix_online');
-            if(document.getElementById('pag-credito-online').checked) arr.push('credito_online');
+            e.preventDefault(); 
+            let arr = []; 
+            if(document.getElementById('pag-dinheiro').checked) arr.push('dinheiro'); 
+            if(document.getElementById('pag-maquininha').checked) arr.push('maquininha'); 
+            if(document.getElementById('pag-pix-online').checked) arr.push('pix_online'); 
+            if(document.getElementById('pag-credito-online').checked) arr.push('credito_online'); 
             if(document.getElementById('pag-vr-online').checked) arr.push('vr_online');
             
             const payload = { 
-                nome_empresa: document.getElementById('conf-nome').value,
-                cnpj: document.getElementById('conf-cnpj').value,
-                endereco: document.getElementById('conf-endereco').value,
-                telefone: document.getElementById('conf-telefone').value,
+                nome_empresa: document.getElementById('conf-nome').value, 
+                cnpj: document.getElementById('conf-cnpj').value, 
+                endereco: document.getElementById('conf-endereco').value, 
+                telefone: document.getElementById('conf-telefone').value, 
                 logo_url: document.getElementById('conf-logo').value, 
                 tempo_preparo: parseInt(document.getElementById('conf-tempo').value), 
                 aceita_delivery: document.getElementById('conf-delivery').checked, 
                 aceita_retirada: document.getElementById('conf-retirada').checked, 
                 aceite_automatico: document.getElementById('conf-auto').checked, 
-                sistema_fidelidade: document.getElementById('conf-fidelidade').value,
-                categorias_cardapio: document.getElementById('conf-cat-cardapio').value,
-                categorias_fornecedor: document.getElementById('conf-cat-fornecedor').value,
-                planos_saude_opcoes: document.getElementById('conf-planos-saude').value,
-                formas_pagamento: arr.join(',')
+                sistema_fidelidade: document.getElementById('conf-fidelidade').value, 
+                categorias_cardapio: document.getElementById('conf-cat-cardapio').value, 
+                categorias_fornecedor: document.getElementById('conf-cat-fornecedor').value, 
+                planos_saude_opcoes: document.getElementById('conf-planos-saude').value, 
+                formas_pagamento: arr.join(',') 
             };
+            
             try {
-                const res = await fetch('/api/gestao/configuracoes', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if(res.ok) { alert("✅ Configurações salvas e aplicadas na Nuvem!"); carregarConfiguracoesInit(); }
-            } catch(er) { alert("Erro de rede"); }
-            finally { btn.innerHTML = originalText; btn.disabled = false; }
+                await fetch('/api/gestao/configuracoes', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+                alert("✅ Configurações salvas e aplicadas na Nuvem!"); 
+                carregarConfiguracoesInit();
+            } catch (err) { alert("Erro de rede ao salvar."); }
         }
 
-        // --- RELATÓRIOS (FILTROS) ---
-        async function filtrarRelatorios() {
-            const dinicio = document.getElementById('filtro-inicio').value;
-            const dfim = document.getElementById('filtro-fim').value;
-            let query = '';
-            if(dinicio && dfim) { query = `?data_inicio=${dinicio}&data_fim=${dfim}`; }
-
-            try {
-                const resFin = await fetch(`/api/gestao/financeiro/lucratividade${query}`);
-                const data = await resFin.json();
-                
-                document.getElementById('rel-faturamento').innerText = `R$ ${data.faturamento.toFixed(2).replace('.', ',')}`;
-                document.getElementById('rel-despesas-empresa').innerText = `R$ ${data.despesas_empresa.toFixed(2).replace('.', ',')}`;
-                document.getElementById('rel-despesas-casa').innerText = `R$ ${data.despesas_casa.toFixed(2).replace('.', ',')}`;
-                document.getElementById('rel-margem').innerText = `${data.margem_lucro}%`;
-                
-                const elemLucroReal = document.getElementById('rel-lucro-real');
-                const elemDiag = document.getElementById('rel-diagnostico');
-                elemLucroReal.innerText = `R$ ${data.lucro_liquido.toFixed(2).replace('.', ',')}`;
-                
-                if (data.lucro_liquido <= 0 && data.faturamento > 0) {
-                    elemLucroReal.className = "text-5xl font-black text-red-400 tracking-tighter";
-                    elemDiag.innerHTML = '<i class="ph-fill ph-warning-circle text-red-400 mr-1"></i> Despesas maiores que Faturamento.';
-                } else {
-                    elemLucroReal.className = "text-5xl font-black text-emerald-400 tracking-tighter";
-                    elemDiag.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-400 mr-1"></i> Operação saudável neste período.';
-                }
-
-                const resAbc = await fetch(`/api/gestao/relatorios/curva-abc${query}`);
-                const topProdutos = await resAbc.json();
-                const tbodyAbc = document.getElementById('lista-curva-abc');
-                
-                if(topProdutos.length === 0) {
-                    tbodyAbc.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Sem vendas no período.</td></tr>';
-                } else {
-                    tbodyAbc.innerHTML = topProdutos.map((p, index) => {
-                        let medalha = `${index + 1}º`;
-                        if(index === 0) medalha = '🥇 1º'; if(index === 1) medalha = '🥈 2º'; if(index === 2) medalha = '🥉 3º';
-                        return `
-                            <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                                <td class="py-3 px-6 font-black text-slate-400 text-lg">${medalha}</td>
-                                <td class="py-3 px-6 font-bold text-slate-700">${p.nome} <br><span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase">${p.categoria}</span></td>
-                                <td class="py-3 px-6 text-center font-bold text-brand-500">${p.quantidade_vendida}x</td>
-                                <td class="py-3 px-6 text-right font-black text-green-600">R$ ${p.faturamento_gerado.toFixed(2).replace('.', ',')}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
-            } catch (error) { console.error(error); }
-        }
-
-        // --- RH & COLABORADORES ---
-        function copiarLinkAdmissao() {
+        // -------------------------
+        // RH E DOSSIÊ DO COLABORADOR
+        // -------------------------
+        function copiarLinkAdmissao() { 
             const link = window.location.origin + "/admissao";
-            navigator.clipboard.writeText(link);
-            alert("Mande este link no WhatsApp do funcionário para ele concluir a admissão:\n" + link);
+            navigator.clipboard.writeText(link); 
+            alert("✅ Copiado! Envie este link no WhatsApp do novo funcionário:\n\n" + link); 
         }
 
         async function cadastrarColaborador(e) {
-            e.preventDefault();
-            const payload = {
-                nome: document.getElementById('rh-nome').value,
-                usuario: document.getElementById('rh-usuario').value,
-                senha: document.getElementById('rh-senha').value,
-                cargo_id: parseInt(document.getElementById('rh-cargo').value),
-                telefone: document.getElementById('rh-tel').value,
-                salario: parseFloat(document.getElementById('rh-salario').value) || 0.0,
-                escala: document.getElementById('rh-escala').value,
-                cpf: document.getElementById('rh-cpf').value
+            e.preventDefault(); 
+            const btn = e.target.querySelector('button[type="submit"]'); 
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Processando...';
+            
+            const payload = { 
+                nome: document.getElementById('rh-nome').value, 
+                usuario: document.getElementById('rh-usuario').value, 
+                senha: document.getElementById('rh-senha').value, 
+                cargo_id: parseInt(document.getElementById('rh-cargo').value), 
+                telefone: document.getElementById('rh-tel').value, 
+                salario: parseFloat(document.getElementById('rh-salario').value) || 0, 
+                escala: document.getElementById('rh-escala').value, 
+                cpf: document.getElementById('rh-cpf').value 
             };
+            
             try {
-                const res = await fetch('/api/gestao/funcionarios', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const res = await fetch('/api/gestao/funcionarios', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
                 const data = await res.json();
-                if(res.ok) { alert("✅ " + data.mensagem); document.getElementById('form-rh').reset(); carregarColaboradores(); } 
-                else { alert("❌ Erro: " + data.detail); }
-            } catch(error) { alert("Falha na conexão."); }
+                if(res.ok) { 
+                    alert(data.mensagem); 
+                    document.getElementById('form-rh').reset(); 
+                    carregarColaboradores(); 
+                } else { 
+                    alert("Erro: " + data.detail); 
+                }
+            } catch(error) { alert("Falha na rede."); }
+            
+            btn.innerHTML = 'Contratar (Acesso Básico) <i class="ph-bold ph-check-circle ml-2 text-xl"></i>';
         }
 
         async function carregarColaboradores() {
             try {
-                const res = await fetch('/api/gestao/funcionarios');
+                const res = await fetch('/api/gestao/funcionarios'); 
                 const dados = await res.json();
                 const tbody = document.getElementById('lista-colaboradores');
-                if(dados.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum funcionário encontrado.</td></tr>'; return; }
+                
+                if (dados.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">Nenhum funcionário na base.</td></tr>';
+                    return;
+                }
 
                 tbody.innerHTML = dados.map(f => {
                     let badgeStatus = '';
-                    if(f.status_admissao === 'PENDENTE_PREENCHIMENTO') badgeStatus = '<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[9px] font-black uppercase">Falta Formulário (LGPD)</span>';
-                    else if(f.status_admissao === 'ATIVO') badgeStatus = '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[9px] font-black uppercase">Ativo</span>';
-                    else if(f.status_admissao === 'DEMITIDO') badgeStatus = '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[9px] font-black uppercase">Demitido</span>';
+                    if(f.status_admissao === 'PENDENTE_PREENCHIMENTO') badgeStatus = '<span class="bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Falta LGPD / Form.</span>';
+                    else if(f.status_admissao === 'ATIVO') badgeStatus = '<span class="bg-green-100 text-green-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Contrato Ativo</span>';
+                    else if(f.status_admissao === 'DEMITIDO') badgeStatus = '<span class="bg-red-100 text-red-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Demitido</span>';
 
-                    let acoesHtml = f.id === 1 ? '<span class="text-[10px] text-slate-400 font-bold tracking-wider">SUPREMO</span>' : `<button onclick="demitirColaborador(${f.id})" class="text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 px-2 py-1.5 rounded uppercase shadow-sm">Demitir</button>`;
+                    let acaoAdmin = f.id === 1 ? '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Supremo</span>' : `<button onclick="abrirDossie(${f.id})" class="text-blue-500 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl text-xs font-bold mr-2 transition-colors">Dossiê Completo</button><button onclick="demitirColaborador(${f.id})" class="text-red-500 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-colors"><i class="ph-bold ph-trash text-lg"></i></button>`;
                     
                     let pontoHtml = '';
                     if(f.status_admissao === 'ATIVO' && f.id !== 1) {
-                        if (!f.ponto_entrada && !f.ponto_saida) pontoHtml = `<button onclick="baterPontoRH(${f.id}, 'entrada')" class="bg-blue-500 hover:bg-blue-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold shadow-sm">ENTRADA</button>`;
-                        else if (f.ponto_entrada && !f.ponto_saida) pontoHtml = `<span class="text-[10px] font-bold text-green-600">IN: ${f.ponto_entrada}</span><br><button onclick="baterPontoRH(${f.id}, 'saida')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold mt-1 shadow-sm">SAÍDA</button>`;
-                        else pontoHtml = `<span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">IN: ${f.ponto_entrada} | OUT: ${f.ponto_saida}</span>`;
+                        if(!f.ponto_entrada) pontoHtml = `<button onclick="baterPontoRH(${f.id}, 'entrada')" class="bg-blue-500 hover:bg-blue-600 text-white text-[10px] px-3 py-2 rounded-xl font-bold transition-colors">Bater Entrada</button>`;
+                        else if(!f.ponto_saida) pontoHtml = `<span class="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-1 rounded">IN: ${f.ponto_entrada}</span><br><button onclick="baterPontoRH(${f.id}, 'saida')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-3 py-2 rounded-xl mt-1 font-bold transition-colors">Bater Saída</button>`;
+                        else pontoHtml = `<span class="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-1 rounded">IN: ${f.ponto_entrada} | OUT: ${f.ponto_saida}</span>`;
                     } else if (f.id === 1) {
-                        pontoHtml = `<span class="text-[10px] font-bold text-slate-300">LIVRE</span>`;
+                        pontoHtml = `<span class="text-[10px] font-bold text-slate-400">LIVRE</span>`;
                     }
 
                     return `
-                    <tr class="border-b hover:bg-slate-50 transition-colors ${f.status_admissao === 'DEMITIDO' ? 'opacity-50' : ''}">
-                        <td class="py-3 px-6"><p class="font-bold text-slate-800">${f.nome}</p><p class="text-[10px] text-slate-500 font-mono mt-1">MAT: ${f.matricula || '-'} <br> CPF: ${f.cpf || '-'}</p></td>
-                        <td class="py-3 px-6">${badgeStatus}<p class="text-xs font-bold text-slate-600 mt-2">${f.cargo}</p></td>
-                        <td class="py-3 px-6 text-center font-bold text-green-600">R$ ${f.salario.toFixed(2).replace('.', ',')}</td>
-                        <td class="py-3 px-6 text-center">${pontoHtml}</td>
-                        <td class="py-3 px-6 text-center">${acoesHtml}</td>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors ${f.status_admissao==='DEMITIDO'?'opacity-50 grayscale':''}">
+                        <td class="py-4 px-6"><p class="font-bold text-slate-800">${f.nome}</p><p class="text-[10px] font-mono text-slate-400 mt-1">MAT: ${f.matricula||'-'} <br> CPF: ${f.cpf||'-'}</p></td>
+                        <td class="py-4 px-6">${badgeStatus}<p class="text-xs font-bold text-slate-600 mt-2"><i class="ph-fill ph-briefcase mr-1"></i> ${f.cargo}</p></td>
+                        <td class="py-4 px-6 text-center font-black text-green-600">R$ ${f.salario.toFixed(2).replace('.', ',')}</td>
+                        <td class="py-4 px-6 text-center">${pontoHtml}</td>
+                        <td class="py-4 px-6 text-center">${acaoAdmin}</td>
                     </tr>
-                `}).join('');
-            } catch(e) {}
+                    `;
+                }).join('');
+            } catch(e) { console.error("Erro RH", e); }
         }
-        async function baterPontoRH(id, tipo) { await fetch('/api/gestao/ponto', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({funcionario_id: id, tipo: tipo}) }); carregarColaboradores(); }
-        async function demitirColaborador(id) { if(confirm(`⚠️ Atenção: Demitir colaborador? O acesso será revogado.`)) { await fetch(`/api/gestao/funcionarios/${id}`, { method: 'DELETE' }); carregarColaboradores(); } }
+        
+        async function baterPontoRH(id, tipo) { 
+            await fetch('/api/gestao/ponto', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ funcionario_id: id, tipo: tipo }) }); 
+            carregarColaboradores(); 
+        }
+        
+        async function demitirColaborador(id) { 
+            if(confirm("⚠️ ATENÇÃO: Demitir funcionário? O acesso ao sistema será revogado imediatamente.")) { 
+                await fetch(`/api/gestao/funcionarios/${id}`, { method: 'DELETE' }); 
+                carregarColaboradores(); 
+            } 
+        }
 
-        // --- PRODUTOS E FICHA TÉCNICA ---
+        async function abrirDossie(id) {
+            try {
+                const res = await fetch(`/api/gestao/funcionarios/${id}/dossie`); 
+                const r = await res.json();
+                
+                document.getElementById('dos-id').value = id; 
+                document.getElementById('dos-cpf').value = r.cpf || "";
+                document.getElementById('dos-rg').value = r.rg || ""; 
+                document.getElementById('dos-pis').value = r.pis_pasep || "";
+                document.getElementById('dos-nasc').value = r.data_nascimento || ""; 
+                document.getElementById('dos-civil').value = r.estado_civil || "Solteiro";
+                document.getElementById('dos-eleitor').value = r.titulo_eleitor || ""; 
+                document.getElementById('dos-res').value = r.reservista || "";
+                document.getElementById('dos-end').value = r.endereco_completo || ""; 
+                document.getElementById('dos-banco').value = r.dados_bancarios || "";
+                document.getElementById('dos-nat').value = r.naturalidade || ""; 
+                document.getElementById('dos-esc').value = r.escolaridade || "Ensino Médio";
+                document.getElementById('dos-filhos').value = r.qtd_filhos_menores || 0; 
+                document.getElementById('dos-plano').value = r.plano_saude_escolhido || "Nenhum";
+                
+                document.getElementById('modal-dossie').classList.replace('hidden', 'flex');
+            } catch(e) { alert("Erro ao puxar dossiê da nuvem."); }
+        }
+
+        async function salvarDossieRH(e) {
+            e.preventDefault(); 
+            const id = document.getElementById('dos-id').value;
+            const payload = { 
+                cpf: document.getElementById('dos-cpf').value, 
+                rg: document.getElementById('dos-rg').value, 
+                pis_pasep: document.getElementById('dos-pis').value, 
+                data_nascimento: document.getElementById('dos-nasc').value, 
+                estado_civil: document.getElementById('dos-civil').value, 
+                titulo_eleitor: document.getElementById('dos-eleitor').value, 
+                reservista: document.getElementById('dos-res').value, 
+                endereco_completo: document.getElementById('dos-end').value, 
+                dados_bancarios: document.getElementById('dos-banco').value, 
+                naturalidade: document.getElementById('dos-nat').value, 
+                escolaridade: document.getElementById('dos-esc').value, 
+                qtd_filhos_menores: parseInt(document.getElementById('dos-filhos').value)||0, 
+                plano_saude_escolhido: document.getElementById('dos-plano').value, 
+                cnh: "", aceite_lgpd: true, foto_3x4: "" 
+            };
+            
+            try {
+                const r = await fetch(`/api/gestao/funcionarios/${id}/dossie`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+                if(r.ok) { 
+                    alert("✅ Dossiê salvo! Ficha ativa oficializada."); 
+                    document.getElementById('modal-dossie').classList.replace('flex','hidden'); 
+                    carregarColaboradores(); 
+                }
+            } catch(err) { alert("Falha ao salvar dossiê."); }
+        }
+
+        // -------------------------
+        // RELATÓRIOS E DRE
+        // -------------------------
+        async function filtrarRelatorios() {
+            const dataInicio = document.getElementById('filtro-inicio').value; 
+            const dataFim = document.getElementById('filtro-fim').value; 
+            let queryUrl = (dataInicio && dataFim) ? `?data_inicio=${dataInicio}&data_fim=${dataFim}` : '';
+            
+            try {
+                const res = await fetch(`/api/gestao/financeiro/lucratividade${queryUrl}`); 
+                const data = await res.json(); 
+                
+                document.getElementById('rel-faturamento').innerText = `R$ ${data.faturamento.toFixed(2).replace('.', ',')}`; 
+                document.getElementById('rel-despesas-empresa').innerText = `R$ ${data.despesas_empresa.toFixed(2).replace('.', ',')}`; 
+                document.getElementById('rel-despesas-casa').innerText = `R$ ${data.despesas_casa.toFixed(2).replace('.', ',')}`; 
+                document.getElementById('rel-margem').innerText = `${data.margem_lucro}%`; 
+                document.getElementById('rel-lucro-real').innerText = `R$ ${data.lucro_liquido.toFixed(2).replace('.', ',')}`;
+                
+                const rAbc = await fetch(`/api/gestao/relatorios/curva-abc${queryUrl}`); 
+                const abc = await rAbc.json(); 
+                
+                if (abc.length === 0) {
+                    document.getElementById('lista-curva-abc').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Sem vendas registradas neste período.</td></tr>';
+                } else {
+                    document.getElementById('lista-curva-abc').innerHTML = abc.map((p, x) => {
+                        let medalha = `${x + 1}º`;
+                        if(x === 0) medalha = '🥇 1º'; if(x === 1) medalha = '🥈 2º'; if(x === 2) medalha = '🥉 3º';
+                        return `<tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors"><td class="py-3 px-6 font-black text-slate-400 text-lg">${medalha}</td><td class="py-3 px-6 font-bold text-slate-800">${p.nome} <br><span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">${p.categoria}</span></td><td class="py-3 px-6 text-center text-brand-500 font-black">${p.quantidade_vendida}x</td><td class="py-3 px-6 text-right font-black text-green-600">R$ ${p.faturamento_gerado.toFixed(2).replace('.', ',')}</td></tr>`;
+                    }).join('');
+                }
+            } catch (err) { console.error("Erro ao puxar relatórios", err); }
+        }
+
+        // -------------------------
+        // CARDÁPIO, FICHA TÉCNICA E ESTOQUE
+        // -------------------------
         let ingredientesFicha = [];
         let itensDoGrupoLocal = [];
 
-        async function carregarInsumosParaSelect() {
+        async function carregarInsumosParaSelect() { 
             try {
-                const res = await fetch('/api/gestao/insumos');
-                const insumos = await res.json();
-                const select = document.getElementById('select-insumo');
-                if (insumos.length === 0) { select.innerHTML = '<option value="">Nenhum insumo</option>'; return; }
-                select.innerHTML = '<option value="">-- Selecione o Insumo --</option>' + insumos.map(i => `<option value="${i.id}">${i.nome} (${i.unidade})</option>`).join('');
-            } catch (e) { }
+                const res = await fetch('/api/gestao/insumos'); 
+                const insumos = await res.json(); 
+                document.getElementById('select-insumo').innerHTML = '<option value="">-- Selecione o Insumo --</option>' + insumos.map(x => `<option value="${x.id}">${x.nome} (${x.unidade})</option>`).join(''); 
+            } catch (e) { console.error(e); }
         }
 
-        function adicionarIngredienteNaLista() {
-            const select = document.getElementById('select-insumo');
-            const inputQtd = document.getElementById('input-qtd-insumo');
-            const insumoId = parseInt(select.value);
-            const quantidade = parseFloat(inputQtd.value);
-
-            if (!insumoId || isNaN(quantidade) || quantidade <= 0) { alert("Informe quantidade válida."); return; }
-            if (ingredientesFicha.some(i => i.insumo_id === insumoId)) { alert("Ingrediente já adicionado."); return; }
-
-            ingredientesFicha.push({ insumo_id: insumoId, quantidade: quantidade, nome: select.options[select.selectedIndex].text });
-            atualizarListaVisualFicha(); inputQtd.value = ""; select.value = "";
+        function adicionarIngredienteNaLista() { 
+            const select = document.getElementById('select-insumo'); 
+            const inputQtd = parseFloat(document.getElementById('input-qtd-insumo').value); 
+            const insumoId = parseInt(select.value); 
+            
+            if(insumoId && inputQtd > 0) { 
+                if (ingredientesFicha.some(i => i.insumo_id === insumoId)) { alert("Já adicionado!"); return; }
+                ingredientesFicha.push({ insumo_id: insumoId, quantidade: inputQtd, nome: select.options[select.selectedIndex].text }); 
+                
+                document.getElementById('lista-ingredientes-produto').innerHTML = ingredientesFicha.map((x, i) => `
+                    <li class="flex justify-between items-center bg-white px-4 py-3 rounded-xl border border-slate-200 text-sm shadow-sm">
+                        <span class="font-bold text-slate-700">${x.nome} | Gasto: <b class="text-brand-500">${x.quantidade}</b></span>
+                        <button type="button" onclick="ingredientesFicha.splice(${i}, 1); adicionarIngredienteNaLista()" class="text-slate-400 hover:text-red-500 transition-colors"><i class="ph-fill ph-trash text-lg"></i></button>
+                    </li>
+                `).join(''); 
+                document.getElementById('input-qtd-insumo').value = '';
+                select.value = '';
+            } else {
+                alert("Preencha insumo e quantidade.");
+            }
         }
 
-        function removerIngredienteDaLista(index) { ingredientesFicha.splice(index, 1); atualizarListaVisualFicha(); }
-
-        function atualizarListaVisualFicha() {
-            const ul = document.getElementById('lista-ingredientes-produto');
-            if (ingredientesFicha.length === 0) { ul.innerHTML = '<li class="text-slate-400 text-xs font-medium italic p-4 border border-dashed border-slate-300 rounded-xl text-center">Nenhum ingrediente adicionado.</li>'; return; }
-            ul.innerHTML = ingredientesFicha.map((item, index) => `
-                <li class="flex justify-between items-center bg-white px-4 py-2.5 rounded-xl border border-slate-200 text-sm shadow-sm">
-                    <span class="font-bold text-slate-700">${item.nome} | Gasta: <b class="text-brand-500">${item.quantidade}</b></span>
-                    <button type="button" onclick="removerIngredienteDaLista(${index})" class="text-slate-400 hover:text-red-500"><i class="ph-fill ph-trash text-xl"></i></button>
-                </li>
-            `).join('');
-        }
-
-        async function salvarProduto(event) { 
-            event.preventDefault(); 
+        async function salvarProduto(e) { 
+            e.preventDefault(); 
             const payload = { 
                 nome: document.getElementById('prod-nome').value, 
-                descricao: document.getElementById('prod-desc').value,
-                imagem_url: document.getElementById('prod-img').value,
+                descricao: document.getElementById('prod-desc').value, 
+                imagem_url: document.getElementById('prod-img').value, 
                 preco: parseFloat(document.getElementById('prod-preco').value), 
-                categoria: document.getElementById('prod-categoria').value,
-                fichas: ingredientesFicha.map(i => ({ insumo_id: i.insumo_id, quantidade: i.quantidade }))
-            };
+                categoria: document.getElementById('prod-categoria').value, 
+                fichas: ingredientesFicha 
+            }; 
             try {
-                const res = await fetch('/api/gestao/produto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if(res.ok) { 
-                    alert("🍔 Produto salvo com sucesso no cardápio!"); 
-                    document.getElementById('form-cardapio').reset(); 
-                    ingredientesFicha = []; atualizarListaVisualFicha(); carregarCardapio();
-                }
-            } catch(e) { console.error(e); }
+                await fetch('/api/gestao/produto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
+                document.getElementById('form-cardapio').reset(); 
+                ingredientesFicha = []; 
+                document.getElementById('lista-ingredientes-produto').innerHTML = '<li class="text-slate-400 text-xs font-medium italic p-4 border border-dashed border-slate-300 rounded-xl text-center">Nenhum ingrediente.</li>';
+                carregarCardapio(); 
+                alert("🍔 Lanche Salvo com Sucesso!");
+            } catch(err) { alert("Erro ao salvar"); }
         }
 
-        async function carregarCardapio() {
+        async function carregarCardapio() { 
             try {
-                const res = await fetch('/api/cardapio');
-                const produtos = await res.json();
+                const res = await fetch('/api/cardapio'); 
+                const produtos = await res.json(); 
                 const tabela = document.getElementById('lista-cardapio');
                 
-                if(produtos.length === 0) { tabela.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Nenhum produto.</td></tr>'; return; }
-
-                tabela.innerHTML = produtos.map(p => `
+                if (produtos.length === 0) { tabela.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Cardápio Vazio.</td></tr>'; return; }
+                
+                tabela.innerHTML = produtos.map(x => `
                     <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                        <td class="py-4 px-6 font-bold text-slate-800">${p.nome}</td>
-                        <td class="py-4 px-6 text-slate-500"><span class="px-2 py-1 bg-slate-100 rounded-md text-[10px] uppercase font-bold tracking-wider">${p.categoria}</span></td>
-                        <td class="py-4 px-6 font-black text-green-600">R$ ${p.preco_venda.toFixed(2).replace('.', ',')}</td>
+                        <td class="py-4 px-6 font-bold text-slate-800">${x.nome}</td>
+                        <td class="py-4 px-6"><span class="bg-slate-100 px-2 py-1 rounded-lg text-[10px] uppercase font-bold tracking-wider text-slate-500">${x.categoria}</span></td>
+                        <td class="py-4 px-6 font-black text-green-600">R$ ${x.preco_venda.toFixed(2).replace('.', ',')}</td>
                         <td class="py-4 px-6 text-center space-x-2">
-                            <button onclick="abrirModalCriarGrupo(${p.id}, '${p.nome}')" class="text-blue-500 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors" title="Adicionais"><i class="ph-bold ph-plus-circle text-lg"></i></button>
-                            <button onclick="excluirProduto(${p.id}, '${p.nome}')" class="text-red-500 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Excluir"><i class="ph-bold ph-trash text-lg"></i></button>
+                            <button onclick="abrirModalCriarGrupo(${x.id}, '${x.nome}')" class="text-blue-500 bg-blue-50 hover:bg-blue-100 p-2 rounded-xl transition-colors" title="Extras/Adicionais"><i class="ph-bold ph-plus-circle text-lg"></i></button> 
+                            <button onclick="excluirProduto(${x.id}, '${x.nome}')" class="text-red-500 bg-red-50 hover:bg-red-100 p-2 rounded-xl transition-colors" title="Excluir Lanche"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     </tr>
-                `).join('');
-            } catch (error) { console.error(error); }
-        }
-        async function excluirProduto(id, nome) { if(confirm(`Excluir o lanche "${nome}"?`)) { await fetch(`/api/gestao/produto/${id}`, { method: 'DELETE' }); carregarCardapio(); } }
-
-        // --- COMPLEMENTOS (EXTRAS) ---
-        function abrirModalCriarGrupo(produtoId, produtoNome) {
-            document.getElementById('add-grupo-prod-id').value = produtoId;
-            document.getElementById('add-grupo-prod-nome').innerText = produtoNome;
-            itensDoGrupoLocal = []; atualizarItensGrupoLocal();
-            document.getElementById('modal-add-grupo').classList.remove('hidden'); document.getElementById('modal-add-grupo').classList.add('flex');
-        }
-
-        function fecharModalGrupo() { document.getElementById('modal-add-grupo').classList.add('hidden'); document.getElementById('modal-add-grupo').classList.remove('flex'); document.getElementById('form-add-grupo').reset(); }
-
-        function adicionarItemAoGrupoLocal() {
-            const nome = document.getElementById('add-item-nome').value;
-            const preco = parseFloat(document.getElementById('add-item-preco').value) || 0.0;
-            if(!nome) return;
-            itensDoGrupoLocal.push({ nome, preco_adicional: preco });
-            document.getElementById('add-item-nome').value = ''; document.getElementById('add-item-preco').value = '';
-            atualizarItensGrupoLocal();
-        }
-
-        function atualizarItensGrupoLocal() {
-            const div = document.getElementById('lista-add-itens');
-            div.innerHTML = itensDoGrupoLocal.map((it, idx) => `
-                <div class="flex justify-between items-center bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 text-sm">
-                    <span class="font-bold text-slate-700">${it.nome} <b class="text-brand-500 ml-2">R$ ${it.preco_adicional.toFixed(2)}</b></span>
-                    <button type="button" onclick="removerItemGrupoLocal(${idx})" class="text-red-500 hover:text-red-700"><i class="ph-fill ph-trash"></i></button>
-                </div>
-            `).join('');
-        }
-
-        function removerItemGrupoLocal(idx) { itensDoGrupoLocal.splice(idx, 1); atualizarItensGrupoLocal(); }
-
-        async function salvarGrupoComplemento(e) {
-            e.preventDefault();
-            if(itensDoGrupoLocal.length === 0) { alert("Adicione itens!"); return; }
-            const payload = {
-                produto_id: parseInt(document.getElementById('add-grupo-prod-id').value), nome: document.getElementById('add-grupo-nome').value,
-                obrigatorio: document.getElementById('add-grupo-obrig').value === 'true', minimo_opcoes: parseInt(document.getElementById('add-grupo-min').value),
-                maximo_opcoes: parseInt(document.getElementById('add-grupo-max').value), itens: itensDoGrupoLocal
-            };
-            const res = await fetch('/api/gestao/complementos', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            if(res.ok) { alert("✅ Extras salvos!"); fecharModalGrupo(); }
-        }
-
-        // --- ESTOQUE ---
-        async function salvarInsumo(event) {
-            event.preventDefault(); 
-            const payload = { nome: document.getElementById('ins-nome').value, unidade: document.getElementById('ins-unidade').value, quantidade: parseFloat(document.getElementById('ins-qtd').value), minimo: parseFloat(document.getElementById('ins-min').value), custo: parseFloat(document.getElementById('ins-custo').value) };
-            try {
-                const res = await fetch('/api/gestao/insumo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if(res.ok) { alert("📦 Insumo guardado!"); document.getElementById('form-estoque').reset(); carregarEstoque(); }
+                `).join(''); 
             } catch(e) { console.error(e); }
         }
 
-        async function carregarEstoque() {
+        async function excluirProduto(id, nome) {
+            if(confirm(`⚠️ Excluir o lanche "${nome}" do cardápio?`)) {
+                await fetch(`/api/gestao/produto/${id}`, { method: 'DELETE' });
+                carregarCardapio();
+            }
+        }
+
+        function abrirModalCriarGrupo(id, nome) { 
+            document.getElementById('add-grupo-prod-id').value = id; 
+            document.getElementById('add-grupo-prod-nome').innerText = nome; 
+            itensDoGrupoLocal = []; 
+            document.getElementById('lista-add-itens').innerHTML = ''; 
+            document.getElementById('modal-add-grupo').classList.replace('hidden', 'flex'); 
+        }
+
+        function adicionarItemAoGrupoLocal() { 
+            const nome = document.getElementById('add-item-nome').value; 
+            const preco = parseFloat(document.getElementById('add-item-preco').value) || 0; 
+            
+            if(nome) { 
+                itensDoGrupoLocal.push({ nome: nome, preco_adicional: preco }); 
+                document.getElementById('lista-add-itens').innerHTML = itensDoGrupoLocal.map((x, i) => `
+                    <div class="flex justify-between items-center bg-white px-4 py-2.5 rounded-xl border border-slate-200 text-sm shadow-sm mb-2">
+                        <span class="font-bold text-slate-700">${x.nome} <b class="text-brand-500 ml-2">R$ ${x.preco_adicional.toFixed(2).replace('.', ',')}</b></span>
+                        <button type="button" onclick="itensDoGrupoLocal.splice(${i}, 1); adicionarItemAoGrupoLocal()" class="text-slate-400 hover:text-red-500 transition-colors"><i class="ph-fill ph-trash text-lg"></i></button>
+                    </div>
+                `).join(''); 
+                document.getElementById('add-item-nome').value = '';
+                document.getElementById('add-item-preco').value = '';
+            } 
+        }
+
+        async function salvarGrupoComplemento(e) { 
+            e.preventDefault(); 
+            if(itensDoGrupoLocal.length === 0) return alert("Adicione pelo menos 1 item na lista!");
+            
+            const payload = { 
+                produto_id: parseInt(document.getElementById('add-grupo-prod-id').value), 
+                nome: document.getElementById('add-grupo-nome').value, 
+                obrigatorio: document.getElementById('add-grupo-obrig').value === 'true', 
+                minimo_opcoes: parseInt(document.getElementById('add-grupo-min').value), 
+                maximo_opcoes: parseInt(document.getElementById('add-grupo-max').value), 
+                itens: itensDoGrupoLocal 
+            }; 
+            
+            await fetch('/api/gestao/complementos', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+            alert("✅ Extras vinculados com sucesso!");
+            document.getElementById('modal-add-grupo').classList.replace('flex', 'hidden'); 
+        }
+
+        async function salvarInsumo(e) { 
+            e.preventDefault(); 
+            const payload = { 
+                nome: document.getElementById('ins-nome').value, 
+                unidade: document.getElementById('ins-unidade').value, 
+                quantidade: parseFloat(document.getElementById('ins-qtd').value), 
+                minimo: parseFloat(document.getElementById('ins-min').value), 
+                custo: parseFloat(document.getElementById('ins-custo').value) 
+            }; 
+            await fetch('/api/gestao/insumo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
+            alert("📦 Guardado na Despensa!");
+            document.getElementById('form-estoque').reset(); 
+            carregarEstoque(); 
+        }
+
+        async function carregarEstoque() { 
             try {
-                const res = await fetch('/api/gestao/insumos');
-                const insumos = await res.json();
+                const res = await fetch('/api/gestao/insumos'); 
+                const insumos = await res.json(); 
                 const tabela = document.getElementById('lista-estoque');
-                if(insumos.length === 0) { tabela.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Nenhum insumo.</td></tr>'; return; }
-
-                tabela.innerHTML = insumos.map(i => {
-                    let statusHtml = i.quantidade_atual <= 0 ? '<span class="px-2 py-1 bg-red-100 text-red-700 font-black text-[9px] uppercase rounded">Zerad!</span>' : (i.quantidade_atual <= i.quantidade_minima ? '<span class="px-2 py-1 bg-amber-100 text-amber-700 font-black text-[9px] uppercase rounded">Comprar</span>' : '<span class="px-2 py-1 bg-green-100 text-green-700 font-black text-[9px] uppercase rounded">OK</span>');
+                
+                if (insumos.length === 0) { tabela.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Despensa vazia.</td></tr>'; return; }
+                
+                tabela.innerHTML = insumos.map(x => {
+                    let badge = x.quantidade_atual <= 0 ? '<span class="px-2 py-1 bg-red-100 text-red-700 font-black text-[9px] uppercase rounded">Zerad!</span>' : (x.quantidade_atual <= x.quantidade_minima ? '<span class="px-2 py-1 bg-amber-100 text-amber-700 font-black text-[9px] uppercase rounded">Comprar</span>' : '<span class="px-2 py-1 bg-green-100 text-green-700 font-black text-[9px] uppercase rounded">OK</span>');
                     return `
-                        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6 font-bold text-slate-800">${i.nome}</td>
-                            <td class="py-4 px-6 font-black ${i.quantidade_atual <= i.quantidade_minima ? 'text-red-500' : 'text-slate-700'}">${i.quantidade_atual} ${i.unidade}</td>
-                            <td class="py-4 px-6 text-slate-400 font-bold">${i.quantidade_minima} ${i.unidade}</td>
-                            <td class="py-4 px-6 text-center space-x-2">
-                                ${statusHtml}
-                                <button onclick="deletarInsumo(${i.id}, '${i.nome}')" class="text-slate-400 hover:text-red-500 transition-colors ml-2" title="Excluir do Estoque"><i class="ph-fill ph-trash text-lg"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            } catch (error) { console.error(error); }
-        }
-        async function deletarInsumo(id, nome) { if(confirm(`Cuidado! Excluir "${nome}" pode quebrar as fichas técnicas. Continuar?`)) { await fetch(`/api/gestao/insumo/${id}`, { method: 'DELETE' }); carregarEstoque(); } }
-
-        // --- FORNECEDORES ---
-        async function cadastrarFornecedor(e) {
-            e.preventDefault();
-            const payload = { nome_fantasia: document.getElementById('forn-nome').value, cnpj: document.getElementById('forn-cnpj').value, categoria: document.getElementById('forn-cat').value || 'Geral', contato: document.getElementById('forn-contato').value };
-            const res = await fetch('/api/gestao/fornecedores', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            if(res.ok) { alert("✅ Fornecedor cadastrado!"); document.getElementById('form-fornecedor').reset(); carregarFornecedores(); }
-        }
-
-        async function carregarFornecedores() {
-            try {
-                const res = await fetch('/api/gestao/fornecedores');
-                const dados = await res.json();
-                const tbody = document.getElementById('lista-fornecedores');
-                if(dados.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>'; return; }
-                tbody.innerHTML = dados.map(f => `
-                    <tr class="border-b hover:bg-slate-50">
-                        <td class="py-3 px-6 font-bold text-slate-800">${f.nome_fantasia}</td>
-                        <td class="py-3 px-6"><span class="bg-slate-100 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider text-slate-500">${f.categoria}</span></td>
-                        <td class="py-3 px-6 text-slate-600 font-bold text-xs">${f.contato || '-'}</td>
-                        <td class="py-3 px-6 text-slate-400 font-mono text-xs">${f.cnpj || '-'}</td>
-                    </tr>
-                `).join('');
-            } catch(e) {}
-        }
-
-        // --- FINANCEIRO E CONTAS ---
-        async function carregarFornecedoresParaSelect() {
-            try {
-                const res = await fetch('/api/gestao/fornecedores');
-                const dados = await res.json();
-                const select = document.getElementById('fin-fornecedor');
-                if(select) { select.innerHTML = '<option value="">-- Sem vínculo com Fornecedor --</option>' + dados.map(f => `<option value="${f.id}">${f.nome_fantasia} (${f.categoria})</option>`).join(''); }
-            } catch(e) {}
-        }
-
-        async function carregarFinanceiro() {
-            const res = await fetch('/api/gestao/financeiro/resumo');
-            const data = await res.json();
-            document.getElementById('fin-total-empresa').innerText = `R$ ${data.total_empresa.toFixed(2).replace('.', ',')}`;
-            document.getElementById('fin-total-casa').innerText = `R$ ${data.total_casa.toFixed(2).replace('.', ',')}`;
-            const tbody = document.getElementById('lista-financeiro');
-            
-            if(!data.contas || data.contas.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="py-6 px-6 text-center text-slate-400">Nenhuma conta registrada.</td></tr>'; return; }
-            
-            tbody.innerHTML = data.contas.map(c => {
-                const badgeStatus = c.status === 'PAGO' ? '<span class="text-green-600 font-black text-[9px] uppercase bg-green-50 px-2 py-1.5 rounded">Quitado</span>' : `<button onclick="baixarConta(${c.id})" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-[10px] uppercase font-bold transition-all shadow-sm">Pagar</button>`;
-                return `
-                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                    <td class="py-4 px-6 font-bold text-slate-700">${c.descricao}</td>
-                    <td class="py-4 px-6 font-mono text-xs text-slate-500">${c.vencimento.split('-').reverse().join('/')}</td>
-                    <td class="py-4 px-6"><span class="px-2 py-1 rounded-md ${c.tipo === 'Empresa' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'} text-[10px] font-black uppercase tracking-wider">${c.tipo}</span></td>
-                    <td class="py-4 px-6 font-black text-slate-800">R$ ${c.valor.toFixed(2)}</td>
-                    <td class="py-4 px-6 text-center">${badgeStatus}</td>
-                </tr>
-            `}).join('');
-        }
-
-        async function lancarConta(e) {
-            e.preventDefault();
-            const fornecedorVal = document.getElementById('fin-fornecedor').value;
-            const payload = { descricao: document.getElementById('fin-desc').value, valor: parseFloat(document.getElementById('fin-valor').value), vencimento: document.getElementById('fin-venc').value, tipo_despesa: document.getElementById('fin-tipo').value, fornecedor_id: fornecedorVal ? parseInt(fornecedorVal) : null };
-            const res = await fetch('/api/gestao/conta', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            if(res.ok) { alert("Conta registrada com sucesso!"); document.getElementById('form-financeiro').reset(); carregarFinanceiro(); }
-        }
-        async function baixarConta(id) { if(!confirm("Confirmar pagamento e baixa desta conta?")) return; const res = await fetch(`/api/gestao/contas/${id}/pagar`, { method: 'PUT' }); if(res.ok) { carregarFinanceiro(); } else { alert("Erro ao dar baixa na conta."); } }
-
-        // --- CLIENTES VIP ---
-        async function carregarClientesPainel() {
-            try {
-                const res = await fetch('/api/gestao/clientes');
-                const clientes = await res.json();
-                const tbody = document.getElementById('lista-clientes-painel');
-                if(clientes.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">Nenhum cliente cadastrado ainda.</td></tr>'; return; }
-
-                tbody.innerHTML = clientes.map(c => `
-                    <tr class="border-b border-slate-50 hover:bg-slate-50 ${c.bloqueado ? 'opacity-50 bg-red-50/20' : ''}">
-                        <td class="py-4 px-6"><p class="font-bold text-slate-800">${c.nome}</p><p class="text-xs text-slate-400 font-mono">${c.telefone}</p></td>
-                        <td class="py-4 px-6 text-center font-black text-amber-500">${c.pontos} <span class="text-[9px] text-slate-400 font-bold uppercase">pts</span></td>
-                        <td class="py-4 px-6 text-center font-black text-green-600">R$ ${c.cashback.toFixed(2).replace('.', ',')}</td>
-                        <td class="py-4 px-6 text-center">${c.bloqueado ? '<span class="text-red-600 bg-red-50 font-black text-[9px] uppercase px-2 py-1 rounded">Bloqueado</span>' : '<span class="text-green-600 bg-green-50 font-black text-[9px] uppercase px-2 py-1 rounded">Ativo</span>'}</td>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 font-bold text-slate-800">${x.nome}</td>
+                        <td class="py-4 px-6 font-black ${x.quantidade_atual <= x.quantidade_minima ? 'text-red-500' : 'text-slate-700'}">${x.quantidade_atual} ${x.unidade}</td>
+                        <td class="py-4 px-6 text-slate-400 font-bold">${x.quantidade_minima} ${x.unidade}</td>
                         <td class="py-4 px-6 text-center space-x-2">
-                            <button onclick="ajustarCliente(${c.id}, '${c.nome}', ${c.pontos}, ${c.cashback})" class="text-blue-500 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg" title="Editar"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                            <button onclick="alternarBloqueioCliente(${c.id})" class="text-amber-500 bg-amber-50 hover:bg-amber-100 p-2 rounded-lg" title="Bloquear"><i class="ph-bold ph-lock-key text-lg"></i></button>
-                            <button onclick="deletarCliente(${c.id}, '${c.nome}')" class="text-red-500 bg-red-50 hover:bg-red-100 p-2 rounded-lg" title="Excluir"><i class="ph-bold ph-trash text-lg"></i></button>
+                            ${badge}
+                            <button onclick="deletarInsumo(${x.id}, '${x.nome}')" class="text-slate-400 hover:text-red-500 transition-colors ml-2" title="Excluir"><i class="ph-fill ph-trash text-lg"></i></button>
                         </td>
                     </tr>
-                `).join('');
+                    `;
+                }).join(''); 
             } catch(e) {}
         }
-        async function ajustarCliente(id, nome, pontos, cashback) { const novoNome = prompt("Editar Nome:", nome); if (novoNome === null) return; const novosPontos = prompt("Ajustar Pontos:", pontos); const novoCashback = prompt("Ajustar Cashback (R$):", cashback); await fetch(`/api/gestao/clientes/${id}/editar`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome: novoNome, pontos: novosPontos, cashback: novoCashback }) }); carregarClientesPainel(); }
-        async function deletarCliente(id, nome) { if(confirm(`⚠️ Remover o cliente ${nome} permanentemente?`)) { await fetch(`/api/gestao/clientes/${id}`, { method: 'DELETE' }); carregarClientesPainel(); } }
-        async function alternarBloqueioCliente(id) { await fetch(`/api/gestao/clientes/${id}/bloqueio`, { method: 'PUT' }); carregarClientesPainel(); }
 
-        // --- UTILITÁRIOS ---
-        function sairDoSistema() { localStorage.removeItem('funcionario_nome'); localStorage.removeItem('funcionario_cargo'); window.location.replace('/login'); }
-        function gerarPDF(idElemento, nomeArquivo) {
-            const elemento = document.getElementById(idElemento);
-            html2canvas(elemento, { scale: 2, backgroundColor: '#f8fafc', logging: false }).then(canvas => {
-                const imgData = canvas.toDataURL('image/jpeg', 0.98);
-                const pdf = new window.jspdf.jsPDF('l', 'mm', 'a4');
-                pdf.addImage(imgData, 'JPEG', 10, 10, 277, (canvas.height * 277) / canvas.width);
-                pdf.save(`${nomeArquivo}_${new Date().toLocaleDateString('pt-BR')}.pdf`);
-            });
+        async function deletarInsumo(id, nome) {
+            if(confirm(`⚠️ Cuidado! Excluir "${nome}" pode quebrar as Fichas Técnicas dos lanches que usam ele. Continuar?`)) {
+                await fetch(`/api/gestao/insumo/${id}`, { method: 'DELETE' });
+                carregarEstoque();
+            }
+        }
+
+        // -------------------------
+        // FORNECEDORES, FINANCEIRO E CLIENTES
+        // -------------------------
+        async function cadastrarFornecedor(e) { 
+            e.preventDefault(); 
+            const payload = { 
+                nome_fantasia: document.getElementById('forn-nome').value, 
+                cnpj: document.getElementById('forn-cnpj').value, 
+                categoria: document.getElementById('forn-cat').value, 
+                contato: document.getElementById('forn-contato').value 
+            }; 
+            await fetch('/api/gestao/fornecedores', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+            alert("✅ Fornecedor Salvo!");
+            document.getElementById('form-fornecedor').reset(); 
+            carregarFornecedores(); 
+        }
+
+        async function carregarFornecedores() { 
+            const res = await fetch('/api/gestao/fornecedores'); 
+            const dados = await res.json(); 
+            document.getElementById('lista-fornecedores').innerHTML = dados.map(x => `
+                <tr class="border-b hover:bg-slate-50 transition-colors">
+                    <td class="py-4 px-6 font-bold text-slate-800">${x.nome_fantasia}</td>
+                    <td class="py-4 px-6"><span class="bg-slate-100 text-slate-500 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">${x.categoria}</span></td>
+                    <td class="py-4 px-6 text-slate-600 font-bold text-xs">${x.contato || '-'}</td>
+                    <td class="py-4 px-6 text-slate-400 font-mono text-xs">${x.cnpj || '-'}</td>
+                </tr>
+            `).join(''); 
+        }
+
+        async function carregarFornecedoresParaSelect() { 
+            const res = await fetch('/api/gestao/fornecedores'); 
+            const dados = await res.json(); 
+            document.getElementById('fin-fornecedor').innerHTML = '<option value="">-- Sem vínculo --</option>' + dados.map(x => `<option value="${x.id}">${x.nome_fantasia}</option>`).join(''); 
+        }
+
+        async function lancarConta(e) { 
+            e.preventDefault(); 
+            const payload = { 
+                descricao: document.getElementById('fin-desc').value, 
+                valor: parseFloat(document.getElementById('fin-valor').value), 
+                vencimento: document.getElementById('fin-venc').value, 
+                tipo_despesa: document.getElementById('fin-tipo').value, 
+                fornecedor_id: document.getElementById('fin-fornecedor').value || null 
+            }; 
+            await fetch('/api/gestao/conta', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+            alert("Conta registrada no fluxo de caixa!");
+            document.getElementById('form-financeiro').reset(); 
+            carregarFinanceiro(); 
+        }
+
+        async function carregarFinanceiro() { 
+            const res = await fetch('/api/gestao/financeiro/resumo'); 
+            const data = await res.json(); 
+            document.getElementById('fin-total-empresa').innerText = `R$ ${data.total_empresa.toFixed(2).replace('.', ',')}`; 
+            document.getElementById('fin-total-casa').innerText = `R$ ${data.total_casa.toFixed(2).replace('.', ',')}`; 
+            
+            const tbody = document.getElementById('lista-financeiro');
+            if (data.contas.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">Nenhuma conta cadastrada.</td></tr>'; return; }
+            
+            tbody.innerHTML = data.contas.map(x => {
+                const statusHtml = x.status === 'PAGO' ? '<span class="bg-green-50 text-green-600 px-2 py-1 rounded font-black text-[9px] uppercase">Quitado</span>' : `<button onclick="baixarConta(${x.id})" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-colors shadow-sm">Pagar Conta</button>`;
+                return `
+                <tr class="border-b hover:bg-slate-50 transition-colors">
+                    <td class="py-4 px-6 font-bold text-slate-700">${x.descricao}</td>
+                    <td class="py-4 px-6 font-mono text-xs text-slate-500">${x.vencimento.split('-').reverse().join('/')}</td>
+                    <td class="py-4 px-6"><span class="px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${x.tipo === 'Empresa' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}">${x.tipo}</span></td>
+                    <td class="py-4 px-6 font-black text-slate-800">R$ ${x.valor.toFixed(2).replace('.', ',')}</td>
+                    <td class="py-4 px-6 text-center">${statusHtml}</td>
+                </tr>
+                `;
+            }).join(''); 
+        }
+
+        async function baixarConta(id) { 
+            if(confirm("Confirmar que esta conta foi paga e descontar do caixa?")) {
+                await fetch(`/api/gestao/contas/${id}/pagar`, { method: 'PUT' }); 
+                carregarFinanceiro();
+            }
+        }
+
+        async function carregarClientesPainel() { 
+            const res = await fetch('/api/gestao/clientes'); 
+            const clientes = await res.json(); 
+            
+            const tbody = document.getElementById('lista-clientes-painel');
+            if (clientes.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">Sem clientes VIP registrados.</td></tr>'; return; }
+
+            tbody.innerHTML = clientes.map(x => `
+                <tr class="border-b hover:bg-slate-50 transition-colors ${x.bloqueado ? 'opacity-50 grayscale' : ''}">
+                    <td class="py-4 px-6"><p class="font-bold text-slate-800">${x.nome}</p><p class="text-xs text-slate-400 font-mono mt-0.5">${x.telefone}</p></td>
+                    <td class="py-4 px-6 text-center font-black text-amber-500">${x.pontos} <span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">pts</span></td>
+                    <td class="py-4 px-6 text-center font-black text-green-600">R$ ${x.cashback.toFixed(2).replace('.', ',')}</td>
+                    <td class="py-4 px-6 text-center">${x.bloqueado ? '<span class="bg-red-50 text-red-600 px-2 py-1 font-black text-[9px] uppercase rounded">Bloqueado</span>' : '<span class="bg-green-50 text-green-600 px-2 py-1 font-black text-[9px] uppercase rounded">Liberado</span>'}</td>
+                    <td class="py-4 px-6 text-center space-x-2">
+                        <button onclick="ajustarCliente(${x.id}, '${x.nome}', ${x.pontos}, ${x.cashback})" class="text-blue-500 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors" title="Editar Saldos"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                        <button onclick="alternarBloqueioCliente(${x.id})" class="text-amber-500 bg-amber-50 hover:bg-amber-100 p-2 rounded-lg transition-colors" title="Bloquear Conta"><i class="ph-bold ph-lock-key text-lg"></i></button>
+                        <button onclick="deletarCliente(${x.id})" class="text-red-500 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Excluir"><i class="ph-bold ph-trash text-lg"></i></button>
+                    </td>
+                </tr>
+            `).join(''); 
+        }
+
+        async function ajustarCliente(id, nome, pontos, cashback) { 
+            const novosPontos = prompt(`Ajustar Pontos de ${nome}:`, pontos); 
+            if (novosPontos === null) return; 
+            const novoCashback = prompt(`Ajustar Cashback (R$) de ${nome}:`, cashback); 
+            
+            await fetch(`/api/gestao/clientes/${id}/editar`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome: nome, pontos: novosPontos, cashback: novoCashback }) }); 
+            carregarClientesPainel(); 
+        }
+
+        async function alternarBloqueioCliente(id) { 
+            await fetch(`/api/gestao/clientes/${id}/bloqueio`, { method: 'PUT' }); 
+            carregarClientesPainel(); 
+        }
+
+        async function deletarCliente(id) { 
+            if(confirm(`⚠️ Excluir cliente permanentemente? Ele perderá todo o histórico e saldo de cashback.`)) {
+                await fetch(`/api/gestao/clientes/${id}`, { method: 'DELETE' }); 
+                carregarClientesPainel(); 
+            }
+        }
+
+        // -------------------------
+        // UTILITÁRIOS
+        // -------------------------
+        function sairDoSistema() { 
+            localStorage.removeItem('funcionario_nome'); 
+            localStorage.removeItem('funcionario_cargo');
+            window.location.replace('/login'); 
+        }
+
+        function gerarPDF(idElemento, nomeArquivo) { 
+            const el = document.getElementById(idElemento);
+            html2canvas(el, { scale: 2, backgroundColor: '#f8fafc', logging: false }).then(canvas => { 
+                const imgData = canvas.toDataURL('image/jpeg', 0.98); 
+                const pdf = new window.jspdf.jsPDF('l', 'mm', 'a4'); 
+                const width = pdf.internal.pageSize.getWidth() - 20;
+                const height = (canvas.height * width) / canvas.width;
+                pdf.addImage(imgData, 'JPEG', 10, 10, width, height); 
+                pdf.save(`${nomeArquivo}_${new Date().toLocaleDateString('pt-BR')}.pdf`); 
+            }); 
         }
     </script>
 </body>
