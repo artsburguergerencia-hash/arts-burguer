@@ -910,7 +910,55 @@ def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
         notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, pedido.id, "ENTREGUE")
         
     return {"status": "sucesso", "mensagem": "Baixa realizada e cliente notificado!"}
-    
+
+# ==========================================
+# HUB DE INTEGRAÇÕES EXTERNAS (WEBHOOKS)
+# ==========================================
+
+@app.post("/api/webhooks/ifood")
+async def webhook_ifood(request: Request, db: Session = Depends(get_db)):
+    """
+    Tomada de entrada para o iFood.
+    Quando o iFood aprovar um pedido lá no app deles, ele enviará um JSON para cá.
+    O sistema pegará esse JSON e injetará direto na tela do seu KDS (Cozinha).
+    """
+    try:
+        payload = await request.json()
+        print(f"🔴 [iFood] Novo evento recebido: {payload.get('code')}")
+        # Futura lógica de conversão do pedido do iFood para o seu PedidoModel
+        return {"status": "ok", "mensagem": "Evento do iFood recebido com sucesso!"}
+    except Exception as e:
+        return {"status": "erro", "detalhe": str(e)}
+
+@app.post("/api/webhooks/99food")
+async def webhook_99food(request: Request, db: Session = Depends(get_db)):
+    """
+    Tomada de entrada para o 99Food.
+    Sincroniza o estoque e recebe novos pedidos do app da 99.
+    """
+    try:
+        payload = await request.json()
+        print(f"🟡 [99Food] Novo evento recebido!")
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "erro", "detalhe": str(e)}
+
+@app.post("/api/webhooks/redes-sociais")
+async def webhook_social(request: Request):
+    """
+    Tomada de entrada para a API Oficial do Meta (Facebook/Instagram).
+    Quando um cliente mandar um Direct no Instagram, a mensagem cai aqui
+    e é redirecionada para a nossa função 'responder_com_ia()'.
+    """
+    try:
+        payload = await request.json()
+        print(f"🟣 [Meta] Nova mensagem via Direct/Messenger recebida.")
+        # Aqui você extrai o texto do JSON do Meta e chama a IA
+        # resposta = responder_com_ia(texto_do_cliente, id_do_cliente)
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "erro", "detalhe": str(e)}
+            
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer (Modo Notificações Automatizadas)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
