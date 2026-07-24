@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Admissão | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 text-slate-800 pb-20">
+
+    <header class="bg-slate-900 h-20 flex items-center justify-center border-b-4 border-brand-500 shadow-lg sticky top-0 z-10">
+        <h1 class="text-white font-black text-xl tracking-tight uppercase flex items-center"><i class="ph-fill ph-identification-card text-brand-500 text-3xl mr-3"></i> Portal do Colaborador</h1>
+    </header>
+
+    <main class="max-w-2xl mx-auto px-5 py-8">
+        <div class="bg-blue-50 border border-blue-200 p-5 rounded-2xl mb-8">
+            <h2 class="text-blue-800 font-black uppercase tracking-widest text-sm mb-2">Bem-vindo(a) à equipe! 🎉</h2>
+            <p class="text-xs text-blue-600 font-medium leading-relaxed">Para finalizarmos a sua admissão e liberarmos o seu crachá e relógio de ponto, preencha as informações abaixo e anexe uma foto do seu rosto. Seus dados estão protegidos por lei.</p>
+        </div>
+
+        <form id="form-admissao" onsubmit="enviarAdmissao(event)" class="space-y-6">
+            
+            <!-- BLOCO 1: IDENTIFICAÇÃO -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-brand-500 pl-3">1. Identificação</h3>
+                <div class="space-y-4">
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seu CPF (Usado pelo RH para te achar)</label><input type="text" id="adm-cpf" required placeholder="000.000.000-00" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-black text-slate-800 outline-none focus:border-brand-500"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Data de Nascimento</label><input type="date" id="adm-nasc" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"></div>
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Estado Civil</label><select id="adm-civil" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"><option value="Solteiro">Solteiro(a)</option><option value="Casado">Casado(a)</option><option value="Divorciado">Divorciado(a)</option></select></div>
+                    </div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Naturalidade (Cidade/Estado onde nasceu)</label><input type="text" id="adm-nat" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"></div>
+                </div>
+            </div>
+
+            <!-- BLOCO 2: DOCUMENTOS -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-slate-500 pl-3">2. Documentos Pessoais</h3>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">RG</label><input type="text" id="adm-rg" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"></div>
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">PIS / PASEP / NIS</label><input type="text" id="adm-pis" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Título de Eleitor</label><input type="text" id="adm-eleitor" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"></div>
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Reservista (Para Homens)</label><input type="text" id="adm-res" placeholder="Se aplicável" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"></div>
+                    </div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">CNH (Se a função exigir direção)</label><input type="text" id="adm-cnh" placeholder="Categoria e Número" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"></div>
+                </div>
+            </div>
+
+            <!-- BLOCO 3: BENEFÍCIOS E DADOS BANCÁRIOS -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-green-500 pl-3">3. Contrato e Pagamento</h3>
+                <div class="space-y-4">
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Endereço Completo Atualizado</label><input type="text" id="adm-end" required placeholder="Rua, Número, Bairro, CEP" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Dados Bancários (Para Salário)</label><textarea id="adm-banco" required rows="2" placeholder="Banco, Agência, Conta e Tipo (Corrente/Poupança)" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none resize-none"></textarea></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Escolaridade</label><select id="adm-esc" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"><option>Ensino Médio</option><option>Ensino Superior</option><option>Fundamental</option></select></div>
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Filhos Menores de 14?</label><input type="number" id="adm-filhos" value="0" min="0" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none"></div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                        <label class="block text-[10px] font-bold text-green-700 uppercase mb-2"><i class="ph-fill ph-heartbeat mr-1"></i> Opção de Plano de Saúde / Odonto</label>
+                        <select id="adm-plano" class="w-full px-4 py-3 rounded-xl border border-green-200 bg-white font-bold text-slate-700 outline-none"><option value="Nenhum">Carregando planos da empresa...</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOCO 4: FOTO E LGPD -->
+            <div class="bg-slate-900 p-6 rounded-2xl shadow-xl text-white">
+                <h3 class="text-sm font-black uppercase tracking-widest mb-4 border-l-4 border-brand-500 pl-3">4. Foto de Crachá e Aceite Legal</h3>
+                
+                <div class="mb-6">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Tire uma foto sua (Estilo 3x4 de Rosto)</label>
+                    <input type="file" accept="image/*" capture="user" onchange="processarFoto(event)" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-brand-500 file:text-white hover:file:bg-brand-600 cursor-pointer">
+                    <input type="hidden" id="adm-foto-base64">
+                </div>
+
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-6">
+                    <p class="text-[10px] text-slate-400 leading-relaxed font-medium mb-3 text-justify"><strong>Termo de Consentimento - LGPD:</strong> De acordo com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), consinto livremente com a coleta, armazenamento e tratamento dos meus dados pessoais sensíveis informados neste formulário pela Art's Burguer, estritamente para fins de registro de empregado, folha de pagamento, cumprimento de obrigações fiscais e concessão de benefícios.</p>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" id="adm-lgpd" required class="w-6 h-6 rounded border-slate-500 text-brand-500 focus:ring-brand-500 bg-slate-900">
+                        <span class="font-bold text-sm text-brand-400">Li e aceito os termos da LGPD.</span>
+                    </label>
+                </div>
+
+                <button type="submit" id="btn-submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-xl shadow-[0_10px_20px_rgba(255,71,87,0.3)] transition-all active:scale-95 text-lg uppercase tracking-widest flex items-center justify-center">
+                    Finalizar Admissão <i class="ph-bold ph-check-circle ml-3 text-2xl"></i>
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/gestao/configuracoes');
+                const conf = await res.json();
+                const planos = (conf.planos_saude_opcoes || "Nenhum").split(',');
+                document.getElementById('adm-plano').innerHTML = planos.map(p => `<option value="${p.trim()}">${p.trim()}</option>`).join('');
+            } catch(e){}
+        });
+
+        function processarFoto(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onloadend = () => { document.getElementById('adm-foto-base64').value = reader.result; };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function enviarAdmissao(e) {
+            e.preventDefault();
+            if(!document.getElementById('adm-lgpd').checked) return alert("É obrigatório aceitar a LGPD.");
+            
+            const btn = document.getElementById('btn-submit');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true;
+
+            const payload = {
+                cpf: document.getElementById('adm-cpf').value.trim(),
+                data_nascimento: document.getElementById('adm-nasc').value,
+                naturalidade: document.getElementById('adm-nat').value,
+                estado_civil: document.getElementById('adm-civil').value,
+                rg: document.getElementById('adm-rg').value,
+                pis_pasep: document.getElementById('adm-pis').value,
+                titulo_eleitor: document.getElementById('adm-eleitor').value,
+                reservista: document.getElementById('adm-res').value,
+                endereco_completo: document.getElementById('adm-end').value,
+                dados_bancarios: document.getElementById('adm-banco').value,
+                escolaridade: document.getElementById('adm-esc').value,
+                qtd_filhos_menores: parseInt(document.getElementById('adm-filhos').value) || 0,
+                cnh: document.getElementById('adm-cnh').value,
+                plano_saude_escolhido: document.getElementById('adm-plano').value,
+                aceite_lgpd: document.getElementById('adm-lgpd').checked,
+                foto_3x4: document.getElementById('adm-foto-base64').value || ""
+            };
+
+            try {
+                const res = await fetch('/api/gestao/funcionarios/admissao', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(res.ok) {
+                    document.getElementById('form-admissao').innerHTML = `<div class="text-center py-20"><i class="ph-fill ph-check-circle text-7xl text-brand-500 mb-4 animate-bounce"></i><h2 class="text-2xl font-black text-slate-800">Tudo Pronto!</h2><p class="text-slate-500 mt-2">Sua admissão foi concluída. Fale com seu gestor.</p></div>`;
+                } else { alert("❌ Erro: " + data.detail); }
+            } catch(err) { alert("Falha na rede."); }
+            finally { btn.innerHTML = 'Finalizar Admissão'; btn.disabled = false; }
+        }
+    </script>
+</body>
+</html>
