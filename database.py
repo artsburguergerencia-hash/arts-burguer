@@ -1,173 +1,200 @@
-from typing import List
-from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, text, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, Date, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-from pydantic import BaseModel, Field
+from datetime import datetime
+import os
 
-# 1. CONFIGURAÇÃO DO BANCO DE DADOS
-DATABASE_URL = "postgresql://neondb_owner:npg_6tXbeNrB4OAL@ep-falling-frog-acuu6b2h-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-engine = create_engine(DATABASE_URL)
+# Preparação Nível Cloud: Usa Postgres se estiver na nuvem, ou SQLite V2 na sua máquina
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./banco_v2.db")
+
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# 2. MODELOS DO BANCO DE DADOS
+# === CONFIGURAÇÕES DA LOJA (Tudo Gerenciável pelo Painel) ===
+class ConfiguracaoLojaModel(Base):
+    __tablename__ = "configuracoes_loja"
+    id = Column(Integer, primary_key=True, index=True)
+    nome_empresa = Column(String, default="Art's Burguer")
+    cnpj = Column(String, default="")
+    endereco = Column(String, default="")
+    telefone = Column(String, default="")
+    logo_url = Column(String, default="https://via.placeholder.com/150")
+    aceita_delivery = Column(Boolean, default=True)
+    aceita_retirada = Column(Boolean, default=True)
+    aceite_automatico = Column(Boolean, default=False)
+    tempo_preparo = Column(Integer, default=30)
+    formas_pagamento = Column(String, default="Pix,Dinheiro,Cartão")
+    sistema_fidelidade = Column(String, default="CASHBACK") # Opções: PONTOS, CASHBACK, DESATIVADO
+    categorias_cardapio = Column(String, default="Burger Artesanal,Bebidas,Porções & Fritas,Sobremesas")
+    categorias_fornecedor = Column(String, default="Carnes,Hortifruti,Bebidas,Embalagens,Equipamentos")
+
+# === RECURSOS HUMANOS E ACESSOS ===
+class Cargo(Base):
+    __tablename__ = "cargos"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, unique=True, index=True)
+
+class FuncionarioModel(Base):
+    __tablename__ = "funcionarios"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String)
+    usuario = Column(String, unique=True, index=True)
+    senha_hash = Column(String)
+    cargo_id = Column(Integer, ForeignKey("cargos.id"))
+    foto = Column(String, default="")
+
+class InfoRHModel(Base):
+    __tablename__ = "info_rh"
+    id = Column(Integer, primary_key=True, index=True)
+    funcionario_id = Column(Integer, unique=True)
+    telefone = Column(String, default="")
+    salario = Column(Float, default=0.0)
+    escala = Column(String, default="")
+    rg = Column(String, default="") # NOVO
+    cpf = Column(String, default="") # NOVO
+    pis_pasep = Column(String, default="") # NOVO
+
+class PontoModel(Base):
+    __tablename__ = "pontos_rh"
+    id = Column(Integer, primary_key=True, index=True)
+    funcionario_id = Column(Integer)
+    data = Column(String) 
+    entrada = Column(String, default="")
+    saida = Column(String, default="")
+
+# === CLIENTES E PEDIDOS ===
+class ClienteModel(Base):
+    __tablename__ = "clientes"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String)
+    telefone = Column(String, unique=True, index=True)
+    senha_hash = Column(String, nullable=True)
+    cpf = Column(String, default="")
+    data_nascimento = Column(String, default="")
+    cep = Column(String, default="")
+    logradouro = Column(String, default="")
+    numero = Column(String, default="")
+    bairro = Column(String, default="")
+    complemento = Column(String, default="")
+    pontos_fidelidade = Column(Integer, default=0)
+    saldo_cashback = Column(Float, default=0.0)
+    bloqueado = Column(Boolean, default=False)
+    pedidos = relationship("PedidoModel", back_populates="cliente")
+
+class PedidoModel(Base):
+    __tablename__ = "pedidos"
+    id = Column(Integer, primary_key=True, index=True)
+    senha_diaria = Column(Integer, default=1) # A SENHA QUE RESETA TODO DIA NA TV DO MCDONALDS
+    data_pedido = Column(Date, default=datetime.utcnow().date) # Registra o dia exato
+    origem = Column(String, default="SITE") # SITE, PDV, IFOOD, 99FOOD
+    cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=True)
+    total_pago = Column(Float)
+    forma_pagamento = Column(String)
+    status = Column(String, default="RECEBIDO")
+    tipo = Column(String, default="DELIVERY") # DELIVERY, RETIRADA, BALCAO
+    data_criacao = Column(DateTime, default=datetime.utcnow)
+    cliente = relationship("ClienteModel", back_populates="pedidos")
+    itens = relationship("ItemPedidoModel", backref="pedido", cascade="all, delete-orphan")
+
+class ItemPedidoModel(Base):
+    __tablename__ = "itens_pedido"
+    id = Column(Integer, primary_key=True, index=True)
+    pedido_id = Column(Integer, ForeignKey("pedidos.id"))
+    produto_id = Column(Integer, ForeignKey("produtos.id"))
+    quantidade = Column(Integer)
+    observacao = Column(String, default="")
+
+# === CARDÁPIO E ESTOQUE ===
 class InsumoModel(Base):
     __tablename__ = "insumos"
     id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, unique=True, nullable=False, index=True)
-    unidade_medida = Column(String, nullable=False)
+    nome = Column(String, index=True)
+    unidade_medida = Column(String)
     quantidade_atual = Column(Float, default=0.0)
     quantidade_minima = Column(Float, default=0.0)
-    custo_unitario = Column(Float, nullable=False)
-    fichas_tecnicas = relationship("FichaTecnicaModel", back_populates="insumo")
+    custo_unitario = Column(Float, default=0.0)
+
+class ProdutoModel(Base):
+    __tablename__ = "produtos"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, index=True)
+    descricao = Column(String, default="")
+    preco_venda = Column(Float)
+    categoria = Column(String)
+    imagem_url = Column(String, default="")
 
 class FichaTecnicaModel(Base):
     __tablename__ = "fichas_tecnicas"
     id = Column(Integer, primary_key=True, index=True)
-    produto_id = Column(Integer, ForeignKey("produtos.id", ondelete="CASCADE"), nullable=False)
-    insumo_id = Column(Integer, ForeignKey("insumos.id", ondelete="RESTRICT"), nullable=False)
-    quantidade_necessaria = Column(Float, nullable=False)
-    produto = relationship("ProdutoModel", back_populates="itens_ficha")
-    insumo = relationship("InsumoModel", back_populates="fichas_tecnicas")
-
-class Cargo(Base):
-    __tablename__ = "cargos"
-    id = Column(Integer, primary_key=True)
-    nome = Column(String, unique=True)
-
-class FuncionarioModel(Base):
-    __tablename__ = "funcionarios"
-    id = Column(Integer, primary_key=True)
-    nome = Column(String, nullable=False)
-    usuario = Column(String, unique=True, nullable=False)
-    senha_hash = Column(String, nullable=False)
-    cargo_id = Column(Integer, ForeignKey("cargos.id"))
-    foto = Column(String, nullable=True)
-
-class ContaFinanceira(Base):
-    __tablename__ = "contas_financeiras"
-    id = Column(Integer, primary_key=True)
-    descricao = Column(String)
-    valor = Column(Float)
-    tipo = Column(String)
-    data_vencimento = Column(String)
-
-class MensagemWhatsAppModel(Base):
-    __tablename__ = "mensagens_whatsapp"
-    id = Column(Integer, primary_key=True, index=True)
-    # Guardamos apenas o telefone para evitar erros de importação circular
-    telefone = Column(String, index=True)
-    mensagem = Column(String)
-    direcao = Column(String) # "ENVIADA" ou "RECEBIDA"
-    data_hora = Column(DateTime, default=datetime.utcnow)
-    lida = Column(Boolean, default=False)
-
-# 3. VALIDAÇÃO DE DADOS (Pydantic)
-class ItemFichaInput(BaseModel):
-    insumo_id: int
-    quantidade_necessaria: float = Field(..., gt=0)
-
-class ProdutoCreateInput(BaseModel):
-    nome: str
-    preco_venda: float = Field(..., gt=0)
-    categoria: str
-    itens_ficha: List[ItemFichaInput]
-
-# --- ADICIONE ESTAS NOVAS TABELAS EM database.py ---
+    produto_id = Column(Integer, ForeignKey("produtos.id"))
+    insumo_id = Column(Integer, ForeignKey("insumos.id"))
+    quantidade_necessaria = Column(Float)
 
 class GrupoComplementoModel(Base):
-    """Ex: 'Escolha sua Bebida', 'Escolha seu Molho'"""
-    __tablename__ = "grupos_complemento"
+    __tablename__ = "grupos_complementos"
     id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, nullable=False)
+    produto_id = Column(Integer, ForeignKey("produtos.id"))
+    nome = Column(String)
     obrigatorio = Column(Boolean, default=False)
     minimo_opcoes = Column(Integer, default=0)
     maximo_opcoes = Column(Integer, default=1)
-    produto_id = Column(Integer, ForeignKey("produtos.id")) # O lanche a que pertence
-    
-    itens = relationship("ItemComplementoModel", back_populates="grupo", cascade="all, delete-orphan")
+    itens = relationship("ItemComplementoModel", backref="grupo", cascade="all, delete-orphan")
 
 class ItemComplementoModel(Base):
-    """Ex: 'Coca-Cola 350ml', 'Molho Cheddar'"""
-    __tablename__ = "itens_complemento"
+    __tablename__ = "itens_complementos"
     id = Column(Integer, primary_key=True, index=True)
-    grupo_id = Column(Integer, ForeignKey("grupos_complemento.id"))
-    nome = Column(String, nullable=False)
+    grupo_id = Column(Integer, ForeignKey("grupos_complementos.id"))
+    nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
-    
-    grupo = relationship("GrupoComplementoModel", back_populates="itens")
 
-# --- ATUALIZE O SEU ProdutoModel EM database.py ---
-class ProdutoModel(Base):
-    __tablename__ = "produtos"
+# === FINANCEIRO ===
+class FornecedorModel(Base):
+    __tablename__ = "fornecedores"
     id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, unique=True, nullable=False, index=True)
-    descricao = Column(String, nullable=True) # Adicionado para os ingredientes
-    preco_venda = Column(Float, nullable=False)
-    categoria = Column(String, nullable=False)
-    imagem_url = Column(String, nullable=True) # 👈 Adicionado para a foto do lanche
-    ativo = Column(Integer, default=1)
-    
-    itens_ficha = relationship("FichaTecnicaModel", back_populates="produto", cascade="all, delete-orphan")
+    nome_fantasia = Column(String)
+    categoria = Column(String, default="Geral")
+    contato = Column(String, default="")
+    cnpj = Column(String, default="")
 
-# 4. FUNÇÕES DE NEGÓCIO
-def cadastrar_insumo(db, nome: str, unidade: str, qtd_inicial: float, qtd_min: float, custo: float):
-    insumo = InsumoModel(nome=nome, unidade_medida=unidade, quantidade_atual=qtd_inicial, quantidade_minima=qtd_min, custo_unitario=custo)
-    db.add(insumo)
-    db.commit()
-    db.refresh(insumo)
-    return insumo
+class ContaPagarModel(Base):
+    __tablename__ = "contas_pagar"
+    id = Column(Integer, primary_key=True, index=True)
+    fornecedor_id = Column(Integer, ForeignKey("fornecedores.id"), nullable=True)
+    descricao = Column(String)
+    valor = Column(Float)
+    data_vencimento = Column(Date)
+    tipo_despesa = Column(String, default="Empresa")
+    status = Column(String, default="PENDENTE")
 
-def criar_produto_com_ficha(db, dados_produto: ProdutoCreateInput):
-    novo_produto = ProdutoModel(nome=dados_produto.nome, preco_venda=dados_produto.preco_venda, categoria=dados_produto.categoria)
-    db.add(novo_produto)
-    db.flush()
-    for item in dados_produto.itens_ficha:
-        db.add(FichaTecnicaModel(produto_id=novo_produto.id, insumo_id=item.insumo_id, quantidade_necessaria=item.quantidade_necessaria))
-    db.commit()
-    db.refresh(novo_produto)
-    return novo_produto
-
-def processar_baixa_estoque(db, produto_id: int, quantidade_vendida: int = 1):
-    produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
-    if not produto: return False
-    for item in produto.itens_ficha:
-        item.insumo.quantidade_atual -= (item.quantidade_necessaria * quantidade_vendida)
-    db.commit()
-    return True
-
+# === INICIALIZADORES DO SISTEMA ===
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
-    
-    # --- AUTO-PREENCHIMENTO E ATUALIZAÇÃO ---
     db = SessionLocal()
-    try:
-        # ATUALIZAÇÕES DO SISTEMA (Forçando a criação das colunas novas no Neon DB)
-        from sqlalchemy import text
-        db.execute(text("ALTER TABLE funcionarios ADD COLUMN IF NOT EXISTS foto VARCHAR"))
-        db.execute(text("ALTER TABLE contas_pagar ADD COLUMN IF NOT EXISTS tipo_despesa VARCHAR DEFAULT 'Empresa'"))
+    
+    # Cria o Administrador Supremo se não existir
+    if not db.query(FuncionarioModel).first():
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+        admin = FuncionarioModel(nome="Admin Supremo", usuario="admin", senha_hash=pwd_context.hash("admin123"), cargo_id=1)
+        db.add(admin)
         
-        # Novas colunas da Fase 1 (Cardápio e Clientes)
-        db.execute(text("ALTER TABLE produtos ADD COLUMN IF NOT EXISTS descricao VARCHAR"))
-        db.execute(text("ALTER TABLE produtos ADD COLUMN IF NOT EXISTS imagem_url VARCHAR"))
-        
-        db.execute(text("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS senha_hash VARCHAR"))
-        db.execute(text("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS cpf VARCHAR"))
-        db.execute(text("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS data_nascimento VARCHAR"))
+        # Injeta as configurações default do ERP
+        config = ConfiguracaoLojaModel()
+        db.add(config)
         db.commit()
+    db.close()
 
-        # Injetando cargos padrão no banco de dados se estiver vazio
-        if db.query(Cargo).count() == 0:
-            print("⚙️ Injetando cargos padrão no banco de dados...")
-            db.add_all([
-                Cargo(id=1, nome="Administrador"),
-                Cargo(id=2, nome="Caixa"),
-                Cargo(id=3, nome="Cozinha"),
-                Cargo(id=4, nome="Motoboy")
-            ])
-            db.commit()
-    except Exception as e:
-        db.rollback()
-        print(f"Aviso no banco de dados (As colunas já devem existir): {e}")
-    finally:
-        db.close()
+def cadastrar_insumo(db, nome, unidade, qtd_inicial, qtd_min, custo):
+    novo = InsumoModel(nome=nome, unidade_medida=unidade, quantidade_atual=qtd_inicial, quantidade_minima=qtd_min, custo_unitario=custo)
+    db.add(novo)
+    db.commit()
+    db.refresh(novo)
+    return novo
+
+def processar_baixa_estoque(db, produto_id, quantidade_vendida):
+    fichas = db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).all()
+    for f in fichas:
+        insumo = db.query(InsumoModel).filter(InsumoModel.id == f.insumo_id).first()
+        if insumo:
+            insumo.quantidade_atual -= (f.quantidade_necessaria * quantidade_vendida)
+    db.commit()
