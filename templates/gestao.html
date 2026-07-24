@@ -48,31 +48,47 @@
                 <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold">ERP System</p>
             </div>
         </div>
-        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            <button onclick="abrirAba('aba-relatorios', this)" class="menu-item active w-full flex items-center bg-brand-500 text-white p-3 rounded-xl transition-all mb-2">
-                <i class="ph ph-chart-line-up text-xl mr-3"></i> Relatórios de Lucro
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto no-scrollbar">
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-4">Configurações & ERP</p>
+            <button onclick="abrirAba('aba-relatorios', this)" class="menu-item active w-full flex items-center bg-brand-500 text-white p-3 rounded-xl transition-all">
+                <i class="ph ph-chart-line-up text-xl mr-3"></i> Relatórios & Painel
             </button>
-            <button onclick="abrirAba('aba-cardapio', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
-                <i class="ph ph-list-magnifying-glass text-xl mr-3"></i> Gestão de Cardápio
+            <button onclick="abrirAba('aba-cardapio', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+                <i class="ph ph-list-magnifying-glass text-xl mr-3"></i> Produtos & Ficha
             </button>
-            <button onclick="abrirAba('aba-estoque', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
-                <i class="ph ph-package text-xl mr-3"></i> Entrada de Estoque
+            <button onclick="abrirAba('aba-estoque', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+                <i class="ph ph-package text-xl mr-3"></i> Estoque Mínimo
             </button>
-            <button onclick="abrirAba('aba-fornecedores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
+            <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+                <i class="ph ph-invoice text-xl mr-3"></i> Financeiro
+            </button>
+            <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+                <i class="ph ph-users text-xl mr-3"></i> Equipe & Ponto
+            </button>
+            <button onclick="abrirAba('aba-clientes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+                <i class="ph ph-users-three text-xl mr-3"></i> Fidelidade
+            </button>
+            <button onclick="abrirAba('aba-fornecedores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-truck text-xl mr-3"></i> Fornecedores
             </button>
-            <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
-                <i class="ph ph-invoice text-xl mr-3"></i> Contas a Pagar
+            <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+                <i class="ph ph-gear text-xl mr-3"></i> Setup da Loja
             </button>
-            <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
-                <i class="ph ph-users text-xl mr-3"></i> Colaboradores & RH
-            </button>
-            <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
-                <i class="ph ph-gear text-xl mr-3"></i> Configurações da Loja
-            </button>
-            <button onclick="abrirAba('aba-clientes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all mb-2">
-                <i class="ph ph-users-three text-xl mr-3"></i> Clientes & Fidelidade
-            </button>
+
+            <!-- AQUI ESTÃO OS ATALHOS PARA O RESTO DO SISTEMA -->
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-800 pt-4">Operação (Ao Vivo)</p>
+            <a href="/pdv" target="_blank" class="w-full flex items-center text-emerald-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+                <i class="ph-fill ph-monitor text-xl mr-3"></i> PDV (Caixa) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
+            </a>
+            <a href="/kds" target="_blank" class="w-full flex items-center text-red-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+                <i class="ph-fill ph-cooking-pot text-xl mr-3"></i> Monitor Cozinha <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
+            </a>
+            <a href="/logistica" target="_blank" class="w-full flex items-center text-purple-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+                <i class="ph-fill ph-moped text-xl mr-3"></i> Despacho/Motoboys <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
+            </a>
+            <a href="/" target="_blank" class="w-full flex items-center text-blue-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8">
+                <i class="ph-fill ph-storefront text-xl mr-3"></i> Ver Cardápio Online <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
+            </a>
         </nav>
         
         <div class="p-6 border-t border-slate-800 shrink-0">
