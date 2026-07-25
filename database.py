@@ -3,7 +3,6 @@ from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import datetime
 import os
 
-# Versão atualizada do banco
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./banco_v5_master_rh.db")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
@@ -13,6 +12,7 @@ Base = declarative_base()
 # === CONFIGURAÇÕES DA LOJA ===
 class ConfiguracaoLojaModel(Base):
     __tablename__ = "configuracoes_loja"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     nome_empresa = Column(String, default="Art's Burguer")
     cnpj = Column(String, default="")
@@ -32,6 +32,7 @@ class ConfiguracaoLojaModel(Base):
 # === CARGOS DINÂMICOS ===
 class Cargo(Base):
     __tablename__ = "cargos"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, unique=True, index=True)
     permissoes = Column(String, default="basico") 
@@ -39,6 +40,7 @@ class Cargo(Base):
 # === FUNCIONÁRIOS ===
 class FuncionarioModel(Base):
     __tablename__ = "funcionarios"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String)
     usuario = Column(String, unique=True, index=True)
@@ -50,6 +52,7 @@ class FuncionarioModel(Base):
 # === DEPARTAMENTO PESSOAL (DOSSIÊ E BENEFÍCIOS) ===
 class InfoRHModel(Base):
     __tablename__ = "info_rh"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, unique=True)
     status_admissao = Column(String, default="PENDENTE_PREENCHIMENTO") 
@@ -58,7 +61,6 @@ class InfoRHModel(Base):
     telefone = Column(String, default="")
     salario = Column(Float, default=0.0)
     
-    # Módulo Financeiro Configurável
     recebe_comissao = Column(Boolean, default=False)
     tipo_comissao = Column(String, default="PERCENTUAL") 
     valor_comissao = Column(Float, default=0.0) 
@@ -69,7 +71,6 @@ class InfoRHModel(Base):
     gorjetas_acumuladas = Column(Float, default=0.0)
     escala_matriz_json = Column(String, default="{}") 
     
-    # Documentos
     data_nascimento = Column(String, default="")
     naturalidade = Column(String, default="")
     estado_civil = Column(String, default="")
@@ -89,6 +90,7 @@ class InfoRHModel(Base):
 # === PONTO E OCORRÊNCIAS ===
 class PontoModel(Base):
     __tablename__ = "pontos_rh"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer)
     data = Column(String) 
@@ -99,6 +101,7 @@ class PontoModel(Base):
 
 class OcorrenciaRHModel(Base):
     __tablename__ = "ocorrencias_rh"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, ForeignKey("funcionarios.id"))
     data_registro = Column(DateTime, default=datetime.utcnow)
@@ -111,6 +114,7 @@ class OcorrenciaRHModel(Base):
 
 class SolicitacaoFeriasModel(Base):
     __tablename__ = "ferias_rh"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, ForeignKey("funcionarios.id"))
     data_solicitacao = Column(DateTime, default=datetime.utcnow)
@@ -122,6 +126,7 @@ class SolicitacaoFeriasModel(Base):
 # === CLIENTES E PEDIDOS ===
 class ClienteModel(Base):
     __tablename__ = "clientes"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String)
     telefone = Column(String, unique=True, index=True)
@@ -140,6 +145,7 @@ class ClienteModel(Base):
 
 class PedidoModel(Base):
     __tablename__ = "pedidos"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     senha_diaria = Column(Integer, default=1)
     data_pedido = Column(Date, default=datetime.utcnow().date)
@@ -155,6 +161,7 @@ class PedidoModel(Base):
 
 class ItemPedidoModel(Base):
     __tablename__ = "itens_pedido"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     pedido_id = Column(Integer, ForeignKey("pedidos.id"))
     produto_id = Column(Integer, ForeignKey("produtos.id"))
@@ -164,6 +171,7 @@ class ItemPedidoModel(Base):
 # === CARDÁPIO E ESTOQUE ===
 class InsumoModel(Base):
     __tablename__ = "insumos"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, index=True)
     unidade_medida = Column(String)
@@ -173,6 +181,7 @@ class InsumoModel(Base):
 
 class ProdutoModel(Base):
     __tablename__ = "produtos"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, index=True)
     descricao = Column(String, default="")
@@ -182,6 +191,7 @@ class ProdutoModel(Base):
 
 class FichaTecnicaModel(Base):
     __tablename__ = "fichas_tecnicas"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     produto_id = Column(Integer, ForeignKey("produtos.id"))
     insumo_id = Column(Integer, ForeignKey("insumos.id"))
@@ -189,6 +199,7 @@ class FichaTecnicaModel(Base):
 
 class GrupoComplementoModel(Base):
     __tablename__ = "grupos_complementos"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     produto_id = Column(Integer, ForeignKey("produtos.id"))
     nome = Column(String)
@@ -199,6 +210,7 @@ class GrupoComplementoModel(Base):
 
 class ItemComplementoModel(Base):
     __tablename__ = "itens_complementos"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     grupo_id = Column(Integer, ForeignKey("grupos_complementos.id"))
     nome = Column(String)
@@ -207,6 +219,7 @@ class ItemComplementoModel(Base):
 # === FINANCEIRO ===
 class FornecedorModel(Base):
     __tablename__ = "fornecedores"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     nome_fantasia = Column(String)
     categoria = Column(String, default="Geral")
@@ -215,6 +228,7 @@ class FornecedorModel(Base):
 
 class ContaPagarModel(Base):
     __tablename__ = "contas_pagar"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     fornecedor_id = Column(Integer, ForeignKey("fornecedores.id"), nullable=True)
     descricao = Column(String)
@@ -227,7 +241,6 @@ def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
-    # 🚨 SCRIPT DE AUTO-MIGRAÇÃO (Isso previne o Crash Status 1 no Render) 🚨
     colunas_novas = [
         "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico'",
         "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE",
@@ -243,13 +256,12 @@ def inicializar_banco():
         "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0",
         "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto'"
     ]
-    
     for sql in colunas_novas:
         try:
             db.execute(text(sql))
             db.commit()
         except Exception:
-            db.rollback() # Se a coluna já existe, ele apenas ignora e segue a vida!
+            db.rollback() 
 
     try:
         cargo_admin = db.query(Cargo).filter(Cargo.nome == "Administrador").first()
@@ -267,7 +279,7 @@ def inicializar_banco():
             db.add(config)
             db.commit()
     except Exception as e:
-        print(f"Erro na criação do admin inicial: {e}")
+        print(f"Erro na criação do admin: {e}")
         db.rollback()
         
     db.close()
