@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- BLOQUEADOR DE CACHE MÁXIMO (Obriga a baixar a tela nova) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <title>Meu RH | Art's Burguer</title>
     
     <!-- Fontes e Ícones -->
@@ -53,7 +59,9 @@
                 <i class="ph-fill ph-identification-badge text-5xl"></i>
             </div>
             
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Portal do Colaborador</h2>
+            <!-- SELO V5.1 PARA VOCÊ TER CERTEZA QUE ATUALIZOU -->
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Portal RH <span class="text-[10px] bg-red-500 text-white px-2 py-1 rounded-lg align-middle tracking-widest shadow-sm">V5.1</span></h2>
+            
             <p class="text-xs text-slate-500 font-medium mb-8 leading-relaxed">
                 Digite seu Usuário e Senha corporativos (fornecidos pelo RH) para acessar seus dados.
             </p>
@@ -612,9 +620,11 @@
             let dInicio, dFim;
 
             if (tipoPedido === "FOLGA") {
+                // Se for folga, a data final é a mesma data de início (1 dia só)
                 dInicio = document.getElementById('fe-dia-unico').value;
                 dFim = document.getElementById('fe-dia-unico').value;
             } else {
+                // Se for férias, captura o período completo
                 dInicio = document.getElementById('fe-inicio').value;
                 dFim = document.getElementById('fe-fim').value;
             }
