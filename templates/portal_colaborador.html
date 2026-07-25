@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Colaborador | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 text-slate-800 pb-20">
+
+    <header class="bg-blue-600 h-20 flex items-center justify-center border-b-4 border-blue-800 shadow-lg sticky top-0 z-10">
+        <h1 class="text-white font-black text-xl tracking-tight uppercase flex items-center"><i class="ph-fill ph-user-circle text-blue-200 text-3xl mr-3"></i> Meu RH</h1>
+    </header>
+
+    <main class="max-w-md mx-auto px-5 py-8 space-y-6">
+        
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Relógio de Ponto</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="baterPonto('entrada')" class="bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-xl shadow-lg transition-colors"><i class="ph-bold ph-sign-in text-xl block mb-1"></i> Entrada</button>
+                <button onclick="baterPonto('saida')" class="bg-amber-500 hover:bg-amber-600 text-white font-black py-4 rounded-xl shadow-lg transition-colors"><i class="ph-bold ph-sign-out text-xl block mb-1"></i> Saída</button>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-blue-500 pl-3">Holerite e Ganhos</h3>
+            <div class="flex space-x-3 mb-4">
+                <input type="month" id="mes-holerite" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none">
+                <button onclick="buscarHolerite()" class="bg-blue-600 text-white px-5 rounded-xl font-bold">Ver</button>
+            </div>
+            <div id="resultado-holerite" class="hidden bg-slate-900 text-white p-5 rounded-xl mt-4">
+                <p class="text-center font-bold text-slate-400 text-xs uppercase mb-2">Líquido a Receber</p>
+                <h2 class="text-4xl font-black text-center text-green-400 mb-4" id="hol-liquido">R$ 0,00</h2>
+                <div class="text-xs space-y-2 border-t border-slate-700 pt-4 text-slate-300">
+                    <div class="flex justify-between"><span>Base + Benefícios + Comissões:</span><span id="hol-proventos" class="font-bold text-white">R$ 0,00</span></div>
+                    <div class="flex justify-between"><span>Faltas e Atrasos:</span><span id="hol-descontos" class="font-bold text-red-400">R$ 0,00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-amber-500 pl-3">Atestados e Férias</h3>
+            <form id="form-ocorrencia" onsubmit="enviarOcorrencia(event)" class="space-y-4">
+                <select id="oc-tipo" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none">
+                    <option value="ATESTADO">Enviar Atestado Médico</option>
+                    <option value="SAIDA_BANCO">Aviso de Saída (Banco/Pessoal)</option>
+                </select>
+                <input type="date" id="oc-data" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none">
+                <input type="text" id="oc-motivo" required placeholder="Motivo / Justificativa" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none">
+                <input type="text" id="oc-anexo" placeholder="Link da Foto do Atestado (Drive)" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium outline-none">
+                <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg">Enviar para o RH</button>
+            </form>
+        </div>
+
+    </main>
+
+    <script>
+        const FUNC_ID = 2; // Substituir pelo ID dinâmico do login do funcionário
+
+        async function baterPonto(tipo) {
+            try {
+                const res = await fetch('/api/gestao/ponto', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ funcionario_id: FUNC_ID, tipo: tipo }) });
+                const data = await res.json();
+                alert(data.mensagem || data.detail);
+            } catch(e) { alert("Erro de rede."); }
+        }
+
+        async function buscarHolerite() {
+            const mes = document.getElementById('mes-holerite').value;
+            if(!mes) return alert("Selecione o mês.");
+            try {
+                const res = await fetch(`/api/gestao/rh/colaborador/${FUNC_ID}/holerite/${mes}`);
+                const data = await res.json();
+                document.getElementById('hol-liquido').innerText = `R$ ${data.totais.liquido_a_pagar.toFixed(2)}`;
+                document.getElementById('hol-proventos').innerText = `R$ ${data.totais.total_bruto.toFixed(2)}`;
+                document.getElementById('hol-descontos').innerText = `R$ ${data.totais.total_descontos.toFixed(2)}`;
+                document.getElementById('resultado-holerite').classList.remove('hidden');
+            } catch(e) { alert("Holerite não disponível."); }
+        }
+
+        async function enviarOcorrencia(e) {
+            e.preventDefault();
+            const payload = {
+                funcionario_id: FUNC_ID, tipo: document.getElementById('oc-tipo').value,
+                data_ocorrencia: document.getElementById('oc-data').value, motivo: document.getElementById('oc-motivo').value,
+                horas_abonadas: 0, horas_descontadas: 0, anexo_url: document.getElementById('oc-anexo').value
+            };
+            const res = await fetch('/api/gestao/rh/ocorrencias', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            if(res.ok) { alert("✅ Enviado ao RH!"); document.getElementById('form-ocorrencia').reset(); }
+        }
+    </script>
+</body>
+</html>
