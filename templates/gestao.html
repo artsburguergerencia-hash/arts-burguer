@@ -828,8 +828,6 @@
                 senha: document.getElementById('rh-senha').value, 
                 cargo_id: parseInt(document.getElementById('rh-cargo').value), 
                 telefone: document.getElementById('rh-tel').value, 
-                salario: parseFloat(document.getElementById('rh-salario').value) || 0, 
-                escala: document.getElementById('rh-escala').value, 
                 cpf: document.getElementById('rh-cpf').value 
             };
             
@@ -856,7 +854,7 @@
                 const tbody = document.getElementById('lista-colaboradores');
                 
                 if (dados.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">Nenhum funcionário na base.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Nenhum funcionário na base.</td></tr>';
                     return;
                 }
 
@@ -881,7 +879,6 @@
                     <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors ${f.status_admissao==='DEMITIDO'?'opacity-50 grayscale':''}">
                         <td class="py-4 px-6"><p class="font-bold text-slate-800">${f.nome}</p><p class="text-[10px] font-mono text-slate-400 mt-1">MAT: ${f.matricula||'-'} <br> CPF: ${f.cpf||'-'}</p></td>
                         <td class="py-4 px-6">${badgeStatus}<p class="text-xs font-bold text-slate-600 mt-2"><i class="ph-fill ph-briefcase mr-1"></i> ${f.cargo}</p></td>
-                        <td class="py-4 px-6 text-center font-black text-green-600">R$ ${f.salario.toFixed(2).replace('.', ',')}</td>
                         <td class="py-4 px-6 text-center">${pontoHtml}</td>
                         <td class="py-4 px-6 text-center">${acaoAdmin}</td>
                     </tr>
