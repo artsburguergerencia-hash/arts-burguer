@@ -1,9 +1,9 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, Date, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, Date, DateTime, text
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import datetime
 import os
 
-# Atualizamos a versão do banco para v5, assim ele cria as novas tabelas automaticamente
+# Versão atualizada do banco
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./banco_v5_master_rh.db")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
@@ -29,13 +29,14 @@ class ConfiguracaoLojaModel(Base):
     categorias_fornecedor = Column(String, default="Carnes,Hortifruti,Bebidas,Embalagens")
     planos_saude_opcoes = Column(String, default="Nenhum,Amil Básico,Bradesco Odonto") 
 
-# === CARGOS DINÂMICOS E FUNCIONÁRIOS ===
+# === CARGOS DINÂMICOS ===
 class Cargo(Base):
     __tablename__ = "cargos"
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, unique=True, index=True)
-    permissoes = Column(String, default="basico") # NOVO: Para diferenciar acessos
+    permissoes = Column(String, default="basico") 
 
+# === FUNCIONÁRIOS ===
 class FuncionarioModel(Base):
     __tablename__ = "funcionarios"
     id = Column(Integer, primary_key=True, index=True)
@@ -46,33 +47,29 @@ class FuncionarioModel(Base):
     foto_3x4 = Column(String, default="") 
     matricula_cracha = Column(String, unique=True, index=True, nullable=True) 
 
-# === DEPARTAMENTO PESSOAL (DADOS E PACOTE DE BENEFÍCIOS) ===
+# === DEPARTAMENTO PESSOAL (DOSSIÊ E BENEFÍCIOS) ===
 class InfoRHModel(Base):
     __tablename__ = "info_rh"
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, unique=True)
-    
-    # Admissão e LGPD
     status_admissao = Column(String, default="PENDENTE_PREENCHIMENTO") 
     aceite_lgpd = Column(Boolean, default=False)
     data_aceite_lgpd = Column(String, default="")
-    
-    # Base Contratual
     telefone = Column(String, default="")
     salario = Column(Float, default=0.0)
     
-    # NOVAS REGRAS FINANCEIRAS E HOLERITE
+    # Módulo Financeiro Configurável
     recebe_comissao = Column(Boolean, default=False)
-    tipo_comissao = Column(String, default="PERCENTUAL") # PERCENTUAL ou FIXO
-    valor_comissao = Column(Float, default=0.0) # Valor % ou R$ Fixo
-    valor_vt = Column(Float, default=0.0) # Vale Transporte Fixo R$
-    valor_va = Column(Float, default=0.0) # Vale Alimentação Fixo R$
+    tipo_comissao = Column(String, default="PERCENTUAL") 
+    valor_comissao = Column(Float, default=0.0) 
+    valor_vt = Column(Float, default=0.0) 
+    valor_va = Column(Float, default=0.0) 
     diaria_motoboy = Column(Float, default=0.0)
     repasse_por_entrega = Column(Float, default=0.0)
     gorjetas_acumuladas = Column(Float, default=0.0)
-    escala_matriz_json = Column(String, default="{}") # Salva os horários detalhados
+    escala_matriz_json = Column(String, default="{}") 
     
-    # Dados Pessoais e Identificação
+    # Documentos
     data_nascimento = Column(String, default="")
     naturalidade = Column(String, default="")
     estado_civil = Column(String, default="")
@@ -82,8 +79,6 @@ class InfoRHModel(Base):
     titulo_eleitor = Column(String, default="")
     reservista = Column(String, default="")
     endereco_completo = Column(String, default="")
-    
-    # Contrato e Benefícios
     dados_bancarios = Column(String, default="") 
     escolaridade = Column(String, default="")
     qtd_filhos_menores = Column(Integer, default=0)
@@ -91,7 +86,7 @@ class InfoRHModel(Base):
     plano_saude_escolhido = Column(String, default="")
     link_pasta_documentos = Column(String, default="")
 
-# === PONTO E OCORRÊNCIAS (FALTAS E ATESTADOS) ===
+# === PONTO E OCORRÊNCIAS ===
 class PontoModel(Base):
     __tablename__ = "pontos_rh"
     id = Column(Integer, primary_key=True, index=True)
@@ -99,8 +94,8 @@ class PontoModel(Base):
     data = Column(String) 
     entrada = Column(String, default="")
     saida = Column(String, default="")
-    horas_trabalhadas = Column(Float, default=0.0) # NOVO
-    horas_extras = Column(Float, default=0.0) # NOVO
+    horas_trabalhadas = Column(Float, default=0.0) 
+    horas_extras = Column(Float, default=0.0) 
 
 class OcorrenciaRHModel(Base):
     __tablename__ = "ocorrencias_rh"
@@ -108,11 +103,11 @@ class OcorrenciaRHModel(Base):
     funcionario_id = Column(Integer, ForeignKey("funcionarios.id"))
     data_registro = Column(DateTime, default=datetime.utcnow)
     data_ocorrencia = Column(String)
-    tipo = Column(String) # ATESTADO, SAIDA_BANCO, ATRASO, FOLGA_MANUAL
+    tipo = Column(String) 
     motivo = Column(String, default="")
-    horas_abonadas = Column(Float, default=0.0) # Horas que a empresa perdoa/paga
-    horas_descontadas = Column(Float, default=0.0) # Horas descontadas do salário
-    anexo_url = Column(String, default="") # Link para o Atestado Médico
+    horas_abonadas = Column(Float, default=0.0) 
+    horas_descontadas = Column(Float, default=0.0) 
+    anexo_url = Column(String, default="") 
 
 class SolicitacaoFeriasModel(Base):
     __tablename__ = "ferias_rh"
@@ -121,7 +116,7 @@ class SolicitacaoFeriasModel(Base):
     data_solicitacao = Column(DateTime, default=datetime.utcnow)
     data_inicio = Column(String)
     data_fim = Column(String)
-    status = Column(String, default="PENDENTE") # PENDENTE, APROVADA, REJEITADA
+    status = Column(String, default="PENDENTE") 
     observacao_gestor = Column(String, default="")
 
 # === CLIENTES E PEDIDOS ===
@@ -232,23 +227,49 @@ def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
-    # Criamos o Cargo de Administrador primeiro para evitar erros
-    cargo_admin = db.query(Cargo).filter(Cargo.nome == "Administrador").first()
-    if not cargo_admin:
-        cargo_admin = Cargo(nome="Administrador", permissoes="total")
-        db.add(cargo_admin)
-        db.flush() # Salva no banco e já nos dá o ID
+    # 🚨 SCRIPT DE AUTO-MIGRAÇÃO (Isso previne o Crash Status 1 no Render) 🚨
+    colunas_novas = [
+        "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico'",
+        "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE info_rh ADD COLUMN tipo_comissao VARCHAR DEFAULT 'PERCENTUAL'",
+        "ALTER TABLE info_rh ADD COLUMN valor_comissao FLOAT DEFAULT 0.0",
+        "ALTER TABLE info_rh ADD COLUMN valor_vt FLOAT DEFAULT 0.0",
+        "ALTER TABLE info_rh ADD COLUMN valor_va FLOAT DEFAULT 0.0",
+        "ALTER TABLE info_rh ADD COLUMN diaria_motoboy FLOAT DEFAULT 0.0",
+        "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0",
+        "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0",
+        "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}'",
+        "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0",
+        "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0",
+        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto'"
+    ]
+    
+    for sql in colunas_novas:
+        try:
+            db.execute(text(sql))
+            db.commit()
+        except Exception:
+            db.rollback() # Se a coluna já existe, ele apenas ignora e segue a vida!
 
-    if not db.query(FuncionarioModel).first():
-        from passlib.context import CryptContext
-        pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+    try:
+        cargo_admin = db.query(Cargo).filter(Cargo.nome == "Administrador").first()
+        if not cargo_admin:
+            cargo_admin = Cargo(nome="Administrador", permissoes="total")
+            db.add(cargo_admin)
+            db.flush() 
+
+        if not db.query(FuncionarioModel).first():
+            from passlib.context import CryptContext
+            pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+            admin = FuncionarioModel(nome="Admin Supremo", usuario="admin", senha_hash=pwd_context.hash("admin123"), cargo_id=cargo_admin.id, matricula_cracha="0001")
+            db.add(admin)
+            config = ConfiguracaoLojaModel()
+            db.add(config)
+            db.commit()
+    except Exception as e:
+        print(f"Erro na criação do admin inicial: {e}")
+        db.rollback()
         
-        # Agora o admin oficial é atrelado ao cargo_id que acabamos de criar
-        admin = FuncionarioModel(nome="Admin Supremo", usuario="admin", senha_hash=pwd_context.hash("admin123"), cargo_id=cargo_admin.id, matricula_cracha="0001")
-        db.add(admin)
-        config = ConfiguracaoLojaModel()
-        db.add(config)
-        db.commit()
     db.close()
 
 def cadastrar_insumo(db, nome, unidade, qtd_inicial, qtd_min, custo):
