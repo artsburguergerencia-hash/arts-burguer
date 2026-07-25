@@ -172,32 +172,11 @@ class ItemComplementoModel(Base):
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
 
-class FornecedorModel(Base):
-    __tablename__ = "fornecedores"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    nome_fantasia = Column(String)
-    categoria = Column(String, default="Geral")
-    contato = Column(String, default="")
-    cnpj = Column(String, default="")
-
-class ContaPagarModel(Base):
-    __tablename__ = "contas_pagar"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    fornecedor_id = Column(Integer, ForeignKey("fornecedores.id"), nullable=True)
-    descricao = Column(String)
-    valor = Column(Float)
-    data_vencimento = Column(Date)
-    tipo_despesa = Column(String, default="Empresa")
-    status = Column(String, default="PENDENTE")
-
-# 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL (Cura todos os erros de UndefinedColumn) 🚨
+# 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL 🚨
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
-    # Esta lista agora injeta ABSOLUTAMENTE TODAS as colunas que podem estar faltando.
     colunas_novas = [
         "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
         "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
@@ -245,7 +224,7 @@ def inicializar_banco():
             db.execute(text(sql))
             db.commit()
         except Exception:
-            db.rollback() # Ignora silenciosamente se a coluna já existir
+            db.rollback() 
 
     try:
         cargo_admin = db.query(Cargo).filter(Cargo.nome == "Administrador").first()
