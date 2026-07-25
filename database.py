@@ -61,6 +61,7 @@ class InfoRHModel(Base):
     telefone = Column(String, default="")
     salario = Column(Float, default=0.0)
     
+    # Benefícios e Finanças do Funcionário
     recebe_comissao = Column(Boolean, default=False)
     tipo_comissao = Column(String, default="PERCENTUAL") 
     valor_comissao = Column(Float, default=0.0) 
@@ -71,6 +72,7 @@ class InfoRHModel(Base):
     gorjetas_acumuladas = Column(Float, default=0.0)
     escala_matriz_json = Column(String, default="{}") 
     
+    # Documentos Oficiais
     data_nascimento = Column(String, default="")
     naturalidade = Column(String, default="")
     estado_civil = Column(String, default="")
@@ -123,51 +125,6 @@ class SolicitacaoFeriasModel(Base):
     status = Column(String, default="PENDENTE") 
     observacao_gestor = Column(String, default="")
 
-# === CLIENTES E PEDIDOS ===
-class ClienteModel(Base):
-    __tablename__ = "clientes"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String)
-    telefone = Column(String, unique=True, index=True)
-    senha_hash = Column(String, nullable=True)
-    cpf = Column(String, default="")
-    data_nascimento = Column(String, default="")
-    cep = Column(String, default="")
-    logradouro = Column(String, default="")
-    numero = Column(String, default="")
-    bairro = Column(String, default="")
-    complemento = Column(String, default="")
-    pontos_fidelidade = Column(Integer, default=0)
-    saldo_cashback = Column(Float, default=0.0)
-    bloqueado = Column(Boolean, default=False)
-    pedidos = relationship("PedidoModel", back_populates="cliente")
-
-class PedidoModel(Base):
-    __tablename__ = "pedidos"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    senha_diaria = Column(Integer, default=1)
-    data_pedido = Column(Date, default=datetime.utcnow().date)
-    origem = Column(String, default="SITE")
-    cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=True)
-    total_pago = Column(Float)
-    forma_pagamento = Column(String)
-    status = Column(String, default="RECEBIDO")
-    tipo = Column(String, default="DELIVERY")
-    data_criacao = Column(DateTime, default=datetime.utcnow)
-    cliente = relationship("ClienteModel", back_populates="pedidos")
-    itens = relationship("ItemPedidoModel", backref="pedido", cascade="all, delete-orphan")
-
-class ItemPedidoModel(Base):
-    __tablename__ = "itens_pedido"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    pedido_id = Column(Integer, ForeignKey("pedidos.id"))
-    produto_id = Column(Integer, ForeignKey("produtos.id"))
-    quantidade = Column(Integer)
-    observacao = Column(String, default="")
-
 # === CARDÁPIO E ESTOQUE ===
 class InsumoModel(Base):
     __tablename__ = "insumos"
@@ -216,27 +173,7 @@ class ItemComplementoModel(Base):
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
 
-# === FINANCEIRO ===
-class FornecedorModel(Base):
-    __tablename__ = "fornecedores"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    nome_fantasia = Column(String)
-    categoria = Column(String, default="Geral")
-    contato = Column(String, default="")
-    cnpj = Column(String, default="")
-
-class ContaPagarModel(Base):
-    __tablename__ = "contas_pagar"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    fornecedor_id = Column(Integer, ForeignKey("fornecedores.id"), nullable=True)
-    descricao = Column(String)
-    valor = Column(Float)
-    data_vencimento = Column(Date)
-    tipo_despesa = Column(String, default="Empresa")
-    status = Column(String, default="PENDENTE")
-
+# 🚨 SCRIPT DE AUTO-MIGRAÇÃO E INICIALIZAÇÃO
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -279,7 +216,6 @@ def inicializar_banco():
             db.add(config)
             db.commit()
     except Exception as e:
-        print(f"Erro na criação do admin: {e}")
         db.rollback()
         
     db.close()
