@@ -429,7 +429,24 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro no PDV: {str(e)}")
 
-# --- ROTAS DE GESTÃO DE RH (MEGA CORPORATIVO V4) ---
+# --- DEPARTAMENTO PESSOAL & FOLHA DE PAGAMENTO (V5) ---
+class NovoCargo(BaseModel):
+    nome: str
+    permissoes: str = "basico"
+
+class NovaOcorrencia(BaseModel):
+    funcionario_id: int
+    data_ocorrencia: str
+    tipo: str
+    motivo: str
+    horas_abonadas: float = 0.0
+    horas_descontadas: float = 0.0
+    anexo_url: str = ""
+
+class NovaFerias(BaseModel):
+    funcionario_id: int
+    data_inicio: str
+    data_fim: str
 
 class FormularioAdmissao(BaseModel):
     cpf: str = ""
@@ -449,12 +466,34 @@ class FormularioAdmissao(BaseModel):
     aceite_lgpd: bool = True
     foto_3x4: str = ""
 
+class AjusteFinanceiroRH(BaseModel):
+    salario: float
+    recebe_comissao: bool
+    tipo_comissao: str
+    valor_comissao: float
+    valor_vt: float
+    valor_va: float
+    diaria_motoboy: float
+    repasse_por_entrega: float
+    escala_matriz_json: str
+
+@app.get("/api/gestao/cargos")
+def listar_cargos(db: Session = Depends(get_db)):
+    return db.query(Cargo).all()
+
+@app.post("/api/gestao/cargos")
+def criar_cargo_dinamico(dados: NovoCargo, db: Session = Depends(get_db)):
+    if db.query(Cargo).filter(Cargo.nome == dados.nome).first():
+        raise HTTPException(status_code=400, detail="Este cargo já existe.")
+    db.add(Cargo(nome=dados.nome, permissoes=dados.permissoes))
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Cargo criado e disponível para uso."}
+
 @app.get("/api/gestao/funcionarios")
 def listar_funcionarios_rh(db: Session = Depends(get_db)):
     funcionarios = db.query(FuncionarioModel).all()
     hoje = datetime.utcnow().date().strftime("%Y-%m-%d")
     lista = []
-    
     for f in funcionarios:
         cargo = db.query(Cargo).filter(Cargo.id == f.cargo_id).first()
         rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == f.id).first()
@@ -475,24 +514,13 @@ def listar_funcionarios_rh(db: Session = Depends(get_db)):
 @app.post("/api/gestao/funcionarios")
 def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get_db)):
     try:
-        existe = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first()
-        if existe: raise HTTPException(status_code=400, detail="Usuário já em uso.")
-            
-        novo_func = FuncionarioModel(
-            nome=dados.nome, usuario=dados.usuario, 
-            senha_hash=pwd_context.hash(dados.senha), cargo_id=dados.cargo_id
-        )
+        if db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first():
+            raise HTTPException(status_code=400, detail="Usuário já em uso.")
+        novo_func = FuncionarioModel(nome=dados.nome, usuario=dados.usuario, senha_hash=pwd_context.hash(dados.senha), cargo_id=dados.cargo_id)
         db.add(novo_func)
         db.flush() 
-        
         novo_func.matricula_cracha = f"ART-{novo_func.id:04d}"
-        
-        info_rh = InfoRHModel(
-            funcionario_id=novo_func.id, telefone=dados.telefone, 
-            salario=dados.salario, escala=dados.escala, cpf=dados.cpf,
-            status_admissao="PENDENTE_PREENCHIMENTO" 
-        )
-        db.add(info_rh)
+        db.add(InfoRHModel(funcionario_id=novo_func.id, telefone=dados.telefone, salario=dados.salario, escala=dados.escala, cpf=dados.cpf, status_admissao="PENDENTE_PREENCHIMENTO"))
         db.commit()
         return {"status": "sucesso", "mensagem": f"Cadastro criado! Matrícula: {novo_func.matricula_cracha}."}
     except Exception as e:
@@ -501,11 +529,10 @@ def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get
 
 @app.put("/api/gestao/funcionarios/admissao")
 def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get_db)):
-    """ Rota do funcionário pelo celular dele """
     try:
         rh = db.query(InfoRHModel).filter(InfoRHModel.cpf == dados.cpf).first()
         if not rh: raise HTTPException(status_code=404, detail="CPF não encontrado.")
-        if rh.status_admissao == "ATIVO": raise HTTPException(status_code=400, detail="Admissão já foi concluída!")
+        if rh.status_admissao == "ATIVO": raise HTTPException(status_code=400, detail="Admissão já concluída!")
 
         rh.data_nascimento = dados.data_nascimento; rh.naturalidade = dados.naturalidade
         rh.estado_civil = dados.estado_civil; rh.rg = dados.rg
@@ -513,88 +540,62 @@ def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get
         rh.reservista = dados.reservista; rh.endereco_completo = dados.endereco_completo
         rh.dados_bancarios = dados.dados_bancarios; rh.escolaridade = dados.escolaridade
         rh.qtd_filhos_menores = dados.qtd_filhos_menores; rh.cnh = dados.cnh
-        rh.plano_saude_escolhido = dados.plano_saude_escolhido
-        rh.aceite_lgpd = dados.aceite_lgpd
+        rh.plano_saude_escolhido = dados.plano_saude_escolhido; rh.aceite_lgpd = dados.aceite_lgpd
         rh.data_aceite_lgpd = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
         rh.status_admissao = "ATIVO" 
 
         func = db.query(FuncionarioModel).filter(FuncionarioModel.id == rh.funcionario_id).first()
         if func: func.foto_3x4 = dados.foto_3x4
-            
         db.commit()
         return {"status": "sucesso", "mensagem": "Admissão concluída!"}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-# --- AS NOVAS ROTAS DO DOSSIÊ PARA O GESTOR ---
 @app.get("/api/gestao/funcionarios/{func_id}/dossie")
 def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
     if not rh: raise HTTPException(status_code=404)
-    return {
-        "cpf": rh.cpf, "rg": rh.rg, "pis_pasep": rh.pis_pasep,
-        "data_nascimento": rh.data_nascimento, "estado_civil": rh.estado_civil,
-        "titulo_eleitor": rh.titulo_eleitor, "reservista": rh.reservista,
-        "endereco_completo": rh.endereco_completo, "dados_bancarios": rh.dados_bancarios,
-        "naturalidade": rh.naturalidade, "escolaridade": rh.escolaridade,
-        "qtd_filhos_menores": rh.qtd_filhos_menores, "cnh": rh.cnh,
-        "plano_saude_escolhido": rh.plano_saude_escolhido
-    }
+    return {"cpf": rh.cpf, "rg": rh.rg, "pis_pasep": rh.pis_pasep, "data_nascimento": rh.data_nascimento, "estado_civil": rh.estado_civil, "titulo_eleitor": rh.titulo_eleitor, "reservista": rh.reservista, "endereco_completo": rh.endereco_completo, "dados_bancarios": rh.dados_bancarios, "naturalidade": rh.naturalidade, "escolaridade": rh.escolaridade, "qtd_filhos_menores": rh.qtd_filhos_menores, "cnh": rh.cnh, "plano_saude_escolhido": rh.plano_saude_escolhido, "salario": rh.salario, "recebe_comissao": rh.recebe_comissao, "tipo_comissao": rh.tipo_comissao, "valor_comissao": rh.valor_comissao, "valor_vt": rh.valor_vt, "valor_va": rh.valor_va, "diaria_motoboy": rh.diaria_motoboy, "repasse_por_entrega": rh.repasse_por_entrega, "escala_matriz_json": rh.escala_matriz_json}
 
 @app.put("/api/gestao/funcionarios/{func_id}/dossie")
 def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
     if not rh: raise HTTPException(status_code=404)
-    
-    rh.cpf = dados.cpf
-    rh.rg = dados.rg
-    rh.pis_pasep = dados.pis_pasep
-    rh.data_nascimento = dados.data_nascimento
-    rh.estado_civil = dados.estado_civil
-    rh.titulo_eleitor = dados.titulo_eleitor
-    rh.reservista = dados.reservista
-    rh.endereco_completo = dados.endereco_completo
-    rh.dados_bancarios = dados.dados_bancarios
-    rh.naturalidade = dados.naturalidade
-    rh.escolaridade = dados.escolaridade
-    rh.qtd_filhos_menores = dados.qtd_filhos_menores
-    rh.cnh = dados.cnh
-    rh.plano_saude_escolhido = dados.plano_saude_escolhido
-    
-    # Se o gestor preencher pelo painel, já consideramos o cadastro ativo
-    if rh.status_admissao == "PENDENTE_PREENCHIMENTO":
-        rh.status_admissao = "ATIVO"
-        
+    rh.cpf = dados.cpf; rh.rg = dados.rg; rh.pis_pasep = dados.pis_pasep; rh.data_nascimento = dados.data_nascimento; rh.estado_civil = dados.estado_civil; rh.titulo_eleitor = dados.titulo_eleitor; rh.reservista = dados.reservista; rh.endereco_completo = dados.endereco_completo; rh.dados_bancarios = dados.dados_bancarios; rh.naturalidade = dados.naturalidade; rh.escolaridade = dados.escolaridade; rh.qtd_filhos_menores = dados.qtd_filhos_menores; rh.cnh = dados.cnh; rh.plano_saude_escolhido = dados.plano_saude_escolhido
+    if rh.status_admissao == "PENDENTE_PREENCHIMENTO": rh.status_admissao = "ATIVO"
     db.commit()
-    return {"status": "sucesso", "mensagem": "Dossiê do colaborador salvo com sucesso!"}
+    return {"status": "sucesso"}
+
+@app.put("/api/gestao/funcionarios/{func_id}/financeiro")
+def atualizar_financeiro_rh(func_id: int, dados: AjusteFinanceiroRH, db: Session = Depends(get_db)):
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    if not rh: raise HTTPException(status_code=404)
+    rh.salario = dados.salario; rh.recebe_comissao = dados.recebe_comissao; rh.tipo_comissao = dados.tipo_comissao; rh.valor_comissao = dados.valor_comissao; rh.valor_vt = dados.valor_vt; rh.valor_va = dados.valor_va; rh.diaria_motoboy = dados.diaria_motoboy; rh.repasse_por_entrega = dados.repasse_por_entrega; rh.escala_matriz_json = dados.escala_matriz_json
+    db.commit()
+    return {"status": "sucesso"}
 
 @app.delete("/api/gestao/funcionarios/{func_id}")
 def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
-    if func_id == 1: raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador Supremo.")
+    if func_id == 1: raise HTTPException(status_code=403, detail="Não é possível demitir o Admin Supremo.")
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
     if rh: rh.status_admissao = "DEMITIDO"
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
     if func: func.senha_hash = "REVOGADO" 
     db.commit()
-    return {"status": "sucesso", "mensagem": "Funcionário demitido e acesso revogado."}
+    return {"status": "sucesso"}
 
 @app.post("/api/gestao/ponto")
 def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
     hoje = datetime.utcnow().date().strftime("%Y-%m-%d")
     hora = datetime.utcnow().strftime("%H:%M")
-    
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == dados.funcionario_id).first()
-    if not rh or rh.status_admissao != "ATIVO":
-        return {"status": "erro", "detail": "Acesso negado. Admissão pendente ou revogada."}
-    
+    if not rh or rh.status_admissao != "ATIVO": return {"status": "erro", "detail": "Acesso negado."}
     ponto = db.query(PontoModel).filter(PontoModel.funcionario_id == dados.funcionario_id, PontoModel.data == hoje).first()
-    
     if not ponto:
         ponto = PontoModel(funcionario_id=dados.funcionario_id, data=hoje)
         db.add(ponto)
         db.flush()
-        
     if dados.tipo == "entrada":
         if ponto.entrada: return {"status": "erro", "detail": "Entrada já registrada."}
         ponto.entrada = hora
@@ -602,13 +603,67 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
         if not ponto.entrada: return {"status": "erro", "detail": "Bata a Entrada primeiro."}
         if ponto.saida: return {"status": "erro", "detail": "Saída já registrada."}
         ponto.saida = hora
-        
+        fmt = "%H:%M"
+        t1 = datetime.strptime(ponto.entrada, fmt)
+        t2 = datetime.strptime(ponto.saida, fmt)
+        diff = (t2 - t1).total_seconds() / 3600.0
+        ponto.horas_trabalhadas = round(diff, 2)
     db.commit()
-    return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} cravado às {hora}!"}
+    return {"status": "sucesso"}
+
+@app.post("/api/gestao/rh/ocorrencias")
+def registrar_ocorrencia(dados: NovaOcorrencia, db: Session = Depends(get_db)):
+    db.add(OcorrenciaRHModel(funcionario_id=dados.funcionario_id, data_ocorrencia=dados.data_ocorrencia, tipo=dados.tipo, motivo=dados.motivo, horas_abonadas=dados.horas_abonadas, horas_descontadas=dados.horas_descontadas, anexo_url=dados.anexo_url))
+    db.commit()
+    return {"status": "sucesso"}
+
+@app.post("/api/gestao/rh/ferias")
+def solicitar_ferias(dados: NovaFerias, db: Session = Depends(get_db)):
+    db.add(SolicitacaoFeriasModel(funcionario_id=dados.funcionario_id, data_inicio=dados.data_inicio, data_fim=dados.data_fim, status="PENDENTE"))
+    db.commit()
+    return {"status": "sucesso"}
+
+@app.put("/api/gestao/rh/ferias/{id_ferias}")
+def aprovar_rejeitar_ferias(id_ferias: int, status: str, observacao: str = "", db: Session = Depends(get_db)):
+    ferias = db.query(SolicitacaoFeriasModel).filter(SolicitacaoFeriasModel.id == id_ferias).first()
+    if not ferias: raise HTTPException(status_code=404)
+    ferias.status = status.upper()
+    ferias.observacao_gestor = observacao
+    db.commit()
+    return {"status": "sucesso"}
+
+@app.get("/api/gestao/rh/colaborador/{func_id}/holerite/{mes_ano}")
+def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(get_db)):
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    if not func or not rh: raise HTTPException(status_code=404)
+
+    ocorrencias = db.query(OcorrenciaRHModel).filter(OcorrenciaRHModel.funcionario_id == func_id, OcorrenciaRHModel.data_ocorrencia.startswith(mes_ano)).all()
+    pontos = db.query(PontoModel).filter(PontoModel.funcionario_id == func_id, PontoModel.data.startswith(mes_ano)).all()
+
+    salario_base = rh.salario; vt = rh.valor_vt; va = rh.valor_va; gorjetas = rh.gorjetas_acumuladas
+    comissao = rh.valor_comissao if rh.recebe_comissao and rh.tipo_comissao == "FIXO" else 0.0 
+    diaria = rh.diaria_motoboy * len(pontos) if rh.diaria_motoboy > 0 else 0.0
+
+    horas_descontadas = sum(o.horas_descontadas for o in ocorrencias)
+    valor_hora = salario_base / 220 if salario_base > 0 else 0
+    descontos = horas_descontadas * valor_hora
+
+    total_proventos = salario_base + vt + va + comissao + gorjetas + diaria
+    salario_liquido = total_proventos - descontos
+
+    return {
+        "colaborador": func.nome, "matricula": func.matricula_cracha, "mes_referencia": mes_ano,
+        "proventos": { "salario_base": salario_base, "vale_transporte": vt, "vale_alimentacao": va, "comissoes": comissao, "gorjetas": gorjetas, "diarias": diaria },
+        "descontos": { "horas_nao_trabalhadas": descontos, "horas_quantidade": horas_descontadas },
+        "totais": { "total_bruto": total_proventos, "total_descontos": descontos, "liquido_a_pagar": salario_liquido }
+    }
 
 @app.get("/admissao", response_class=HTMLResponse)
-def abrir_admissao(): 
-    return Path("templates/admissao.html").read_text(encoding="utf-8") if Path("templates/admissao.html").exists() else "Erro"
+def abrir_admissao(): return Path("templates/admissao.html").read_text(encoding="utf-8") if Path("templates/admissao.html").exists() else "Erro"
+
+@app.get("/portal", response_class=HTMLResponse)
+def abrir_portal_colaborador(): return Path("templates/portal_colaborador.html").read_text(encoding="utf-8") if Path("templates/portal_colaborador.html").exists() else "Erro"
 
 # --- OUTRAS ROTAS GERAIS DE CARDÁPIO ---
 @app.post("/api/gestao/complementos")
