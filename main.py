@@ -8,24 +8,27 @@ from datetime import datetime, date
 from sqlalchemy import desc
 import uvicorn
 from passlib.context import CryptContext
-from sqlalchemy import Column, Integer, String, Boolean, Float
 
 # Importações dos nossos módulos do Art's Burguer
 from integracao_99food import router_99food
 from pagamentos_pagbank import criar_pagamento_pix_mp, criar_link_pagamento_mp, criar_pagamento_cartao_mp
-from database import (SessionLocal, ProdutoModel, engine, Base, FuncionarioModel, Cargo, 
-                      InsumoModel, processar_baixa_estoque, FichaTecnicaModel, ConfiguracaoLojaModel, 
-                      InfoRHModel, PontoModel, GrupoComplementoModel, ItemComplementoModel, inicializar_banco)
-from vendas_pdv import ClienteModel, registrar_venda_pdv, TipoPedido, PedidoModel
-from financeiro import lancar_conta_pagar, FornecedorModel, ContaPagarModel
+from vendas_pdv import registrar_venda_pdv, TipoPedido
+from financeiro import lancar_conta_pagar
 from dashboard import router_dashboard
 from pagamentos_crm import router_pagamentos
-
-# NOVA IMPORTAÇÃO: Função de envio automático
 from whatsapp_ia import notificar_status_pedido
 
+# IMPORTAÇÕES DO BANCO DE DADOS (V5 COMPLETO E CORRIGIDO)
+from database import (
+    SessionLocal, engine, Base, inicializar_banco, processar_baixa_estoque,
+    ConfiguracaoLojaModel, Cargo, FuncionarioModel, InfoRHModel, PontoModel,
+    OcorrenciaRHModel, SolicitacaoFeriasModel, ClienteModel, PedidoModel,
+    ItemPedidoModel, InsumoModel, ProdutoModel, FichaTecnicaModel,
+    GrupoComplementoModel, ItemComplementoModel, FornecedorModel, ContaPagarModel
+)
+
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-app = FastAPI(title="API - Art's Burguer V2", version="2.0.0")
+app = FastAPI(title="API - Art's Burguer ERP V5", version="5.0.0")
 
 # Cria as novas tabelas e injeta as configurações padrão se for a primeira vez
 inicializar_banco()
@@ -38,7 +41,9 @@ def get_db():
     finally:
         db.close()
 
-# --- SCHEMAS ---
+# ==========================================
+# SCHEMAS (MODELOS DE DADOS - PYDANTIC)
+# ==========================================
 class ItemCompSchema(BaseModel):
     nome: str
     preco_adicional: float
@@ -110,30 +115,6 @@ class LoginData(BaseModel):
     usuario: str
     senha: str
 
-class NovoFuncionario(BaseModel):
-    nome: str
-    usuario: str
-    senha: str
-    cargo_id: int
-    foto: str = ""
-    telefone: str = ""
-    salario: float = 0.0
-    escala: str = ""
-    rg: str = ""
-    cpf: str = ""
-    pis_pasep: str = ""
-
-class RegistroPonto(BaseModel):
-    funcionario_id: int
-    tipo: str # "entrada" ou "saida"
-
-class AtualizarFuncionario(BaseModel):
-    nome: str
-    usuario: str
-    senha: str = "" 
-    cargo_id: int
-    foto: str = ""
-
 class NovoFornecedor(BaseModel):
     nome_fantasia: str
     categoria: str = "Geral"
@@ -156,283 +137,27 @@ class RegistroClienteData(BaseModel):
     bairro: str = ""
     complemento: str = ""
 
-# --- FUNÇÃO MÁGICA V2: SENHA DIÁRIA ---
-def gerar_senha_diaria(db: Session):
-    hoje = datetime.utcnow().date()
-    ultimo_pedido = db.query(PedidoModel).filter(PedidoModel.data_pedido == hoje).order_by(desc(PedidoModel.senha_diaria)).first()
-    if ultimo_pedido and ultimo_pedido.senha_diaria:
-        return ultimo_pedido.senha_diaria + 1
-    return 1 # Se for o primeiro pedido do dia, começa no 1!
-
-# --- ROTAS DE GESTÃO DE FORNECEDORES ---
-@app.get("/api/gestao/fornecedores")
-def listar_fornecedores(db: Session = Depends(get_db)):
-    fornecedores = db.query(FornecedorModel).all()
-    return [{
-        "id": f.id, 
-        "nome_fantasia": f.nome_fantasia, 
-        "categoria": f.categoria, 
-        "contato": getattr(f, 'contato', ''), 
-        "cnpj": getattr(f, 'cnpj', '')
-    } for f in fornecedores]
-
-@app.post("/api/gestao/fornecedores")
-def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
-    try:
-        novo = FornecedorModel(
-            nome_fantasia=dados.nome_fantasia, 
-            categoria=dados.categoria, 
-            contato=dados.contato, 
-            cnpj=dados.cnpj
-        )
-        db.add(novo)
-        db.commit()
-        db.refresh(novo)
-        return {"status": "sucesso", "id": novo.id, "mensagem": "Fornecedor cadastrado com sucesso!"}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
-
-# --- ROTAS DE CLIENTES ---
-@app.post("/api/cliente/registrar")
-def registrar_cliente_cardapio(dados: RegistroClienteData, db: Session = Depends(get_db)):
-    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
-    if cliente:
-        raise HTTPException(status_code=400, detail="Este telefone já está registado!")
-    
-    novo_cliente = ClienteModel(
-        nome=dados.nome,
-        telefone=dados.telefone,
-        senha_hash=pwd_context.hash(dados.senha),
-        cpf=dados.cpf,
-        data_nascimento=dados.data_nascimento,
-        cep=dados.cep,
-        logradouro=dados.logradouro,
-        numero=dados.numero,
-        bairro=dados.bairro,
-        complemento=dados.complemento
-    )
-    db.add(novo_cliente)
-    db.commit()
-    return {"status": "sucesso", "mensagem": "Conta criada com sucesso!"}
-
-@app.post("/api/cliente/login")
-def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db)):
-    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
-    if not cliente or not cliente.senha_hash or not pwd_context.verify(dados.senha, cliente.senha_hash):
-        raise HTTPException(status_code=401, detail="Telefone ou senha incorretos.")
-    
-    return {
-        "status": "sucesso",
-        "cliente": {
-            "id": cliente.id,
-            "nome": cliente.nome,
-            "telefone": cliente.telefone,
-            "endereco_completo": f"{cliente.logradouro}, {cliente.numero} - {cliente.bairro} ({cliente.complemento})",
-            "pontos": cliente.pontos_fidelidade,
-            "cashback": cliente.saldo_cashback
-        }
-    }
-
-@app.get("/api/cliente/{cliente_id}/pedidos")
-def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
-    pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).order_by(desc(PedidoModel.id)).limit(10).all()
-    historico = []
-    for p in pedidos:
-        resumo_itens = []
-        for item in getattr(p, 'itens', getattr(p, 'itens_pedido', [])):
-            prod = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
-            nome_prod = prod.nome if prod else "Produto Indisponível"
-            resumo_itens.append(f"{item.quantidade}x {nome_prod}")
-        
-        historico.append({
-            "id": p.id,
-            "senha_diaria": getattr(p, 'senha_diaria', p.id),
-            "status": str(p.status).split('.')[-1].upper(),
-            "total": p.total_pago,
-            "itens_resumo": ", ".join(resumo_itens)
-        })
-    return historico
-
-# --- WEBHOOKS FINANCEIROS INTACTOS ---
-@app.post("/api/webhooks/mercadopago")
-async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
-    """ Rota silenciosa onde o Mercado Pago avisa de madrugada que o Pix foi pago """
-    try:
-        payload = await request.json()
-        if payload.get("type") == "payment" or payload.get("action") == "payment.created":
-            payment_id = payload.get("data", {}).get("id")
-            # Lógica futura de captura de referência externa
-            pass
-        return {"status": "ok"}
-    except Exception as e:
-        return {"status": "erro"}
-
-@app.post("/api/webhooks/asaas")
-async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
-    """ O Asaas avisa aqui assim que o dinheiro do Pix ou Cartão cai na conta! """
-    try:
-        evento = payload.get("event")
-        if evento in ["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]:
-            pagamento = payload.get("payment", {})
-            descricao = pagamento.get("description", "")
-            if "#" in descricao:
-                pedido_id_str = descricao.split("#")[1].split(" ")[0]
-                pedido_id = int(pedido_id_str)
-                pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
-                if pedido and str(pedido.status).split('.')[-1].upper() != "RECEBIDO":
-                    pedido.status = "RECEBIDO" # Joga direto pra tela da Cozinha (KDS)
-                    db.commit()
-                    print(f"✅ PAGAMENTO ASAAS CONFIRMADO! Pedido #{pedido_id} liberado.")
-        return {"status": "ok"}
-    except Exception as e:
-        print(f"❌ Erro Webhook Asaas: {e}")
-        return {"status": "erro"}
-
-# --- ROTAS DE VENDAS E DELIVERY (V2.0 com Senha e Origem) ---
-@app.post("/api/pedidos/online")
-def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
-    config = db.query(ConfiguracaoLojaModel).first()
-    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_web.telefone_cliente).first()
-    if not cliente:
-        cliente = ClienteModel(nome=pedido_web.nome_cliente, telefone=pedido_web.telefone_cliente)
-        db.add(cliente)
-        db.commit()
-        db.refresh(cliente)
-        
-    itens_carrinho = [{"produto_id": i.produto_id, "quantidade": i.quantidade, "observacao": i.observacao} for i in pedido_web.itens]
-    
-    if pedido_web.endereco_cliente and len(itens_carrinho) > 0:
-        obs_atual = itens_carrinho[0]["observacao"]
-        itens_carrinho[0]["observacao"] = f"Endereço: {pedido_web.endereco_cliente} | {obs_atual}"
-
-    novo_pedido = registrar_venda_pdv(db=db, tipo=TipoPedido.DELIVERY, itens_carrinho=itens_carrinho, cliente_id=cliente.id)
-
-    # ATUALIZAÇÃO V2.0: Aplica Senha Diária e Origem!
-    novo_pedido_real = db.query(PedidoModel).filter(PedidoModel.id == novo_pedido.id).first()
-    novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
-    novo_pedido_real.origem = "SITE (Online)"
-    novo_pedido_real.data_pedido = datetime.utcnow().date()
-
-    for item in itens_carrinho:
-        processar_baixa_estoque(db, produto_id=item["produto_id"], quantidade_vendida=item["quantidade"])
-    
-    # TRAVA DE SEGURANÇA E ACEITE AUTOMÁTICO
-    if forma_pagamento in ["pix", "credito", "vr"]:
-        novo_pedido_real.status = "AGUARDANDO_PAGAMENTO"
-        db.commit()
-    else:
-        novo_pedido_real.status = "EM_PREPARO" if getattr(config, 'aceite_automatico', False) else "RECEBIDO"
-        db.commit()
-        notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
-
-    # PROCESSAMENTO MERCADO PAGO
-    if forma_pagamento == "pix":
-        if not pedido_web.cpf:
-            raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
-        
-        resultado_pix = criar_pagamento_pix_mp(novo_pedido_real.id, novo_pedido_real.total_pago, cliente.nome, pedido_web.cpf)
-        
-        if type(resultado_pix) is dict and "qr_code" in resultado_pix:
-            codigo_limpo = resultado_pix["qr_code"] 
-            return {"status": "checkout_transparente", "copia_e_cola": codigo_limpo}
-        else:
-            novo_pedido_real.status = "CANCELADO"
-            db.commit()
-            motivo = resultado_pix.get("erro", "Erro desconhecido") if type(resultado_pix) is dict else "Falha de conexão com o banco."
-            raise HTTPException(status_code=400, detail=f"Mercado Pago recusou: {motivo}")
-            
-    elif forma_pagamento == "credito" or forma_pagamento == "vr":
-        if not pedido_web.token_cartao or not pedido_web.cpf:
-            raise HTTPException(status_code=400, detail="Faltam dados do cartão ou CPF para processar o pagamento.")
-            
-        resposta_pagamento = criar_pagamento_cartao_mp(
-            pedido_id=novo_pedido_real.id, 
-            valor_total=novo_pedido_real.total_pago, 
-            token_cartao=pedido_web.token_cartao, 
-            email_cliente=f"cliente{cliente.id}@artsburguer.com",
-            payment_method_id=pedido_web.payment_method_id, 
-            parcelas=pedido_web.parcelas, 
-            cpf_cliente=pedido_web.cpf
-        )
-        
-        if resposta_pagamento and resposta_pagamento.get("status") in ["approved", "in_process"]:
-            novo_pedido_real.status = "EM_PREPARO" if getattr(config, 'aceite_automatico', False) else "RECEBIDO"
-            db.commit()
-            notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
-            return {"status": "sucesso", "mensagem": "Pagamento aprovado!"}
-        else:
-            novo_pedido_real.status = "CANCELADO"
-            db.commit()
-            detalhe_erro = resposta_pagamento.get("status_detail", "Pagamento recusado pelo banco.") if resposta_pagamento else "Falha de conexão com a operadora."
-            raise HTTPException(status_code=400, detail=f"Atenção: {detalhe_erro}")
-            
-    return {"status": "entrega", "mensagem": "Pedido confirmado para pagamento na entrega!"}
-
-@app.get("/api/pdv/cliente/{telefone}")
-def buscar_cliente_pdv(telefone: str, db: Session = Depends(get_db)):
-    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == telefone).first()
-    if not cliente: raise HTTPException(status_code=404, detail="Cliente não encontrado")
-    return {
-        "nome": cliente.nome,
-        "pontos": getattr(cliente, 'pontos_fidelidade', 0),
-        "cashback": getattr(cliente, 'saldo_cashback', 0.0),
-        "bloqueado": getattr(cliente, 'bloqueado', False)
-    }
-
-@app.post("/api/pedidos/pdv")
-def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_db)):
-    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_caixa.telefone_cliente).first()
-    if not cliente:
-        cliente = ClienteModel(nome=pedido_caixa.nome_cliente, telefone=pedido_caixa.telefone_cliente)
-        db.add(cliente)
-        db.commit()
-        db.refresh(cliente)
-
-    if getattr(cliente, 'bloqueado', False):
-        raise HTTPException(status_code=403, detail="⚠️ Cliente está bloqueado por inadimplência!")
-
-    itens_carrinho = [{"produto_id": i.produto_id, "quantidade": i.quantidade, "observacao": i.observacao} for i in pedido_caixa.itens]
-    
-    try:
-        novo_pedido = registrar_venda_pdv(db=db, tipo=TipoPedido.BALCAO, itens_carrinho=itens_carrinho, cliente_id=cliente.id)
-        
-        # ATUALIZAÇÃO V2.0: Aplica Senha Diária e Origem!
-        novo_pedido_real = db.query(PedidoModel).filter(PedidoModel.id == novo_pedido.id).first()
-        novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
-        novo_pedido_real.origem = "PDV (Balcão)"
-        novo_pedido_real.data_pedido = datetime.utcnow().date()
-        
-        config = db.query(ConfiguracaoLojaModel).first()
-        if cliente.telefone != "BALCAO":
-            sis_fidelidade = getattr(config, 'sistema_fidelidade', 'CASHBACK')
-            if sis_fidelidade == "PONTOS":
-                if pedido_caixa.usar_pontos and getattr(cliente, 'pontos_fidelidade', 0) >= 10:
-                    cliente.pontos_fidelidade -= 10
-                else:
-                    cliente.pontos_fidelidade = getattr(cliente, 'pontos_fidelidade', 0) + 1 
-            elif sis_fidelidade == "CASHBACK":
-                saldo_atual = getattr(cliente, 'saldo_cashback', 0.0)
-                if pedido_caixa.usar_saldo_cashback > 0 and saldo_atual >= pedido_caixa.usar_saldo_cashback:
-                    cliente.saldo_cashback -= pedido_caixa.usar_saldo_cashback
-                
-                valor_real_pago = novo_pedido_real.total_pago - pedido_caixa.usar_saldo_cashback
-                if valor_real_pago > 0:
-                    cliente.saldo_cashback = getattr(cliente, 'saldo_cashback', 0.0) + (valor_real_pago * 0.05)
-
-        for item in itens_carrinho:
-            processar_baixa_estoque(db, produto_id=item["produto_id"], quantidade_vendida=item["quantidade"])
-            
-        db.commit()
-        return {"status": "sucesso", "pedido_id": novo_pedido.id, "senha_diaria": novo_pedido_real.senha_diaria}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro no PDV: {str(e)}")
-
-# --- DEPARTAMENTO PESSOAL & FOLHA DE PAGAMENTO (V5) ---
+# --- SCHEMAS DE RH (V5) ---
 class NovoCargo(BaseModel):
     nome: str
     permissoes: str = "basico"
+
+class NovoFuncionario(BaseModel):
+    nome: str
+    usuario: str
+    senha: str
+    cargo_id: int
+    foto: str = ""
+    telefone: str = ""
+    salario: float = 0.0
+    escala: str = ""
+    rg: str = ""
+    cpf: str = ""
+    pis_pasep: str = ""
+
+class RegistroPonto(BaseModel):
+    funcionario_id: int
+    tipo: str # "entrada" ou "saida"
 
 class NovaOcorrencia(BaseModel):
     funcionario_id: int
@@ -477,6 +202,280 @@ class AjusteFinanceiroRH(BaseModel):
     repasse_por_entrega: float
     escala_matriz_json: str
 
+
+# ==========================================
+# FUNÇÕES GERAIS E ÚTEIS
+# ==========================================
+def gerar_senha_diaria(db: Session):
+    hoje = datetime.utcnow().date()
+    ultimo_pedido = db.query(PedidoModel).filter(PedidoModel.data_pedido == hoje).order_by(desc(PedidoModel.senha_diaria)).first()
+    if ultimo_pedido and ultimo_pedido.senha_diaria:
+        return ultimo_pedido.senha_diaria + 1
+    return 1 
+
+
+# ==========================================
+# ROTAS DE FORNECEDORES
+# ==========================================
+@app.get("/api/gestao/fornecedores")
+def listar_fornecedores(db: Session = Depends(get_db)):
+    fornecedores = db.query(FornecedorModel).all()
+    return [{
+        "id": f.id, 
+        "nome_fantasia": f.nome_fantasia, 
+        "categoria": f.categoria, 
+        "contato": getattr(f, 'contato', ''), 
+        "cnpj": getattr(f, 'cnpj', '')
+    } for f in fornecedores]
+
+@app.post("/api/gestao/fornecedores")
+def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
+    try:
+        novo = FornecedorModel(
+            nome_fantasia=dados.nome_fantasia, 
+            categoria=dados.categoria, 
+            contato=dados.contato, 
+            cnpj=dados.cnpj
+        )
+        db.add(novo)
+        db.commit()
+        db.refresh(novo)
+        return {"status": "sucesso", "id": novo.id, "mensagem": "Fornecedor cadastrado com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==========================================
+# ROTAS DE CLIENTES
+# ==========================================
+@app.post("/api/cliente/registrar")
+def registrar_cliente_cardapio(dados: RegistroClienteData, db: Session = Depends(get_db)):
+    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
+    if cliente:
+        raise HTTPException(status_code=400, detail="Este telefone já está registado!")
+    
+    novo_cliente = ClienteModel(
+        nome=dados.nome, telefone=dados.telefone, senha_hash=pwd_context.hash(dados.senha),
+        cpf=dados.cpf, data_nascimento=dados.data_nascimento, cep=dados.cep,
+        logradouro=dados.logradouro, numero=dados.numero, bairro=dados.bairro, complemento=dados.complemento
+    )
+    db.add(novo_cliente)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Conta criada com sucesso!"}
+
+@app.post("/api/cliente/login")
+def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db)):
+    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
+    if not cliente or not cliente.senha_hash or not pwd_context.verify(dados.senha, cliente.senha_hash):
+        raise HTTPException(status_code=401, detail="Telefone ou senha incorretos.")
+    
+    return {
+        "status": "sucesso",
+        "cliente": {
+            "id": cliente.id,
+            "nome": cliente.nome,
+            "telefone": cliente.telefone,
+            "endereco_completo": f"{cliente.logradouro}, {cliente.numero} - {cliente.bairro} ({cliente.complemento})",
+            "pontos": cliente.pontos_fidelidade,
+            "cashback": cliente.saldo_cashback
+        }
+    }
+
+@app.get("/api/cliente/{cliente_id}/pedidos")
+def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
+    pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).order_by(desc(PedidoModel.id)).limit(10).all()
+    historico = []
+    for p in pedidos:
+        resumo_itens = []
+        for item in getattr(p, 'itens', getattr(p, 'itens_pedido', [])):
+            prod = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
+            nome_prod = prod.nome if prod else "Produto Indisponível"
+            resumo_itens.append(f"{item.quantidade}x {nome_prod}")
+        
+        historico.append({
+            "id": p.id,
+            "senha_diaria": getattr(p, 'senha_diaria', p.id),
+            "status": str(p.status).split('.')[-1].upper(),
+            "total": p.total_pago,
+            "itens_resumo": ", ".join(resumo_itens)
+        })
+    return historico
+
+
+# ==========================================
+# WEBHOOKS FINANCEIROS INTACTOS
+# ==========================================
+@app.post("/api/webhooks/mercadopago")
+async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
+    try:
+        payload = await request.json()
+        if payload.get("type") == "payment" or payload.get("action") == "payment.created":
+            payment_id = payload.get("data", {}).get("id")
+            pass
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "erro"}
+
+@app.post("/api/webhooks/asaas")
+async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
+    try:
+        evento = payload.get("event")
+        if evento in ["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]:
+            pagamento = payload.get("payment", {})
+            descricao = pagamento.get("description", "")
+            if "#" in descricao:
+                pedido_id_str = descricao.split("#")[1].split(" ")[0]
+                pedido_id = int(pedido_id_str)
+                pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+                if pedido and str(pedido.status).split('.')[-1].upper() != "RECEBIDO":
+                    pedido.status = "RECEBIDO" 
+                    db.commit()
+                    print(f"✅ PAGAMENTO ASAAS CONFIRMADO! Pedido #{pedido_id} liberado.")
+        return {"status": "ok"}
+    except Exception as e:
+        print(f"❌ Erro Webhook Asaas: {e}")
+        return {"status": "erro"}
+
+
+# ==========================================
+# VENDAS ONLINE E PDV (V2.0 com Senha e Origem)
+# ==========================================
+@app.post("/api/pedidos/online")
+def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
+    config = db.query(ConfiguracaoLojaModel).first()
+    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_web.telefone_cliente).first()
+    if not cliente:
+        cliente = ClienteModel(nome=pedido_web.nome_cliente, telefone=pedido_web.telefone_cliente)
+        db.add(cliente)
+        db.commit()
+        db.refresh(cliente)
+        
+    itens_carrinho = [{"produto_id": i.produto_id, "quantidade": i.quantidade, "observacao": i.observacao} for i in pedido_web.itens]
+    
+    if pedido_web.endereco_cliente and len(itens_carrinho) > 0:
+        obs_atual = itens_carrinho[0]["observacao"]
+        itens_carrinho[0]["observacao"] = f"Endereço: {pedido_web.endereco_cliente} | {obs_atual}"
+
+    novo_pedido = registrar_venda_pdv(db=db, tipo=TipoPedido.DELIVERY, itens_carrinho=itens_carrinho, cliente_id=cliente.id)
+
+    novo_pedido_real = db.query(PedidoModel).filter(PedidoModel.id == novo_pedido.id).first()
+    novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
+    novo_pedido_real.origem = "SITE (Online)"
+    novo_pedido_real.data_pedido = datetime.utcnow().date()
+
+    for item in itens_carrinho:
+        processar_baixa_estoque(db, produto_id=item["produto_id"], quantidade_vendida=item["quantidade"])
+    
+    if forma_pagamento in ["pix", "credito", "vr"]:
+        novo_pedido_real.status = "AGUARDANDO_PAGAMENTO"
+        db.commit()
+    else:
+        novo_pedido_real.status = "EM_PREPARO" if getattr(config, 'aceite_automatico', False) else "RECEBIDO"
+        db.commit()
+        notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
+
+    if forma_pagamento == "pix":
+        if not pedido_web.cpf:
+            raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
+        
+        resultado_pix = criar_pagamento_pix_mp(novo_pedido_real.id, novo_pedido_real.total_pago, cliente.nome, pedido_web.cpf)
+        if type(resultado_pix) is dict and "qr_code" in resultado_pix:
+            return {"status": "checkout_transparente", "copia_e_cola": resultado_pix["qr_code"]}
+        else:
+            novo_pedido_real.status = "CANCELADO"
+            db.commit()
+            raise HTTPException(status_code=400, detail="Mercado Pago recusou a transação.")
+            
+    elif forma_pagamento == "credito" or forma_pagamento == "vr":
+        if not pedido_web.token_cartao or not pedido_web.cpf:
+            raise HTTPException(status_code=400, detail="Faltam dados do cartão ou CPF para processar o pagamento.")
+            
+        resposta_pagamento = criar_pagamento_cartao_mp(
+            pedido_id=novo_pedido_real.id, 
+            valor_total=novo_pedido_real.total_pago, 
+            token_cartao=pedido_web.token_cartao, 
+            email_cliente=f"cliente{cliente.id}@artsburguer.com",
+            payment_method_id=pedido_web.payment_method_id, 
+            parcelas=pedido_web.parcelas, 
+            cpf_cliente=pedido_web.cpf
+        )
+        if resposta_pagamento and resposta_pagamento.get("status") in ["approved", "in_process"]:
+            novo_pedido_real.status = "EM_PREPARO" if getattr(config, 'aceite_automatico', False) else "RECEBIDO"
+            db.commit()
+            notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
+            return {"status": "sucesso", "mensagem": "Pagamento aprovado!"}
+        else:
+            novo_pedido_real.status = "CANCELADO"
+            db.commit()
+            raise HTTPException(status_code=400, detail="Pagamento recusado pelo banco.")
+            
+    return {"status": "entrega", "mensagem": "Pedido confirmado para pagamento na entrega!"}
+
+@app.get("/api/pdv/cliente/{telefone}")
+def buscar_cliente_pdv(telefone: str, db: Session = Depends(get_db)):
+    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == telefone).first()
+    if not cliente: raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    return {
+        "nome": cliente.nome,
+        "pontos": getattr(cliente, 'pontos_fidelidade', 0),
+        "cashback": getattr(cliente, 'saldo_cashback', 0.0),
+        "bloqueado": getattr(cliente, 'bloqueado', False)
+    }
+
+@app.post("/api/pedidos/pdv")
+def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_db)):
+    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_caixa.telefone_cliente).first()
+    if not cliente:
+        cliente = ClienteModel(nome=pedido_caixa.nome_cliente, telefone=pedido_caixa.telefone_cliente)
+        db.add(cliente)
+        db.commit()
+        db.refresh(cliente)
+
+    if getattr(cliente, 'bloqueado', False):
+        raise HTTPException(status_code=403, detail="⚠️ Cliente está bloqueado por inadimplência!")
+
+    itens_carrinho = [{"produto_id": i.produto_id, "quantidade": i.quantidade, "observacao": i.observacao} for i in pedido_caixa.itens]
+    
+    try:
+        novo_pedido = registrar_venda_pdv(db=db, tipo=TipoPedido.BALCAO, itens_carrinho=itens_carrinho, cliente_id=cliente.id)
+        
+        novo_pedido_real = db.query(PedidoModel).filter(PedidoModel.id == novo_pedido.id).first()
+        novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
+        novo_pedido_real.origem = "PDV (Balcão)"
+        novo_pedido_real.data_pedido = datetime.utcnow().date()
+        
+        config = db.query(ConfiguracaoLojaModel).first()
+        if cliente.telefone != "BALCAO":
+            sis_fidelidade = getattr(config, 'sistema_fidelidade', 'CASHBACK')
+            if sis_fidelidade == "PONTOS":
+                if pedido_caixa.usar_pontos and getattr(cliente, 'pontos_fidelidade', 0) >= 10:
+                    cliente.pontos_fidelidade -= 10
+                else:
+                    cliente.pontos_fidelidade = getattr(cliente, 'pontos_fidelidade', 0) + 1 
+            elif sis_fidelidade == "CASHBACK":
+                saldo_atual = getattr(cliente, 'saldo_cashback', 0.0)
+                if pedido_caixa.usar_saldo_cashback > 0 and saldo_atual >= pedido_caixa.usar_saldo_cashback:
+                    cliente.saldo_cashback -= pedido_caixa.usar_saldo_cashback
+                
+                valor_real_pago = novo_pedido_real.total_pago - pedido_caixa.usar_saldo_cashback
+                if valor_real_pago > 0:
+                    cliente.saldo_cashback = getattr(cliente, 'saldo_cashback', 0.0) + (valor_real_pago * 0.05)
+
+        for item in itens_carrinho:
+            processar_baixa_estoque(db, produto_id=item["produto_id"], quantidade_vendida=item["quantidade"])
+            
+        db.commit()
+        return {"status": "sucesso", "pedido_id": novo_pedido.id, "senha_diaria": novo_pedido_real.senha_diaria}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro no PDV: {str(e)}")
+
+
+# ==========================================
+# DEPARTAMENTO PESSOAL E RH CORPORATIVO (V5)
+# ==========================================
+
 @app.get("/api/gestao/cargos")
 def listar_cargos(db: Session = Depends(get_db)):
     return db.query(Cargo).all()
@@ -484,28 +483,35 @@ def listar_cargos(db: Session = Depends(get_db)):
 @app.post("/api/gestao/cargos")
 def criar_cargo_dinamico(dados: NovoCargo, db: Session = Depends(get_db)):
     if db.query(Cargo).filter(Cargo.nome == dados.nome).first():
-        raise HTTPException(status_code=400, detail="Este cargo já existe.")
+        raise HTTPException(status_code=400, detail="Este cargo já existe na empresa.")
+    
     db.add(Cargo(nome=dados.nome, permissoes=dados.permissoes))
     db.commit()
-    return {"status": "sucesso", "mensagem": "Cargo criado e disponível para uso."}
+    return {"status": "sucesso", "mensagem": "Cargo criado com sucesso e disponível para uso."}
 
 @app.get("/api/gestao/funcionarios")
 def listar_funcionarios_rh(db: Session = Depends(get_db)):
     funcionarios = db.query(FuncionarioModel).all()
     hoje = datetime.utcnow().date().strftime("%Y-%m-%d")
     lista = []
+    
     for f in funcionarios:
         cargo = db.query(Cargo).filter(Cargo.id == f.cargo_id).first()
         rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == f.id).first()
         ponto_hoje = db.query(PontoModel).filter(PontoModel.funcionario_id == f.id, PontoModel.data == hoje).first()
         
         lista.append({
-            "id": f.id, "nome": f.nome, "usuario": f.usuario,
-            "cargo": cargo.nome if cargo else "Sem Cargo", "cargo_id": f.cargo_id,
+            "id": f.id, 
+            "nome": f.nome, 
+            "usuario": f.usuario,
+            "cargo": cargo.nome if cargo else "Sem Cargo", 
+            "cargo_id": f.cargo_id,
             "matricula": f.matricula_cracha,
             "status_admissao": rh.status_admissao if rh else "DESCONHECIDO",
-            "telefone": rh.telefone if rh else "", "salario": rh.salario if rh else 0.0,
-            "escala": rh.escala if rh else "", "cpf": rh.cpf if rh else "",
+            "telefone": rh.telefone if rh else "", 
+            "salario": rh.salario if rh else 0.0,
+            "escala": rh.escala if rh else "", 
+            "cpf": rh.cpf if rh else "",
             "ponto_entrada": ponto_hoje.entrada if ponto_hoje else "",
             "ponto_saida": ponto_hoje.saida if ponto_hoje else ""
         })
@@ -514,15 +520,31 @@ def listar_funcionarios_rh(db: Session = Depends(get_db)):
 @app.post("/api/gestao/funcionarios")
 def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get_db)):
     try:
-        if db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first():
-            raise HTTPException(status_code=400, detail="Usuário já em uso.")
-        novo_func = FuncionarioModel(nome=dados.nome, usuario=dados.usuario, senha_hash=pwd_context.hash(dados.senha), cargo_id=dados.cargo_id)
+        existe = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first()
+        if existe: raise HTTPException(status_code=400, detail="Usuário de sistema já em uso.")
+            
+        novo_func = FuncionarioModel(
+            nome=dados.nome, 
+            usuario=dados.usuario, 
+            senha_hash=pwd_context.hash(dados.senha), 
+            cargo_id=dados.cargo_id
+        )
         db.add(novo_func)
         db.flush() 
+        
         novo_func.matricula_cracha = f"ART-{novo_func.id:04d}"
-        db.add(InfoRHModel(funcionario_id=novo_func.id, telefone=dados.telefone, salario=dados.salario, escala=dados.escala, cpf=dados.cpf, status_admissao="PENDENTE_PREENCHIMENTO"))
+        
+        info_rh = InfoRHModel(
+            funcionario_id=novo_func.id, 
+            telefone=dados.telefone, 
+            salario=dados.salario, 
+            escala=dados.escala, 
+            cpf=dados.cpf,
+            status_admissao="PENDENTE_PREENCHIMENTO" 
+        )
+        db.add(info_rh)
         db.commit()
-        return {"status": "sucesso", "mensagem": f"Cadastro criado! Matrícula: {novo_func.matricula_cracha}."}
+        return {"status": "sucesso", "mensagem": f"Pré-Cadastro criado! Matrícula: {novo_func.matricula_cracha}."}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -531,23 +553,31 @@ def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get
 def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get_db)):
     try:
         rh = db.query(InfoRHModel).filter(InfoRHModel.cpf == dados.cpf).first()
-        if not rh: raise HTTPException(status_code=404, detail="CPF não encontrado.")
-        if rh.status_admissao == "ATIVO": raise HTTPException(status_code=400, detail="Admissão já concluída!")
+        if not rh: raise HTTPException(status_code=404, detail="CPF não encontrado. Solicite o cadastro no RH.")
+        if rh.status_admissao == "ATIVO": raise HTTPException(status_code=400, detail="Sua admissão já foi concluída!")
 
-        rh.data_nascimento = dados.data_nascimento; rh.naturalidade = dados.naturalidade
-        rh.estado_civil = dados.estado_civil; rh.rg = dados.rg
-        rh.pis_pasep = dados.pis_pasep; rh.titulo_eleitor = dados.titulo_eleitor
-        rh.reservista = dados.reservista; rh.endereco_completo = dados.endereco_completo
-        rh.dados_bancarios = dados.dados_bancarios; rh.escolaridade = dados.escolaridade
-        rh.qtd_filhos_menores = dados.qtd_filhos_menores; rh.cnh = dados.cnh
-        rh.plano_saude_escolhido = dados.plano_saude_escolhido; rh.aceite_lgpd = dados.aceite_lgpd
+        rh.data_nascimento = dados.data_nascimento
+        rh.naturalidade = dados.naturalidade
+        rh.estado_civil = dados.estado_civil
+        rh.rg = dados.rg
+        rh.pis_pasep = dados.pis_pasep
+        rh.titulo_eleitor = dados.titulo_eleitor
+        rh.reservista = dados.reservista
+        rh.endereco_completo = dados.endereco_completo
+        rh.dados_bancarios = dados.dados_bancarios
+        rh.escolaridade = dados.escolaridade
+        rh.qtd_filhos_menores = dados.qtd_filhos_menores
+        rh.cnh = dados.cnh
+        rh.plano_saude_escolhido = dados.plano_saude_escolhido
+        rh.aceite_lgpd = dados.aceite_lgpd
         rh.data_aceite_lgpd = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
         rh.status_admissao = "ATIVO" 
 
         func = db.query(FuncionarioModel).filter(FuncionarioModel.id == rh.funcionario_id).first()
         if func: func.foto_3x4 = dados.foto_3x4
+            
         db.commit()
-        return {"status": "sucesso", "mensagem": "Admissão concluída!"}
+        return {"status": "sucesso", "mensagem": "Admissão concluída com sucesso! Bem-vindo(a) à equipe."}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -555,47 +585,95 @@ def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get
 @app.get("/api/gestao/funcionarios/{func_id}/dossie")
 def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
-    if not rh: raise HTTPException(status_code=404)
-    return {"cpf": rh.cpf, "rg": rh.rg, "pis_pasep": rh.pis_pasep, "data_nascimento": rh.data_nascimento, "estado_civil": rh.estado_civil, "titulo_eleitor": rh.titulo_eleitor, "reservista": rh.reservista, "endereco_completo": rh.endereco_completo, "dados_bancarios": rh.dados_bancarios, "naturalidade": rh.naturalidade, "escolaridade": rh.escolaridade, "qtd_filhos_menores": rh.qtd_filhos_menores, "cnh": rh.cnh, "plano_saude_escolhido": rh.plano_saude_escolhido, "salario": rh.salario, "recebe_comissao": rh.recebe_comissao, "tipo_comissao": rh.tipo_comissao, "valor_comissao": rh.valor_comissao, "valor_vt": rh.valor_vt, "valor_va": rh.valor_va, "diaria_motoboy": rh.diaria_motoboy, "repasse_por_entrega": rh.repasse_por_entrega, "escala_matriz_json": rh.escala_matriz_json}
+    if not rh: raise HTTPException(status_code=404, detail="Dossiê não encontrado.")
+    return {
+        "cpf": rh.cpf, "rg": rh.rg, "pis_pasep": rh.pis_pasep, "data_nascimento": rh.data_nascimento, 
+        "estado_civil": rh.estado_civil, "titulo_eleitor": rh.titulo_eleitor, "reservista": rh.reservista, 
+        "endereco_completo": rh.endereco_completo, "dados_bancarios": rh.dados_bancarios, 
+        "naturalidade": rh.naturalidade, "escolaridade": rh.escolaridade, 
+        "qtd_filhos_menores": rh.qtd_filhos_menores, "cnh": rh.cnh, 
+        "plano_saude_escolhido": rh.plano_saude_escolhido, 
+        "salario": rh.salario, "recebe_comissao": rh.recebe_comissao, 
+        "tipo_comissao": rh.tipo_comissao, "valor_comissao": rh.valor_comissao, 
+        "valor_vt": rh.valor_vt, "valor_va": rh.valor_va, 
+        "diaria_motoboy": rh.diaria_motoboy, "repasse_por_entrega": rh.repasse_por_entrega, 
+        "escala_matriz_json": rh.escala_matriz_json
+    }
 
 @app.put("/api/gestao/funcionarios/{func_id}/dossie")
 def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
     if not rh: raise HTTPException(status_code=404)
-    rh.cpf = dados.cpf; rh.rg = dados.rg; rh.pis_pasep = dados.pis_pasep; rh.data_nascimento = dados.data_nascimento; rh.estado_civil = dados.estado_civil; rh.titulo_eleitor = dados.titulo_eleitor; rh.reservista = dados.reservista; rh.endereco_completo = dados.endereco_completo; rh.dados_bancarios = dados.dados_bancarios; rh.naturalidade = dados.naturalidade; rh.escolaridade = dados.escolaridade; rh.qtd_filhos_menores = dados.qtd_filhos_menores; rh.cnh = dados.cnh; rh.plano_saude_escolhido = dados.plano_saude_escolhido
-    if rh.status_admissao == "PENDENTE_PREENCHIMENTO": rh.status_admissao = "ATIVO"
+    
+    rh.cpf = dados.cpf
+    rh.rg = dados.rg
+    rh.pis_pasep = dados.pis_pasep
+    rh.data_nascimento = dados.data_nascimento
+    rh.estado_civil = dados.estado_civil
+    rh.titulo_eleitor = dados.titulo_eleitor
+    rh.reservista = dados.reservista
+    rh.endereco_completo = dados.endereco_completo
+    rh.dados_bancarios = dados.dados_bancarios
+    rh.naturalidade = dados.naturalidade
+    rh.escolaridade = dados.escolaridade
+    rh.qtd_filhos_menores = dados.qtd_filhos_menores
+    rh.cnh = dados.cnh
+    rh.plano_saude_escolhido = dados.plano_saude_escolhido
+    
+    if rh.status_admissao == "PENDENTE_PREENCHIMENTO": 
+        rh.status_admissao = "ATIVO"
+        
     db.commit()
-    return {"status": "sucesso"}
+    return {"status": "sucesso", "mensagem": "Documentos do Dossiê atualizados com sucesso."}
 
 @app.put("/api/gestao/funcionarios/{func_id}/financeiro")
 def atualizar_financeiro_rh(func_id: int, dados: AjusteFinanceiroRH, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
     if not rh: raise HTTPException(status_code=404)
-    rh.salario = dados.salario; rh.recebe_comissao = dados.recebe_comissao; rh.tipo_comissao = dados.tipo_comissao; rh.valor_comissao = dados.valor_comissao; rh.valor_vt = dados.valor_vt; rh.valor_va = dados.valor_va; rh.diaria_motoboy = dados.diaria_motoboy; rh.repasse_por_entrega = dados.repasse_por_entrega; rh.escala_matriz_json = dados.escala_matriz_json
+    
+    rh.salario = dados.salario
+    rh.recebe_comissao = dados.recebe_comissao
+    rh.tipo_comissao = dados.tipo_comissao
+    rh.valor_comissao = dados.valor_comissao
+    rh.valor_vt = dados.valor_vt
+    rh.valor_va = dados.valor_va
+    rh.diaria_motoboy = dados.diaria_motoboy
+    rh.repasse_por_entrega = dados.repasse_por_entrega
+    rh.escala_matriz_json = dados.escala_matriz_json
+    
     db.commit()
-    return {"status": "sucesso"}
+    return {"status": "sucesso", "mensagem": "Configurações de Remuneração e Escala salvas."}
 
 @app.delete("/api/gestao/funcionarios/{func_id}")
 def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
-    if func_id == 1: raise HTTPException(status_code=403, detail="Não é possível demitir o Admin Supremo.")
+    if func_id == 1: raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador Supremo.")
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
-    if rh: rh.status_admissao = "DEMITIDO"
+    if rh: 
+        rh.status_admissao = "DEMITIDO"
+        
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
-    if func: func.senha_hash = "REVOGADO" 
+    if func: 
+        func.senha_hash = "REVOGADO" 
+        
     db.commit()
-    return {"status": "sucesso"}
+    return {"status": "sucesso", "mensagem": "Acesso revogado."}
 
 @app.post("/api/gestao/ponto")
 def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
     hoje = datetime.utcnow().date().strftime("%Y-%m-%d")
     hora = datetime.utcnow().strftime("%H:%M")
+    
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == dados.funcionario_id).first()
-    if not rh or rh.status_admissao != "ATIVO": return {"status": "erro", "detail": "Acesso negado."}
+    if not rh or rh.status_admissao != "ATIVO": 
+        return {"status": "erro", "detail": "Acesso negado. Funcionário pendente ou demitido."}
+        
     ponto = db.query(PontoModel).filter(PontoModel.funcionario_id == dados.funcionario_id, PontoModel.data == hoje).first()
+    
     if not ponto:
         ponto = PontoModel(funcionario_id=dados.funcionario_id, data=hoje)
         db.add(ponto)
         db.flush()
+        
     if dados.tipo == "entrada":
         if ponto.entrada: return {"status": "erro", "detail": "Entrada já registrada."}
         ponto.entrada = hora
@@ -603,25 +681,52 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
         if not ponto.entrada: return {"status": "erro", "detail": "Bata a Entrada primeiro."}
         if ponto.saida: return {"status": "erro", "detail": "Saída já registrada."}
         ponto.saida = hora
+        
+        # Calcula horas trabalhadas
         fmt = "%H:%M"
-        t1 = datetime.strptime(ponto.entrada, fmt)
-        t2 = datetime.strptime(ponto.saida, fmt)
-        diff = (t2 - t1).total_seconds() / 3600.0
-        ponto.horas_trabalhadas = round(diff, 2)
+        try:
+            t1 = datetime.strptime(ponto.entrada, fmt)
+            t2 = datetime.strptime(ponto.saida, fmt)
+            diff = (t2 - t1).total_seconds() / 3600.0
+            ponto.horas_trabalhadas = round(diff, 2)
+        except Exception:
+            pass
+            
     db.commit()
-    return {"status": "sucesso"}
+    return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} registrado às {hora}!"}
 
 @app.post("/api/gestao/rh/ocorrencias")
 def registrar_ocorrencia(dados: NovaOcorrencia, db: Session = Depends(get_db)):
-    db.add(OcorrenciaRHModel(funcionario_id=dados.funcionario_id, data_ocorrencia=dados.data_ocorrencia, tipo=dados.tipo, motivo=dados.motivo, horas_abonadas=dados.horas_abonadas, horas_descontadas=dados.horas_descontadas, anexo_url=dados.anexo_url))
-    db.commit()
-    return {"status": "sucesso"}
+    try:
+        db.add(OcorrenciaRHModel(
+            funcionario_id=dados.funcionario_id, 
+            data_ocorrencia=dados.data_ocorrencia, 
+            tipo=dados.tipo, 
+            motivo=dados.motivo, 
+            horas_abonadas=dados.horas_abonadas, 
+            horas_descontadas=dados.horas_descontadas, 
+            anexo_url=dados.anexo_url
+        ))
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Ocorrência registrada no sistema RH."}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/gestao/rh/ferias")
 def solicitar_ferias(dados: NovaFerias, db: Session = Depends(get_db)):
-    db.add(SolicitacaoFeriasModel(funcionario_id=dados.funcionario_id, data_inicio=dados.data_inicio, data_fim=dados.data_fim, status="PENDENTE"))
-    db.commit()
-    return {"status": "sucesso"}
+    try:
+        db.add(SolicitacaoFeriasModel(
+            funcionario_id=dados.funcionario_id, 
+            data_inicio=dados.data_inicio, 
+            data_fim=dados.data_fim, 
+            status="PENDENTE"
+        ))
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Solicitação de férias enviada ao RH."}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/api/gestao/rh/ferias/{id_ferias}")
 def aprovar_rejeitar_ferias(id_ferias: int, status: str, observacao: str = "", db: Session = Depends(get_db)):
@@ -636,12 +741,15 @@ def aprovar_rejeitar_ferias(id_ferias: int, status: str, observacao: str = "", d
 def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(get_db)):
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
-    if not func or not rh: raise HTTPException(status_code=404)
+    if not func or not rh: raise HTTPException(status_code=404, detail="Colaborador não encontrado.")
 
     ocorrencias = db.query(OcorrenciaRHModel).filter(OcorrenciaRHModel.funcionario_id == func_id, OcorrenciaRHModel.data_ocorrencia.startswith(mes_ano)).all()
     pontos = db.query(PontoModel).filter(PontoModel.funcionario_id == func_id, PontoModel.data.startswith(mes_ano)).all()
 
-    salario_base = rh.salario; vt = rh.valor_vt; va = rh.valor_va; gorjetas = rh.gorjetas_acumuladas
+    salario_base = rh.salario
+    vt = rh.valor_vt
+    va = rh.valor_va
+    gorjetas = rh.gorjetas_acumuladas
     comissao = rh.valor_comissao if rh.recebe_comissao and rh.tipo_comissao == "FIXO" else 0.0 
     diaria = rh.diaria_motoboy * len(pontos) if rh.diaria_motoboy > 0 else 0.0
 
@@ -653,25 +761,41 @@ def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(ge
     salario_liquido = total_proventos - descontos
 
     return {
-        "colaborador": func.nome, "matricula": func.matricula_cracha, "mes_referencia": mes_ano,
-        "proventos": { "salario_base": salario_base, "vale_transporte": vt, "vale_alimentacao": va, "comissoes": comissao, "gorjetas": gorjetas, "diarias": diaria },
-        "descontos": { "horas_nao_trabalhadas": descontos, "horas_quantidade": horas_descontadas },
-        "totais": { "total_bruto": total_proventos, "total_descontos": descontos, "liquido_a_pagar": salario_liquido }
+        "colaborador": func.nome, 
+        "matricula": func.matricula_cracha, 
+        "mes_referencia": mes_ano,
+        "proventos": { 
+            "salario_base": salario_base, 
+            "vale_transporte": vt, 
+            "vale_alimentacao": va, 
+            "comissoes": comissao, 
+            "gorjetas": gorjetas, 
+            "diarias": diaria 
+        },
+        "descontos": { 
+            "horas_nao_trabalhadas": descontos, 
+            "horas_quantidade": horas_descontadas 
+        },
+        "totais": { 
+            "total_bruto": total_proventos, 
+            "total_descontos": descontos, 
+            "liquido_a_pagar": salario_liquido 
+        }
     }
 
-@app.get("/admissao", response_class=HTMLResponse)
-def abrir_admissao(): return Path("templates/admissao.html").read_text(encoding="utf-8") if Path("templates/admissao.html").exists() else "Erro"
 
-@app.get("/portal", response_class=HTMLResponse)
-def abrir_portal_colaborador(): return Path("templates/portal_colaborador.html").read_text(encoding="utf-8") if Path("templates/portal_colaborador.html").exists() else "Erro"
-
-# --- OUTRAS ROTAS GERAIS DE CARDÁPIO ---
+# ==========================================
+# ROTAS GERAIS DE CARDÁPIO E COMPLEMENTOS
+# ==========================================
 @app.post("/api/gestao/complementos")
 def criar_grupo_complemento(payload: GrupoCompSchema, db: Session = Depends(get_db)):
     try:
         grupo = GrupoComplementoModel(
-            produto_id=payload.produto_id, nome=payload.nome,
-            obrigatorio=payload.obrigatorio, minimo_opcoes=payload.minimo_opcoes, maximo_opcoes=payload.maximo_opcoes
+            produto_id=payload.produto_id, 
+            nome=payload.nome,
+            obrigatorio=payload.obrigatorio, 
+            minimo_opcoes=payload.minimo_opcoes, 
+            maximo_opcoes=payload.maximo_opcoes
         )
         db.add(grupo)
         db.flush() 
@@ -700,8 +824,14 @@ def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
     funcionario = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first()
     if not funcionario or not pwd_context.verify(dados.senha, funcionario.senha_hash):
         raise HTTPException(status_code=401, detail="Usuário ou senha incorretos!")
+    
     cargo = db.query(Cargo).filter(Cargo.id == funcionario.cargo_id).first()
-    return { "status": "sucesso", "nome": funcionario.nome, "cargo_id": funcionario.cargo_id, "cargo_nome": cargo.nome if cargo else "Indefinido" }
+    return { 
+        "status": "sucesso", 
+        "nome": funcionario.nome, 
+        "cargo_id": funcionario.cargo_id, 
+        "cargo_nome": cargo.nome if cargo else "Indefinido" 
+    }
 
 @app.get("/api/cardapio")
 def listar_cardapio_digital(db: Session = Depends(get_db)): 
@@ -730,8 +860,10 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
         )
         db.add(novo_produto)
         db.flush()
+        
         for f in produto.fichas:
             db.add(FichaTecnicaModel(produto_id=novo_produto.id, insumo_id=f.insumo_id, quantidade_necessaria=f.quantidade))
+            
         db.commit()
         return {"status": "sucesso", "mensagem": "Produto criado com sucesso no cardápio!"}
     except Exception as e: 
@@ -741,14 +873,29 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
 @app.get("/api/gestao/insumos")
 def listar_insumos_disp(db: Session = Depends(get_db)):
     insumos = db.query(InsumoModel).order_by(InsumoModel.nome.asc()).all()
-    return [{"id": i.id, "nome": i.nome, "unidade": i.unidade_medida, "quantidade_atual": i.quantidade_atual, "quantidade_minima": i.quantidade_minima, "custo": i.custo_unitario} for i in insumos]
+    return [{
+        "id": i.id, "nome": i.nome, "unidade": i.unidade_medida, 
+        "quantidade_atual": i.quantidade_atual, "quantidade_minima": i.quantidade_minima, 
+        "custo": i.custo_unitario
+    } for i in insumos]
 
 @app.post("/api/gestao/insumo")
 def receber_novo_insumo(insumo: NovoInsumo, db: Session = Depends(get_db)):
     try:
-        novo = cadastrar_insumo(db=db, nome=insumo.nome, unidade=insumo.unidade, qtd_inicial=insumo.quantidade, qtd_min=insumo.minimo, custo=insumo.custo)
+        novo = InsumoModel(
+            nome=insumo.nome, 
+            unidade_medida=insumo.unidade, 
+            quantidade_atual=insumo.quantidade, 
+            quantidade_minima=insumo.minimo, 
+            custo_unitario=insumo.custo
+        )
+        db.add(novo)
+        db.commit()
+        db.refresh(novo)
         return {"status": "sucesso", "insumo_id": novo.id}
-    except Exception as e: db.rollback(); raise HTTPException(status_code=500)
+    except Exception as e: 
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/gestao/produto/{produto_id}")
 def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
@@ -758,7 +905,9 @@ def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
         db.delete(produto)
         db.commit()
         return {"status": "sucesso"}
-    except Exception as e: db.rollback(); raise HTTPException(status_code=500)
+    except Exception as e: 
+        db.rollback()
+        raise HTTPException(status_code=500)
 
 @app.delete("/api/gestao/insumo/{insumo_id}")
 def deletar_insumo(insumo_id: int, db: Session = Depends(get_db)):
@@ -768,7 +917,10 @@ def deletar_insumo(insumo_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso"}
 
-# --- ROTAS FINANCEIRAS E RELATÓRIOS (V2.0 com Filtros de Data) ---
+
+# ==========================================
+# ROTAS FINANCEIRAS E RELATÓRIOS
+# ==========================================
 @app.post("/api/gestao/conta")
 def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
     try:
@@ -777,7 +929,9 @@ def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
             fornecedor = db.query(FornecedorModel).first()
             if not fornecedor:
                 fornecedor = FornecedorModel(nome_fantasia="Diversos", categoria="Geral")
-                db.add(fornecedor); db.commit(); db.refresh(fornecedor)
+                db.add(fornecedor)
+                db.commit()
+                db.refresh(fornecedor)
             fornecedor_id = fornecedor.id
             
         data_venc = datetime.strptime(conta.vencimento, "%Y-%m-%d").date()
@@ -808,7 +962,16 @@ def resumo_financeiro(db: Session = Depends(get_db)):
     contas = db.query(ContaPagarModel).order_by(ContaPagarModel.data_vencimento.asc()).all()
     total_empresa = sum(c.valor for c in contas if c.tipo_despesa == "Empresa")
     total_casa = sum(c.valor for c in contas if c.tipo_despesa == "Casa")
-    lista = [{"id": c.id, "descricao": c.descricao, "valor": c.valor, "vencimento": c.data_vencimento.strftime("%d/%m/%Y"), "tipo": c.tipo_despesa, "status": c.status} for c in contas]
+    
+    lista = [{
+        "id": c.id, 
+        "descricao": c.descricao, 
+        "valor": c.valor, 
+        "vencimento": c.data_vencimento.strftime("%d/%m/%Y"), 
+        "tipo": c.tipo_despesa, 
+        "status": c.status
+    } for c in contas]
+    
     return {"total_empresa": total_empresa, "total_casa": total_casa, "contas": lista}
 
 @app.get("/api/gestao/financeiro/lucratividade")
@@ -822,7 +985,8 @@ def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None,
             df = datetime.strptime(data_fim, "%Y-%m-%d").date()
             query_pedidos = query_pedidos.filter(PedidoModel.data_pedido >= di, PedidoModel.data_pedido <= df)
             query_contas = query_contas.filter(ContaPagarModel.data_vencimento >= di, ContaPagarModel.data_vencimento <= df)
-        except Exception: pass
+        except Exception: 
+            pass
         
     pedidos = query_pedidos.all()
     contas = query_contas.all()
@@ -835,7 +999,14 @@ def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None,
     lucro_liquido_real = lucro_operacional - despesas_casa
     margem_lucro = (lucro_operacional / faturamento_total * 100) if faturamento_total > 0 else 0
     
-    return { "faturamento": faturamento_total, "despesas_empresa": despesas_empresa, "despesas_casa": despesas_casa, "lucro_operacional": lucro_operacional, "lucro_liquido": lucro_liquido_real, "margem_lucro": round(margem_lucro, 2) }
+    return { 
+        "faturamento": faturamento_total, 
+        "despesas_empresa": despesas_empresa, 
+        "despesas_casa": despesas_casa, 
+        "lucro_operacional": lucro_operacional, 
+        "lucro_liquido": lucro_liquido_real, 
+        "margem_lucro": round(margem_lucro, 2) 
+    }
 
 @app.get("/api/gestao/relatorios/curva-abc")
 def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db)):
@@ -849,6 +1020,7 @@ def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db:
         
     pedidos = query.all()
     ranking = {}
+    
     for pedido in pedidos:
         for item in getattr(pedido, 'itens', getattr(pedido, 'itens_pedido', [])):
             prod_id = item.produto_id
@@ -923,7 +1095,9 @@ def obter_recibo_pedido(pedido_id: int, db: Session = Depends(get_db)):
         "forma_pagamento": str(pedido.forma_pagamento).replace('_', ' ').upper()
     }
     
-# --- ROTAS DE LOGÍSTICA E KDS ---
+# ==========================================
+# ROTAS DE LOGÍSTICA E KDS
+# ==========================================
 @app.get("/api/logistica/pedidos")
 def listar_pedidos_logistica(db: Session = Depends(get_db)):
     pedidos = db.query(PedidoModel).order_by(desc(PedidoModel.id)).all()
@@ -993,11 +1167,17 @@ def listar_pedidos_cozinha(db: Session = Depends(get_db)):
         status_atual = str(pedido.status).split('.')[-1].upper()
         if status_atual not in ["RECEBIDO", "EM_PREPARO", "PRONTO"]: continue
         tipo_atual = str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', ''))).split('.')[-1].upper()
+        
         itens = []
         for item in getattr(pedido, 'itens', getattr(pedido, 'itens_pedido', [])):
             produto = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
             obs = getattr(item, 'observacao', getattr(item, 'observacoes', ''))
-            itens.append({"quantidade": item.quantidade, "nome_produto": produto.nome if produto else "Removido", "observacao": obs})
+            itens.append({
+                "quantidade": item.quantidade, 
+                "nome_produto": produto.nome if produto else "Removido", 
+                "observacao": obs
+            })
+            
         lista_kds.append({
             "id": pedido.id, 
             "senha_diaria": getattr(pedido, 'senha_diaria', pedido.id),
@@ -1023,7 +1203,10 @@ def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, db: Session = 
         
     return {"mensagem": "Status atualizado"}
 
-# --- ROTAS DE CONFIGURAÇÃO DA LOJA (V2.0) ---
+
+# ==========================================
+# ROTAS DE CONFIGURAÇÃO DA LOJA (SETUP CENTRAL)
+# ==========================================
 @app.get("/api/gestao/configuracoes")
 def ler_configuracoes(db: Session = Depends(get_db)):
     config = db.query(ConfiguracaoLojaModel).first()
@@ -1050,6 +1233,7 @@ def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
     config.sistema_fidelidade = dados.get("sistema_fidelidade", config.sistema_fidelidade)
     config.categorias_cardapio = dados.get("categorias_cardapio", config.categorias_cardapio)
     config.categorias_fornecedor = dados.get("categorias_fornecedor", config.categorias_fornecedor)
+    config.planos_saude_opcoes = dados.get("planos_saude_opcoes", config.planos_saude_opcoes)
     db.commit()
     return {"status": "sucesso"}
 
@@ -1084,32 +1268,54 @@ def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
     db.delete(cliente)
     db.commit()
     return {"status": "sucesso"}
-    
-# --- ROTAS VISUAIS (Telas HTML) ---
+
+
+# ==========================================
+# ROTAS VISUAIS (TELAS HTML SERVIDAS PELO FASTAPI)
+# ==========================================
 @app.get("/login", response_class=HTMLResponse)
-def abrir_tela_login(): return Path("templates/login.html").read_text(encoding="utf-8") if Path("templates/login.html").exists() else "Erro"
+def abrir_tela_login(): 
+    return Path("templates/login.html").read_text(encoding="utf-8") if Path("templates/login.html").exists() else "Erro"
 
 @app.get("/", response_class=HTMLResponse)
-def abrir_cardapio(): return Path("templates/cardapio.html").read_text(encoding="utf-8") if Path("templates/cardapio.html").exists() else "Erro"
+def abrir_cardapio(): 
+    return Path("templates/cardapio.html").read_text(encoding="utf-8") if Path("templates/cardapio.html").exists() else "Erro"
 
 @app.get("/admin", response_class=HTMLResponse)
-def abrir_admin(): return Path("templates/dashboard.html").read_text(encoding="utf-8") if Path("templates/dashboard.html").exists() else "Erro"
+def abrir_admin(): 
+    return Path("templates/dashboard.html").read_text(encoding="utf-8") if Path("templates/dashboard.html").exists() else "Erro"
 
 @app.get("/gestao", response_class=HTMLResponse)
-def abrir_gestao(): return Path("templates/gestao.html").read_text(encoding="utf-8") if Path("templates/gestao.html").exists() else "Erro"
+def abrir_gestao(): 
+    return Path("templates/gestao.html").read_text(encoding="utf-8") if Path("templates/gestao.html").exists() else "Erro"
 
 @app.get("/pdv", response_class=HTMLResponse)
-def abrir_pdv(): return Path("templates/pdv.html").read_text(encoding="utf-8") if Path("templates/pdv.html").exists() else "Erro"
+def abrir_pdv(): 
+    return Path("templates/pdv.html").read_text(encoding="utf-8") if Path("templates/pdv.html").exists() else "Erro"
 
 @app.get("/logistica", response_class=HTMLResponse)
-def abrir_logistica(): return Path("templates/logistica.html").read_text(encoding="utf-8") if Path("templates/logistica.html").exists() else "Erro"
+def abrir_logistica(): 
+    return Path("templates/logistica.html").read_text(encoding="utf-8") if Path("templates/logistica.html").exists() else "Erro"
 
 @app.get("/kds", response_class=HTMLResponse)
-def abrir_kds(): return Path("templates/kds.html").read_text(encoding="utf-8") if Path("templates/kds.html").exists() else "Erro"
+def abrir_kds(): 
+    return Path("templates/kds.html").read_text(encoding="utf-8") if Path("templates/kds.html").exists() else "Erro"
 
 @app.get("/totem", response_class=HTMLResponse)
-def abrir_totem(): return Path("templates/totem.html").read_text(encoding="utf-8") if Path("templates/totem.html").exists() else "Erro"
+def abrir_totem(): 
+    return Path("templates/totem.html").read_text(encoding="utf-8") if Path("templates/totem.html").exists() else "Erro"
 
+@app.get("/admissao", response_class=HTMLResponse)
+def abrir_admissao(): 
+    return Path("templates/admissao.html").read_text(encoding="utf-8") if Path("templates/admissao.html").exists() else "Erro"
+
+@app.get("/portal_colaborador", response_class=HTMLResponse)
+def abrir_portal_colaborador(): 
+    return Path("templates/portal_colaborador.html").read_text(encoding="utf-8") if Path("templates/portal_colaborador.html").exists() else "Erro"
+
+# ==========================================
+# INCLUSÃO DE ROUTERS E WEBHOOKS GENÉRICOS
+# ==========================================
 app.include_router(router_dashboard)
 app.include_router(router_pagamentos)
 app.include_router(router_99food)
@@ -1119,16 +1325,22 @@ def checar_novos_pedidos(db: Session = Depends(get_db)):
     qtd_novos = db.query(PedidoModel).filter(PedidoModel.status == "RECEBIDO").count()
     return {"pendentes": qtd_novos}
 
-# === WEBHOOKS DE INTEGRAÇÃO (iFood, 99Food, Redes Sociais, WhatsApp) ===
 @app.post("/api/webhooks/ifood")
-async def webhook_ifood(request: Request, db: Session = Depends(get_db)): return {"status": "ok"}
+async def webhook_ifood(request: Request, db: Session = Depends(get_db)): 
+    return {"status": "ok"}
+
 @app.post("/api/webhooks/99food")
-async def webhook_99food(request: Request, db: Session = Depends(get_db)): return {"status": "ok"}
+async def webhook_99food(request: Request, db: Session = Depends(get_db)): 
+    return {"status": "ok"}
+
 @app.post("/api/webhooks/redes-sociais")
-async def webhook_social(request: Request): return {"status": "ok"}
+async def webhook_social(request: Request): 
+    return {"status": "ok"}
+
 @app.post("/api/webhooks/whatsapp-receber")
-def receber_mensagem_cliente(payload: dict): return {"status": "sucesso"}
+def receber_mensagem_cliente(payload: dict): 
+    return {"status": "sucesso"}
     
 if __name__ == "__main__":
-    print("🚀 Iniciando Servidor Web do Art's Burguer V2.0 (Google Cloud Edition)...")
+    print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
