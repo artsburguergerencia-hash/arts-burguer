@@ -172,17 +172,42 @@ class ItemComplementoModel(Base):
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
 
+class FornecedorModel(Base):
+    __tablename__ = "fornecedores"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    nome_fantasia = Column(String)
+    categoria = Column(String, default="Geral")
+    contato = Column(String, default="")
+    cnpj = Column(String, default="")
 
-# 🚨 SCRIPT DE AUTO-MIGRAÇÃO E RECUPERAÇÃO DO BANCO 🚨
+class ContaPagarModel(Base):
+    __tablename__ = "contas_pagar"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    fornecedor_id = Column(Integer, ForeignKey("fornecedores.id"), nullable=True)
+    descricao = Column(String)
+    valor = Column(Float)
+    data_vencimento = Column(Date)
+    tipo_despesa = Column(String, default="Empresa")
+    status = Column(String, default="PENDENTE")
+
+# 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL (Cura todos os erros de UndefinedColumn) 🚨
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
+    # Esta lista agora injeta ABSOLUTAMENTE TODAS as colunas que podem estar faltando.
     colunas_novas = [
         "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
         "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
+        
+        "ALTER TABLE info_rh ADD COLUMN status_admissao VARCHAR DEFAULT 'PENDENTE_PREENCHIMENTO';",
+        "ALTER TABLE info_rh ADD COLUMN aceite_lgpd BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE info_rh ADD COLUMN data_aceite_lgpd VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN telefone VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN salario FLOAT DEFAULT 0.0;",
         "ALTER TABLE info_rh ADD COLUMN escala VARCHAR DEFAULT '';",
-        "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
         "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE;",
         "ALTER TABLE info_rh ADD COLUMN tipo_comissao VARCHAR DEFAULT 'PERCENTUAL';",
         "ALTER TABLE info_rh ADD COLUMN valor_comissao FLOAT DEFAULT 0.0;",
@@ -192,6 +217,24 @@ def inicializar_banco():
         "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0;",
         "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0;",
         "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}';",
+        
+        "ALTER TABLE info_rh ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN naturalidade VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN estado_civil VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN rg VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN cpf VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN pis_pasep VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN titulo_eleitor VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN reservista VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN endereco_completo VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN dados_bancarios VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN escolaridade VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN qtd_filhos_menores INTEGER DEFAULT 0;",
+        "ALTER TABLE info_rh ADD COLUMN cnh VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN plano_saude_escolhido VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN link_pasta_documentos VARCHAR DEFAULT '';",
+        
+        "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
         "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0;",
         "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
         "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto';"
@@ -202,7 +245,7 @@ def inicializar_banco():
             db.execute(text(sql))
             db.commit()
         except Exception:
-            db.rollback() 
+            db.rollback() # Ignora silenciosamente se a coluna já existir
 
     try:
         cargo_admin = db.query(Cargo).filter(Cargo.nome == "Administrador").first()
