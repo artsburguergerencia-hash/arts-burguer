@@ -23,7 +23,7 @@
     <!-- TELA DE LOGIN SEGURA DO COLABORADOR -->
     <div id="tela-login" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 transition-all duration-500">
         <div class="w-full max-w-sm bg-white p-8 rounded-3xl shadow-2xl text-center">
-            <div class="w-20 h-20 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-brand-600 shadow-inner">
+            <div class="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600 shadow-inner">
                 <i class="ph-fill ph-identification-badge text-5xl"></i>
             </div>
             <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Portal do Colaborador</h2>
@@ -32,14 +32,14 @@
             <form onsubmit="fazerLogin(event)" class="space-y-4">
                 <div class="text-left">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1">Usuário de Login</label>
-                    <input type="text" id="login-usuario" required placeholder="Ex: joao.silva" class="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 text-center font-black text-lg text-slate-700 outline-none focus:border-brand-500 transition-colors">
+                    <input type="text" id="login-usuario" required placeholder="Ex: joao.silva" class="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 text-center font-black text-lg text-slate-700 outline-none focus:border-blue-500 transition-colors">
                 </div>
                 <div class="text-left">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1">Sua Senha</label>
-                    <input type="password" id="login-senha" required placeholder="••••••••" class="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 text-center font-black text-xl text-slate-700 outline-none focus:border-brand-500 transition-colors">
+                    <input type="password" id="login-senha" required placeholder="••••••••" class="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 text-center font-black text-xl text-slate-700 outline-none focus:border-blue-500 transition-colors">
                 </div>
                 <div class="pt-2">
-                    <button type="submit" id="btn-login" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-xl shadow-[0_10px_20px_rgba(255,71,87,0.3)] transition-all active:scale-95 text-lg flex items-center justify-center">
+                    <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-[0_10px_20px_rgba(37,99,235,0.3)] transition-all active:scale-95 text-lg flex items-center justify-center">
                         Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>
                     </button>
                 </div>
@@ -69,7 +69,7 @@
         <!-- VIEW 1: BATER PONTO -->
         <div id="view-ponto" class="view active space-y-6">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 text-center relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-brand-500"></div>
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600"></div>
                 <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Relógio de Ponto Digital</h2>
                 <div class="text-5xl font-black text-slate-800 tracking-tighter my-6 font-mono" id="relogio-digital">00:00:00</div>
                 <p class="text-xs font-bold text-slate-500 bg-slate-50 py-2 rounded-lg border border-slate-100 uppercase tracking-wider" id="data-atual">Carregando data...</p>
@@ -98,7 +98,6 @@
                 </div>
             </div>
 
-            <!-- CONTAINER DO HOLERITE (Para impressão/PDF) -->
             <div id="container-holerite-pdf" class="bg-white rounded-xl border border-slate-200 shadow-sm hidden overflow-hidden">
                 <div class="p-6 border-b border-slate-200 bg-slate-50">
                     <div class="flex justify-between items-start mb-4">
@@ -112,7 +111,7 @@
                         </div>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200 text-xs">
-                        <p class="font-bold text-slate-800 uppercase tracking-wider mb-1">Colaborador: <span id="hol-nome-func" class="font-black text-brand-600 ml-1">Carregando...</span></p>
+                        <p class="font-bold text-slate-800 uppercase tracking-wider mb-1">Colaborador: <span id="hol-nome-func" class="font-black text-blue-600 ml-1">Carregando...</span></p>
                         <p class="font-bold text-slate-800 uppercase tracking-wider">Matrícula/ID: <span id="hol-mat-func" class="font-black text-slate-500 ml-1 font-mono">0000</span></p>
                     </div>
                 </div>
@@ -122,11 +121,10 @@
                         <tr class="bg-slate-100 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest font-black">
                             <th class="py-3 px-4">Descrição</th>
                             <th class="py-3 px-4 text-right text-green-600">Proventos</th>
-                            <th class="py-3 px-4 text-right text-brand-600">Descontos</th>
+                            <th class="py-3 px-4 text-right text-red-600">Descontos</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-holerite-body" class="font-bold text-slate-700">
-                        <!-- Preenchido via JS -->
                     </tbody>
                 </table>
 
@@ -153,8 +151,6 @@
 
         <!-- VIEW 3: SOLICITAÇÕES (FÉRIAS E ATESTADOS) -->
         <div id="view-solicitacoes" class="view space-y-6">
-            
-            <!-- ENVIAR ATESTADO / OCORRÊNCIA -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-amber-500 pl-3">Justificar Faltas / Atestados</h3>
                 <form onsubmit="enviarOcorrencia(event)" class="space-y-4" id="form-ocorrencia">
@@ -175,7 +171,7 @@
                         <input type="text" id="oc-motivo" required placeholder="Ex: Consulta dentista" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium outline-none text-sm focus:border-amber-500 text-slate-700">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Link do Atestado (Foto/Drive) - Opcional</label>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Link do Atestado (Opcional)</label>
                         <input type="url" id="oc-anexo" placeholder="https://..." class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium outline-none text-sm focus:border-amber-500 text-slate-700">
                     </div>
                     <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-widest shadow-md">
@@ -184,7 +180,6 @@
                 </form>
             </div>
 
-            <!-- SOLICITAR FÉRIAS -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-blue-500 pl-3">Solicitar Férias</h3>
                 <form onsubmit="pedirFerias(event)" class="space-y-4" id="form-ferias">
@@ -203,9 +198,7 @@
                     </button>
                 </form>
             </div>
-
         </div>
-
     </main>
 
     <!-- NAVEGAÇÃO INFERIOR ESTILO APP (BOTTOM NAV) -->
@@ -227,7 +220,6 @@
     <script>
         let FUNC_ID = null;
 
-        // --- RELÓGIO DIGITAL ---
         function atualizarRelogio() {
             const agora = new Date();
             document.getElementById('relogio-digital').innerText = agora.toLocaleTimeString('pt-BR', { hour12: false });
@@ -237,7 +229,6 @@
         setInterval(atualizarRelogio, 1000);
         atualizarRelogio();
 
-        // --- CONTROLE DE LOGIN SEGURO ---
         async function fazerLogin(e) {
             e.preventDefault();
             const usuario = document.getElementById('login-usuario').value.trim();
@@ -248,10 +239,8 @@
             btn.disabled = true;
 
             try {
-                // 1. O servidor valida se a senha e usuário conferem com o banco criptografado
                 const resAuth = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ usuario: usuario, senha: senha })
                 });
 
@@ -262,7 +251,6 @@
                     return;
                 }
 
-                // 2. Se a senha está correta, busca o ID do funcionário para usar no app
                 const resFunc = await fetch('/api/gestao/funcionarios');
                 const funcionarios = await resFunc.json();
                 const meuPerfil = funcionarios.find(f => f.usuario === usuario);
@@ -286,7 +274,6 @@
                     btn.innerHTML = 'Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>';
                     btn.disabled = false;
                 }
-
             } catch(err) {
                 alert("❌ Falha de conexão com o servidor da empresa.");
                 btn.innerHTML = 'Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>';
@@ -294,24 +281,17 @@
             }
         }
 
-        function sair() {
-            if(confirm("Deseja sair da sua conta?")) { window.location.reload(); }
-        }
+        function sair() { if(confirm("Deseja sair da sua conta?")) { window.location.reload(); } }
 
-        // --- NAVEGAÇÃO INFERIOR ---
         function mudarView(idView, btnElement) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => {
-                b.classList.remove('text-blue-600');
-                b.classList.add('text-slate-400');
+                b.classList.remove('text-blue-600'); b.classList.add('text-slate-400');
             });
-
             document.getElementById(idView).classList.add('active');
-            btnElement.classList.remove('text-slate-400');
-            btnElement.classList.add('text-blue-600');
+            btnElement.classList.remove('text-slate-400'); btnElement.classList.add('text-blue-600');
         }
 
-        // --- BATER PONTO ---
         async function registrarPonto(tipo) {
             const msgBox = document.getElementById('msg-ponto');
             msgBox.classList.remove('hidden', 'bg-red-50', 'text-red-600', 'border-red-200', 'bg-green-50', 'text-green-600', 'border-green-200');
@@ -320,8 +300,7 @@
             
             try {
                 const res = await fetch('/api/gestao/ponto', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({ funcionario_id: FUNC_ID, tipo: tipo }) 
                 });
                 const data = await res.json();
@@ -341,11 +320,9 @@
             }
         }
 
-        // --- HOLERITE E PDF ---
         async function consultarHolerite() {
-            const mes = document.getElementById('mes-holerite').value; // YYYY-MM
+            const mes = document.getElementById('mes-holerite').value;
             const btn = document.getElementById('btn-holerite');
-            
             if(!mes) { alert("Por favor, selecione um mês para buscar."); return; }
             
             btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true;
@@ -362,7 +339,6 @@
                     let linhasHtml = '';
                     const fMoeda = (valor) => `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
                     
-                    // PROVENTOS
                     if(data.proventos.salario_base > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Salário Base Mensal</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.salario_base)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
                     if(data.proventos.vale_transporte > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Vale Transporte</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.vale_transporte)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
                     if(data.proventos.vale_alimentacao > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Vale Alimentação</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.vale_alimentacao)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
@@ -370,9 +346,8 @@
                     if(data.proventos.gorjetas > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Taxas e Gorjetas</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.gorjetas)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
                     if(data.proventos.diarias > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Diárias / Entregas (Logística)</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.diarias)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
                     
-                    // DESCONTOS
                     if(data.descontos.horas_nao_trabalhadas > 0) {
-                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100 text-brand-500 font-bold">Faltas e Atrasos (${data.descontos.horas_quantidade}h)</td><td class="py-3 px-4 border-b border-slate-100"></td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-brand-600">${fMoeda(data.descontos.horas_nao_trabalhadas)}</td></tr>`;
+                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100 text-red-500 font-bold">Faltas e Atrasos (${data.descontos.horas_quantidade}h)</td><td class="py-3 px-4 border-b border-slate-100"></td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-red-600">${fMoeda(data.descontos.horas_nao_trabalhadas)}</td></tr>`;
                     }
 
                     if(linhasHtml === '') linhasHtml = '<tr><td colspan="3" class="py-6 text-center text-slate-400">Nenhum lançamento no período.</td></tr>';
@@ -388,11 +363,8 @@
                 } else {
                     alert("Holerite não disponível para este mês.");
                 }
-            } catch(e) { 
-                alert("Erro ao buscar a folha de pagamento."); 
-            } finally {
-                btn.innerHTML = '<i class="ph-bold ph-magnifying-glass"></i>';
-                btn.disabled = false;
+            } catch(e) { alert("Erro ao buscar a folha de pagamento."); } finally {
+                btn.innerHTML = '<i class="ph-bold ph-magnifying-glass"></i>'; btn.disabled = false;
             }
         }
 
@@ -406,41 +378,32 @@
             html2canvas(el, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => { 
                 const imgData = canvas.toDataURL('image/jpeg', 1.0); 
                 const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4'); 
-                
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const margin = 10;
                 const pdfImgWidth = pdfWidth - (margin * 2);
                 const pdfImgHeight = (canvas.height * pdfImgWidth) / canvas.width;
-                
                 pdf.addImage(imgData, 'JPEG', margin, margin, pdfImgWidth, pdfImgHeight); 
                 pdf.save(`Holerite_${mes}_ArtsBurguer.pdf`); 
-                
                 btn.innerHTML = '<i class="ph-bold ph-download-simple text-xl mr-2"></i> Baixar Documento (PDF)';
             }); 
         }
 
-        // --- SOLICITAÇÕES AO RH ---
         async function enviarOcorrencia(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Enviando...'; btn.disabled = true;
 
             const payload = {
-                funcionario_id: FUNC_ID, 
-                tipo: document.getElementById('oc-tipo').value,
-                data_ocorrencia: document.getElementById('oc-data').value, 
-                motivo: document.getElementById('oc-motivo').value,
-                horas_abonadas: 0, horas_descontadas: 0, 
-                anexo_url: document.getElementById('oc-anexo').value
+                funcionario_id: FUNC_ID, tipo: document.getElementById('oc-tipo').value,
+                data_ocorrencia: document.getElementById('oc-data').value, motivo: document.getElementById('oc-motivo').value,
+                horas_abonadas: 0, horas_descontadas: 0, anexo_url: document.getElementById('oc-anexo').value
             };
             
             try {
                 const res = await fetch('/api/gestao/rh/ocorrencias', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if(res.ok) { 
-                    alert("✅ Ocorrência enviada ao RH com sucesso!"); 
-                    document.getElementById('form-ocorrencia').reset(); 
-                } else { alert("Falha ao registrar ocorrência."); }
-            } catch (err) { alert("Falha de conexão com a empresa."); }
+                if(res.ok) { alert("✅ Ocorrência enviada ao RH com sucesso!"); document.getElementById('form-ocorrencia').reset(); } 
+                else { alert("Falha ao registrar ocorrência."); }
+            } catch (err) { alert("Falha de conexão."); }
             
             btn.innerHTML = 'Enviar para o RH'; btn.disabled = false;
         }
@@ -450,19 +413,12 @@
             const btn = e.target.querySelector('button[type="submit"]');
             btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Solicitando...'; btn.disabled = true;
 
-            const payload = {
-                funcionario_id: FUNC_ID, 
-                data_inicio: document.getElementById('fe-inicio').value,
-                data_fim: document.getElementById('fe-fim').value
-            };
-            
+            const payload = { funcionario_id: FUNC_ID, data_inicio: document.getElementById('fe-inicio').value, data_fim: document.getElementById('fe-fim').value };
             try {
                 const res = await fetch('/api/gestao/rh/ferias', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if(res.ok) { 
-                    alert("🏖️ Solicitação de férias enviada para aprovação do Gestor!"); 
-                    document.getElementById('form-ferias').reset(); 
-                } else { alert("Falha ao solicitar férias."); }
-            } catch (err) { alert("Falha de conexão com a empresa."); }
+                if(res.ok) { alert("🏖️ Solicitação enviada ao Gestor!"); document.getElementById('form-ferias').reset(); } 
+                else { alert("Falha ao solicitar."); }
+            } catch (err) { alert("Falha de conexão."); }
             
             btn.innerHTML = 'Registrar Pedido'; btn.disabled = false;
         }
