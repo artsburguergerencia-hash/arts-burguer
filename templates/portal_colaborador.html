@@ -462,7 +462,7 @@
 
         // --- HOLERITE E PDF ---
         async function consultarHolerite() {
-            const mes = document.getElementById('mes-holerite').value;
+            const mes = document.getElementById('mes-holerite').value; // YYYY-MM
             const btn = document.getElementById('btn-holerite');
             
             if (!mes) { 
@@ -612,11 +612,9 @@
             let dInicio, dFim;
 
             if (tipoPedido === "FOLGA") {
-                // Se for folga, a data final é a mesma data de início (1 dia só)
                 dInicio = document.getElementById('fe-dia-unico').value;
                 dFim = document.getElementById('fe-dia-unico').value;
             } else {
-                // Se for férias, captura o período completo
                 dInicio = document.getElementById('fe-inicio').value;
                 dFim = document.getElementById('fe-fim').value;
             }
