@@ -53,12 +53,15 @@
             <i class="ph-fill ph-buildings text-[150px]"></i>
         </div>
         <div class="relative z-10 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-1">Bem-vindo(a) de volta,</p>
-                <h1 class="text-2xl font-black tracking-tight" id="user-nome">Colaborador</h1>
+            <div class="flex items-center">
+                <img id="header-foto" src="https://ui-avatars.com/api/?name=C&background=ffffff&color=2563eb" class="w-12 h-12 rounded-full border-2 border-white/50 mr-3 object-cover shadow-sm">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-1">Bem-vindo(a),</p>
+                    <h1 class="text-xl font-black tracking-tight" id="user-nome">Colaborador</h1>
+                </div>
             </div>
-            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/40 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors" onclick="sair()" title="Sair da Conta">
-                <i class="ph-bold ph-power text-xl"></i>
+            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border border-white/40 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors" onclick="sair()" title="Sair da Conta">
+                <i class="ph-bold ph-power text-lg"></i>
             </div>
         </div>
     </header>
@@ -98,6 +101,7 @@
                 </div>
             </div>
 
+            <!-- CONTAINER DO HOLERITE (Para impressão/PDF) -->
             <div id="container-holerite-pdf" class="bg-white rounded-xl border border-slate-200 shadow-sm hidden overflow-hidden">
                 <div class="p-6 border-b border-slate-200 bg-slate-50">
                     <div class="flex justify-between items-start mb-4">
@@ -121,10 +125,11 @@
                         <tr class="bg-slate-100 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest font-black">
                             <th class="py-3 px-4">Descrição</th>
                             <th class="py-3 px-4 text-right text-green-600">Proventos</th>
-                            <th class="py-3 px-4 text-right text-red-600">Descontos</th>
+                            <th class="py-3 px-4 text-right text-brand-600">Descontos</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-holerite-body" class="font-bold text-slate-700">
+                        <!-- Preenchido via JS -->
                     </tbody>
                 </table>
 
@@ -149,8 +154,10 @@
             </button>
         </div>
 
-        <!-- VIEW 3: SOLICITAÇÕES (FÉRIAS E ATESTADOS) -->
+        <!-- VIEW 3: SOLICITAÇÕES (FÉRIAS, FOLGA E ATESTADOS) -->
         <div id="view-solicitacoes" class="view space-y-6">
+            
+            <!-- ENVIAR ATESTADO / OCORRÊNCIA -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-amber-500 pl-3">Justificar Faltas / Atestados</h3>
                 <form onsubmit="enviarOcorrencia(event)" class="space-y-4" id="form-ocorrencia">
@@ -180,25 +187,42 @@
                 </form>
             </div>
 
+            <!-- SOLICITAR FOLGA OU FÉRIAS -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-blue-500 pl-3">Solicitar Férias</h3>
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-blue-500 pl-3">Solicitar Folga / Férias</h3>
                 <form onsubmit="pedirFerias(event)" class="space-y-4" id="form-ferias">
-                    <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">O que você deseja solicitar?</label>
+                        <select id="fe-tipo" onchange="mudarFormularioRH()" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-blue-500 text-slate-700">
+                            <option value="FOLGA">Dia de Folga</option>
+                            <option value="FERIAS">Período de Férias</option>
+                        </select>
+                    </div>
+
+                    <div id="container-datas-ferias" class="grid grid-cols-2 gap-3 hidden">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data Início</label>
-                            <input type="date" id="fe-inicio" required class="w-full px-3 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-blue-500 text-slate-700 uppercase">
+                            <input type="date" id="fe-inicio" class="w-full px-3 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-blue-500 text-slate-700 uppercase">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data Retorno</label>
-                            <input type="date" id="fe-fim" required class="w-full px-3 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-blue-500 text-slate-700 uppercase">
+                            <input type="date" id="fe-fim" class="w-full px-3 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-blue-500 text-slate-700 uppercase">
                         </div>
                     </div>
+
+                    <div id="container-data-folga" class="block">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Qual o dia desejado?</label>
+                        <input type="date" id="fe-dia-unico" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-blue-500 text-slate-700 uppercase">
+                    </div>
+
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-widest shadow-md shadow-blue-500/30">
                         Registrar Pedido
                     </button>
                 </form>
             </div>
+
         </div>
+
     </main>
 
     <!-- NAVEGAÇÃO INFERIOR ESTILO APP (BOTTOM NAV) -->
@@ -213,7 +237,7 @@
         </button>
         <button onclick="mudarView('view-solicitacoes', this)" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/3 transition-colors">
             <i class="ph-fill ph-folder-open text-2xl mb-1"></i>
-            <span class="text-[10px] font-black uppercase tracking-wider">RH/Férias</span>
+            <span class="text-[10px] font-black uppercase tracking-wider">RH/Folgas</span>
         </button>
     </nav>
 
@@ -229,6 +253,18 @@
         setInterval(atualizarRelogio, 1000);
         atualizarRelogio();
 
+        function mudarFormularioRH() {
+            const tipo = document.getElementById('fe-tipo').value;
+            if(tipo === 'FOLGA') {
+                document.getElementById('container-data-folga').classList.remove('hidden');
+                document.getElementById('container-datas-ferias').classList.add('hidden');
+            } else {
+                document.getElementById('container-data-folga').classList.add('hidden');
+                document.getElementById('container-datas-ferias').classList.remove('hidden');
+                document.getElementById('container-datas-ferias').classList.add('grid');
+            }
+        }
+
         async function fazerLogin(e) {
             e.preventDefault();
             const usuario = document.getElementById('login-usuario').value.trim();
@@ -240,7 +276,8 @@
 
             try {
                 const resAuth = await fetch('/api/login', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ usuario: usuario, senha: senha })
                 });
 
@@ -258,6 +295,9 @@
                 if(meuPerfil) {
                     FUNC_ID = meuPerfil.id;
                     document.getElementById('user-nome').innerText = meuPerfil.nome.split(' ')[0];
+                    if (meuPerfil.foto_3x4) {
+                        document.getElementById('header-foto').src = meuPerfil.foto_3x4;
+                    }
                     
                     document.body.classList.remove('bg-slate-900');
                     document.getElementById('tela-login').style.opacity = '0';
@@ -274,6 +314,7 @@
                     btn.innerHTML = 'Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>';
                     btn.disabled = false;
                 }
+
             } catch(err) {
                 alert("❌ Falha de conexão com o servidor da empresa.");
                 btn.innerHTML = 'Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>';
@@ -281,15 +322,20 @@
             }
         }
 
-        function sair() { if(confirm("Deseja sair da sua conta?")) { window.location.reload(); } }
+        function sair() {
+            if(confirm("Deseja sair da sua conta?")) { window.location.reload(); }
+        }
 
         function mudarView(idView, btnElement) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => {
-                b.classList.remove('text-blue-600'); b.classList.add('text-slate-400');
+                b.classList.remove('text-blue-600');
+                b.classList.add('text-slate-400');
             });
+
             document.getElementById(idView).classList.add('active');
-            btnElement.classList.remove('text-slate-400'); btnElement.classList.add('text-blue-600');
+            btnElement.classList.remove('text-slate-400');
+            btnElement.classList.add('text-blue-600');
         }
 
         async function registrarPonto(tipo) {
@@ -300,7 +346,8 @@
             
             try {
                 const res = await fetch('/api/gestao/ponto', { 
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({ funcionario_id: FUNC_ID, tipo: tipo }) 
                 });
                 const data = await res.json();
@@ -321,11 +368,13 @@
         }
 
         async function consultarHolerite() {
-            const mes = document.getElementById('mes-holerite').value;
+            const mes = document.getElementById('mes-holerite').value; // YYYY-MM
             const btn = document.getElementById('btn-holerite');
+            
             if(!mes) { alert("Por favor, selecione um mês para buscar."); return; }
             
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true;
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
+            btn.disabled = true;
 
             try {
                 const res = await fetch(`/api/gestao/rh/colaborador/${FUNC_ID}/holerite/${mes}`);
@@ -347,7 +396,7 @@
                     if(data.proventos.diarias > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Diárias / Entregas (Logística)</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.diarias)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
                     
                     if(data.descontos.horas_nao_trabalhadas > 0) {
-                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100 text-red-500 font-bold">Faltas e Atrasos (${data.descontos.horas_quantidade}h)</td><td class="py-3 px-4 border-b border-slate-100"></td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-red-600">${fMoeda(data.descontos.horas_nao_trabalhadas)}</td></tr>`;
+                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100 text-brand-500 font-bold">Faltas e Atrasos (${data.descontos.horas_quantidade}h)</td><td class="py-3 px-4 border-b border-slate-100"></td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-brand-600">${fMoeda(data.descontos.horas_nao_trabalhadas)}</td></tr>`;
                     }
 
                     if(linhasHtml === '') linhasHtml = '<tr><td colspan="3" class="py-6 text-center text-slate-400">Nenhum lançamento no período.</td></tr>';
@@ -363,8 +412,11 @@
                 } else {
                     alert("Holerite não disponível para este mês.");
                 }
-            } catch(e) { alert("Erro ao buscar a folha de pagamento."); } finally {
-                btn.innerHTML = '<i class="ph-bold ph-magnifying-glass"></i>'; btn.disabled = false;
+            } catch(e) { 
+                alert("Erro ao buscar a folha de pagamento."); 
+            } finally {
+                btn.innerHTML = '<i class="ph-bold ph-magnifying-glass"></i>';
+                btn.disabled = false;
             }
         }
 
@@ -378,12 +430,15 @@
             html2canvas(el, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => { 
                 const imgData = canvas.toDataURL('image/jpeg', 1.0); 
                 const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4'); 
+                
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const margin = 10;
                 const pdfImgWidth = pdfWidth - (margin * 2);
                 const pdfImgHeight = (canvas.height * pdfImgWidth) / canvas.width;
+                
                 pdf.addImage(imgData, 'JPEG', margin, margin, pdfImgWidth, pdfImgHeight); 
                 pdf.save(`Holerite_${mes}_ArtsBurguer.pdf`); 
+                
                 btn.innerHTML = '<i class="ph-bold ph-download-simple text-xl mr-2"></i> Baixar Documento (PDF)';
             }); 
         }
@@ -394,16 +449,28 @@
             btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Enviando...'; btn.disabled = true;
 
             const payload = {
-                funcionario_id: FUNC_ID, tipo: document.getElementById('oc-tipo').value,
-                data_ocorrencia: document.getElementById('oc-data').value, motivo: document.getElementById('oc-motivo').value,
-                horas_abonadas: 0, horas_descontadas: 0, anexo_url: document.getElementById('oc-anexo').value
+                funcionario_id: FUNC_ID, 
+                tipo: document.getElementById('oc-tipo').value,
+                data_ocorrencia: document.getElementById('oc-data').value, 
+                motivo: document.getElementById('oc-motivo').value,
+                horas_abonadas: 0, horas_descontadas: 0, 
+                anexo_url: document.getElementById('oc-anexo').value
             };
             
             try {
-                const res = await fetch('/api/gestao/rh/ocorrencias', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if(res.ok) { alert("✅ Ocorrência enviada ao RH com sucesso!"); document.getElementById('form-ocorrencia').reset(); } 
-                else { alert("Falha ao registrar ocorrência."); }
-            } catch (err) { alert("Falha de conexão."); }
+                const res = await fetch('/api/gestao/rh/ocorrencias', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                });
+                
+                if(res.ok) { 
+                    alert("✅ Ocorrência/Atestado enviado ao RH com sucesso!"); 
+                    document.getElementById('form-ocorrencia').reset(); 
+                } else {
+                    alert("Falha ao registrar ocorrência.");
+                }
+            } catch (err) { alert("Sem conexão."); }
             
             btn.innerHTML = 'Enviar para o RH'; btn.disabled = false;
         }
@@ -413,12 +480,38 @@
             const btn = e.target.querySelector('button[type="submit"]');
             btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Solicitando...'; btn.disabled = true;
 
-            const payload = { funcionario_id: FUNC_ID, data_inicio: document.getElementById('fe-inicio').value, data_fim: document.getElementById('fe-fim').value };
+            const tipoPedido = document.getElementById('fe-tipo').value;
+            let dInicio, dFim;
+
+            if (tipoPedido === "FOLGA") {
+                dInicio = document.getElementById('fe-dia-unico').value;
+                dFim = document.getElementById('fe-dia-unico').value;
+            } else {
+                dInicio = document.getElementById('fe-inicio').value;
+                dFim = document.getElementById('fe-fim').value;
+            }
+
+            const payload = {
+                funcionario_id: FUNC_ID, 
+                tipo: tipoPedido,
+                data_inicio: dInicio,
+                data_fim: dFim
+            };
+            
             try {
-                const res = await fetch('/api/gestao/rh/ferias', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if(res.ok) { alert("🏖️ Solicitação enviada ao Gestor!"); document.getElementById('form-ferias').reset(); } 
-                else { alert("Falha ao solicitar."); }
-            } catch (err) { alert("Falha de conexão."); }
+                const res = await fetch('/api/gestao/rh/ferias', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                });
+                
+                if(res.ok) { 
+                    alert(`✅ Solicitação de ${tipoPedido.toLowerCase()} enviada para aprovação do Gestor!`); 
+                    document.getElementById('form-ferias').reset(); 
+                } else {
+                    alert("Falha ao solicitar.");
+                }
+            } catch (err) { alert("Sem conexão."); }
             
             btn.innerHTML = 'Registrar Pedido'; btn.disabled = false;
         }
