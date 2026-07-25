@@ -4,42 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu RH | Art's Burguer</title>
+    
+    <!-- Fontes e Ícones -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Bibliotecas para Gerar PDF do Holerite -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-        .view { display: none; animation: slideUp 0.3s ease-out forwards; }
-        .view.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        .view { 
+            display: none; 
+            animation: slideUp 0.3s ease-out forwards; 
+        }
+        .view.active { 
+            display: block; 
+        }
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(15px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .no-scrollbar::-webkit-scrollbar { 
+            display: none; 
+        }
+        .no-scrollbar { 
+            -ms-overflow-style: none; 
+            scrollbar-width: none; 
+        }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden bg-slate-900">
 
+    <!-- ============================================== -->
     <!-- TELA DE LOGIN SEGURA DO COLABORADOR -->
+    <!-- ============================================== -->
     <div id="tela-login" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 transition-all duration-500">
-        <div class="w-full max-w-sm bg-white p-8 rounded-3xl shadow-2xl text-center">
+        <div class="w-full max-w-sm bg-white p-8 rounded-3xl shadow-2xl text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-blue-700"></div>
+            
             <div class="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600 shadow-inner">
                 <i class="ph-fill ph-identification-badge text-5xl"></i>
             </div>
+            
             <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Portal do Colaborador</h2>
-            <p class="text-xs text-slate-500 font-medium mb-8 leading-relaxed">Digite seu Usuário e Senha corporativos (fornecidos pelo RH) para acessar seus dados.</p>
+            <p class="text-xs text-slate-500 font-medium mb-8 leading-relaxed">
+                Digite seu Usuário e Senha corporativos (fornecidos pelo RH) para acessar seus dados.
+            </p>
             
             <form onsubmit="fazerLogin(event)" class="space-y-4">
                 <div class="text-left">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1">Usuário de Login</label>
                     <input type="text" id="login-usuario" required placeholder="Ex: joao.silva" class="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 text-center font-black text-lg text-slate-700 outline-none focus:border-blue-500 transition-colors">
                 </div>
+                
                 <div class="text-left">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1">Sua Senha</label>
                     <input type="password" id="login-senha" required placeholder="••••••••" class="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 text-center font-black text-xl text-slate-700 outline-none focus:border-blue-500 transition-colors">
                 </div>
-                <div class="pt-2">
-                    <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-[0_10px_20px_rgba(37,99,235,0.3)] transition-all active:scale-95 text-lg flex items-center justify-center">
+                
+                <div class="pt-4">
+                    <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-600/30 transition-all active:scale-95 text-lg flex items-center justify-center">
                         Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>
                     </button>
                 </div>
@@ -47,89 +78,103 @@
         </div>
     </div>
 
-    <!-- HEADER DO APLICATIVO -->
+    <!-- ============================================== -->
+    <!-- CABEÇALHO DO APLICATIVO -->
+    <!-- ============================================== -->
     <header class="bg-blue-600 text-white p-6 rounded-b-3xl shadow-md shrink-0 relative overflow-hidden hidden" id="app-header">
         <div class="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4 pointer-events-none">
             <i class="ph-fill ph-buildings text-[150px]"></i>
         </div>
+        
         <div class="relative z-10 flex items-center justify-between">
             <div class="flex items-center">
-                <img id="header-foto" src="https://ui-avatars.com/api/?name=C&background=ffffff&color=2563eb" class="w-12 h-12 rounded-full border-2 border-white/50 mr-3 object-cover shadow-sm">
+                <img id="header-foto" src="https://ui-avatars.com/api/?name=C&background=ffffff&color=2563eb" class="w-12 h-12 rounded-full border-2 border-white/50 mr-3 object-cover shadow-sm bg-white">
                 <div>
                     <p class="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-1">Bem-vindo(a),</p>
                     <h1 class="text-xl font-black tracking-tight" id="user-nome">Colaborador</h1>
                 </div>
             </div>
-            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border border-white/40 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors" onclick="sair()" title="Sair da Conta">
+            
+            <button class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border border-white/40 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors" onclick="sair()" title="Sair da Conta">
                 <i class="ph-bold ph-power text-lg"></i>
-            </div>
+            </button>
         </div>
     </header>
 
+    <!-- ============================================== -->
     <!-- ÁREA PRINCIPAL COM SCROLL -->
-    <main class="flex-1 overflow-y-auto no-scrollbar p-6 pb-24 hidden bg-slate-50" id="app-main">
+    <!-- ============================================== -->
+    <main class="flex-1 overflow-y-auto no-scrollbar p-6 pb-28 hidden bg-slate-50" id="app-main">
 
-        <!-- VIEW 1: BATER PONTO -->
+        <!-- VIEW 1: RELÓGIO DE PONTO -->
         <div id="view-ponto" class="view active space-y-6">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 text-center relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600"></div>
+                
                 <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Relógio de Ponto Digital</h2>
                 <div class="text-5xl font-black text-slate-800 tracking-tighter my-6 font-mono" id="relogio-digital">00:00:00</div>
                 <p class="text-xs font-bold text-slate-500 bg-slate-50 py-2 rounded-lg border border-slate-100 uppercase tracking-wider" id="data-atual">Carregando data...</p>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="registrarPonto('entrada')" class="bg-green-500 hover:bg-green-600 text-white p-6 rounded-3xl shadow-[0_10px_20px_rgba(34,197,94,0.3)] transition-all active:scale-95 flex flex-col items-center justify-center">
+                <button onclick="registrarPonto('entrada')" class="bg-emerald-500 hover:bg-emerald-600 text-white p-6 rounded-3xl shadow-lg shadow-emerald-500/30 transition-all active:scale-95 flex flex-col items-center justify-center">
                     <i class="ph-bold ph-sign-in text-4xl mb-2"></i>
                     <span class="font-black uppercase tracking-wider text-sm">Entrar</span>
                 </button>
-                <button onclick="registrarPonto('saida')" class="bg-amber-500 hover:bg-amber-600 text-white p-6 rounded-3xl shadow-[0_10px_20px_rgba(245,158,11,0.3)] transition-all active:scale-95 flex flex-col items-center justify-center">
+                
+                <button onclick="registrarPonto('saida')" class="bg-amber-500 hover:bg-amber-600 text-white p-6 rounded-3xl shadow-lg shadow-amber-500/30 transition-all active:scale-95 flex flex-col items-center justify-center">
                     <i class="ph-bold ph-sign-out text-4xl mb-2"></i>
                     <span class="font-black uppercase tracking-wider text-sm">Sair</span>
                 </button>
             </div>
-            <div id="msg-ponto" class="text-center font-bold text-sm hidden py-3 rounded-xl shadow-sm border"></div>
+            
+            <div id="msg-ponto" class="text-center font-bold text-sm hidden py-4 rounded-xl shadow-sm border"></div>
         </div>
 
         <!-- VIEW 2: HOLERITE E GANHOS -->
         <div id="view-holerite" class="view space-y-6">
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center"><i class="ph-fill ph-receipt text-blue-500 mr-2 text-2xl"></i> Meus Holerites</h2>
+                <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center">
+                    <i class="ph-fill ph-receipt text-blue-500 mr-2 text-2xl"></i> Meus Holerites
+                </h2>
                 <div class="flex space-x-3">
                     <input type="month" id="mes-holerite" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-700 outline-none focus:border-blue-500 uppercase text-xs tracking-wider">
-                    <button onclick="consultarHolerite()" id="btn-holerite" class="bg-slate-900 text-white px-6 rounded-xl font-bold transition-all active:scale-95 shadow-md hover:bg-slate-800"><i class="ph-bold ph-magnifying-glass"></i></button>
+                    <button onclick="consultarHolerite()" id="btn-holerite" class="bg-slate-900 text-white px-6 rounded-xl font-bold transition-all active:scale-95 shadow-md hover:bg-slate-800">
+                        <i class="ph-bold ph-magnifying-glass text-lg"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- CONTAINER DO HOLERITE (Para impressão/PDF) -->
+            <!-- CONTAINER DO HOLERITE (Usado para o PDF) -->
             <div id="container-holerite-pdf" class="bg-white rounded-xl border border-slate-200 shadow-sm hidden overflow-hidden">
                 <div class="p-6 border-b border-slate-200 bg-slate-50">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <h2 class="font-black text-lg text-slate-800">ART'S BURGUER</h2>
+                            <h2 class="font-black text-lg text-slate-800 tracking-tight">ART'S BURGUER</h2>
                             <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Recibo de Pagamento</p>
                         </div>
                         <div class="text-right">
                             <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Mês Ref.</p>
-                            <p class="text-sm font-black text-slate-800 bg-white border border-slate-200 px-2 py-1 rounded" id="hol-mes-ref">00/0000</p>
+                            <p class="text-sm font-black text-slate-800 bg-white border border-slate-200 px-3 py-1 rounded-lg" id="hol-mes-ref">00/0000</p>
                         </div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 text-xs">
-                        <p class="font-bold text-slate-800 uppercase tracking-wider mb-1">Colaborador: <span id="hol-nome-func" class="font-black text-blue-600 ml-1">Carregando...</span></p>
-                        <p class="font-bold text-slate-800 uppercase tracking-wider">Matrícula/ID: <span id="hol-mat-func" class="font-black text-slate-500 ml-1 font-mono">0000</span></p>
+                    
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 text-xs shadow-sm">
+                        <p class="font-bold text-slate-500 uppercase tracking-wider mb-1">Colaborador: <span id="hol-nome-func" class="font-black text-blue-600 ml-1">Carregando...</span></p>
+                        <p class="font-bold text-slate-500 uppercase tracking-wider">Matrícula/ID: <span id="hol-mat-func" class="font-black text-slate-800 ml-1 font-mono">0000</span></p>
                     </div>
                 </div>
 
                 <table class="w-full text-left text-xs">
                     <thead>
                         <tr class="bg-slate-100 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest font-black">
-                            <th class="py-3 px-4">Descrição</th>
-                            <th class="py-3 px-4 text-right text-green-600">Proventos</th>
-                            <th class="py-3 px-4 text-right text-brand-600">Descontos</th>
+                            <th class="py-3 px-4">Descrição do Lançamento</th>
+                            <th class="py-3 px-4 text-right text-emerald-600">Proventos</th>
+                            <th class="py-3 px-4 text-right text-red-500">Descontos</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-holerite-body" class="font-bold text-slate-700">
-                        <!-- Preenchido via JS -->
+                        <!-- Preenchido dinamicamente via JS -->
                     </tbody>
                 </table>
 
@@ -142,24 +187,24 @@
                         <span class="font-bold text-slate-500 uppercase tracking-wider">Total de Descontos</span>
                         <span class="font-black text-slate-800 text-sm" id="hol-total-desc">R$ 0,00</span>
                     </div>
-                    <div class="flex justify-between items-center bg-green-50 p-4 rounded-xl border border-green-200 shadow-inner">
-                        <span class="font-black text-green-800 uppercase tracking-widest text-xs">Líquido a Receber</span>
-                        <span class="font-black text-2xl text-green-600" id="hol-liquido">R$ 0,00</span>
+                    <div class="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-inner">
+                        <span class="font-black text-emerald-800 uppercase tracking-widest text-xs">Líquido a Receber</span>
+                        <span class="font-black text-2xl text-emerald-600 tracking-tight" id="hol-liquido">R$ 0,00</span>
                     </div>
                 </div>
             </div>
 
-            <button id="btn-baixar-pdf" onclick="baixarPDFHolerite()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 hidden items-center justify-center uppercase tracking-widest text-sm">
+            <button id="btn-baixar-pdf" onclick="baixarPDFHolerite()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-2xl shadow-xl transition-all active:scale-95 hidden items-center justify-center uppercase tracking-widest text-sm">
                 <i class="ph-bold ph-download-simple text-xl mr-2"></i> Baixar Documento (PDF)
             </button>
         </div>
 
-        <!-- VIEW 3: SOLICITAÇÕES (FÉRIAS, FOLGA E ATESTADOS) -->
+        <!-- VIEW 3: SOLICITAÇÕES (FÉRIAS, FOLGAS E ATESTADOS) -->
         <div id="view-solicitacoes" class="view space-y-6">
             
             <!-- ENVIAR ATESTADO / OCORRÊNCIA -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-amber-500 pl-3">Justificar Faltas / Atestados</h3>
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-amber-500 pl-3">Justificar Falta / Atestado</h3>
                 <form onsubmit="enviarOcorrencia(event)" class="space-y-4" id="form-ocorrencia">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Ocorrência</label>
@@ -169,19 +214,23 @@
                             <option value="FALTA_INJUSTIFICADA">Aviso de Falta Imprevista</option>
                         </select>
                     </div>
+                    
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data da Ocorrência</label>
                         <input type="date" id="oc-data" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-amber-500 text-slate-700 uppercase">
                     </div>
+                    
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Motivo Detalhado</label>
                         <input type="text" id="oc-motivo" required placeholder="Ex: Consulta dentista" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium outline-none text-sm focus:border-amber-500 text-slate-700">
                     </div>
+                    
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Link do Atestado (Opcional)</label>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Link do Atestado (Foto/Drive) - Opcional</label>
                         <input type="url" id="oc-anexo" placeholder="https://..." class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium outline-none text-sm focus:border-amber-500 text-slate-700">
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-widest shadow-md">
+                    
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-widest shadow-md mt-2">
                         Enviar para o RH
                     </button>
                 </form>
@@ -189,7 +238,7 @@
 
             <!-- SOLICITAR FOLGA OU FÉRIAS -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-blue-500 pl-3">Solicitar Folga / Férias</h3>
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-l-4 border-blue-500 pl-3">Solicitar Folga ou Férias</h3>
                 <form onsubmit="pedirFerias(event)" class="space-y-4" id="form-ferias">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">O que você deseja solicitar?</label>
@@ -199,24 +248,26 @@
                         </select>
                     </div>
 
+                    <!-- Div de Férias (Início e Fim) -->
                     <div id="container-datas-ferias" class="grid grid-cols-2 gap-3 hidden">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data Início</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data de Início</label>
                             <input type="date" id="fe-inicio" class="w-full px-3 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-blue-500 text-slate-700 uppercase">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data Retorno</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data de Retorno</label>
                             <input type="date" id="fe-fim" class="w-full px-3 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-blue-500 text-slate-700 uppercase">
                         </div>
                     </div>
 
+                    <!-- Div de Folga (Dia Único) -->
                     <div id="container-data-folga" class="block">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Qual o dia desejado?</label>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Qual o dia desejado para a Folga?</label>
                         <input type="date" id="fe-dia-unico" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none text-sm focus:border-blue-500 text-slate-700 uppercase">
                     </div>
 
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-widest shadow-md shadow-blue-500/30">
-                        Registrar Pedido
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-widest shadow-lg shadow-blue-500/30 mt-2">
+                        Registrar Pedido no Painel
                     </button>
                 </form>
             </div>
@@ -225,56 +276,79 @@
 
     </main>
 
+    <!-- ============================================== -->
     <!-- NAVEGAÇÃO INFERIOR ESTILO APP (BOTTOM NAV) -->
-    <nav class="bg-white border-t border-slate-200 h-20 fixed bottom-0 w-full flex justify-around items-center px-4 pb-2 z-20 hidden shadow-[0_-5px_20px_rgba(0,0,0,0.05)]" id="app-nav">
+    <!-- ============================================== -->
+    <nav class="bg-white border-t border-slate-200 h-[84px] fixed bottom-0 w-full flex justify-around items-center px-4 pb-4 pt-2 z-20 hidden shadow-[0_-5px_20px_rgba(0,0,0,0.05)]" id="app-nav">
+        
         <button onclick="mudarView('view-ponto', this)" class="nav-btn active flex flex-col items-center p-2 text-blue-600 w-1/3 transition-colors">
             <i class="ph-fill ph-clock text-2xl mb-1"></i>
             <span class="text-[10px] font-black uppercase tracking-wider">Ponto</span>
         </button>
+        
         <button onclick="mudarView('view-holerite', this)" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/3 transition-colors">
             <i class="ph-fill ph-receipt text-2xl mb-1"></i>
             <span class="text-[10px] font-black uppercase tracking-wider">Holerite</span>
         </button>
+        
         <button onclick="mudarView('view-solicitacoes', this)" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/3 transition-colors">
             <i class="ph-fill ph-folder-open text-2xl mb-1"></i>
             <span class="text-[10px] font-black uppercase tracking-wider">RH/Folgas</span>
         </button>
+        
     </nav>
 
+    <!-- ============================================== -->
+    <!-- MOTOR JAVASCRIPT DO APLICATIVO -->
+    <!-- ============================================== -->
     <script>
+        // Variável Global
         let FUNC_ID = null;
 
+        // --- RELÓGIO DIGITAL ---
         function atualizarRelogio() {
             const agora = new Date();
             document.getElementById('relogio-digital').innerText = agora.toLocaleTimeString('pt-BR', { hour12: false });
+            
             const opcoes = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('data-atual').innerText = agora.toLocaleDateString('pt-BR', opcoes);
         }
         setInterval(atualizarRelogio, 1000);
         atualizarRelogio();
 
+
+        // --- CONTROLE DE MUDANÇA DO FORMULÁRIO (FÉRIAS VS FOLGA) ---
         function mudarFormularioRH() {
             const tipo = document.getElementById('fe-tipo').value;
-            if(tipo === 'FOLGA') {
+            if (tipo === 'FOLGA') {
                 document.getElementById('container-data-folga').classList.remove('hidden');
+                document.getElementById('container-data-folga').classList.add('block');
+                
+                document.getElementById('container-datas-ferias').classList.remove('grid');
                 document.getElementById('container-datas-ferias').classList.add('hidden');
             } else {
+                document.getElementById('container-data-folga').classList.remove('block');
                 document.getElementById('container-data-folga').classList.add('hidden');
+                
                 document.getElementById('container-datas-ferias').classList.remove('hidden');
                 document.getElementById('container-datas-ferias').classList.add('grid');
             }
         }
 
+
+        // --- LOGIN SEGURO DO COLABORADOR ---
         async function fazerLogin(e) {
             e.preventDefault();
+            
             const usuario = document.getElementById('login-usuario').value.trim();
             const senha = document.getElementById('login-senha').value;
             const btn = document.getElementById('btn-login');
             
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i>';
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Processando...';
             btn.disabled = true;
 
             try {
+                // 1. Tenta validar no backend a criptografia da senha
                 const resAuth = await fetch('/api/login', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -282,23 +356,27 @@
                 });
 
                 if (!resAuth.ok) {
-                    alert("⛔ Usuário ou Senha incorretos! Peça seus dados ao Gestor.");
+                    alert("⛔ Usuário ou Senha incorretos! Peça seus dados oficiais ao Gestor.");
                     btn.innerHTML = 'Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>';
                     btn.disabled = false;
                     return;
                 }
 
+                // 2. Com o login aprovado, puxa o ID e a Foto do Colaborador
                 const resFunc = await fetch('/api/gestao/funcionarios');
                 const funcionarios = await resFunc.json();
                 const meuPerfil = funcionarios.find(f => f.usuario === usuario);
 
-                if(meuPerfil) {
+                if (meuPerfil) {
                     FUNC_ID = meuPerfil.id;
+                    
+                    // Coloca o primeiro nome e a foto 3x4 (se houver) no Header do App
                     document.getElementById('user-nome').innerText = meuPerfil.nome.split(' ')[0];
                     if (meuPerfil.foto_3x4) {
                         document.getElementById('header-foto').src = meuPerfil.foto_3x4;
                     }
                     
+                    // Transição Suave do Login para o App
                     document.body.classList.remove('bg-slate-900');
                     document.getElementById('tela-login').style.opacity = '0';
                     
@@ -306,28 +384,38 @@
                         document.getElementById('tela-login').style.display = 'none';
                         document.getElementById('app-header').classList.remove('hidden');
                         document.getElementById('app-main').classList.remove('hidden');
+                        
                         document.getElementById('app-nav').classList.remove('hidden');
                         document.getElementById('app-nav').classList.add('flex');
                     }, 500);
+                    
                 } else {
-                    alert("⚠️ Erro ao carregar perfil do RH.");
+                    alert("⚠️ Erro: Perfil não encontrado no RH.");
                     btn.innerHTML = 'Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>';
                     btn.disabled = false;
                 }
 
-            } catch(err) {
-                alert("❌ Falha de conexão com o servidor da empresa.");
+            } catch (err) {
+                alert("❌ Falha de conexão. Verifique sua internet ou contate o suporte.");
                 btn.innerHTML = 'Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>';
                 btn.disabled = false;
             }
         }
 
+
         function sair() {
-            if(confirm("Deseja sair da sua conta?")) { window.location.reload(); }
+            if (confirm("Deseja sair da sua conta e bloquear o aplicativo?")) { 
+                window.location.reload(); 
+            }
         }
 
+
+        // --- CONTROLE DA NAVEGAÇÃO INFERIOR ---
         function mudarView(idView, btnElement) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.remove('active');
+            });
+            
             document.querySelectorAll('.nav-btn').forEach(b => {
                 b.classList.remove('text-blue-600');
                 b.classList.add('text-slate-400');
@@ -338,10 +426,13 @@
             btnElement.classList.add('text-blue-600');
         }
 
+
+        // --- BATER PONTO ELETRÔNICO ---
         async function registrarPonto(tipo) {
             const msgBox = document.getElementById('msg-ponto');
-            msgBox.classList.remove('hidden', 'bg-red-50', 'text-red-600', 'border-red-200', 'bg-green-50', 'text-green-600', 'border-green-200');
-            msgBox.innerHTML = '<i class="ph ph-spinner animate-spin mr-2"></i> Processando no servidor...';
+            
+            msgBox.classList.remove('hidden', 'bg-red-50', 'text-red-600', 'border-red-200', 'bg-emerald-50', 'text-emerald-600', 'border-emerald-200');
+            msgBox.innerHTML = '<i class="ph ph-spinner animate-spin mr-2"></i> Enviando para o servidor...';
             msgBox.classList.add('flex', 'items-center', 'justify-center', 'bg-slate-100', 'text-slate-500');
             
             try {
@@ -350,11 +441,12 @@
                     headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({ funcionario_id: FUNC_ID, tipo: tipo }) 
                 });
-                const data = await res.json();
                 
+                const data = await res.json();
                 msgBox.classList.remove('bg-slate-100', 'text-slate-500');
+                
                 if (res.ok) {
-                    msgBox.classList.add('bg-green-50', 'text-green-600', 'border-green-200');
+                    msgBox.classList.add('bg-emerald-50', 'text-emerald-600', 'border-emerald-200');
                     msgBox.innerHTML = `<i class="ph-fill ph-check-circle text-lg mr-2"></i> ${data.mensagem}`;
                 } else {
                     msgBox.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
@@ -367,93 +459,124 @@
             }
         }
 
+
+        // --- HOLERITE E PDF ---
         async function consultarHolerite() {
-            const mes = document.getElementById('mes-holerite').value; // YYYY-MM
+            const mes = document.getElementById('mes-holerite').value;
             const btn = document.getElementById('btn-holerite');
             
-            if(!mes) { alert("Por favor, selecione um mês para buscar."); return; }
+            if (!mes) { 
+                alert("Por favor, selecione o Mês/Ano que deseja buscar."); 
+                return; 
+            }
             
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i>';
             btn.disabled = true;
 
             try {
                 const res = await fetch(`/api/gestao/rh/colaborador/${FUNC_ID}/holerite/${mes}`);
                 const data = await res.json();
                 
-                if(res.ok) {
+                if (res.ok) {
                     document.getElementById('hol-mes-ref').innerText = `${mes.split('-').reverse().join('/')}`;
                     document.getElementById('hol-nome-func').innerText = data.colaborador;
                     document.getElementById('hol-mat-func').innerText = data.matricula || `000${FUNC_ID}`;
                     
                     let linhasHtml = '';
-                    const fMoeda = (valor) => `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
+                    const formataReal = (valor) => `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
                     
-                    if(data.proventos.salario_base > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Salário Base Mensal</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.salario_base)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
-                    if(data.proventos.vale_transporte > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Vale Transporte</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.vale_transporte)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
-                    if(data.proventos.vale_alimentacao > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Vale Alimentação</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.vale_alimentacao)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
-                    if(data.proventos.comissoes > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Comissões Acumuladas</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.comissoes)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
-                    if(data.proventos.gorjetas > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Taxas e Gorjetas</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.gorjetas)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
-                    if(data.proventos.diarias > 0) linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Diárias / Entregas (Logística)</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${fMoeda(data.proventos.diarias)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
+                    // Lançamento de Proventos
+                    if (data.proventos.salario_base > 0) {
+                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Salário Base Registrado</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${formataReal(data.proventos.salario_base)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
+                    }
+                    if (data.proventos.vale_transporte > 0) {
+                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Auxílio Vale Transporte</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${formataReal(data.proventos.vale_transporte)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
+                    }
+                    if (data.proventos.vale_alimentacao > 0) {
+                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Auxílio Vale Alimentação</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${formataReal(data.proventos.vale_alimentacao)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
+                    }
+                    if (data.proventos.comissoes > 0) {
+                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Comissões Acumuladas</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${formataReal(data.proventos.comissoes)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
+                    }
+                    if (data.proventos.gorjetas > 0) {
+                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Rateio de Taxas/Gorjetas</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${formataReal(data.proventos.gorjetas)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
+                    }
+                    if (data.proventos.diarias > 0) {
+                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100">Repasses Logística/Diárias</td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-slate-800">${formataReal(data.proventos.diarias)}</td><td class="py-3 px-4 border-b border-slate-100"></td></tr>`;
+                    }
                     
-                    if(data.descontos.horas_nao_trabalhadas > 0) {
-                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100 text-brand-500 font-bold">Faltas e Atrasos (${data.descontos.horas_quantidade}h)</td><td class="py-3 px-4 border-b border-slate-100"></td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-brand-600">${fMoeda(data.descontos.horas_nao_trabalhadas)}</td></tr>`;
+                    // Lançamento de Descontos
+                    if (data.descontos.horas_nao_trabalhadas > 0) {
+                        linhasHtml += `<tr><td class="py-3 px-4 border-b border-slate-100 text-red-600 font-bold">Atrasos e Faltas Injustificadas (${data.descontos.horas_quantidade}h)</td><td class="py-3 px-4 border-b border-slate-100"></td><td class="py-3 px-4 border-b border-slate-100 text-right font-black text-red-500">${formataReal(data.descontos.horas_nao_trabalhadas)}</td></tr>`;
                     }
 
-                    if(linhasHtml === '') linhasHtml = '<tr><td colspan="3" class="py-6 text-center text-slate-400">Nenhum lançamento no período.</td></tr>';
+                    if (linhasHtml === '') {
+                        linhasHtml = '<tr><td colspan="3" class="py-8 text-center text-slate-400 font-medium">Nenhum lançamento no período. O contrato pode não estar preenchido.</td></tr>';
+                    }
 
                     document.getElementById('tabela-holerite-body').innerHTML = linhasHtml;
-                    document.getElementById('hol-total-prov').innerText = fMoeda(data.totais.total_bruto);
-                    document.getElementById('hol-total-desc').innerText = fMoeda(data.totais.total_descontos);
-                    document.getElementById('hol-liquido').innerText = fMoeda(data.totais.liquido_a_pagar);
+                    
+                    // Assinala os totais do mês
+                    document.getElementById('hol-total-prov').innerText = formataReal(data.totais.total_bruto);
+                    document.getElementById('hol-total-desc').innerText = formataReal(data.totais.total_descontos);
+                    document.getElementById('hol-liquido').innerText = formataReal(data.totais.liquido_a_pagar);
 
+                    // Libera a visualização
                     document.getElementById('container-holerite-pdf').classList.remove('hidden');
                     document.getElementById('btn-baixar-pdf').classList.remove('hidden');
                     document.getElementById('btn-baixar-pdf').classList.add('flex');
+                    
                 } else {
-                    alert("Holerite não disponível para este mês.");
+                    alert("Aviso: Holerite não encontrado ou salário não cadastrado para este mês.");
                 }
-            } catch(e) { 
-                alert("Erro ao buscar a folha de pagamento."); 
+            } catch (e) { 
+                alert("Erro de comunicação com a Folha de Pagamento."); 
             } finally {
-                btn.innerHTML = '<i class="ph-bold ph-magnifying-glass"></i>';
+                btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>';
                 btn.disabled = false;
             }
         }
 
+
         function baixarPDFHolerite() {
-            const el = document.getElementById('container-holerite-pdf');
-            const mes = document.getElementById('mes-holerite').value;
-            const btn = document.getElementById('btn-baixar-pdf');
+            const containerHtml = document.getElementById('container-holerite-pdf');
+            const mesArquivo = document.getElementById('mes-holerite').value;
+            const btnDownload = document.getElementById('btn-baixar-pdf');
             
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl mr-2"></i> Gerando Documento...';
+            btnDownload.innerHTML = '<i class="ph ph-spinner animate-spin text-xl mr-2"></i> Gerando Arquivo Oficial...';
             
-            html2canvas(el, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => { 
+            html2canvas(containerHtml, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => { 
                 const imgData = canvas.toDataURL('image/jpeg', 1.0); 
                 const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4'); 
                 
                 const pdfWidth = pdf.internal.pageSize.getWidth();
-                const margin = 10;
+                const margin = 10; // Margem nas bordas
                 const pdfImgWidth = pdfWidth - (margin * 2);
                 const pdfImgHeight = (canvas.height * pdfImgWidth) / canvas.width;
                 
                 pdf.addImage(imgData, 'JPEG', margin, margin, pdfImgWidth, pdfImgHeight); 
-                pdf.save(`Holerite_${mes}_ArtsBurguer.pdf`); 
+                pdf.save(`Holerite_${mesArquivo}_ArtsBurguer.pdf`); 
                 
-                btn.innerHTML = '<i class="ph-bold ph-download-simple text-xl mr-2"></i> Baixar Documento (PDF)';
+                btnDownload.innerHTML = '<i class="ph-bold ph-download-simple text-xl mr-2"></i> Baixar Documento (PDF)';
             }); 
         }
 
+
+        // --- COMUNICAÇÃO DE FÉRIAS E OCORRÊNCIAS COM O RH ---
         async function enviarOcorrencia(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Enviando...'; btn.disabled = true;
+            
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg mr-2"></i> Emitindo Documento...'; 
+            btn.disabled = true;
 
             const payload = {
                 funcionario_id: FUNC_ID, 
                 tipo: document.getElementById('oc-tipo').value,
                 data_ocorrencia: document.getElementById('oc-data').value, 
                 motivo: document.getElementById('oc-motivo').value,
-                horas_abonadas: 0, horas_descontadas: 0, 
+                horas_abonadas: 0, 
+                horas_descontadas: 0, 
                 anexo_url: document.getElementById('oc-anexo').value
             };
             
@@ -464,29 +587,36 @@
                     body: JSON.stringify(payload) 
                 });
                 
-                if(res.ok) { 
-                    alert("✅ Ocorrência/Atestado enviado ao RH com sucesso!"); 
+                if (res.ok) { 
+                    alert("✅ Ocorrência/Atestado enviado diretamente para a Caixa de Entrada do RH com sucesso!"); 
                     document.getElementById('form-ocorrencia').reset(); 
                 } else {
-                    alert("Falha ao registrar ocorrência.");
+                    alert("Falha no servidor ao registrar a ocorrência.");
                 }
-            } catch (err) { alert("Sem conexão."); }
+            } catch (err) { 
+                alert("Sem conexão. Tente novamente em breve."); 
+            }
             
-            btn.innerHTML = 'Enviar para o RH'; btn.disabled = false;
+            btn.innerHTML = 'Enviar para o RH'; 
+            btn.disabled = false;
         }
 
         async function pedirFerias(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Solicitando...'; btn.disabled = true;
+            
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg mr-2"></i> Registrando Pedido...'; 
+            btn.disabled = true;
 
             const tipoPedido = document.getElementById('fe-tipo').value;
             let dInicio, dFim;
 
             if (tipoPedido === "FOLGA") {
+                // Se for folga, a data final é a mesma data de início (1 dia só)
                 dInicio = document.getElementById('fe-dia-unico').value;
                 dFim = document.getElementById('fe-dia-unico').value;
             } else {
+                // Se for férias, captura o período completo
                 dInicio = document.getElementById('fe-inicio').value;
                 dFim = document.getElementById('fe-fim').value;
             }
@@ -505,15 +635,18 @@
                     body: JSON.stringify(payload) 
                 });
                 
-                if(res.ok) { 
-                    alert(`✅ Solicitação de ${tipoPedido.toLowerCase()} enviada para aprovação do Gestor!`); 
+                if (res.ok) { 
+                    alert(`✅ Sua solicitação oficial de ${tipoPedido.toLowerCase()} foi enviada e aguarda a aprovação do Gestor!`); 
                     document.getElementById('form-ferias').reset(); 
                 } else {
-                    alert("Falha ao solicitar.");
+                    alert("Falha no servidor ao processar a solicitação.");
                 }
-            } catch (err) { alert("Sem conexão."); }
+            } catch (err) { 
+                alert("Sem conexão de rede."); 
+            }
             
-            btn.innerHTML = 'Registrar Pedido'; btn.disabled = false;
+            btn.innerHTML = 'Registrar Pedido no Painel'; 
+            btn.disabled = false;
         }
     </script>
 </body>
