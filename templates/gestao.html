@@ -10,7 +10,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Art's Burguer | ERP Corporativo V2</title>
+    <title>Art's Burguer | ERP Corporativo V5</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,6 +26,10 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Novas classes para as Abas do Dossiê */
+        .aba-dossie { display: none; }
+        .aba-dossie.active { display: block; }
     </style>
 </head>
 <body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
@@ -35,7 +39,7 @@
             <i class="ph-fill ph-hamburger text-3xl text-brand-500 mr-3"></i>
             <div>
                 <h1 class="text-white font-black text-xl tracking-tight" id="sidebar-nome-loja">Art's Burguer</h1>
-                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">ERP Cloud V2</p>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">ERP Cloud V5</p>
             </div>
         </div>
         <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto no-scrollbar">
@@ -44,7 +48,7 @@
             <button onclick="abrirAba('aba-cardapio', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-list-magnifying-glass text-xl mr-3"></i> Produtos & Ficha</button>
             <button onclick="abrirAba('aba-estoque', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-package text-xl mr-3"></i> Estoque Mínimo</button>
             <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-invoice text-xl mr-3"></i> Financeiro</button>
-            <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-users text-xl mr-3"></i> Equipe & RH</button>
+            <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-users text-xl mr-3"></i> Equipe & DP</button>
             <button onclick="abrirAba('aba-clientes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-users-three text-xl mr-3"></i> Base de Clientes</button>
             <button onclick="abrirAba('aba-fornecedores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-truck text-xl mr-3"></i> Fornecedores</button>
             <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all"><i class="ph ph-gear text-xl mr-3"></i> Setup da Loja</button>
@@ -53,6 +57,7 @@
             <a href="/pdv" target="_blank" class="w-full flex items-center text-emerald-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold"><i class="ph-fill ph-monitor text-xl mr-3"></i> PDV (Caixa) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
             <a href="/kds" target="_blank" class="w-full flex items-center text-red-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold"><i class="ph-fill ph-cooking-pot text-xl mr-3"></i> Monitor Cozinha <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
             <a href="/logistica" target="_blank" class="w-full flex items-center text-purple-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold"><i class="ph-fill ph-moped text-xl mr-3"></i> Despacho <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
+            <a href="/portal" target="_blank" class="w-full flex items-center text-blue-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold"><i class="ph-fill ph-identification-badge text-xl mr-3"></i> Portal RH (Teste) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
             <a href="/totem" target="_blank" class="w-full flex items-center text-amber-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold"><i class="ph-fill ph-monitor-play text-xl mr-3"></i> Totem TV (Salão) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
             <a href="/" target="_blank" class="w-full flex items-center text-blue-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8"><i class="ph-fill ph-storefront text-xl mr-3"></i> Cardápio Online <i class="ph ph-arrow-square-out ml-auto opacity-50"></i></a>
         </nav>
@@ -77,7 +82,9 @@
 
         <div class="p-8 max-w-6xl mx-auto pb-24">
             
+            <!-- ============================================== -->
             <!-- RELATÓRIOS & DRE -->
+            <!-- ============================================== -->
             <div id="aba-relatorios" class="painel active">
                 <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                     <div>
@@ -153,15 +160,35 @@
                 </div>
             </div>
 
-            <!-- RH E COLABORADORES (V4 COM DOSSIÊ) -->
+            <!-- ============================================== -->
+            <!-- RH E COLABORADORES (V5 COM CARGOS E ESCALA) -->
+            <!-- ============================================== -->
             <div id="aba-colaboradores" class="painel hidden">
+                
+                <!-- GESTÃO DE CARGOS DINÂMICOS -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
+                    <h3 class="text-lg font-black text-slate-800 tracking-tight mb-4"><i class="ph-fill ph-briefcase text-blue-500 mr-2"></i> Gestão de Cargos na Empresa</h3>
+                    <form id="form-cargo" onsubmit="criarCargoDinamico(event)" class="flex flex-col md:flex-row gap-4">
+                        <input type="text" id="novo-cargo-nome" placeholder="Ex: Chapeiro Nível 1" required class="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold focus:border-brand-500 outline-none">
+                        <select id="novo-cargo-perm" class="px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 outline-none focus:border-brand-500">
+                            <option value="basico">Acesso Básico (App / Portal)</option>
+                            <option value="caixa">Frente de Caixa (PDV)</option>
+                            <option value="cozinha">Cozinheiro (KDS)</option>
+                            <option value="logistica">Despacho / Logística</option>
+                        </select>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-colors">
+                            + Criar Cargo
+                        </button>
+                    </form>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
                     <div class="mb-6 border-b border-slate-100 pb-4 flex flex-col md:flex-row md:items-center justify-between">
                         <div class="flex items-center">
                             <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mr-4"><i class="ph-fill ph-identification-card text-2xl"></i></div>
                             <div>
                                 <h3 class="text-xl font-black text-slate-800 tracking-tight">Admissão de Colaboradores</h3>
-                                <p class="text-xs font-semibold text-slate-500 mt-1">Preencha o básico e libere o acesso, ou edite o dossiê completo abaixo.</p>
+                                <p class="text-xs font-semibold text-slate-500 mt-1">Preencha o básico e libere o acesso. Você pode editar a Escala/Salário no Dossiê abaixo.</p>
                             </div>
                         </div>
                         <button type="button" onclick="copiarLinkAdmissao()" class="mt-4 md:mt-0 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-4 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-colors flex items-center shadow-sm">
@@ -184,26 +211,13 @@
                                 <input type="text" id="rh-tel" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium focus:border-brand-500 outline-none">
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Cargo / Permissão</label>
-                                <select id="rh-cargo" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 outline-none focus:border-brand-500">
-                                    <option value="2">Gerente</option>
-                                    <option value="3" selected>Caixa / PDV</option>
-                                    <option value="4">Cozinheiro</option>
-                                    <option value="5">Motoboy</option>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Cargo Oficial</label>
+                                <select id="rh-cargo" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-brand-600 outline-none focus:border-brand-500">
+                                    <option value="">Carregando Cargos...</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Salário (R$)</label>
-                                <input type="number" step="0.01" id="rh-salario" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-black text-green-600 focus:border-brand-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Turno</label>
-                                <input type="text" id="rh-escala" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium focus:border-brand-500 outline-none">
-                            </div>
-                        </div>
-                        <div class="border-t border-slate-100 pt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Usuário de Login</label>
                                 <input type="text" id="rh-usuario" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:border-brand-500 outline-none">
@@ -223,7 +237,7 @@
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest"><i class="ph-fill ph-users text-brand-500 mr-2 text-lg"></i> Equipe, Documentos e Ponto</h3>
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest"><i class="ph-fill ph-users text-brand-500 mr-2 text-lg"></i> Equipe e Departamento Pessoal</h3>
                         <button onclick="carregarColaboradores()" class="text-xs bg-brand-100 text-brand-700 hover:bg-brand-200 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-sm">
                             Atualizar Tela
                         </button>
@@ -234,20 +248,21 @@
                                 <tr class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-100">
                                     <th class="py-4 px-6">Funcionário</th>
                                     <th class="py-4 px-6">Status LGPD / Cargo</th>
-                                    <th class="py-4 px-6 text-center">Salário Base</th>
-                                    <th class="py-4 px-6 text-center">Ponto Diário</th>
+                                    <th class="py-4 px-6 text-center">Ponto Hoje</th>
                                     <th class="py-4 px-6 text-center">Gestão (Dossiê)</th>
                                 </tr>
                             </thead>
                             <tbody id="lista-colaboradores" class="text-sm">
-                                <tr><td colspan="5" class="text-center py-6 text-slate-400">Carregando equipe...</td></tr>
+                                <tr><td colspan="4" class="text-center py-6 text-slate-400">Carregando equipe...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
+            <!-- ============================================== -->
             <!-- CARDÁPIO E PRODUTOS -->
+            <!-- ============================================== -->
             <div id="aba-cardapio" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
                     <h3 class="text-xl font-black text-slate-800 tracking-tight mb-4">Cadastrar Produto</h3>
@@ -282,7 +297,9 @@
                 </div>
             </div>
 
+            <!-- ============================================== -->
             <!-- ESTOQUE MINIMO -->
+            <!-- ============================================== -->
             <div id="aba-estoque" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
                     <h3 class="text-xl font-black text-slate-800 tracking-tight mb-4">Entrada Insumo</h3>
@@ -308,7 +325,9 @@
                 </div>
             </div>
             
+            <!-- ============================================== -->
             <!-- FORNECEDORES -->
+            <!-- ============================================== -->
             <div id="aba-fornecedores" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
                     <h3 class="text-xl font-black text-slate-800 tracking-tight mb-4">Novo Fornecedor</h3>
@@ -328,7 +347,9 @@
                 </div>
             </div>
             
+            <!-- ============================================== -->
             <!-- FINANCEIRO E CONTAS -->
+            <!-- ============================================== -->
             <div id="aba-financeiro" class="painel hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div class="bg-slate-900 p-8 rounded-2xl text-white shadow-xl">
@@ -362,7 +383,9 @@
                 </div>
             </div>
             
+            <!-- ============================================== -->
             <!-- BASE DE CLIENTES VIP -->
+            <!-- ============================================== -->
             <div id="aba-clientes" class="painel hidden">
                 <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
                     <h3 class="text-xl font-black text-slate-800 tracking-tight mb-4">Base de Clientes</h3>
@@ -373,7 +396,9 @@
                 </div>
             </div>
             
+            <!-- ============================================== -->
             <!-- CONFIGURAÇÕES DA LOJA (HUB CENTRAL V2) -->
+            <!-- ============================================== -->
             <div id="aba-configuracoes" class="painel hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-5xl mx-auto mb-8">
                     <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-8">Setup Central do App</h3>
@@ -450,35 +475,44 @@
         </div> 
     </main>
 
+    <!-- ============================================== -->
     <!-- MEGA MODAL DE DOSSIÊ DO RH (O GESTOR EDITA TUDO AQUI) -->
+    <!-- ============================================== -->
     <div id="modal-dossie" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-        <div class="bg-white w-full max-w-4xl rounded-3xl p-8 shadow-2xl relative my-auto">
+        <div class="bg-white w-full max-w-5xl rounded-3xl p-8 shadow-2xl relative my-auto">
             <button onclick="document.getElementById('modal-dossie').classList.replace('flex','hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 transition-colors"><i class="ph ph-x text-2xl"></i></button>
             
-            <h2 class="text-2xl font-black text-slate-800 mb-6 border-b border-slate-100 pb-4"><i class="ph-fill ph-folder-user text-brand-500 mr-2"></i> Dossiê Oficial do Colaborador</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-4 border-b border-slate-100 pb-4"><i class="ph-fill ph-folder-user text-brand-500 mr-2"></i> Dossiê: <span id="nome-dossie-modal" class="text-brand-500"></span></h2>
             
-            <form id="form-dossie" onsubmit="salvarDossieRH(event)" class="space-y-5">
+            <!-- Guias (Tabs) do Dossiê -->
+            <div class="flex space-x-4 mb-6 border-b border-slate-200">
+                <button onclick="alternarAbaDossie('aba-dos-legal', this)" class="btn-aba-dossie pb-2 font-bold border-b-4 border-brand-500 text-brand-600 transition-colors">Documentação e LGPD</button>
+                <button onclick="alternarAbaDossie('aba-dos-fin', this)" class="btn-aba-dossie pb-2 font-bold border-b-4 border-transparent text-slate-400 hover:text-slate-600 transition-colors">Financeiro e Escala</button>
+            </div>
+
+            <!-- ABA 1: DOCUMENTOS -->
+            <form id="aba-dos-legal" class="aba-dossie active space-y-4" onsubmit="salvarDossieLegal(event)">
                 <input type="hidden" id="dos-id">
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CPF</label><input type="text" id="dos-cpf" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold focus:border-brand-500 outline-none"></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">RG</label><input type="text" id="dos-rg" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">PIS/PASEP</label><input type="text" id="dos-pis" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data Nasc.</label><input type="date" id="dos-nasc" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Estado Civil</label><select id="dos-civil" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"><option value="Solteiro">Solteiro</option><option value="Casado">Casado</option><option value="Divorciado">Divorciado</option></select></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Título Eleitor</label><input type="text" id="dos-eleitor" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Reservista</label><input type="text" id="dos-res" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label><input type="text" id="dos-end" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Dados Bancários</label><input type="text" id="dos-banco" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-5 border-b border-slate-100 pb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 border-b border-slate-100 pb-6">
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Naturalidade</label><input type="text" id="dos-nat" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Escolaridade</label><select id="dos-esc" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"><option>Ensino Médio</option><option>Superior</option><option>Fundamental</option></select></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Filhos (< 14)</label><input type="number" id="dos-filhos" value="0" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium focus:border-brand-500 outline-none"></div>
@@ -487,15 +521,66 @@
 
                 <div class="flex justify-between items-center pt-2">
                     <p class="text-[10px] font-bold text-amber-500 max-w-sm"><i class="ph-fill ph-info"></i> Ao preencher e salvar os dados via Gestor, a ficha do colaborador será considerada "Ativa" automaticamente pelo sistema.</p>
-                    <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-black py-4 px-10 rounded-xl shadow-[0_10px_20px_rgba(255,71,87,0.3)] transition-all active:scale-95 text-sm uppercase tracking-wider">
-                        Salvar Dossiê Oficial
+                    <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-black py-4 px-10 rounded-xl shadow-lg transition-colors text-sm uppercase tracking-wider">
+                        Salvar Documentos Oficiais
+                    </button>
+                </div>
+            </form>
+
+            <!-- ABA 2: FINANCEIRO E ESCALA -->
+            <form id="aba-dos-fin" class="aba-dossie space-y-6" onsubmit="salvarDossieFinanceiro(event)">
+                
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Remuneração e Benefícios Fixo</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Salário Base Mensal (R$)</label><input type="number" step="0.01" id="fin-salario" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-black text-green-600 focus:border-green-500 outline-none"></div>
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Vale Transporte (R$ / Mês)</label><input type="number" step="0.01" id="fin-vt" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold focus:border-brand-500 outline-none"></div>
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Vale Alimentação (R$ / Mês)</label><input type="number" step="0.01" id="fin-va" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold focus:border-brand-500 outline-none"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-amber-50 p-6 rounded-2xl border border-amber-200">
+                        <h4 class="text-sm font-black text-amber-900 uppercase tracking-widest mb-4">Comissões (Caixa/Balcão)</h4>
+                        <label class="flex items-center space-x-2 mb-3 cursor-pointer"><input type="checkbox" id="fin-recebe-com" class="w-5 h-5 text-amber-500 rounded"><span class="font-bold text-sm text-amber-800">Funcionário recebe comissão?</span></label>
+                        <div class="flex space-x-2">
+                            <select id="fin-tipo-com" class="w-1/2 px-4 py-3 rounded-xl border border-amber-200 font-bold text-amber-800 bg-white outline-none focus:border-amber-500">
+                                <option value="PERCENTUAL">% Percentual Geral</option>
+                                <option value="FIXO">R$ Fixo por Mês</option>
+                            </select>
+                            <input type="number" step="0.01" id="fin-valor-com" placeholder="Valor" class="w-1/2 px-4 py-3 rounded-xl border border-amber-200 font-bold text-amber-600 bg-white outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-6 rounded-2xl border border-blue-200">
+                        <h4 class="text-sm font-black text-blue-900 uppercase tracking-widest mb-4">Logística (Apenas Motoboys)</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="block text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1">Diária Fixa (R$)</label><input type="number" step="0.01" id="fin-diaria" class="w-full px-4 py-3 rounded-xl border border-blue-200 font-bold text-blue-600 bg-white outline-none focus:border-blue-500"></div>
+                            <div><label class="block text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1">Repasse/Entrega (R$)</label><input type="number" step="0.01" id="fin-repasse" class="w-full px-4 py-3 rounded-xl border border-blue-200 font-bold text-blue-600 bg-white outline-none focus:border-blue-500"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-200 pt-6">
+                    <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Matriz de Escala de Trabalho Semanal</h4>
+                    <p class="text-xs text-slate-500 mb-4">Selecione os dias de folga fixa e digite o horário previsto para cada dia trabalhado. Os atrasos serão calculados com base nesta escala.</p>
+                    <div id="container-escala" class="grid grid-cols-2 md:grid-cols-7 gap-2">
+                        <!-- Gerado dinamicamente pelo JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="flex justify-end pt-4">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-black py-4 px-10 rounded-xl shadow-lg transition-colors text-sm uppercase tracking-wider">
+                        Salvar Financeiro e Escala
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- ============================================== -->
     <!-- MODAL GRUPO EXTRAS (LANCHES) -->
+    <!-- ============================================== -->
     <div id="modal-add-grupo" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl relative modal-up">
             <button onclick="document.getElementById('modal-add-grupo').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"><i class="ph ph-x text-xl"></i></button>
@@ -521,41 +606,63 @@
         </div>
     </div>
 
-    <!-- FUNÇÕES JAVASCRIPT EXPANDIDAS PARA FÁCIL MANUTENÇÃO -->
+    <!-- ============================================== -->
+    <!-- MEGA JAVASCRIPT DESCOMPRIMIDO E FORMATADO -->
+    <!-- ============================================== -->
     <script>
+        const diasSemana = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
+        const nomesDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
         document.addEventListener('DOMContentLoaded', () => { 
             document.getElementById('nome-admin-lateral').innerText = localStorage.getItem('funcionario_nome') || "Admin"; 
             carregarConfiguracoesInit(); 
+            carregarCargosParaRH();
+            renderizarEscalaUI();
         });
 
         // -------------------------
-        // CONTROLE DE NAVEGAÇÃO
+        // CONTROLE DE NAVEGAÇÃO E ABAS
         // -------------------------
-        function abrirAba(id, el) { 
+        function abrirAba(idAba, elementoClicado) { 
             document.querySelectorAll('.painel').forEach(p => { 
-                p.classList.remove('active'); p.classList.add('hidden'); 
+                p.classList.remove('active'); 
+                p.classList.add('hidden'); 
             }); 
+            
             document.querySelectorAll('.menu-item').forEach(m => { 
                 m.classList.remove('bg-brand-500', 'text-white', 'active'); 
                 m.classList.add('text-slate-300'); 
             }); 
             
-            document.getElementById(id).classList.remove('hidden'); 
-            document.getElementById(id).classList.add('active'); 
+            document.getElementById(idAba).classList.remove('hidden'); 
+            document.getElementById(idAba).classList.add('active'); 
             
-            if(el) { 
-                el.classList.remove('text-slate-300'); 
-                el.classList.add('bg-brand-500', 'text-white', 'active'); 
+            if(elementoClicado) { 
+                elementoClicado.classList.remove('text-slate-300'); 
+                elementoClicado.classList.add('bg-brand-500', 'text-white', 'active'); 
             } 
             
-            if(id==='aba-relatorios') filtrarRelatorios(); 
-            if(id==='aba-financeiro') { carregarFornecedoresParaSelect(); carregarFinanceiro(); } 
-            if(id==='aba-cardapio') { carregarInsumosParaSelect(); carregarCardapio(); } 
-            if(id==='aba-estoque') carregarEstoque(); 
-            if(id==='aba-configuracoes') carregarConfiguracoesInit(); 
-            if(id==='aba-clientes') carregarClientesPainel(); 
-            if(id==='aba-fornecedores') { carregarFornecedores(); carregarCategoriasSelect('forn-cat','conf-cat-fornecedor'); } 
-            if(id==='aba-colaboradores') carregarColaboradores(); 
+            if(idAba === 'aba-relatorios') filtrarRelatorios(); 
+            if(idAba === 'aba-financeiro') { carregarFornecedoresParaSelect(); carregarFinanceiro(); } 
+            if(idAba === 'aba-cardapio') { carregarInsumosParaSelect(); carregarCardapio(); } 
+            if(idAba === 'aba-estoque') carregarEstoque(); 
+            if(idAba === 'aba-configuracoes') carregarConfiguracoesInit(); 
+            if(idAba === 'aba-clientes') carregarClientesPainel(); 
+            if(idAba === 'aba-fornecedores') { carregarFornecedores(); carregarCategoriasSelect('forn-cat','conf-cat-fornecedor'); } 
+            if(idAba === 'aba-colaboradores') { carregarColaboradores(); carregarCargosParaRH(); } 
+        }
+
+        function alternarAbaDossie(idAba, elBtn) {
+            document.querySelectorAll('.aba-dossie').forEach(a => { 
+                a.classList.remove('active'); 
+            });
+            document.querySelectorAll('.btn-aba-dossie').forEach(b => { 
+                b.classList.remove('border-brand-500', 'text-brand-600'); 
+                b.classList.add('border-transparent', 'text-slate-400'); 
+            });
+            document.getElementById(idAba).classList.add('active');
+            elBtn.classList.remove('border-transparent', 'text-slate-400'); 
+            elBtn.classList.add('border-brand-500', 'text-brand-600');
         }
 
         // -------------------------
@@ -567,16 +674,18 @@
                 const conf = await res.json();
                 
                 document.getElementById('conf-nome').value = conf.nome_empresa || ""; 
-                document.getElementById('sidebar-nome-loja').innerText = conf.nome_empresa || "ERP V2";
+                document.getElementById('sidebar-nome-loja').innerText = conf.nome_empresa || "ERP V5";
                 document.getElementById('conf-cnpj').value = conf.cnpj || ""; 
                 document.getElementById('conf-endereco').value = conf.endereco || "";
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
                 document.getElementById('conf-logo').value = conf.logo_url || "";
                 document.getElementById('conf-tempo').value = conf.tempo_preparo || 30; 
+                
                 document.getElementById('conf-delivery').checked = conf.aceita_delivery;
                 document.getElementById('conf-retirada').checked = conf.aceita_retirada; 
                 document.getElementById('conf-auto').checked = conf.aceite_automatico;
                 document.getElementById('conf-fidelidade').value = conf.sistema_fidelidade || "CASHBACK"; 
+                
                 document.getElementById('conf-cat-cardapio').value = conf.categorias_cardapio || "";
                 document.getElementById('conf-cat-fornecedor').value = conf.categorias_fornecedor || ""; 
                 document.getElementById('conf-planos-saude').value = conf.planos_saude_opcoes || "Nenhum";
@@ -592,7 +701,9 @@
                 carregarCategoriasSelect('forn-cat', 'conf-cat-fornecedor');
                 carregarCategoriasSelect('dos-plano', 'conf-planos-saude'); // Popula o modal de Dossiê do RH
                 
-                if(document.getElementById('aba-relatorios').classList.contains('active')) filtrarRelatorios();
+                if(document.getElementById('aba-relatorios').classList.contains('active')) {
+                    filtrarRelatorios();
+                }
             } catch (e) { console.error("Erro ao carregar setup:", e); }
         }
 
@@ -605,6 +716,7 @@
 
         async function salvarConfiguracoesLoja(e) {
             e.preventDefault(); 
+            
             let arr = []; 
             if(document.getElementById('pag-dinheiro').checked) arr.push('dinheiro'); 
             if(document.getElementById('pag-maquininha').checked) arr.push('maquininha'); 
@@ -637,8 +749,68 @@
         }
 
         // -------------------------
+        // GESTÃO DE CARGOS DINÂMICOS
+        // -------------------------
+        async function carregarCargosParaRH() {
+            try {
+                const res = await fetch('/api/gestao/cargos'); 
+                const cargos = await res.json();
+                const select = document.getElementById('rh-cargo');
+                select.innerHTML = cargos.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+            } catch(e) { console.error("Erro ao puxar cargos", e); }
+        }
+
+        async function criarCargoDinamico(e) {
+            e.preventDefault();
+            const nomeCargo = document.getElementById('novo-cargo-nome').value; 
+            const permissoes = document.getElementById('novo-cargo-perm').value;
+            
+            try {
+                const res = await fetch('/api/gestao/cargos', { 
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({nome: nomeCargo, permissoes: permissoes})
+                });
+                
+                const data = await res.json();
+                if(res.ok) { 
+                    alert("Cargo Criado com sucesso!"); 
+                    document.getElementById('form-cargo').reset(); 
+                    carregarCargosParaRH(); 
+                } else {
+                    alert(data.detail || "Erro ao criar cargo.");
+                }
+            } catch(err) { alert("Falha na rede."); }
+        }
+
+        // -------------------------
         // RH E DOSSIÊ DO COLABORADOR
         // -------------------------
+        function renderizarEscalaUI() {
+            const container = document.getElementById('container-escala');
+            container.innerHTML = diasSemana.map((diaAbreviado, index) => `
+                <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex flex-col text-center shadow-sm">
+                    <span class="font-bold text-xs uppercase text-slate-700 mb-2">${nomesDias[index]}</span>
+                    <label class="text-[10px] font-bold text-slate-500 cursor-pointer mb-2 flex items-center justify-center bg-white p-1.5 rounded border">
+                        <input type="checkbox" id="esc-folga-${diaAbreviado}" class="mr-2" onchange="toggleFolga('${diaAbreviado}')">Folga
+                    </label>
+                    <input type="time" id="esc-in-${diaAbreviado}" class="border border-slate-300 rounded p-1.5 text-xs text-center mb-1 w-full font-mono bg-white outline-none focus:border-brand-500">
+                    <input type="time" id="esc-out-${diaAbreviado}" class="border border-slate-300 rounded p-1.5 text-xs text-center w-full font-mono bg-white outline-none focus:border-brand-500">
+                </div>
+            `).join('');
+        }
+
+        function toggleFolga(diaAbreviado) {
+            const isFolga = document.getElementById(`esc-folga-${diaAbreviado}`).checked;
+            document.getElementById(`esc-in-${diaAbreviado}`).disabled = isFolga;
+            document.getElementById(`esc-out-${diaAbreviado}`).disabled = isFolga;
+            
+            if(isFolga) { 
+                document.getElementById(`esc-in-${diaAbreviado}`).value = ''; 
+                document.getElementById(`esc-out-${diaAbreviado}`).value = ''; 
+            }
+        }
+
         function copiarLinkAdmissao() { 
             const link = window.location.origin + "/admissao";
             navigator.clipboard.writeText(link); 
@@ -664,6 +836,7 @@
             try {
                 const res = await fetch('/api/gestao/funcionarios', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
                 const data = await res.json();
+                
                 if(res.ok) { 
                     alert(data.mensagem); 
                     document.getElementById('form-rh').reset(); 
@@ -693,7 +866,7 @@
                     else if(f.status_admissao === 'ATIVO') badgeStatus = '<span class="bg-green-100 text-green-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Contrato Ativo</span>';
                     else if(f.status_admissao === 'DEMITIDO') badgeStatus = '<span class="bg-red-100 text-red-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Demitido</span>';
 
-                    let acaoAdmin = f.id === 1 ? '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Supremo</span>' : `<button onclick="abrirDossie(${f.id})" class="text-blue-500 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl text-xs font-bold mr-2 transition-colors">Dossiê Completo</button><button onclick="demitirColaborador(${f.id})" class="text-red-500 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-colors"><i class="ph-bold ph-trash text-lg"></i></button>`;
+                    let acaoAdmin = f.id === 1 ? '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Supremo</span>' : `<button onclick="abrirDossie(${f.id}, '${f.nome}')" class="text-blue-500 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl text-xs font-bold mr-2 transition-colors">Dossiê Completo</button><button onclick="demitirColaborador(${f.id})" class="text-red-500 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-colors"><i class="ph-bold ph-trash text-lg"></i></button>`;
                     
                     let pontoHtml = '';
                     if(f.status_admissao === 'ATIVO' && f.id !== 1) {
@@ -729,7 +902,9 @@
             } 
         }
 
-        async function abrirDossie(id) {
+        async function abrirDossie(id, nomeFuncionario) {
+            document.getElementById('nome-dossie-modal').innerText = nomeFuncionario;
+            
             try {
                 const res = await fetch(`/api/gestao/funcionarios/${id}/dossie`); 
                 const r = await res.json();
@@ -749,11 +924,31 @@
                 document.getElementById('dos-filhos').value = r.qtd_filhos_menores || 0; 
                 document.getElementById('dos-plano').value = r.plano_saude_escolhido || "Nenhum";
                 
+                // Abastece a aba financeira
+                document.getElementById('fin-salario').value = r.salario || 0; 
+                document.getElementById('fin-vt').value = r.valor_vt || 0; 
+                document.getElementById('fin-va').value = r.valor_va || 0;
+                document.getElementById('fin-recebe-com').checked = r.recebe_comissao; 
+                document.getElementById('fin-tipo-com').value = r.tipo_comissao || "PERCENTUAL"; 
+                document.getElementById('fin-valor-com').value = r.valor_comissao || 0;
+                document.getElementById('fin-diaria').value = r.diaria_motoboy || 0; 
+                document.getElementById('fin-repasse').value = r.repasse_por_entrega || 0;
+
+                // Carrega a escala JSON e preenche o HTML
+                const escalaSalva = r.escala_matriz_json ? JSON.parse(r.escala_matriz_json) : {};
+                diasSemana.forEach(d => {
+                    const info = escalaSalva[d] || { folga: false, in: '', out: '' };
+                    document.getElementById(`esc-folga-${d}`).checked = info.folga;
+                    document.getElementById(`esc-in-${d}`).value = info.in;
+                    document.getElementById(`esc-out-${d}`).value = info.out;
+                    toggleFolga(d);
+                });
+
                 document.getElementById('modal-dossie').classList.replace('hidden', 'flex');
             } catch(e) { alert("Erro ao puxar dossiê da nuvem."); }
         }
 
-        async function salvarDossieRH(e) {
+        async function salvarDossieLegal(e) {
             e.preventDefault(); 
             const id = document.getElementById('dos-id').value;
             const payload = { 
@@ -776,11 +971,45 @@
             try {
                 const r = await fetch(`/api/gestao/funcionarios/${id}/dossie`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
                 if(r.ok) { 
-                    alert("✅ Dossiê salvo! Ficha ativa oficializada."); 
-                    document.getElementById('modal-dossie').classList.replace('flex','hidden'); 
+                    alert("✅ Documentos Oficiais Salvos!"); 
                     carregarColaboradores(); 
                 }
             } catch(err) { alert("Falha ao salvar dossiê."); }
+        }
+
+        async function salvarDossieFinanceiro(e) {
+            e.preventDefault(); 
+            const id = document.getElementById('dos-id').value;
+            
+            // Monta o JSON da Escala a partir dos campos do HTML
+            let escalaJsonFinal = {};
+            diasSemana.forEach(d => {
+                escalaJsonFinal[d] = {
+                    folga: document.getElementById(`esc-folga-${d}`).checked,
+                    in: document.getElementById(`esc-in-${d}`).value,
+                    out: document.getElementById(`esc-out-${d}`).value
+                };
+            });
+
+            const payload = {
+                salario: parseFloat(document.getElementById('fin-salario').value) || 0, 
+                recebe_comissao: document.getElementById('fin-recebe-com').checked,
+                tipo_comissao: document.getElementById('fin-tipo-com').value, 
+                valor_comissao: parseFloat(document.getElementById('fin-valor-com').value) || 0,
+                valor_vt: parseFloat(document.getElementById('fin-vt').value) || 0, 
+                valor_va: parseFloat(document.getElementById('fin-va').value) || 0,
+                diaria_motoboy: parseFloat(document.getElementById('fin-diaria').value) || 0, 
+                repasse_por_entrega: parseFloat(document.getElementById('fin-repasse').value) || 0,
+                escala_matriz_json: JSON.stringify(escalaJsonFinal)
+            };
+            
+            try {
+                const r = await fetch(`/api/gestao/funcionarios/${id}/financeiro`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+                if(r.ok) { 
+                    alert("✅ Financeiro e Escala de Trabalho Salvos!"); 
+                    carregarColaboradores(); 
+                }
+            } catch(err) { alert("Falha ao salvar financeiro."); }
         }
 
         // -------------------------
@@ -992,7 +1221,7 @@
         }
 
         // -------------------------
-        // FORNECEDORES, FINANCEIRO E CLIENTES
+        // FORNECEDORES E FINANCEIRO
         // -------------------------
         async function cadastrarFornecedor(e) { 
             e.preventDefault(); 
@@ -1072,6 +1301,9 @@
             }
         }
 
+        // -------------------------
+        // CLIENTES VIP
+        // -------------------------
         async function carregarClientesPainel() { 
             const res = await fetch('/api/gestao/clientes'); 
             const clientes = await res.json(); 
@@ -1116,7 +1348,7 @@
         }
 
         // -------------------------
-        // UTILITÁRIOS
+        // UTILITÁRIOS E EXPORTAÇÃO
         // -------------------------
         function sairDoSistema() { 
             localStorage.removeItem('funcionario_nome'); 
