@@ -8,29 +8,29 @@ from datetime import datetime, date
 from sqlalchemy import desc
 import uvicorn
 from passlib.context import CryptContext
+from sqlalchemy import Column, Integer, String, Boolean, Float
 
-# Importações dos nossos módulos do Art's Burguer
+# Importações dos módulos do Art's Burguer (Corrigidas para evitar conflitos de tabelas)
 from integracao_99food import router_99food
 from pagamentos_pagbank import criar_pagamento_pix_mp, criar_link_pagamento_mp, criar_pagamento_cartao_mp
-from vendas_pdv import registrar_venda_pdv, TipoPedido
-from financeiro import lancar_conta_pagar
+from vendas_pdv import ClienteModel, PedidoModel, ItemPedidoModel, registrar_venda_pdv, TipoPedido
+from financeiro import FornecedorModel, ContaPagarModel, lancar_conta_pagar
 from dashboard import router_dashboard
 from pagamentos_crm import router_pagamentos
 from whatsapp_ia import notificar_status_pedido
 
-# IMPORTAÇÕES DO BANCO DE DADOS (V5 COMPLETO E CORRIGIDO)
+# IMPORTAÇÕES EXCLUSIVAS DO DATABASE.PY
 from database import (
     SessionLocal, engine, Base, inicializar_banco, processar_baixa_estoque,
     ConfiguracaoLojaModel, Cargo, FuncionarioModel, InfoRHModel, PontoModel,
-    OcorrenciaRHModel, SolicitacaoFeriasModel, ClienteModel, PedidoModel,
-    ItemPedidoModel, InsumoModel, ProdutoModel, FichaTecnicaModel,
-    GrupoComplementoModel, ItemComplementoModel, FornecedorModel, ContaPagarModel
+    OcorrenciaRHModel, SolicitacaoFeriasModel, InsumoModel, ProdutoModel, 
+    FichaTecnicaModel, GrupoComplementoModel, ItemComplementoModel
 )
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 app = FastAPI(title="API - Art's Burguer ERP V5", version="5.0.0")
 
-# Cria as novas tabelas e injeta as configurações padrão se for a primeira vez
+# Cria as tabelas e roda as migrações automáticas
 inicializar_banco()
 Base.metadata.create_all(bind=engine)
 
@@ -157,7 +157,7 @@ class NovoFuncionario(BaseModel):
 
 class RegistroPonto(BaseModel):
     funcionario_id: int
-    tipo: str # "entrada" ou "saida"
+    tipo: str 
 
 class NovaOcorrencia(BaseModel):
     funcionario_id: int
@@ -213,7 +213,6 @@ def gerar_senha_diaria(db: Session):
         return ultimo_pedido.senha_diaria + 1
     return 1 
 
-
 # ==========================================
 # ROTAS DE FORNECEDORES
 # ==========================================
@@ -244,7 +243,6 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
 
 # ==========================================
 # ROTAS DE CLIENTES
@@ -302,7 +300,6 @@ def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
         })
     return historico
 
-
 # ==========================================
 # WEBHOOKS FINANCEIROS INTACTOS
 # ==========================================
@@ -337,9 +334,8 @@ async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
         print(f"❌ Erro Webhook Asaas: {e}")
         return {"status": "erro"}
 
-
 # ==========================================
-# VENDAS ONLINE E PDV (V2.0 com Senha e Origem)
+# VENDAS ONLINE E PDV
 # ==========================================
 @app.post("/api/pedidos/online")
 def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
@@ -471,11 +467,9 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro no PDV: {str(e)}")
 
-
 # ==========================================
 # DEPARTAMENTO PESSOAL E RH CORPORATIVO (V5)
 # ==========================================
-
 @app.get("/api/gestao/cargos")
 def listar_cargos(db: Session = Depends(get_db)):
     return db.query(Cargo).all()
@@ -1275,46 +1269,46 @@ def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
 # ==========================================
 @app.get("/login", response_class=HTMLResponse)
 def abrir_tela_login(): 
-    return Path("templates/login.html").read_text(encoding="utf-8") if Path("templates/login.html").exists() else "Erro"
+    return Path("templates/login.html").read_text(encoding="utf-8") if Path("templates/login.html").exists() else "Erro: Arquivo login.html não encontrado."
 
 @app.get("/", response_class=HTMLResponse)
 def abrir_cardapio(): 
-    return Path("templates/cardapio.html").read_text(encoding="utf-8") if Path("templates/cardapio.html").exists() else "Erro"
+    return Path("templates/cardapio.html").read_text(encoding="utf-8") if Path("templates/cardapio.html").exists() else "Erro: Arquivo cardapio.html não encontrado."
 
 @app.get("/admin", response_class=HTMLResponse)
 def abrir_admin(): 
-    return Path("templates/dashboard.html").read_text(encoding="utf-8") if Path("templates/dashboard.html").exists() else "Erro"
+    return Path("templates/dashboard.html").read_text(encoding="utf-8") if Path("templates/dashboard.html").exists() else "Erro: Arquivo dashboard.html não encontrado."
 
 @app.get("/gestao", response_class=HTMLResponse)
 def abrir_gestao(): 
-    return Path("templates/gestao.html").read_text(encoding="utf-8") if Path("templates/gestao.html").exists() else "Erro"
+    return Path("templates/gestao.html").read_text(encoding="utf-8") if Path("templates/gestao.html").exists() else "Erro: Arquivo gestao.html não encontrado."
 
 @app.get("/pdv", response_class=HTMLResponse)
 def abrir_pdv(): 
-    return Path("templates/pdv.html").read_text(encoding="utf-8") if Path("templates/pdv.html").exists() else "Erro"
+    return Path("templates/pdv.html").read_text(encoding="utf-8") if Path("templates/pdv.html").exists() else "Erro: Arquivo pdv.html não encontrado."
 
 @app.get("/logistica", response_class=HTMLResponse)
 def abrir_logistica(): 
-    return Path("templates/logistica.html").read_text(encoding="utf-8") if Path("templates/logistica.html").exists() else "Erro"
+    return Path("templates/logistica.html").read_text(encoding="utf-8") if Path("templates/logistica.html").exists() else "Erro: Arquivo logistica.html não encontrado."
 
 @app.get("/kds", response_class=HTMLResponse)
 def abrir_kds(): 
-    return Path("templates/kds.html").read_text(encoding="utf-8") if Path("templates/kds.html").exists() else "Erro"
+    return Path("templates/kds.html").read_text(encoding="utf-8") if Path("templates/kds.html").exists() else "Erro: Arquivo kds.html não encontrado."
 
 @app.get("/totem", response_class=HTMLResponse)
 def abrir_totem(): 
-    return Path("templates/totem.html").read_text(encoding="utf-8") if Path("templates/totem.html").exists() else "Erro"
+    return Path("templates/totem.html").read_text(encoding="utf-8") if Path("templates/totem.html").exists() else "Erro: Arquivo totem.html não encontrado."
 
 @app.get("/admissao", response_class=HTMLResponse)
 def abrir_admissao(): 
-    return Path("templates/admissao.html").read_text(encoding="utf-8") if Path("templates/admissao.html").exists() else "Erro"
+    return Path("templates/admissao.html").read_text(encoding="utf-8") if Path("templates/admissao.html").exists() else "Erro: Arquivo admissao.html não encontrado."
 
 @app.get("/portal_colaborador", response_class=HTMLResponse)
 def abrir_portal_colaborador(): 
-    return Path("templates/portal_colaborador.html").read_text(encoding="utf-8") if Path("templates/portal_colaborador.html").exists() else "Erro"
+    return Path("templates/portal_colaborador.html").read_text(encoding="utf-8") if Path("templates/portal_colaborador.html").exists() else "Erro: Arquivo portal_colaborador.html não encontrado."
 
 # ==========================================
-# INCLUSÃO DE ROUTERS E WEBHOOKS GENÉRICOS
+# INCLUSÃO DE ROUTERS EXTRAS E WEBHOOKS
 # ==========================================
 app.include_router(router_dashboard)
 app.include_router(router_pagamentos)
