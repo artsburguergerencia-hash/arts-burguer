@@ -37,7 +37,7 @@ class Cargo(Base):
     nome = Column(String, unique=True, index=True)
     permissoes = Column(String, default="basico") 
 
-# === FUNCIONÁRIOS ===
+# === FUNCIONÁRIOS E RH ===
 class FuncionarioModel(Base):
     __tablename__ = "funcionarios"
     __table_args__ = {'extend_existing': True}
@@ -49,7 +49,6 @@ class FuncionarioModel(Base):
     foto_3x4 = Column(String, default="") 
     matricula_cracha = Column(String, unique=True, index=True, nullable=True) 
 
-# === DEPARTAMENTO PESSOAL (DOSSIÊ E BENEFÍCIOS) ===
 class InfoRHModel(Base):
     __tablename__ = "info_rh"
     __table_args__ = {'extend_existing': True}
@@ -90,7 +89,6 @@ class InfoRHModel(Base):
     plano_saude_escolhido = Column(String, default="")
     link_pasta_documentos = Column(String, default="")
 
-# === PONTO E OCORRÊNCIAS ===
 class PontoModel(Base):
     __tablename__ = "pontos_rh"
     __table_args__ = {'extend_existing': True}
@@ -125,51 +123,6 @@ class SolicitacaoFeriasModel(Base):
     data_fim = Column(String)
     status = Column(String, default="PENDENTE") 
     observacao_gestor = Column(String, default="")
-
-# === CLIENTES E PEDIDOS ===
-class ClienteModel(Base):
-    __tablename__ = "clientes"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String)
-    telefone = Column(String, unique=True, index=True)
-    senha_hash = Column(String, nullable=True)
-    cpf = Column(String, default="")
-    data_nascimento = Column(String, default="")
-    cep = Column(String, default="")
-    logradouro = Column(String, default="")
-    numero = Column(String, default="")
-    bairro = Column(String, default="")
-    complemento = Column(String, default="")
-    pontos_fidelidade = Column(Integer, default=0)
-    saldo_cashback = Column(Float, default=0.0)
-    bloqueado = Column(Boolean, default=False)
-    pedidos = relationship("PedidoModel", back_populates="cliente")
-
-class PedidoModel(Base):
-    __tablename__ = "pedidos"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    senha_diaria = Column(Integer, default=1)
-    data_pedido = Column(Date, default=datetime.utcnow().date)
-    origem = Column(String, default="SITE")
-    cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=True)
-    total_pago = Column(Float)
-    forma_pagamento = Column(String)
-    status = Column(String, default="RECEBIDO")
-    tipo = Column(String, default="DELIVERY")
-    data_criacao = Column(DateTime, default=datetime.utcnow)
-    cliente = relationship("ClienteModel", back_populates="pedidos")
-    itens = relationship("ItemPedidoModel", backref="pedido", cascade="all, delete-orphan")
-
-class ItemPedidoModel(Base):
-    __tablename__ = "itens_pedido"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    pedido_id = Column(Integer, ForeignKey("pedidos.id"))
-    produto_id = Column(Integer, ForeignKey("produtos.id"))
-    quantidade = Column(Integer)
-    observacao = Column(String, default="")
 
 # === CARDÁPIO E ESTOQUE ===
 class InsumoModel(Base):
@@ -219,27 +172,8 @@ class ItemComplementoModel(Base):
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
 
-class FornecedorModel(Base):
-    __tablename__ = "fornecedores"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    nome_fantasia = Column(String)
-    categoria = Column(String, default="Geral")
-    contato = Column(String, default="")
-    cnpj = Column(String, default="")
 
-class ContaPagarModel(Base):
-    __tablename__ = "contas_pagar"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    fornecedor_id = Column(Integer, ForeignKey("fornecedores.id"), nullable=True)
-    descricao = Column(String)
-    valor = Column(Float)
-    data_vencimento = Column(Date)
-    tipo_despesa = Column(String, default="Empresa")
-    status = Column(String, default="PENDENTE")
-
-# 🚨 SCRIPT DE AUTO-MIGRAÇÃO E RECUPERAÇÃO DO BANCO (Aqui está a cura!) 🚨
+# 🚨 SCRIPT DE AUTO-MIGRAÇÃO E RECUPERAÇÃO DO BANCO 🚨
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
