@@ -59,9 +59,9 @@ from database import (
 # CONFIGURAÇÃO DO SERVIDOR FASTAPI
 # ==========================================
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-app = FastAPI(title="API - Art's Burguer ERP V5", version="5.0.0")
+app = FastAPI(title="API - Art's Burguer ERP Corporativo V5", version="5.0.0")
 
-# Cria as tabelas e roda as migrações automáticas
+# Cria as tabelas e roda as migrações automáticas do banco de dados
 inicializar_banco()
 Base.metadata.create_all(bind=engine)
 
@@ -81,6 +81,7 @@ class ItemCompSchema(BaseModel):
     nome: str
     preco_adicional: float
 
+
 class GrupoCompSchema(BaseModel):
     produto_id: int
     nome: str
@@ -89,10 +90,12 @@ class GrupoCompSchema(BaseModel):
     maximo_opcoes: int = 1
     itens: List[ItemCompSchema]
 
+
 class ItemCarrinho(BaseModel):
     produto_id: int
     quantidade: int
     observacao: str = ""
+
 
 class CheckoutPedido(BaseModel):
     telefone_cliente: str
@@ -104,6 +107,7 @@ class CheckoutPedido(BaseModel):
     payment_method_id: Optional[str] = None
     parcelas: Optional[int] = 1
 
+
 class NovoInsumo(BaseModel):
     nome: str
     unidade: str
@@ -111,9 +115,11 @@ class NovoInsumo(BaseModel):
     minimo: float
     custo: float
 
+
 class FichaItem(BaseModel):
     insumo_id: int
     quantidade: float
+
 
 class NovoProduto(BaseModel):
     nome: str
@@ -123,6 +129,7 @@ class NovoProduto(BaseModel):
     imagem_url: str = ""
     fichas: List[FichaItem] = []
 
+
 class CheckoutPDV(BaseModel):
     nome_cliente: str
     telefone_cliente: str = "BALCAO"
@@ -131,6 +138,7 @@ class CheckoutPDV(BaseModel):
     usar_saldo_cashback: float = 0.0
     usar_pontos: bool = False
 
+
 class NovaConta(BaseModel):
     descricao: str
     valor: float
@@ -138,15 +146,19 @@ class NovaConta(BaseModel):
     tipo_despesa: str = "Empresa"
     fornecedor_id: Optional[int] = None
 
+
 class DespachoMotoboy(BaseModel):
     nome_motoboy: str    
+
 
 class AtualizarStatus(BaseModel):
     status: str
 
+
 class LoginData(BaseModel):
     usuario: str
     senha: str
+
 
 class NovoFornecedor(BaseModel):
     nome_fantasia: str
@@ -154,9 +166,11 @@ class NovoFornecedor(BaseModel):
     contato: str = ""
     cnpj: str = ""
 
+
 class LoginClienteData(BaseModel):
     telefone: str
     senha: str
+
 
 class RegistroClienteData(BaseModel):
     nome: str
@@ -170,28 +184,27 @@ class RegistroClienteData(BaseModel):
     bairro: str = ""
     complemento: str = ""
 
-# --- SCHEMAS DE RH (V5 CORPORATIVO) ---
+# --- SCHEMAS DE RECURSOS HUMANOS (V5 CORPORATIVO) ---
 
 class NovoCargo(BaseModel):
     nome: str
     permissoes: str = "basico"
+
 
 class NovoFuncionario(BaseModel):
     nome: str
     usuario: str
     senha: str
     cargo_id: int
-    foto: str = ""
-    telefone: str = ""
-    salario: float = 0.0
-    escala: str = ""
-    rg: str = ""
+    whatsapp: str = ""
+    email: str = ""
     cpf: str = ""
-    pis_pasep: str = ""
+
 
 class RegistroPonto(BaseModel):
     funcionario_id: int
     tipo: str 
+
 
 class NovaOcorrencia(BaseModel):
     funcionario_id: int
@@ -202,10 +215,13 @@ class NovaOcorrencia(BaseModel):
     horas_descontadas: float = 0.0
     anexo_url: str = ""
 
+
 class NovaFerias(BaseModel):
     funcionario_id: int
+    tipo: str = "FERIAS"
     data_inicio: str
     data_fim: str
+
 
 class FormularioAdmissao(BaseModel):
     cpf: str = ""
@@ -216,14 +232,26 @@ class FormularioAdmissao(BaseModel):
     pis_pasep: str = ""
     titulo_eleitor: str = ""
     reservista: str = ""
+    
+    # Endereço
+    cep: str = ""
     endereco_completo: str = ""
-    dados_bancarios: str = ""
+    
+    # Dados Bancários Separados
+    banco: str = ""
+    agencia: str = ""
+    conta: str = ""
+    
+    # Pessoais
     escolaridade: str = ""
     qtd_filhos_menores: int = 0
     cnh: str = ""
+    email: str = ""
     plano_saude_escolhido: str = ""
+    
     aceite_lgpd: bool = True
     foto_3x4: str = ""
+
 
 class AjusteFinanceiroRH(BaseModel):
     salario: float
@@ -238,12 +266,14 @@ class AjusteFinanceiroRH(BaseModel):
 
 
 # ==========================================
-# FUNÇÕES ÚTEIS
+# FUNÇÕES GERAIS E ÚTEIS
 # ==========================================
 
 def gerar_senha_diaria(db: Session):
     hoje = datetime.utcnow().date()
-    ultimo_pedido = db.query(PedidoModel).filter(PedidoModel.data_pedido == hoje).order_by(desc(PedidoModel.senha_diaria)).first()
+    ultimo_pedido = db.query(PedidoModel).filter(
+        PedidoModel.data_pedido == hoje
+    ).order_by(desc(PedidoModel.senha_diaria)).first()
     
     if ultimo_pedido and ultimo_pedido.senha_diaria:
         return ultimo_pedido.senha_diaria + 1
@@ -271,22 +301,23 @@ def listar_fornecedores(db: Session = Depends(get_db)):
         
     return lista_formatada
 
+
 @app.post("/api/gestao/fornecedores")
 def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
     try:
-        novo = FornecedorModel(
+        novo_fornecedor = FornecedorModel(
             nome_fantasia=dados.nome_fantasia, 
             categoria=dados.categoria, 
             contato=dados.contato, 
             cnpj=dados.cnpj
         )
-        db.add(novo)
+        db.add(novo_fornecedor)
         db.commit()
-        db.refresh(novo)
+        db.refresh(novo_fornecedor)
         
         return {
             "status": "sucesso", 
-            "id": novo.id, 
+            "id": novo_fornecedor.id, 
             "mensagem": "Fornecedor cadastrado com sucesso!"
         }
     except Exception as e:
@@ -300,10 +331,10 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
 
 @app.post("/api/cliente/registrar")
 def registrar_cliente_cardapio(dados: RegistroClienteData, db: Session = Depends(get_db)):
-    cliente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
+    cliente_existente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
     
-    if cliente:
-        raise HTTPException(status_code=400, detail="Este telefone já está registado!")
+    if cliente_existente:
+        raise HTTPException(status_code=400, detail="Este telefone já está registado na base de dados!")
     
     novo_cliente = ClienteModel(
         nome=dados.nome, 
@@ -321,6 +352,7 @@ def registrar_cliente_cardapio(dados: RegistroClienteData, db: Session = Depends
     db.commit()
     
     return {"status": "sucesso", "mensagem": "Conta criada com sucesso!"}
+
 
 @app.post("/api/cliente/login")
 def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db)):
@@ -341,9 +373,13 @@ def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db
         }
     }
 
+
 @app.get("/api/cliente/{cliente_id}/pedidos")
 def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
-    pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).order_by(desc(PedidoModel.id)).limit(10).all()
+    pedidos = db.query(PedidoModel).filter(
+        PedidoModel.cliente_id == cliente_id
+    ).order_by(desc(PedidoModel.id)).limit(10).all()
+    
     historico = []
     
     for p in pedidos:
@@ -365,7 +401,7 @@ def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
 
 
 # ==========================================
-# WEBHOOKS FINANCEIROS INTACTOS
+# WEBHOOKS DE PAGAMENTO
 # ==========================================
 
 @app.post("/api/webhooks/mercadopago")
@@ -378,6 +414,7 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
         return {"status": "ok"}
     except Exception as e:
         return {"status": "erro"}
+
 
 @app.post("/api/webhooks/asaas")
 async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
@@ -404,7 +441,7 @@ async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
 
 
 # ==========================================
-# VENDAS ONLINE E PDV
+# VENDAS ONLINE E PDV (CAIXA)
 # ==========================================
 
 @app.post("/api/pedidos/online")
@@ -519,6 +556,7 @@ def buscar_cliente_pdv(telefone: str, db: Session = Depends(get_db)):
         "bloqueado": getattr(cliente, 'bloqueado', False)
     }
 
+
 @app.post("/api/pedidos/pdv")
 def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_caixa.telefone_cliente).first()
@@ -560,6 +598,7 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
         
         if cliente.telefone != "BALCAO":
             sis_fidelidade = getattr(config, 'sistema_fidelidade', 'CASHBACK')
+            
             if sis_fidelidade == "PONTOS":
                 if pedido_caixa.usar_pontos and getattr(cliente, 'pontos_fidelidade', 0) >= 10:
                     cliente.pontos_fidelidade -= 10
@@ -600,9 +639,11 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
 def listar_cargos(db: Session = Depends(get_db)):
     return db.query(Cargo).all()
 
+
 @app.post("/api/gestao/cargos")
 def criar_cargo_dinamico(dados: NovoCargo, db: Session = Depends(get_db)):
     cargo_existente = db.query(Cargo).filter(Cargo.nome == dados.nome).first()
+    
     if cargo_existente:
         raise HTTPException(status_code=400, detail="Este cargo já existe na empresa.")
     
@@ -614,6 +655,7 @@ def criar_cargo_dinamico(dados: NovoCargo, db: Session = Depends(get_db)):
     db.commit()
     
     return {"status": "sucesso", "mensagem": "Cargo criado com sucesso e disponível para uso."}
+
 
 @app.get("/api/gestao/funcionarios")
 def listar_funcionarios_rh(db: Session = Depends(get_db)):
@@ -635,19 +677,23 @@ def listar_funcionarios_rh(db: Session = Depends(get_db)):
             "matricula": f.matricula_cracha,
             "status_admissao": rh.status_admissao if rh else "DESCONHECIDO",
             "telefone": rh.telefone if rh else "", 
+            "email": rh.email if rh else "",
+            "cpf": rh.cpf if rh else "",
+            "foto_3x4": f.foto_3x4 if f.foto_3x4 else "",
             "salario": rh.salario if rh else 0.0,
             "escala": rh.escala if rh else "", 
-            "cpf": rh.cpf if rh else "",
             "ponto_entrada": ponto_hoje.entrada if ponto_hoje else "",
             "ponto_saida": ponto_hoje.saida if ponto_hoje else ""
         })
         
     return lista
 
+
 @app.post("/api/gestao/funcionarios")
 def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get_db)):
     try:
         existe = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first()
+        
         if existe:
             raise HTTPException(status_code=400, detail="Usuário de sistema já em uso.")
             
@@ -664,9 +710,8 @@ def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get
         
         info_rh = InfoRHModel(
             funcionario_id=novo_func.id, 
-            telefone=dados.telefone, 
-            salario=dados.salario, 
-            escala=dados.escala, 
+            telefone=dados.whatsapp, 
+            email=dados.email,
             cpf=dados.cpf,
             status_admissao="PENDENTE_PREENCHIMENTO" 
         )
@@ -681,12 +726,15 @@ def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.put("/api/gestao/funcionarios/admissao")
 def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get_db)):
     try:
         rh = db.query(InfoRHModel).filter(InfoRHModel.cpf == dados.cpf).first()
+        
         if not rh:
             raise HTTPException(status_code=404, detail="CPF não encontrado. Solicite o cadastro no RH.")
+            
         if rh.status_admissao == "ATIVO":
             raise HTTPException(status_code=400, detail="Sua admissão já foi concluída!")
 
@@ -697,11 +745,15 @@ def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get
         rh.pis_pasep = dados.pis_pasep
         rh.titulo_eleitor = dados.titulo_eleitor
         rh.reservista = dados.reservista
+        rh.cep = dados.cep
         rh.endereco_completo = dados.endereco_completo
-        rh.dados_bancarios = dados.dados_bancarios
+        rh.banco = dados.banco
+        rh.agencia = dados.agencia
+        rh.conta = dados.conta
         rh.escolaridade = dados.escolaridade
         rh.qtd_filhos_menores = dados.qtd_filhos_menores
         rh.cnh = dados.cnh
+        rh.email = dados.email
         rh.plano_saude_escolhido = dados.plano_saude_escolhido
         rh.aceite_lgpd = dados.aceite_lgpd
         rh.data_aceite_lgpd = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
@@ -717,9 +769,12 @@ def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/api/gestao/funcionarios/{func_id}/dossie")
 def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    
     if not rh:
         raise HTTPException(status_code=404, detail="Dossiê não encontrado.")
         
@@ -731,12 +786,16 @@ def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
         "estado_civil": rh.estado_civil, 
         "titulo_eleitor": rh.titulo_eleitor, 
         "reservista": rh.reservista, 
+        "cep": rh.cep,
         "endereco_completo": rh.endereco_completo, 
-        "dados_bancarios": rh.dados_bancarios, 
+        "banco": rh.banco,
+        "agencia": rh.agencia,
+        "conta": rh.conta,
         "naturalidade": rh.naturalidade, 
         "escolaridade": rh.escolaridade, 
         "qtd_filhos_menores": rh.qtd_filhos_menores, 
         "cnh": rh.cnh, 
+        "email": rh.email,
         "plano_saude_escolhido": rh.plano_saude_escolhido, 
         "salario": rh.salario, 
         "recebe_comissao": rh.recebe_comissao, 
@@ -746,12 +805,16 @@ def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
         "valor_va": rh.valor_va, 
         "diaria_motoboy": rh.diaria_motoboy, 
         "repasse_por_entrega": rh.repasse_por_entrega, 
-        "escala_matriz_json": rh.escala_matriz_json
+        "escala_matriz_json": rh.escala_matriz_json,
+        "foto_3x4": func.foto_3x4 if func else ""
     }
+
 
 @app.put("/api/gestao/funcionarios/{func_id}/dossie")
 def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    
     if not rh:
         raise HTTPException(status_code=404)
     
@@ -762,13 +825,20 @@ def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = D
     rh.estado_civil = dados.estado_civil
     rh.titulo_eleitor = dados.titulo_eleitor
     rh.reservista = dados.reservista
+    rh.cep = dados.cep
     rh.endereco_completo = dados.endereco_completo
-    rh.dados_bancarios = dados.dados_bancarios
+    rh.banco = dados.banco
+    rh.agencia = dados.agencia
+    rh.conta = dados.conta
     rh.naturalidade = dados.naturalidade
     rh.escolaridade = dados.escolaridade
     rh.qtd_filhos_menores = dados.qtd_filhos_menores
     rh.cnh = dados.cnh
+    rh.email = dados.email
     rh.plano_saude_escolhido = dados.plano_saude_escolhido
+    
+    if func:
+        func.foto_3x4 = dados.foto_3x4
     
     if rh.status_admissao == "PENDENTE_PREENCHIMENTO": 
         rh.status_admissao = "ATIVO"
@@ -776,9 +846,11 @@ def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = D
     db.commit()
     return {"status": "sucesso", "mensagem": "Documentos do Dossiê atualizados com sucesso."}
 
+
 @app.put("/api/gestao/funcionarios/{func_id}/financeiro")
 def atualizar_financeiro_rh(func_id: int, dados: AjusteFinanceiroRH, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    
     if not rh:
         raise HTTPException(status_code=404)
     
@@ -793,12 +865,13 @@ def atualizar_financeiro_rh(func_id: int, dados: AjusteFinanceiroRH, db: Session
     rh.escala_matriz_json = dados.escala_matriz_json
     
     db.commit()
-    return {"status": "sucesso", "mensagem": "Configurações de Remuneração e Escala salvas."}
+    return {"status": "sucesso", "mensagem": "Configurações de Remuneração e Escala salvas com sucesso."}
+
 
 @app.delete("/api/gestao/funcionarios/{func_id}")
 def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
     if func_id == 1:
-        raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador Supremo.")
+        raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador Supremo do sistema.")
         
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
     if rh: 
@@ -809,7 +882,8 @@ def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
         func.senha_hash = "REVOGADO" 
         
     db.commit()
-    return {"status": "sucesso", "mensagem": "Acesso revogado."}
+    return {"status": "sucesso", "mensagem": "Acesso do colaborador foi revogado permanentemente."}
+
 
 @app.post("/api/gestao/ponto")
 def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
@@ -817,10 +891,14 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
     hora = datetime.utcnow().strftime("%H:%M")
     
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == dados.funcionario_id).first()
+    
     if not rh or rh.status_admissao != "ATIVO": 
         return {"status": "erro", "detail": "Acesso negado. Funcionário pendente ou demitido."}
         
-    ponto = db.query(PontoModel).filter(PontoModel.funcionario_id == dados.funcionario_id, PontoModel.data == hoje).first()
+    ponto = db.query(PontoModel).filter(
+        PontoModel.funcionario_id == dados.funcionario_id, 
+        PontoModel.data == hoje
+    ).first()
     
     if not ponto:
         ponto = PontoModel(funcionario_id=dados.funcionario_id, data=hoje)
@@ -829,13 +907,13 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
         
     if dados.tipo == "entrada":
         if ponto.entrada:
-            return {"status": "erro", "detail": "Entrada já registrada."}
+            return {"status": "erro", "detail": "Entrada já registrada no sistema."}
         ponto.entrada = hora
     else:
         if not ponto.entrada:
-            return {"status": "erro", "detail": "Bata a Entrada primeiro."}
+            return {"status": "erro", "detail": "Bata a Entrada antes de registrar a saída."}
         if ponto.saida:
-            return {"status": "erro", "detail": "Saída já registrada."}
+            return {"status": "erro", "detail": "Saída já registrada no sistema."}
             
         ponto.saida = hora
         
@@ -850,7 +928,8 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
             pass
             
     db.commit()
-    return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} registrado às {hora}!"}
+    return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} registrado com sucesso às {hora}!"}
+
 
 @app.post("/api/gestao/rh/ocorrencias")
 def registrar_ocorrencia(dados: NovaOcorrencia, db: Session = Depends(get_db)):
@@ -866,37 +945,79 @@ def registrar_ocorrencia(dados: NovaOcorrencia, db: Session = Depends(get_db)):
         )
         db.add(nova_oc)
         db.commit()
-        return {"status": "sucesso", "mensagem": "Ocorrência registrada no sistema RH."}
+        return {"status": "sucesso", "mensagem": "Ocorrência registrada no sistema de RH."}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/gestao/rh/ferias")
 def solicitar_ferias(dados: NovaFerias, db: Session = Depends(get_db)):
     try:
-        nova_ferias = SolicitacaoFeriasModel(
+        nova_solicitacao = SolicitacaoFeriasModel(
             funcionario_id=dados.funcionario_id, 
+            tipo=dados.tipo,
             data_inicio=dados.data_inicio, 
             data_fim=dados.data_fim, 
             status="PENDENTE"
         )
-        db.add(nova_ferias)
+        db.add(nova_solicitacao)
         db.commit()
-        return {"status": "sucesso", "mensagem": "Solicitação de férias enviada ao RH."}
+        return {"status": "sucesso", "mensagem": "Solicitação enviada para aprovação do Gestor."}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.get("/api/gestao/rh/solicitacoes")
+def listar_solicitacoes_rh(db: Session = Depends(get_db)):
+    ferias = db.query(SolicitacaoFeriasModel).all()
+    ocorrencias = db.query(OcorrenciaRHModel).filter(OcorrenciaRHModel.anexo_url != "").all()
+    
+    resultado = []
+    
+    for f in ferias:
+        func = db.query(FuncionarioModel).filter(FuncionarioModel.id == f.funcionario_id).first()
+        resultado.append({
+            "id": f.id, 
+            "tipo_req": f.tipo, 
+            "funcionario": func.nome if func else "Colaborador Desconhecido",
+            "data_inicio": f.data_inicio, 
+            "data_fim": f.data_fim, 
+            "status": f.status, 
+            "categoria": "FERIAS_FOLGA"
+        })
+        
+    for o in ocorrencias:
+        func = db.query(FuncionarioModel).filter(FuncionarioModel.id == o.funcionario_id).first()
+        resultado.append({
+            "id": o.id, 
+            "tipo_req": o.tipo, 
+            "funcionario": func.nome if func else "Colaborador Desconhecido",
+            "data_inicio": o.data_ocorrencia, 
+            "data_fim": o.data_ocorrencia, 
+            "status": "REGISTRADO", 
+            "motivo": o.motivo, 
+            "anexo": o.anexo_url, 
+            "categoria": "OCORRENCIA"
+        })
+        
+    return resultado
+
+
 @app.put("/api/gestao/rh/ferias/{id_ferias}")
 def aprovar_rejeitar_ferias(id_ferias: int, status: str, observacao: str = "", db: Session = Depends(get_db)):
     ferias = db.query(SolicitacaoFeriasModel).filter(SolicitacaoFeriasModel.id == id_ferias).first()
+    
     if not ferias:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=404, detail="Solicitação não encontrada.")
         
     ferias.status = status.upper()
     ferias.observacao_gestor = observacao
     db.commit()
+    
     return {"status": "sucesso"}
+
 
 @app.get("/api/gestao/rh/colaborador/{func_id}/holerite/{mes_ano}")
 def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(get_db)):
@@ -906,8 +1027,15 @@ def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(ge
     if not func or not rh:
         raise HTTPException(status_code=404, detail="Colaborador não encontrado.")
 
-    ocorrencias = db.query(OcorrenciaRHModel).filter(OcorrenciaRHModel.funcionario_id == func_id, OcorrenciaRHModel.data_ocorrencia.startswith(mes_ano)).all()
-    pontos = db.query(PontoModel).filter(PontoModel.funcionario_id == func_id, PontoModel.data.startswith(mes_ano)).all()
+    ocorrencias = db.query(OcorrenciaRHModel).filter(
+        OcorrenciaRHModel.funcionario_id == func_id, 
+        OcorrenciaRHModel.data_ocorrencia.startswith(mes_ano)
+    ).all()
+    
+    pontos = db.query(PontoModel).filter(
+        PontoModel.funcionario_id == func_id, 
+        PontoModel.data.startswith(mes_ano)
+    ).all()
 
     salario_base = rh.salario
     vt = rh.valor_vt
@@ -965,13 +1093,18 @@ def criar_grupo_complemento(payload: GrupoCompSchema, db: Session = Depends(get_
         db.flush() 
         
         for item in payload.itens:
-            db.add(ItemComplementoModel(grupo_id=grupo.id, nome=item.nome, preco_adicional=item.preco_adicional))
+            db.add(ItemComplementoModel(
+                grupo_id=grupo.id, 
+                nome=item.nome, 
+                preco_adicional=item.preco_adicional
+            ))
             
         db.commit()
         return {"status": "sucesso", "mensagem": "Complementos ativados no cardápio!"}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/produtos/{produto_id}/complementos")
 def listar_complementos(produto_id: int, db: Session = Depends(get_db)):
@@ -991,6 +1124,7 @@ def listar_complementos(produto_id: int, db: Session = Depends(get_db)):
         
     return resultado
 
+
 @app.post("/api/login")
 def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
     funcionario = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == dados.usuario).first()
@@ -1006,6 +1140,7 @@ def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
         "cargo_id": funcionario.cargo_id, 
         "cargo_nome": cargo.nome if cargo else "Indefinido" 
     }
+
 
 @app.get("/api/cardapio")
 def listar_cardapio_digital(db: Session = Depends(get_db)): 
@@ -1024,6 +1159,7 @@ def listar_cardapio_digital(db: Session = Depends(get_db)):
         
     return lista_formatada
 
+
 @app.post("/api/gestao/produto")
 def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
     try:
@@ -1038,13 +1174,18 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
         db.flush()
         
         for f in produto.fichas:
-            db.add(FichaTecnicaModel(produto_id=novo_produto.id, insumo_id=f.insumo_id, quantidade_necessaria=f.quantidade))
+            db.add(FichaTecnicaModel(
+                produto_id=novo_produto.id, 
+                insumo_id=f.insumo_id, 
+                quantidade_necessaria=f.quantidade
+            ))
             
         db.commit()
         return {"status": "sucesso", "mensagem": "Produto criado com sucesso no cardápio!"}
     except Exception as e: 
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/gestao/insumos")
 def listar_insumos_disp(db: Session = Depends(get_db)):
@@ -1063,6 +1204,7 @@ def listar_insumos_disp(db: Session = Depends(get_db)):
         
     return lista_formatada
 
+
 @app.post("/api/gestao/insumo")
 def receber_novo_insumo(insumo: NovoInsumo, db: Session = Depends(get_db)):
     try:
@@ -1076,17 +1218,20 @@ def receber_novo_insumo(insumo: NovoInsumo, db: Session = Depends(get_db)):
         db.add(novo)
         db.commit()
         db.refresh(novo)
+        
         return {"status": "sucesso", "insumo_id": novo.id}
     except Exception as e: 
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.delete("/api/gestao/produto/{produto_id}")
 def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
     try:
         produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
-        if not produto: raise HTTPException(status_code=404)
-        
+        if not produto:
+            raise HTTPException(status_code=404)
+            
         db.delete(produto)
         db.commit()
         return {"status": "sucesso"}
@@ -1094,18 +1239,20 @@ def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500)
 
+
 @app.delete("/api/gestao/insumo/{insumo_id}")
 def deletar_insumo(insumo_id: int, db: Session = Depends(get_db)):
     insumo = db.query(InsumoModel).filter(InsumoModel.id == insumo_id).first()
-    if not insumo: raise HTTPException(status_code=404)
-    
+    if not insumo:
+        raise HTTPException(status_code=404)
+        
     db.delete(insumo)
     db.commit()
     return {"status": "sucesso"}
 
 
 # ==========================================
-# ROTAS FINANCEIRAS E RELATÓRIOS
+# ROTAS FINANCEIRAS E RELATÓRIOS DRE
 # ==========================================
 
 @app.post("/api/gestao/conta")
@@ -1131,10 +1278,12 @@ def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
             vencimento=data_venc, 
             tipo_despesa=conta.tipo_despesa
         )
+        
         return {"status": "sucesso"}
     except Exception as e: 
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.put("/api/gestao/contas/{conta_id}/pagar")
 def pagar_conta(conta_id: int, db: Session = Depends(get_db)):
@@ -1145,7 +1294,9 @@ def pagar_conta(conta_id: int, db: Session = Depends(get_db)):
         
     conta.status = "PAGO"
     db.commit()
+    
     return {"status": "sucesso", "mensagem": "Conta paga e baixada do caixa com sucesso!"}
+
 
 @app.get("/api/gestao/financeiro/resumo")
 def resumo_financeiro(db: Session = Depends(get_db)):
@@ -1166,6 +1317,7 @@ def resumo_financeiro(db: Session = Depends(get_db)):
         })
     
     return {"total_empresa": total_empresa, "total_casa": total_casa, "contas": lista}
+
 
 @app.get("/api/gestao/financeiro/lucratividade")
 def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db)):
@@ -1201,6 +1353,7 @@ def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None,
         "lucro_liquido": lucro_liquido_real, 
         "margem_lucro": round(margem_lucro, 2) 
     }
+
 
 @app.get("/api/gestao/relatorios/curva-abc")
 def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db)):
@@ -1240,6 +1393,7 @@ def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db:
     lista_ranking = list(ranking.values())
     lista_ranking.sort(key=lambda x: x["faturamento_gerado"], reverse=True)
     return lista_ranking[:10] 
+
 
 @app.get("/api/pedidos/{pedido_id}/recibo")
 def obter_recibo_pedido(pedido_id: int, db: Session = Depends(get_db)):
@@ -1338,9 +1492,11 @@ def listar_pedidos_logistica(db: Session = Depends(get_db)):
             
     return {"prontos": prontos, "em_rota": em_rota}
 
+
 @app.put("/api/logistica/pedidos/{pedido_id}/despachar")
 def despachar_pedido(pedido_id: int, payload: DespachoMotoboy, db: Session = Depends(get_db)):
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+    
     if not pedido: 
         raise HTTPException(status_code=404)
         
@@ -1353,9 +1509,11 @@ def despachar_pedido(pedido_id: int, payload: DespachoMotoboy, db: Session = Dep
         
     return {"status": "sucesso"}
 
+
 @app.put("/api/logistica/pedidos/{pedido_id}/entregar")
 def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+    
     if not pedido: 
         raise HTTPException(status_code=404, detail="Pedido não encontrado")
     
@@ -1367,6 +1525,7 @@ def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
         notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, "ENTREGUE")
         
     return {"status": "sucesso", "mensagem": "Baixa realizada e cliente notificado!"}
+
 
 @app.get("/api/kds/pedidos")
 def listar_pedidos_cozinha(db: Session = Depends(get_db)):
@@ -1401,6 +1560,7 @@ def listar_pedidos_cozinha(db: Session = Depends(get_db)):
         
     return lista_kds
 
+
 @app.put("/api/kds/pedidos/{pedido_id}/status")
 def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, db: Session = Depends(get_db)):
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
@@ -1430,7 +1590,9 @@ def ler_configuracoes(db: Session = Depends(get_db)):
         db.add(config)
         db.commit()
         db.refresh(config)
+        
     return config
+
 
 @app.put("/api/gestao/configuracoes")
 def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
@@ -1454,6 +1616,7 @@ def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso"}
 
+
 @app.get("/api/gestao/clientes")
 def listar_clientes_painel(db: Session = Depends(get_db)):
     clientes = db.query(ClienteModel).all()
@@ -1471,9 +1634,11 @@ def listar_clientes_painel(db: Session = Depends(get_db)):
         
     return lista_clientes
 
+
 @app.put("/api/gestao/clientes/{cliente_id}/editar")
 def editar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    
     if not cliente: 
         raise HTTPException(status_code=404)
         
@@ -1485,9 +1650,11 @@ def editar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso"}
 
+
 @app.put("/api/gestao/clientes/{cliente_id}/bloqueio")
 def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    
     if not cliente: 
         raise HTTPException(status_code=404)
         
@@ -1495,9 +1662,11 @@ def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso"}
 
+
 @app.delete("/api/gestao/clientes/{cliente_id}")
 def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    
     if not cliente: 
         raise HTTPException(status_code=404)
         
@@ -1570,6 +1739,7 @@ def abrir_portal_colaborador():
         return Path("templates/portal_colaborador.html").read_text(encoding="utf-8")
     return "Erro: Arquivo portal_colaborador.html não encontrado."
 
+
 # ==========================================
 # INCLUSÃO DE ROUTERS EXTRAS E WEBHOOKS
 # ==========================================
@@ -1599,6 +1769,7 @@ async def webhook_social(request: Request):
 def receber_mensagem_cliente(payload: dict): 
     return {"status": "sucesso"}
     
+
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
