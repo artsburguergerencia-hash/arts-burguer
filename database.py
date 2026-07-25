@@ -60,7 +60,7 @@ class InfoRHModel(Base):
     data_aceite_lgpd = Column(String, default="")
     telefone = Column(String, default="")
     salario = Column(Float, default=0.0)
-    escala = Column(String, default="") # Prevenção de compatibilidade
+    escala = Column(String, default="")
     
     # Benefícios e Finanças do Funcionário
     recebe_comissao = Column(Boolean, default=False)
@@ -219,7 +219,6 @@ class ItemComplementoModel(Base):
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
 
-# === FINANCEIRO ===
 class FornecedorModel(Base):
     __tablename__ = "fornecedores"
     __table_args__ = {'extend_existing': True}
@@ -240,30 +239,30 @@ class ContaPagarModel(Base):
     tipo_despesa = Column(String, default="Empresa")
     status = Column(String, default="PENDENTE")
 
-# 🚨 O SCRIPT QUE VAI CURAR O SEU BANCO DE DADOS NA NUVEM 🚨
+# 🚨 SCRIPT DE AUTO-MIGRAÇÃO E RECUPERAÇÃO DO BANCO (Aqui está a cura!) 🚨
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
-    # Adicionamos aqui a injeção da foto_3x4 e da escala para não dar erro
     colunas_novas = [
-        "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT ''",
-        "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT ''",
-        "ALTER TABLE info_rh ADD COLUMN escala VARCHAR DEFAULT ''",
-        "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico'",
-        "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE",
-        "ALTER TABLE info_rh ADD COLUMN tipo_comissao VARCHAR DEFAULT 'PERCENTUAL'",
-        "ALTER TABLE info_rh ADD COLUMN valor_comissao FLOAT DEFAULT 0.0",
-        "ALTER TABLE info_rh ADD COLUMN valor_vt FLOAT DEFAULT 0.0",
-        "ALTER TABLE info_rh ADD COLUMN valor_va FLOAT DEFAULT 0.0",
-        "ALTER TABLE info_rh ADD COLUMN diaria_motoboy FLOAT DEFAULT 0.0",
-        "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0",
-        "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0",
-        "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}'",
-        "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0",
-        "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0",
-        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto'"
+        "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
+        "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN escala VARCHAR DEFAULT '';",
+        "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
+        "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE info_rh ADD COLUMN tipo_comissao VARCHAR DEFAULT 'PERCENTUAL';",
+        "ALTER TABLE info_rh ADD COLUMN valor_comissao FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN valor_vt FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN valor_va FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN diaria_motoboy FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}';",
+        "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0;",
+        "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto';"
     ]
+    
     for sql in colunas_novas:
         try:
             db.execute(text(sql))
