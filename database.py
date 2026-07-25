@@ -27,7 +27,7 @@ class ConfiguracaoLojaModel(Base):
     sistema_fidelidade = Column(String, default="CASHBACK")
     categorias_cardapio = Column(String, default="Burger Artesanal,Bebidas,Porções")
     categorias_fornecedor = Column(String, default="Carnes,Hortifruti,Bebidas,Embalagens")
-    planos_saude_opcoes = Column(String, default="Nenhum,Amil Básico,Bradesco Odonto") 
+    planos_saude_opcoes = Column(String, default="Nenhum,Amil Básico,Bradesco Odonto,Gympass") 
 
 # === CARGOS DINÂMICOS ===
 class Cargo(Base):
@@ -58,10 +58,11 @@ class InfoRHModel(Base):
     aceite_lgpd = Column(Boolean, default=False)
     data_aceite_lgpd = Column(String, default="")
     telefone = Column(String, default="")
+    email = Column(String, default="")
     salario = Column(Float, default=0.0)
     escala = Column(String, default="")
     
-    # Benefícios e Finanças do Funcionário
+    # Benefícios e Finanças
     recebe_comissao = Column(Boolean, default=False)
     tipo_comissao = Column(String, default="PERCENTUAL") 
     valor_comissao = Column(Float, default=0.0) 
@@ -81,8 +82,15 @@ class InfoRHModel(Base):
     pis_pasep = Column(String, default="")
     titulo_eleitor = Column(String, default="")
     reservista = Column(String, default="")
+    cep = Column(String, default="")
     endereco_completo = Column(String, default="")
-    dados_bancarios = Column(String, default="") 
+    
+    # Dados Bancários Separados
+    banco = Column(String, default="")
+    agencia = Column(String, default="")
+    conta = Column(String, default="")
+    dados_bancarios = Column(String, default="") # Mantido por segurança de dados antigos
+    
     escolaridade = Column(String, default="")
     qtd_filhos_menores = Column(Integer, default=0)
     cnh = Column(String, default="")
@@ -118,6 +126,7 @@ class SolicitacaoFeriasModel(Base):
     __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, ForeignKey("funcionarios.id"))
+    tipo = Column(String, default="FERIAS") # FERIAS ou FOLGA
     data_solicitacao = Column(DateTime, default=datetime.utcnow)
     data_inicio = Column(String)
     data_fim = Column(String)
@@ -180,11 +189,11 @@ def inicializar_banco():
     colunas_novas = [
         "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
         "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
-        
         "ALTER TABLE info_rh ADD COLUMN status_admissao VARCHAR DEFAULT 'PENDENTE_PREENCHIMENTO';",
         "ALTER TABLE info_rh ADD COLUMN aceite_lgpd BOOLEAN DEFAULT FALSE;",
         "ALTER TABLE info_rh ADD COLUMN data_aceite_lgpd VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN telefone VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN email VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN salario FLOAT DEFAULT 0.0;",
         "ALTER TABLE info_rh ADD COLUMN escala VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE;",
@@ -196,7 +205,6 @@ def inicializar_banco():
         "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0;",
         "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0;",
         "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}';",
-        
         "ALTER TABLE info_rh ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN naturalidade VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN estado_civil VARCHAR DEFAULT '';",
@@ -205,18 +213,22 @@ def inicializar_banco():
         "ALTER TABLE info_rh ADD COLUMN pis_pasep VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN titulo_eleitor VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN reservista VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN cep VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN endereco_completo VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN banco VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN agencia VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN conta VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN dados_bancarios VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN escolaridade VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN qtd_filhos_menores INTEGER DEFAULT 0;",
         "ALTER TABLE info_rh ADD COLUMN cnh VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN plano_saude_escolhido VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN link_pasta_documentos VARCHAR DEFAULT '';",
-        
         "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
         "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0;",
         "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto';"
+        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto,Gympass';",
+        "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';"
     ]
     
     for sql in colunas_novas:
