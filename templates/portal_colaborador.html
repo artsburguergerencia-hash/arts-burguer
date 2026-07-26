@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- BLOQUEADOR DE CACHE MÁXIMO (Obriga a baixar a tela nova) -->
+    <!-- BLOQUEADOR DE CACHE MÁXIMO (Garante que a versão nova vai carregar) -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -59,8 +59,8 @@
                 <i class="ph-fill ph-identification-badge text-5xl"></i>
             </div>
             
-            <!-- SELO V5.1 PARA VOCÊ TER CERTEZA QUE ATUALIZOU -->
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Portal RH <span class="text-[10px] bg-red-500 text-white px-2 py-1 rounded-lg align-middle tracking-widest shadow-sm">V5.1</span></h2>
+            <!-- SELO V5.2 -->
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Portal RH <span class="text-[10px] bg-red-500 text-white px-2 py-1 rounded-lg align-middle tracking-widest shadow-sm">V5.2</span></h2>
             
             <p class="text-xs text-slate-500 font-medium mb-8 leading-relaxed">
                 Digite seu Usuário e Senha corporativos (fornecidos pelo RH) para acessar seus dados.
@@ -139,11 +139,71 @@
             <div id="msg-ponto" class="text-center font-bold text-sm hidden py-4 rounded-xl shadow-sm border"></div>
         </div>
 
-        <!-- VIEW 2: HOLERITE E GANHOS -->
+        <!-- VIEW 2: MEU DESEMPENHO (NOVO!) -->
+        <div id="view-desempenho" class="view space-y-6">
+            <div class="bg-slate-900 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4">
+                    <i class="ph-fill ph-trend-up text-[120px]"></i>
+                </div>
+                <div class="relative z-10">
+                    <h2 class="text-lg font-black tracking-tight mb-1 flex items-center">
+                        <i class="ph-fill ph-chart-bar text-brand-500 mr-2 text-2xl"></i> Meu Desempenho
+                    </h2>
+                    <p class="text-xs text-slate-400 font-medium mb-6">Acompanhe suas comissões, gorjetas e horas trabalhadas no mês atual.</p>
+                    
+                    <div class="flex space-x-2">
+                        <input type="month" id="mes-desempenho" class="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 font-bold outline-none focus:border-brand-500 uppercase text-xs tracking-wider text-white">
+                        <button onclick="carregarMeuDesempenho()" id="btn-desempenho" class="bg-brand-500 hover:bg-brand-600 text-white px-5 rounded-xl font-bold transition-all shadow-md active:scale-95">
+                            <i class="ph-bold ph-magnifying-glass text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4" id="cards-desempenho">
+                <!-- Comissões -->
+                <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+                        <i class="ph-bold ph-currency-circle-dollar text-lg"></i>
+                    </div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Comissões Bônus</p>
+                    <h4 class="text-2xl font-black text-emerald-500" id="meu-res-comissao">R$ 0,00</h4>
+                </div>
+                
+                <!-- Gorjetas -->
+                <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+                        <i class="ph-bold ph-coin text-lg"></i>
+                    </div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Gorjetas / Caixinha</p>
+                    <h4 class="text-2xl font-black text-amber-500" id="meu-res-gorjeta">R$ 0,00</h4>
+                </div>
+
+                <!-- Diárias/Logística -->
+                <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                        <i class="ph-bold ph-moped text-lg"></i>
+                    </div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Taxas Entregas</p>
+                    <h4 class="text-2xl font-black text-blue-500" id="meu-res-diarias">R$ 0,00</h4>
+                </div>
+
+                <!-- Atrasos -->
+                <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-3">
+                        <i class="ph-bold ph-clock-countdown text-lg"></i>
+                    </div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Atrasos / Faltas</p>
+                    <h4 class="text-2xl font-black text-red-500" id="meu-res-faltas">0h</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: HOLERITE E GANHOS -->
         <div id="view-holerite" class="view space-y-6">
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
                 <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center">
-                    <i class="ph-fill ph-receipt text-blue-500 mr-2 text-2xl"></i> Meus Holerites
+                    <i class="ph-fill ph-file-text text-blue-500 mr-2 text-2xl"></i> Meus Holerites
                 </h2>
                 <div class="flex space-x-3">
                     <input type="month" id="mes-holerite" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-700 outline-none focus:border-blue-500 uppercase text-xs tracking-wider">
@@ -207,7 +267,7 @@
             </button>
         </div>
 
-        <!-- VIEW 3: SOLICITAÇÕES (FÉRIAS, FOLGAS E ATESTADOS) -->
+        <!-- VIEW 4: SOLICITAÇÕES (FÉRIAS, FOLGAS E ATESTADOS) -->
         <div id="view-solicitacoes" class="view space-y-6">
             
             <!-- ENVIAR ATESTADO / OCORRÊNCIA -->
@@ -285,23 +345,28 @@
     </main>
 
     <!-- ============================================== -->
-    <!-- NAVEGAÇÃO INFERIOR ESTILO APP (BOTTOM NAV) -->
+    <!-- NAVEGAÇÃO INFERIOR ESTILO APP (4 BOTÕES) -->
     <!-- ============================================== -->
-    <nav class="bg-white border-t border-slate-200 h-[84px] fixed bottom-0 w-full flex justify-around items-center px-4 pb-4 pt-2 z-20 hidden shadow-[0_-5px_20px_rgba(0,0,0,0.05)]" id="app-nav">
+    <nav class="bg-white border-t border-slate-200 h-[84px] fixed bottom-0 w-full flex justify-around items-center px-2 pb-4 pt-2 z-20 hidden shadow-[0_-5px_20px_rgba(0,0,0,0.05)]" id="app-nav">
         
-        <button onclick="mudarView('view-ponto', this)" class="nav-btn active flex flex-col items-center p-2 text-blue-600 w-1/3 transition-colors">
-            <i class="ph-fill ph-clock text-2xl mb-1"></i>
-            <span class="text-[10px] font-black uppercase tracking-wider">Ponto</span>
+        <button onclick="mudarView('view-ponto', this)" class="nav-btn active flex flex-col items-center p-2 text-blue-600 w-1/4 transition-colors">
+            <i class="ph-fill ph-clock text-[22px] mb-1"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider">Ponto</span>
+        </button>
+
+        <button onclick="mudarView('view-desempenho', this); carregarMeuDesempenho()" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/4 transition-colors">
+            <i class="ph-fill ph-trend-up text-[22px] mb-1"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider">Painel</span>
         </button>
         
-        <button onclick="mudarView('view-holerite', this)" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/3 transition-colors">
-            <i class="ph-fill ph-receipt text-2xl mb-1"></i>
-            <span class="text-[10px] font-black uppercase tracking-wider">Holerite</span>
+        <button onclick="mudarView('view-holerite', this)" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/4 transition-colors">
+            <i class="ph-fill ph-file-text text-[22px] mb-1"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider">Holerite</span>
         </button>
         
-        <button onclick="mudarView('view-solicitacoes', this)" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/3 transition-colors">
-            <i class="ph-fill ph-folder-open text-2xl mb-1"></i>
-            <span class="text-[10px] font-black uppercase tracking-wider">RH/Folgas</span>
+        <button onclick="mudarView('view-solicitacoes', this)" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/4 transition-colors">
+            <i class="ph-fill ph-folder-open text-[22px] mb-1"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider">Avisos</span>
         </button>
         
     </nav>
@@ -312,6 +377,16 @@
     <script>
         // Variável Global
         let FUNC_ID = null;
+
+        // Inicia a data padrão para os filtros do mês atual
+        document.addEventListener('DOMContentLoaded', () => { 
+            const hoje = new Date();
+            const mesStr = (hoje.getMonth() + 1).toString().padStart(2, '0');
+            const dataPadrão = `${hoje.getFullYear()}-${mesStr}`;
+            
+            document.getElementById('mes-desempenho').value = dataPadrão;
+            document.getElementById('mes-holerite').value = dataPadrão;
+        });
 
         // --- RELÓGIO DIGITAL ---
         function atualizarRelogio() {
@@ -383,6 +458,9 @@
                     if (meuPerfil.foto_3x4) {
                         document.getElementById('header-foto').src = meuPerfil.foto_3x4;
                     }
+                    
+                    // Carrega os dados de desempenho automaticamente
+                    carregarMeuDesempenho();
                     
                     // Transição Suave do Login para o App
                     document.body.classList.remove('bg-slate-900');
@@ -464,6 +542,46 @@
                 msgBox.classList.remove('bg-slate-100', 'text-slate-500');
                 msgBox.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
                 msgBox.innerText = "❌ Sem conexão com a internet.";
+            }
+        }
+
+
+        // --- MEU DESEMPENHO (NOVO) ---
+        async function carregarMeuDesempenho() {
+            const mes = document.getElementById('mes-desempenho').value;
+            const btn = document.getElementById('btn-desempenho');
+            
+            if (!mes || !FUNC_ID) return;
+            
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/gestao/rh/colaborador/${FUNC_ID}/holerite/${mes}`);
+                const data = await res.json();
+                
+                if (res.ok) {
+                    const formataReal = (valor) => `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
+                    
+                    document.getElementById('meu-res-comissao').innerText = formataReal(data.proventos.comissoes);
+                    document.getElementById('meu-res-gorjeta').innerText = formataReal(data.proventos.gorjetas);
+                    document.getElementById('meu-res-diarias').innerText = formataReal(data.proventos.diarias);
+                    
+                    document.getElementById('meu-res-faltas').innerText = `${data.descontos.horas_quantidade}h`;
+                    
+                    if(data.descontos.horas_quantidade > 0) {
+                        document.getElementById('meu-res-faltas').classList.remove('text-slate-400');
+                        document.getElementById('meu-res-faltas').classList.add('text-red-500');
+                    } else {
+                        document.getElementById('meu-res-faltas').classList.remove('text-red-500');
+                        document.getElementById('meu-res-faltas').classList.add('text-slate-400');
+                    }
+                }
+            } catch (e) { 
+                console.log("Mês ainda não possui registros.");
+            } finally {
+                btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>';
+                btn.disabled = false;
             }
         }
 
