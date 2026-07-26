@@ -1768,7 +1768,36 @@ async def webhook_social(request: Request):
 @app.post("/api/webhooks/whatsapp-receber")
 def receber_mensagem_cliente(payload: dict): 
     return {"status": "sucesso"}
+
+class EditarPerfilColaborador(BaseModel):
+    nome: str
+    telefone: str
+    email: str
+    cep: str
+    endereco_completo: str
+    qtd_filhos_menores: int
+    foto_3x4: str
+
+@app.put("/api/colaborador/{func_id}/perfil")
+def atualizar_perfil_colaborador(func_id: int, dados: EditarPerfilColaborador, db: Session = Depends(get_db)):
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
     
+    if not func or not rh:
+        raise HTTPException(status_code=404, detail="Colaborador não encontrado")
+        
+    func.nome = dados.nome
+    if dados.foto_3x4:
+        func.foto_3x4 = dados.foto_3x4
+        
+    rh.telefone = dados.telefone
+    rh.email = dados.email
+    rh.cep = dados.cep
+    rh.endereco_completo = dados.endereco_completo
+    rh.qtd_filhos_menores = dados.qtd_filhos_menores
+    
+    db.commit()
+    return {"status": "sucesso"}
 
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
