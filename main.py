@@ -1045,11 +1045,14 @@ def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(ge
     diaria = rh.diaria_motoboy * len(pontos) if rh.diaria_motoboy > 0 else 0.0
 
     horas_descontadas = sum(o.horas_descontadas for o in ocorrencias)
-    valor_hora = salario_base / 220 if salario_base > 0 else 0
+    valor_hora = (salario_base / 220) if salario_base > 0 else 0
     descontos = horas_descontadas * valor_hora
 
     total_proventos = salario_base + vt + va + comissao + gorjetas + diaria
     salario_liquido = total_proventos - descontos
+    
+    # NOVA LÓGICA DE HORAS E DIAS TRABALHADOS DO MÊS
+    horas_trabalhadas_total = sum((p.horas_trabalhadas or 0) for p in pontos)
 
     return {
         "colaborador": func.nome, 
@@ -1071,7 +1074,9 @@ def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(ge
             "total_bruto": total_proventos, 
             "total_descontos": descontos, 
             "liquido_a_pagar": salario_liquido 
-        }
+        },
+        "horas_trabalhadas_mes": round(horas_trabalhadas_total, 2),
+        "dias_trabalhados": len(pontos)
     }
 
 
