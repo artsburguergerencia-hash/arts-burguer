@@ -870,20 +870,36 @@ def atualizar_financeiro_rh(func_id: int, dados: AjusteFinanceiroRH, db: Session
 
 @app.delete("/api/gestao/funcionarios/{func_id}")
 def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
-    if func_id == 1:
-        raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador Supremo do sistema.")
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    if not func: 
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
+        
+    cargo = db.query(Cargo).filter(Cargo.id == func.cargo_id).first()
+    if cargo and cargo.permissoes == "total": 
+        raise HTTPException(status_code=403, detail="Não é possível demitir o Administrador Supremo.")
         
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
     if rh: 
         rh.status_admissao = "DEMITIDO"
         
-    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
-    if func: 
-        func.senha_hash = "REVOGADO" 
-        
+    func.senha_hash = "REVOGADO" 
     db.commit()
-    return {"status": "sucesso", "mensagem": "Acesso do colaborador foi revogado permanentemente."}
+    
+    return {"status": "sucesso", "mensagem": "Acesso revogado com sucesso."}
 
+@app.put("/api/gestao/funcionarios/{func_id}/readmitir")
+def readmitir_funcionario(func_id: int, senha_nova: str = Query(...), db: Session = Depends(get_db)):
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    
+    if not func or not rh: 
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
+        
+    rh.status_admissao = "ATIVO"
+    func.senha_hash = pwd_context.hash(senha_nova)
+    db.commit()
+    
+    return {"status": "sucesso", "mensagem": "Funcionário readmitido com sucesso!"}
 
 @app.post("/api/gestao/ponto")
 def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
@@ -1023,8 +1039,9 @@ def aprovar_rejeitar_ferias(id_ferias: int, status: str, observacao: str = "", d
 def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(get_db)):
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    config = db.query(ConfiguracaoLojaModel).first()
     
-    if not func or not rh:
+    if not func or not rh: 
         raise HTTPException(status_code=404, detail="Colaborador não encontrado.")
 
     ocorrencias = db.query(OcorrenciaRHModel).filter(
@@ -1050,32 +1067,29 @@ def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(ge
 
     total_proventos = salario_base + vt + va + comissao + gorjetas + diaria
     salario_liquido = total_proventos - descontos
-    
-    # NOVA LÓGICA DE HORAS E DIAS TRABALHADOS DO MÊS
-    horas_trabalhadas_total = sum((p.horas_trabalhadas or 0) for p in pontos)
+    horas_trab = sum((p.horas_trabalhadas or 0) for p in pontos)
 
     return {
         "colaborador": func.nome, 
         "matricula": func.matricula_cracha, 
         "mes_referencia": mes_ano,
+        "empresa": {
+            "nome": config.nome_empresa, 
+            "cnpj": config.cnpj, 
+            "inscricao_estadual": getattr(config, 'inscricao_estadual', ''), 
+            "endereco": config.endereco
+        },
         "proventos": { 
-            "salario_base": salario_base, 
-            "vale_transporte": vt, 
-            "vale_alimentacao": va, 
-            "comissoes": comissao, 
-            "gorjetas": gorjetas, 
-            "diarias": diaria 
+            "salario_base": salario_base, "vale_transporte": vt, "vale_alimentacao": va, 
+            "comissoes": comissao, "gorjetas": gorjetas, "diarias": diaria 
         },
         "descontos": { 
-            "horas_nao_trabalhadas": descontos, 
-            "horas_quantidade": horas_descontadas 
+            "horas_nao_trabalhadas": descontos, "horas_quantidade": horas_descontadas 
         },
         "totais": { 
-            "total_bruto": total_proventos, 
-            "total_descontos": descontos, 
-            "liquido_a_pagar": salario_liquido 
+            "total_bruto": total_proventos, "total_descontos": descontos, "liquido_a_pagar": salario_liquido 
         },
-        "horas_trabalhadas_mes": round(horas_trabalhadas_total, 2),
+        "horas_trabalhadas_mes": round(horas_trab, 2), 
         "dias_trabalhados": len(pontos)
     }
 
@@ -1364,40 +1378,37 @@ def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None,
 def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db)):
     query = db.query(PedidoModel).filter(PedidoModel.status != "CANCELADO")
     
-    if data_inicio and data_fim:
+    # Tratamento contra o bug de datas "undefined" do frontend
+    if data_inicio and data_fim and data_inicio != "undefined" and data_fim != "undefined":
         try:
             di = datetime.strptime(data_inicio, "%Y-%m-%d").date()
             df = datetime.strptime(data_fim, "%Y-%m-%d").date()
             query = query.filter(PedidoModel.data_pedido >= di, PedidoModel.data_pedido <= df)
         except Exception: 
             pass
-        
-    pedidos = query.all()
+            
     ranking = {}
     
-    for pedido in pedidos:
+    for pedido in query.all():
         for item in getattr(pedido, 'itens', getattr(pedido, 'itens_pedido', [])):
-            prod_id = item.produto_id
-            qtd = item.quantidade
-            
-            if prod_id not in ranking:
-                produto = db.query(ProdutoModel).filter(ProdutoModel.id == prod_id).first()
-                if produto:
-                    ranking[prod_id] = {
+            if item.produto_id not in ranking:
+                produto = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
+                if produto: 
+                    ranking[item.produto_id] = {
                         "nome": produto.nome, 
-                        "categoria": produto.categoria,
+                        "categoria": produto.categoria, 
                         "quantidade_vendida": 0, 
-                        "faturamento_gerado": 0.0
+                        "faturamento_gerado": 0.0, 
+                        "preco": produto.preco_venda
                     }
-            
-            if prod_id in ranking:
-                produto_preco = db.query(ProdutoModel).filter(ProdutoModel.id == prod_id).first().preco_venda
-                ranking[prod_id]["quantidade_vendida"] += qtd
-                ranking[prod_id]["faturamento_gerado"] += (qtd * produto_preco)
+                    
+            if item.produto_id in ranking:
+                ranking[item.produto_id]["quantidade_vendida"] += item.quantidade
+                ranking[item.produto_id]["faturamento_gerado"] += (item.quantidade * ranking[item.produto_id]["preco"])
                 
-    lista_ranking = list(ranking.values())
-    lista_ranking.sort(key=lambda x: x["faturamento_gerado"], reverse=True)
-    return lista_ranking[:10] 
+    lista = list(ranking.values())
+    lista.sort(key=lambda x: x["faturamento_gerado"], reverse=True)
+    return lista[:10]
 
 
 @app.get("/api/pedidos/{pedido_id}/recibo")
