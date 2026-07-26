@@ -16,6 +16,8 @@ class ConfiguracaoLojaModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     nome_empresa = Column(String, default="Art's Burguer")
     cnpj = Column(String, default="")
+    inscricao_estadual = Column(String, default="") # NOVO
+    horario_funcionamento = Column(String, default="") # NOVO
     endereco = Column(String, default="")
     telefone = Column(String, default="")
     logo_url = Column(String, default="https://via.placeholder.com/150")
@@ -29,7 +31,6 @@ class ConfiguracaoLojaModel(Base):
     categorias_fornecedor = Column(String, default="Carnes,Hortifruti,Bebidas,Embalagens")
     planos_saude_opcoes = Column(String, default="Nenhum,Amil Básico,Bradesco Odonto,Gympass") 
 
-# === CARGOS DINÂMICOS ===
 class Cargo(Base):
     __tablename__ = "cargos"
     __table_args__ = {'extend_existing': True}
@@ -37,7 +38,6 @@ class Cargo(Base):
     nome = Column(String, unique=True, index=True)
     permissoes = Column(String, default="basico") 
 
-# === FUNCIONÁRIOS E RH ===
 class FuncionarioModel(Base):
     __tablename__ = "funcionarios"
     __table_args__ = {'extend_existing': True}
@@ -61,8 +61,6 @@ class InfoRHModel(Base):
     email = Column(String, default="")
     salario = Column(Float, default=0.0)
     escala = Column(String, default="")
-    
-    # Benefícios e Finanças
     recebe_comissao = Column(Boolean, default=False)
     tipo_comissao = Column(String, default="PERCENTUAL") 
     valor_comissao = Column(Float, default=0.0) 
@@ -72,8 +70,6 @@ class InfoRHModel(Base):
     repasse_por_entrega = Column(Float, default=0.0)
     gorjetas_acumuladas = Column(Float, default=0.0)
     escala_matriz_json = Column(String, default="{}") 
-    
-    # Documentos Oficiais
     data_nascimento = Column(String, default="")
     naturalidade = Column(String, default="")
     estado_civil = Column(String, default="")
@@ -84,13 +80,10 @@ class InfoRHModel(Base):
     reservista = Column(String, default="")
     cep = Column(String, default="")
     endereco_completo = Column(String, default="")
-    
-    # Dados Bancários Separados
     banco = Column(String, default="")
     agencia = Column(String, default="")
     conta = Column(String, default="")
-    dados_bancarios = Column(String, default="") # Mantido por segurança de dados antigos
-    
+    dados_bancarios = Column(String, default="") 
     escolaridade = Column(String, default="")
     qtd_filhos_menores = Column(Integer, default=0)
     cnh = Column(String, default="")
@@ -126,14 +119,13 @@ class SolicitacaoFeriasModel(Base):
     __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, ForeignKey("funcionarios.id"))
-    tipo = Column(String, default="FERIAS") # FERIAS ou FOLGA
+    tipo = Column(String, default="FERIAS") 
     data_solicitacao = Column(DateTime, default=datetime.utcnow)
     data_inicio = Column(String)
     data_fim = Column(String)
     status = Column(String, default="PENDENTE") 
     observacao_gestor = Column(String, default="")
 
-# === CARDÁPIO E ESTOQUE ===
 class InsumoModel(Base):
     __tablename__ = "insumos"
     __table_args__ = {'extend_existing': True}
@@ -181,12 +173,14 @@ class ItemComplementoModel(Base):
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
 
-# 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL 🚨
+# 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL (Cura todos os erros) 🚨
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
     colunas_novas = [
+        "ALTER TABLE configuracoes_loja ADD COLUMN inscricao_estadual VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN horario_funcionamento VARCHAR DEFAULT '';",
         "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
         "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN status_admissao VARCHAR DEFAULT 'PENDENTE_PREENCHIMENTO';",
@@ -232,18 +226,14 @@ def inicializar_banco():
     ]
     
     for sql in colunas_novas:
-        try:
-            db.execute(text(sql))
-            db.commit()
-        except Exception:
-            db.rollback() 
+        try: db.execute(text(sql)); db.commit()
+        except Exception: db.rollback() 
 
     try:
-        cargo_admin = db.query(Cargo).filter(Cargo.nome == "Administrador").first()
+        cargo_admin = db.query(Cargo).filter(Cargo.permissoes == "total").first()
         if not cargo_admin:
             cargo_admin = Cargo(nome="Administrador", permissoes="total")
-            db.add(cargo_admin)
-            db.flush() 
+            db.add(cargo_admin); db.flush() 
 
         if not db.query(FuncionarioModel).first():
             from passlib.context import CryptContext
@@ -253,16 +243,12 @@ def inicializar_banco():
             config = ConfiguracaoLojaModel()
             db.add(config)
             db.commit()
-    except Exception as e:
-        db.rollback()
-        
+    except Exception as e: db.rollback()
     db.close()
 
 def cadastrar_insumo(db, nome, unidade, qtd_inicial, qtd_min, custo):
     novo = InsumoModel(nome=nome, unidade_medida=unidade, quantidade_atual=qtd_inicial, quantidade_minima=qtd_min, custo_unitario=custo)
-    db.add(novo)
-    db.commit()
-    db.refresh(novo)
+    db.add(novo); db.commit(); db.refresh(novo)
     return novo
 
 def processar_baixa_estoque(db, produto_id, quantidade_vendida):
