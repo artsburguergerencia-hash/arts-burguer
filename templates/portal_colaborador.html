@@ -167,11 +167,19 @@
             <div id="container-holerite-pdf" class="bg-white rounded-xl border border-slate-200 shadow-sm hidden overflow-hidden">
                 <div class="p-6 border-b border-slate-200 bg-slate-50">
                     <div class="flex justify-between items-start mb-4">
-                        <div><h2 class="font-black text-lg text-slate-800 tracking-tight">ART'S BURGUER</h2><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Recibo de Pagamento</p></div>
-                        <div class="text-right"><p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Mês Ref.</p><p class="text-sm font-black text-slate-800 bg-white border px-3 py-1 rounded-lg" id="hol-mes-ref">00/0000</p></div>
+                        <div>
+                            <h2 class="font-black text-lg text-slate-800 tracking-tight uppercase" id="hol-empresa-nome">CARREGANDO...</h2>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1" id="hol-empresa-cnpj">CNPJ: 00.000... | IE: ...</p>
+                            <p class="text-[10px] text-slate-500 font-medium mt-1" id="hol-empresa-end">Endereço da Empresa</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Mês Ref.</p>
+                            <p class="text-sm font-black text-slate-800 bg-white border border-slate-200 px-3 py-1 rounded-lg" id="hol-mes-ref">00/0000</p>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 text-xs shadow-sm">
-                        <p class="font-bold text-slate-500 uppercase tracking-wider mb-1">Colaborador: <span id="hol-nome-func" class="font-black text-blue-600 ml-1">...</span></p>
+                    
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 text-xs shadow-sm mt-2">
+                        <p class="font-bold text-slate-500 uppercase tracking-wider mb-1">Colaborador: <span id="hol-nome-func" class="font-black text-blue-600 ml-1">Carregando...</span></p>
                         <p class="font-bold text-slate-500 uppercase tracking-wider">Matrícula/ID: <span id="hol-mat-func" class="font-black text-slate-800 ml-1 font-mono">0000</span></p>
                     </div>
                 </div>
@@ -525,6 +533,9 @@
                 const res = await fetch(`/api/gestao/rh/colaborador/${FUNC_ID}/holerite/${mes}`);
                 const data = await res.json();
                 if (res.ok) {
+                    document.getElementById('hol-empresa-nome').innerText = data.empresa.nome || "SUA EMPRESA";
+                    document.getElementById('hol-empresa-cnpj').innerText = `CNPJ: ${data.empresa.cnpj || 'Não cadastrado'} | IE: ${data.empresa.inscricao_estadual || 'ISENTO'}`;
+                    document.getElementById('hol-empresa-end').innerText = data.empresa.endereco || "Endereço não cadastrado";
                     document.getElementById('hol-mes-ref').innerText = `${mes.split('-').reverse().join('/')}`;
                     document.getElementById('hol-nome-func').innerText = data.colaborador; document.getElementById('hol-mat-func').innerText = data.matricula || `000${FUNC_ID}`;
                     const fM = (v) => `R$ ${parseFloat(v).toFixed(2).replace('.', ',')}`;
