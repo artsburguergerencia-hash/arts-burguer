@@ -484,8 +484,8 @@
                     
                     <form onsubmit="salvarConfiguracoesLoja(event)" class="space-y-8">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Estabelecimento</label><input type="text" id="conf-nome" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 font-bold"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">URL da Logo (Opcional)</label><input type="text" id="conf-logo" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
+                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Estabelecimento</label><input type="text" id="conf-nome" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500"></div>
+                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">URL da Logo</label><input type="text" id="conf-logo" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
                             <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CNPJ</label><input type="text" id="conf-cnpj" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
                             <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Inscrição Estadual (IE)</label><input type="text" id="conf-ie" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
                             <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Telefone WhatsApp</label><input type="text" id="conf-telefone" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
@@ -1061,12 +1061,12 @@
             if(document.getElementById('pag-pix-online').checked) arr.push('pix_online'); 
             if(document.getElementById('pag-credito-online').checked) arr.push('credito_online'); 
             if(document.getElementById('pag-vr-online').checked) arr.push('vr_online');
-            inscricao_estadual: document.getElementById('conf-ie').value,
-            horario_funcionamento: document.getElementById('conf-horario').value,
             
             const payload = { 
                 nome_empresa: document.getElementById('conf-nome').value, 
                 cnpj: document.getElementById('conf-cnpj').value, 
+                inscricao_estadual: document.getElementById('conf-ie').value,
+                horario_funcionamento: document.getElementById('conf-horario').value,
                 endereco: document.getElementById('conf-endereco').value, 
                 telefone: document.getElementById('conf-telefone').value, 
                 logo_url: document.getElementById('conf-logo').value, 
@@ -1221,6 +1221,14 @@
                     
                     let pontoHtml = '';
                     if(f.status_admissao === 'ATIVO' && f.permissoes !== 'total') {
+                        if(!f.ponto_entrada) {
+                            pontoHtml = `<button onclick="baterPontoRH(${f.id}, 'entrada')" class="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-widest px-3 py-2 rounded-xl font-black shadow-md transition-all active:scale-95">Bater Entrada</button>`;
+                        } else if(!f.ponto_saida) {
+                            pontoHtml = `<span class="text-[10px] text-green-700 font-black bg-green-50 px-2 py-1.5 rounded-lg border border-green-200 shadow-sm uppercase tracking-widest"><i class="ph-bold ph-arrow-right mr-1"></i> In: ${f.ponto_entrada}</span><br><button onclick="baterPontoRH(${f.id}, 'saida')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] uppercase tracking-widest px-3 py-2 rounded-xl mt-2 font-black shadow-md transition-all active:scale-95">Bater Saída</button>`;
+                        } else {
+                            pontoHtml = `<span class="text-[10px] text-slate-600 font-black bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-inner uppercase tracking-widest">In: ${f.ponto_entrada} | Out: ${f.ponto_saida}</span>`;
+                        }
+                    }
                     
                     let avatar = f.foto_3x4 ? `<img src="${f.foto_3x4}" class="w-12 h-12 rounded-2xl object-cover mr-4 border border-slate-200 shadow-sm">` : `<div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center font-black text-xl mr-4 border border-slate-200 shadow-sm">${f.nome.charAt(0)}</div>`;
 
