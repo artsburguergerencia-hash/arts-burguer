@@ -3,70 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logística e Expedição - Art's Burguer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Despacho e Logística | Art's Burguer</title>
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
-    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .card-enter { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body class="bg-slate-50 flex flex-col h-screen overflow-hidden text-slate-800 font-sans">
+<body class="bg-slate-100 flex flex-col h-screen text-slate-800 overflow-hidden">
 
-    <header class="bg-slate-900 text-white h-16 flex items-center justify-between px-6 shadow-md z-10 shrink-0">
-        <div class="flex items-center space-x-3">
-            <div class="bg-brand-500/20 p-2 rounded-lg border border-brand-500/30">
-                <i class="ph-fill ph-moped text-2xl text-brand-500"></i>
+    <!-- HEADER LOGÍSTICA (NOVO VISUAL) -->
+    <header class="bg-slate-900 text-white h-24 flex items-center justify-between px-8 shadow-xl shrink-0 z-10 relative">
+        <div class="absolute inset-0 opacity-10 overflow-hidden pointer-events-none">
+            <i class="ph-fill ph-map-pin text-[150px] absolute -right-10 -top-10"></i>
+        </div>
+        
+        <div class="relative z-10 flex items-center">
+            <div class="w-14 h-14 bg-brand-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-brand-500/30">
+                <i class="ph-bold ph-moped text-3xl text-white"></i>
             </div>
             <div>
-                <h1 class="font-bold text-lg leading-tight uppercase tracking-wide">Central de Expedição</h1>
-                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Controle de Frota, Delivery & Retiradas</p>
+                <h1 class="text-2xl font-black tracking-tight">Central de Expedição e Despacho</h1>
+                <p class="text-[10px] text-brand-400 font-bold uppercase tracking-widest mt-0.5 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse mr-2"></span>
+                    Integração Uber / 99 / Frota Própria
+                </p>
             </div>
         </div>
-        <div class="flex items-center space-x-4">
-            <button onclick="buscarPedidosLogistica()" class="text-sm bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg transition-colors flex items-center text-slate-300">
-                <i class="ph ph-arrows-clockwise mr-2"></i> Atualizar
+        
+        <div class="relative z-10 flex items-center space-x-4">
+            <div class="bg-slate-800/80 backdrop-blur border border-slate-700 px-4 py-2.5 rounded-xl flex items-center shadow-inner hidden md:flex">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></div>
+                <span class="text-xs font-bold text-slate-300 tracking-wider">Auto-Refresh Ativo</span>
+            </div>
+            <button onclick="buscarPedidosLogistica()" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-3.5 rounded-xl transition-colors active:scale-95 shadow-sm" title="Atualizar Agora">
+                <i class="ph-bold ph-arrows-clockwise text-xl"></i>
             </button>
-            <a href="/gestao" class="text-slate-400 hover:text-white transition-colors flex items-center text-sm ml-4 border-l border-slate-700 pl-4">
-                <i class="ph ph-sign-out mr-2"></i> Sair do Painel
+            <a href="/gestao" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 p-3.5 rounded-xl transition-colors active:scale-95 border border-red-500/20 flex items-center" title="Sair da Expedição">
+                <i class="ph-bold ph-sign-out text-xl"></i>
             </a>
         </div>
     </header>
 
-    <main class="flex-1 overflow-hidden p-6 lg:p-10 flex flex-col lg:flex-row gap-8">
+    <!-- KANBAN BOARD -->
+    <main class="flex-1 flex overflow-hidden p-4 md:p-8 space-x-4 md:space-x-8">
         
-        <!-- PRONTOS -->
-        <section class="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-5 border-b border-slate-100 bg-amber-50 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-slate-800 flex items-center">
-                    <i class="ph-fill ph-package text-amber-500 mr-2 text-2xl"></i> Prontos / Aguardando Saída
+        <!-- COLUNA 1: PRONTOS PARA DESPACHO -->
+        <section class="flex-1 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 bg-amber-50 border-b border-amber-100 flex justify-between items-center shrink-0">
+                <h2 class="font-black text-lg text-amber-900 flex items-center tracking-tight">
+                    <i class="ph-fill ph-package text-amber-500 mr-2 text-2xl"></i> Aguardando Saída
                 </h2>
-                <span id="badge-prontos" class="bg-amber-100 text-amber-700 font-black px-3 py-1 rounded-full text-xs">0</span>
+                <span class="bg-amber-500 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="badge-prontos">0</span>
             </div>
-            
-            <div id="lista-prontos" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
-                <div class="h-full flex flex-col items-center justify-center text-slate-400">
-                    <i class="ph ph-spinner animate-spin text-4xl mb-3"></i>
-                    <p class="text-sm font-medium">Buscando pacotes...</p>
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 no-scrollbar relative" id="lista-prontos">
+                <!-- CARDS INJETADOS AQUI -->
+                <div class="flex flex-col items-center justify-center h-full text-slate-300 opacity-50">
+                    <i class="ph-bold ph-spinner animate-spin text-5xl mb-4"></i>
+                    <p class="font-bold text-sm uppercase tracking-widest">Buscando Pedidos...</p>
                 </div>
             </div>
         </section>
 
-        <!-- EM ROTA -->
-        <section class="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-5 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-slate-800 flex items-center">
+        <!-- COLUNA 2: EM ROTA (Com o Cliente) -->
+        <section class="flex-1 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 bg-blue-50 border-b border-blue-100 flex justify-between items-center shrink-0">
+                <h2 class="font-black text-lg text-blue-900 flex items-center tracking-tight">
                     <i class="ph-fill ph-map-pin-line text-blue-500 mr-2 text-2xl"></i> Em Rota de Entrega
                 </h2>
-                <span id="badge-rota" class="bg-blue-100 text-blue-700 font-black px-3 py-1 rounded-full text-xs">0</span>
+                <span class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="badge-rota">0</span>
             </div>
-
-            <div id="lista-rota" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 no-scrollbar relative" id="lista-rota">
+                <!-- CARDS INJETADOS AQUI -->
+                <div class="flex flex-col items-center justify-center h-full text-slate-300 opacity-50">
+                    <i class="ph-fill ph-motorcycle text-6xl mb-4"></i>
+                    <p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p>
+                </div>
             </div>
         </section>
 
     </main>
 
+    <!-- SCRIPT DE EXPEDIÇÃO ORIGINAL (MANTIDO E APERFEIÇOADO) -->
     <script>
         setInterval(buscarPedidosLogistica, 5000);
         document.addEventListener('DOMContentLoaded', buscarPedidosLogistica);
@@ -91,52 +123,58 @@
             const container = document.getElementById('lista-prontos');
             if (pedidos.length === 0) {
                 container.innerHTML = `
-                    <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
-                        <i class="ph ph-package text-6xl mb-3"></i>
-                        <p class="text-sm font-medium">Nenhum pacote aguardando despacho.</p>
+                    <div class="h-full flex flex-col items-center justify-center text-slate-300 opacity-50">
+                        <i class="ph-fill ph-check-circle text-6xl mb-4"></i>
+                        <p class="font-bold text-sm uppercase tracking-widest">Expedição Limpa</p>
                     </div>`;
                 return;
             }
 
             container.innerHTML = pedidos.map(p => {
                 const isRetirada = p.tipo === 'RETIRADA';
+                const endLimpo = p.endereco.replace(/'/g, "\\'");
 
                 return `
-                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex justify-between items-start mb-2">
+                    <div class="card-enter bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 ${isRetirada ? 'bg-purple-500' : 'bg-amber-400'}"></div>
+                        
+                        <div class="flex justify-between items-start mb-3 pl-2">
                             <div>
-                                <span class="text-xs font-black ${isRetirada ? 'text-purple-600 bg-purple-50' : 'text-amber-500 bg-amber-50'} px-2 py-1 rounded tracking-widest uppercase">
-                                    ${isRetirada ? 'Retirada no Balcão' : 'Delivery'} • #${p.id}
-                                </span>
-                                <h3 class="font-bold text-slate-800 text-lg mt-1">${p.cliente}</h3>
+                                <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-200 shadow-inner">#${p.senha_diaria || p.id}</span>
+                                <span class="${isRetirada ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-orange-50 text-orange-700 border-orange-200'} px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest border shadow-sm">${isRetirada ? 'Retirada' : 'Delivery'}</span>
                             </div>
                         </div>
                         
-                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4 text-sm text-slate-600">
-                            <i class="ph-fill ph-map-pin mr-1 text-brand-500"></i> 
-                            ${p.endereco}
+                        <div class="pl-2 mb-4">
+                            <h3 class="font-black text-slate-800 text-lg mb-1 tracking-tight">${p.cliente}</h3>
+                            <p class="text-xs font-bold text-slate-500 flex items-start leading-snug">
+                                <i class="ph-fill ph-map-pin text-brand-500 mr-1.5 mt-0.5 text-base"></i> 
+                                ${p.endereco}
+                            </p>
                         </div>
                         
-                        ${isRetirada ? `
-                            <button onclick="concluirRetirada(${p.id})" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center transition-colors text-sm shadow-sm">
-                                <i class="ph-fill ph-check-circle mr-2 text-lg"></i> Cliente Retirou (Concluir Pedido)
-                            </button>
-                        ` : `
-                            <div class="space-y-2">
-                                <div class="flex space-x-2">
-                                    <button onclick="copilotoDespacho(${p.id}, 'Uber', '${p.endereco.replace(/'/g, "\\'")}')" id="btn-uber-${p.id}" class="flex-1 bg-black hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm">
-                                        <i class="ph-fill ph-paper-plane-right mr-1 text-base"></i> Uber
-                                    </button>
-                                    
-                                    <button onclick="copilotoDespacho(${p.id}, '99', '${p.endereco.replace(/'/g, "\\'")}')" id="btn-99-${p.id}" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm">
-                                        <i class="ph-fill ph-paper-plane-right mr-1 text-base"></i> 99
+                        <div class="pl-2">
+                            ${isRetirada ? `
+                                <button onclick="concluirRetirada(${p.id})" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-xs uppercase tracking-widest shadow-md">
+                                    <i class="ph-fill ph-check-circle mr-2 text-lg"></i> Cliente Retirou
+                                </button>
+                            ` : `
+                                <div class="space-y-2">
+                                    <div class="flex space-x-2">
+                                        <button onclick="copilotoDespacho(${p.id}, 'Uber', '${endLimpo}')" id="btn-uber-${p.id}" class="flex-1 bg-black hover:bg-slate-800 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
+                                            <i class="ph-fill ph-car-profile mr-1 text-base"></i> Uber
+                                        </button>
+                                        
+                                        <button onclick="copilotoDespacho(${p.id}, '99', '${endLimpo}')" id="btn-99-${p.id}" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
+                                            <i class="ph-fill ph-car-profile mr-1 text-base"></i> 99
+                                        </button>
+                                    </div>
+                                    <button onclick="despacharMotoboyProprio(${p.id})" id="btn-proprio-${p.id}" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
+                                        <i class="ph-fill ph-moped mr-2 text-lg"></i> Motoboy da Casa
                                     </button>
                                 </div>
-                                <button onclick="despacharMotoboyProprio(${p.id})" id="btn-proprio-${p.id}" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm">
-                                    <i class="ph-fill ph-moped mr-2 text-base text-brand-500"></i> Motoboy Próprio / Da Casa
-                                </button>
-                            </div>
-                        `}
+                            `}
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -146,35 +184,46 @@
             const container = document.getElementById('lista-rota');
             if (pedidos.length === 0) {
                 container.innerHTML = `
-                    <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
-                        <i class="ph ph-motorcycle text-6xl mb-3"></i>
-                        <p class="text-sm font-medium">Nenhum motoboy na rua agora.</p>
+                    <div class="h-full flex flex-col items-center justify-center text-slate-300 opacity-50">
+                        <i class="ph-fill ph-motorcycle text-6xl mb-4"></i>
+                        <p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p>
                     </div>`;
                 return;
             }
 
-            container.innerHTML = pedidos.map(p => `
-                <div class="bg-white border border-blue-100 rounded-xl p-5 shadow-sm relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs font-black text-blue-500 tracking-widest uppercase">Pedido #${p.id}</span>
-                        <span class="flex items-center text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
-                            <i class="ph ph-clock mr-1"></i> A caminho
-                        </span>
-                    </div>
-                    <h3 class="font-bold text-slate-800 text-lg mb-3">${p.cliente}</h3>
+            container.innerHTML = pedidos.map(p => {
+                const endLimpo = p.endereco.replace(/'/g, "\\'");
+                return `
+                <div class="card-enter bg-slate-900 text-white border border-slate-800 p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
                     
-                    <div class="flex space-x-2 mt-4">
-                        <button onclick="abrirGPS('${p.endereco.replace(/'/g, "\\'")}')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm">
-                            <i class="ph-fill ph-navigation-arrow mr-1 text-blue-400 text-base"></i> GPS
+                    <div class="flex justify-between items-start mb-3 pl-2">
+                        <div>
+                            <span class="bg-slate-800 text-slate-300 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-700 shadow-inner">#${p.senha_diaria || p.id}</span>
+                            <span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="ph-fill ph-motorcycle mr-1"></i> A Caminho</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pl-2 mb-4">
+                        <h3 class="font-black text-white text-lg mb-1 tracking-tight">${p.cliente}</h3>
+                        <p class="text-xs font-medium text-slate-400 flex items-start leading-snug">
+                            <i class="ph-fill ph-map-pin text-brand-500 mr-1.5 mt-0.5 text-base"></i> 
+                            ${p.endereco}
+                        </p>
+                    </div>
+                    
+                    <div class="flex space-x-2 pl-2">
+                        <button onclick="abrirGPS('${endLimpo}')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 px-4 rounded-xl flex items-center justify-center transition-colors text-xs shadow-md" title="Abrir GPS">
+                            <i class="ph-fill ph-navigation-arrow text-blue-400 text-lg"></i>
                         </button>
                         
-                        <button onclick="marcarComoEntregue(${p.id})" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg flex items-center justify-center transition-colors text-xs shadow-sm uppercase tracking-wider">
-                            <i class="ph-fill ph-check-fat mr-1 text-base"></i> Entregue
+                        <button onclick="marcarComoEntregue(${p.id})" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-xs uppercase tracking-widest shadow-md border border-blue-500">
+                            <i class="ph-bold ph-check-circle mr-2 text-lg"></i> Entregue
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         // ==========================
@@ -182,13 +231,14 @@
         // ==========================
         function abrirGPS(endereco) {
             if(!endereco || endereco.includes('Retirada')) return alert("Endereço inválido para GPS.");
-            // Abre a busca nativa de mapas (funciona no PC abrindo o navegador e no celular abrindo o Maps/Waze)
             const enderecoLimpo = endereco.replace('Endereço: ', '').trim();
             const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoLimpo)}`;
             window.open(url, '_blank');
         }
 
-        // A Mágica dos Deep Links (Uber / 99)
+        // ==========================
+        // DEEP LINKS DO UBER / 99
+        // ==========================
         async function copilotoDespacho(pedidoId, plataforma, enderecoFormatado) {
             const isUber = plataforma === 'Uber';
             const enderecoLimpo = enderecoFormatado.replace('Endereço: ', '').trim();
@@ -225,7 +275,6 @@
             }, 4000);
         }
 
-        // Despacho com Motoboy Próprio
         async function despacharMotoboyProprio(pedidoId) {
             const nomeMotoboy = prompt("Nome do Motoboy da Casa:", "Motoboy Próprio");
             if (nomeMotoboy === null) return;
@@ -247,45 +296,30 @@
             }
         }
 
-        // Concluir Pedido de Retirada no Balcão
         async function concluirRetirada(pedidoId) {
             if(!confirm("Confirmar que o cliente retirou o pedido no balcão? Isso encerrará o pedido e enviará o WhatsApp de agradecimento.")) return;
 
             try {
-                // ATUALIZADO: Agora bate na rota correta para disparar o WhatsApp
-                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, {
-                    method: 'PUT'
-                });
-
+                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' });
                 if(res.ok) {
                     buscarPedidosLogistica();
                 } else {
                     alert("Erro ao concluir retirada.");
                 }
-            } catch(e) {
-                alert("Falha de conexão.");
-            }
+            } catch(e) { alert("Falha de conexão."); }
         }
 
-        // Marcar Pedido em Rota como Entregue
         async function marcarComoEntregue(pedidoId) {
             if(!confirm("Confirmar que este pedido foi entregue ao cliente? Isso enviará a mensagem final no WhatsApp.")) return;
 
             try {
-                // ATUALIZADO: Agora bate na rota correta para disparar o WhatsApp
-                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, {
-                    method: 'PUT'
-                });
-
+                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' });
                 if(res.ok) {
-                    alert("✅ Entrega finalizada e WhatsApp de pós-venda enviado!");
                     buscarPedidosLogistica();
                 } else {
                     alert("Erro ao atualizar status para entregue.");
                 }
-            } catch(e) {
-                alert("Falha de conexão.");
-            }
+            } catch(e) { alert("Falha de conexão."); }
         }
     </script>
 </body>
