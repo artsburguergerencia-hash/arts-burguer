@@ -859,9 +859,7 @@
             
             const hoje = new Date();
             const mesStr = (hoje.getMonth() + 1).toString().padStart(2, '0');
-            document.getElementById('mes-desempenho').value = `${hoje.getFullYear()}-${mesStr}`;
-            document.getElementById('conf-ie').value = conf.inscricao_estadual || "";
-            document.getElementById('conf-horario').value = conf.horario_funcionamento || "";
+            document.getElementById('mes-desempenho').value = `${hoje.getFullYear()}-${mesStr}`;    
         });
 
         // -------------------------
@@ -946,15 +944,15 @@
                 elementoClicado.classList.add('bg-brand-500', 'text-white', 'active'); 
             } 
             
-            // Lógica de Carregamento Automático ao abrir as abas
+           // Lógica de Carregamento Automático ao abrir as abas
             if(idAba === 'aba-relatorios') filtrarRelatorios(); 
             if(idAba === 'aba-financeiro') { carregarFornecedoresParaSelect(); carregarFinanceiro(); } 
-            if(idAba === 'aba-cardapio') { carregarInsumosParaSelect(); carregarCardapio(); } 
+            if(idAba === 'aba-cardapio') { carregarInsumosParaSelect(); carregarCardapio(); carregarCategoriasSelect('prod-categoria', listaCatCardapio, 'Geral'); } 
             if(idAba === 'aba-estoque') carregarEstoque(); 
             if(idAba === 'aba-configuracoes') carregarConfiguracoesInit(); 
             if(idAba === 'aba-clientes') carregarClientesPainel(); 
-            if(idAba === 'aba-fornecedores') { carregarFornecedores(); carregarCategoriasSelect('forn-cat','conf-cat-fornecedor'); } 
-            if(idAba === 'aba-colaboradores') { carregarColaboradores(); carregarCargosParaRH(); carregarCaixaEntradaRH(); } 
+            if(idAba === 'aba-fornecedores') { carregarFornecedores(); carregarCategoriasSelect('forn-cat', listaCatFornecedor, 'Geral'); } 
+            if(idAba === 'aba-colaboradores') { carregarColaboradores(); carregarCargosParaRH(); carregarCaixaEntradaRH(); carregarCategoriasSelect('dos-plano', listaBeneficios, 'Nenhum'); } 
         }
 
         function alternarAbaDossie(idAba, elBtn) {
