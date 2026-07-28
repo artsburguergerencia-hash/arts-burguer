@@ -1614,21 +1614,17 @@ def ler_configuracoes(db: Session = Depends(get_db)):
 @app.put("/api/gestao/configuracoes")
 def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
     config = db.query(ConfiguracaoLojaModel).first()
+    if not config:
+        config = ConfiguracaoLojaModel()
+        db.add(config)
     
     config.nome_empresa = dados.get("nome_empresa", config.nome_empresa)
     config.cnpj = dados.get("cnpj", config.cnpj)
     config.endereco = dados.get("endereco", config.endereco)
     config.telefone = dados.get("telefone", config.telefone)
-    config.logo_url = dados.get("logo_url", config.logo_url)
-    config.aceita_delivery = dados.get("aceita_delivery", config.aceita_delivery)
-    config.aceita_retirada = dados.get("aceita_retirada", config.aceita_retirada)
-    config.aceite_automatico = dados.get("aceite_automatico", config.aceite_automatico)
-    config.tempo_preparo = dados.get("tempo_preparo", config.tempo_preparo)
     config.formas_pagamento = dados.get("formas_pagamento", config.formas_pagamento)
     config.sistema_fidelidade = dados.get("sistema_fidelidade", config.sistema_fidelidade)
-    config.categorias_cardapio = dados.get("categorias_cardapio", config.categorias_cardapio)
-    config.categorias_fornecedor = dados.get("categorias_fornecedor", config.categorias_fornecedor)
-    config.planos_saude_opcoes = dados.get("planos_saude_opcoes", config.planos_saude_opcoes)
+    config.aceite_automatico = dados.get("aceite_automatico", config.aceite_automatico)
     
     db.commit()
     return {"status": "sucesso"}
