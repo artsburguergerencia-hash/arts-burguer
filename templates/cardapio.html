@@ -72,15 +72,15 @@
     <main class="max-w-2xl mx-auto px-4 space-y-8" id="lista-produtos"></main>
 
     <!-- BOTÃO FLUTUANTE DE CARRINHO -->
-    <div id="barra-carrinho" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-30 transition-transform duration-300 translate-y-32">
-        <button onclick="abrirCarrinho()" class="w-full bg-brand-500 text-white p-4 rounded-2xl shadow-[0_10px_40px_rgba(255,71,87,0.4)] flex items-center justify-between active:scale-95 transition-all">
-            <div class="flex items-center space-x-3">
-                <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm" id="carrinho-qtd">1</div>
-                <span class="font-bold text-sm uppercase tracking-widest">Ver Sacola</span>
-            </div>
-            <span class="font-black text-lg" id="carrinho-total-flutuante">R$ 0,00</span>
-        </button>
-    </div>
+<div id="barra-carrinho" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-40 transition-transform duration-300 translate-y-32">
+    <button onclick="abrirCarrinho()" class="w-full bg-brand-500 text-white p-4 rounded-2xl shadow-[0_10px_40px_rgba(255,71,87,0.4)] flex items-center justify-between active:scale-95 transition-all">
+        <div class="flex items-center space-x-3">
+            <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm" id="carrinho-qtd">0</div>
+            <span class="font-bold text-sm uppercase tracking-widest">Ver Sacola</span>
+        </div>
+        <span class="font-black text-lg" id="carrinho-total-flutuante">R$ 0,00</span>
+    </button>
+</div>
 
     <!-- MODAL DO PRODUTO (EXTRAS E COMPLEMENTOS) -->
     <div id="modal-produto" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden flex-col justify-end">
