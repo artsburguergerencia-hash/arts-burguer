@@ -3,491 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDV - Art's Burguer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>PDV Frente de Caixa | Art's Burguer</title>
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
-    </script>
+    
     <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .aba-conteudo { display: none; }
-        .aba-conteudo.active { display: flex; }
+        .item-card { transition: all 0.2s ease; cursor: pointer; }
+        .item-card:active { transform: scale(0.96); }
+
+        /* FORMATAÇÃO EXCLUSIVA PARA IMPRESSORA TÉRMICA (80mm) */
+        @media print {
+            body > *:not(#cupom-print) { display: none !important; }
+            #cupom-print { 
+                display: block !important; 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 80mm; 
+                background: white;
+                color: black;
+                font-family: monospace;
+            }
+        }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden">
+<body class="h-screen flex overflow-hidden text-slate-800 selection:bg-brand-500 selection:text-white">
 
-    <!-- MENU LATERAL MINIMALISTA -->
-    <div class="w-20 bg-slate-900 flex flex-col items-center py-6 shrink-0 shadow-2xl z-20">
-        <div class="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center text-white mb-8 shadow-lg">
-            <i class="ph-fill ph-hamburger text-2xl"></i>
-        </div>
-        
-        <div class="flex flex-col space-y-4 w-full px-2">
-            <button onclick="trocarAbaPDV('aba-nova-venda', this)" class="btn-aba w-full h-14 rounded-xl flex items-center justify-center text-white bg-slate-800 transition-all shadow-inner" title="Frente de Caixa (Nova Venda)">
-                <i class="ph-fill ph-monitor text-2xl"></i>
-            </button>
-            <button onclick="trocarAbaPDV('aba-pedidos', this)" class="btn-aba w-full h-14 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-all" title="Gerenciar Pedidos & Imprimir">
-                <i class="ph-fill ph-receipt text-2xl"></i>
-            </button>
-        </div>
-        
-        <button onclick="window.location.replace('/admin')" class="mt-auto w-12 h-12 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-all" title="Voltar ao ERP">
-            <i class="ph ph-sign-out text-2xl"></i>
-        </button>
-    </div>
-
-    <!-- ÁREA CENTRAL DO SISTEMA -->
-    <div class="flex-1 flex flex-col h-full bg-slate-50 overflow-hidden relative">
-        
-        <!-- ========================================== -->
-        <!-- ABA 1: FRENTE DE CAIXA (NOVA VENDA)        -->
-        <!-- ========================================== -->
-        <div id="aba-nova-venda" class="aba-conteudo active w-full h-full">
-            <!-- LADO ESQUERDO: CARDÁPIO -->
-            <div class="flex-1 flex flex-col h-full">
-                <header class="bg-white border-b border-slate-200 p-4 shadow-sm flex justify-between items-center shrink-0">
-                    <h1 class="text-xl font-black text-slate-800 tracking-tight flex items-center">
-                        PDV <span class="text-brand-500 ml-2">Balcão</span>
-                    </h1>
-                    <div class="relative w-72">
-                        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="busca-produto" placeholder="Buscar no cardápio..." onkeyup="filtrarProdutos()" class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm font-semibold">
-                    </div>
-                </header>
-
-                <div class="flex-1 overflow-y-auto p-4 no-scrollbar">
-                    <div id="grid-produtos" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <div class="col-span-full text-center py-10 text-slate-400">
-                            <i class="ph ph-spinner animate-spin text-4xl mb-2"></i>
-                            <p>Carregando cardápio...</p>
-                        </div>
-                    </div>
+    <!-- COLUNA ESQUERDA: CATÁLOGO DE PRODUTOS -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
+        <!-- Header Superior -->
+        <header class="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0 shadow-sm">
+            <div class="flex items-center">
+                <div class="w-10 h-10 bg-brand-500 text-white rounded-xl flex items-center justify-center mr-4 shadow-md shadow-brand-500/30">
+                    <i class="ph-bold ph-storefront text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight text-slate-800">Frente de Caixa (PDV)</h1>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operador: <span id="nome-operador" class="text-brand-500">Caixa</span></p>
                 </div>
             </div>
-
-            <!-- LADO DIREITO: CARRINHO E CHECKOUT -->
-            <div class="w-96 bg-white border-l border-slate-200 flex flex-col h-full shadow-2xl shrink-0 z-10">
-                <!-- Busca de Cliente -->
-                <div class="p-4 border-b border-slate-200 bg-slate-50">
-                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Identificar Cliente</label>
-                    <div class="flex space-x-2">
-                        <input type="tel" id="pdv-tel" placeholder="Telefone (Opcional)" class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm">
-                        <button onclick="buscarClientePDV()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg transition-colors"><i class="ph ph-magnifying-glass"></i></button>
-                    </div>
-                    <input type="text" id="pdv-nome" placeholder="Nome do Cliente" class="w-full mt-2 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-brand-500 text-sm hidden">
-                    
-                    <!-- Painel VIP do Cliente no PDV -->
-                    <div id="painel-fidelidade" class="mt-3 p-3 bg-brand-50 border border-brand-100 rounded-lg hidden">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-brand-600 uppercase">Programa VIP</span>
-                            <span id="pdv-status-cliente" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">ATIVO</span>
-                        </div>
-                        <label class="flex items-center text-sm font-semibold text-slate-700 cursor-pointer mb-2">
-                            <input type="checkbox" id="pdv-usar-pontos" onchange="atualizarTotais()" class="w-4 h-4 text-brand-500 rounded border-slate-300 mr-2">
-                            Resgatar Brinde (Tem: <span id="pdv-pts-disp">0</span> pts)
-                        </label>
-                        <div class="flex items-center justify-between text-sm font-semibold text-slate-700">
-                            <span>Cashback (R$ <span id="pdv-cash-disp">0,00</span>)</span>
-                            <input type="number" id="pdv-usar-cash" value="0" min="0" step="0.01" onchange="atualizarTotais()" class="w-20 px-2 py-1 bg-white border border-slate-200 rounded text-right">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Itens do Carrinho -->
-                <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-white" id="pdv-carrinho">
-                    <div class="h-full flex flex-col items-center justify-center text-slate-300">
-                        <i class="ph-fill ph-shopping-cart text-6xl mb-2"></i>
-                        <p class="font-medium text-sm">Aguardando itens...</p>
-                    </div>
-                </div>
-
-                <!-- Resumo e Finalização -->
-                <div class="p-4 border-t border-slate-200 bg-slate-50">
-                    <div class="space-y-1 mb-4 text-sm font-medium text-slate-600">
-                        <div class="flex justify-between"><span>Subtotal:</span> <span id="pdv-subtotal">R$ 0,00</span></div>
-                        <div class="flex justify-between text-brand-500 hidden" id="linha-desc-cash"><span>Cashback:</span> <span id="pdv-desc-cash">- R$ 0,00</span></div>
-                        <div class="flex justify-between text-amber-500 hidden" id="linha-desc-pts"><span>Brinde:</span> <span>Ativado!</span></div>
-                    </div>
-                    
-                    <div class="flex justify-between items-end mb-4">
-                        <span class="text-sm font-bold text-slate-500 uppercase">Total a Pagar</span>
-                        <span class="text-3xl font-black text-slate-800 tracking-tight" id="pdv-total-final">R$ 0,00</span>
-                    </div>
-
-                    <select id="pdv-forma-pag" class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-slate-800 text-sm font-bold mb-3 shadow-sm cursor-pointer">
-                        <option value="dinheiro">💵 Dinheiro Espécie</option>
-                        <option value="cartao_credito">💳 Cartão de Crédito</option>
-                        <option value="cartao_debito">💳 Cartão de Débito</option>
-                        <option value="pix">⚡ Pix Balcão</option>
-                    </select>
-
-                    <button onclick="finalizarVendaPDV()" id="btn-finalizar-pdv" class="w-full bg-slate-900 hover:bg-brand-500 text-white font-black text-lg py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center">
-                        <i class="ph-fill ph-check-circle mr-2 text-2xl"></i> Concluir Venda
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- ABA 2: GERENCIAR PEDIDOS & IMPRIMIR CUPOM  -->
-        <!-- ========================================== -->
-        <div id="aba-pedidos" class="aba-conteudo flex-col w-full h-full bg-slate-50">
-            <header class="bg-white border-b border-slate-200 p-4 shadow-sm shrink-0 flex justify-between items-center">
-                <h1 class="text-xl font-black text-slate-800 tracking-tight flex items-center">
-                    Gerenciador de <span class="text-brand-500 ml-2">Comandas</span>
-                </h1>
-                <button onclick="carregarListaPedidosPDV()" class="text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center bg-slate-100 px-3 py-1.5 rounded-lg transition-colors">
-                    <i class="ph-fill ph-arrows-clockwise mr-2"></i> Atualizar Lista
-                </button>
-            </header>
             
-            <div class="flex-1 p-6 overflow-y-auto no-scrollbar">
-                <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                                <th class="py-4 px-6">ID</th>
-                                <th class="py-4 px-6">Cliente</th>
-                                <th class="py-4 px-6">Tipo / Pagamento</th>
-                                <th class="py-4 px-6 font-bold text-slate-800">Total</th>
-                                <th class="py-4 px-6">Status atual</th>
-                                <th class="py-4 px-6 text-center">Ações / Impressão</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-pedidos-pdv" class="text-sm">
-                            <tr><td colspan="6" class="text-center py-10 text-slate-400">Buscando pedidos recentes...</td></tr>
-                        </tbody>
-                    </table>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="busca-produto" onkeyup="filtrarProdutos()" placeholder="Buscar no cardápio..." class="pl-11 pr-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500 focus:bg-white transition-colors w-64">
                 </div>
+                <button onclick="window.location.replace('/login')" class="text-slate-400 hover:text-red-500 transition-colors bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm"><i class="ph-bold ph-sign-out text-xl"></i></button>
+            </div>
+        </header>
+
+        <!-- Filtros de Categoria -->
+        <div class="px-8 py-4 border-b border-slate-200 bg-white shrink-0 overflow-x-auto no-scrollbar whitespace-nowrap" id="container-categorias">
+            <button class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest mr-2 shadow-md">Todas</button>
+        </div>
+
+        <!-- Grade de Produtos -->
+        <div class="flex-1 overflow-y-auto p-8 no-scrollbar relative">
+            <div id="grid-produtos" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-20">
+                <div class="col-span-full text-center py-20 text-slate-400 font-bold"><i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i><br>Carregando Cardápio...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- COLUNA DIREITA: CUPOM E CHECKOUT -->
+    <aside class="w-96 bg-white border-l border-slate-200 shadow-2xl flex flex-col h-full z-20 shrink-0">
+        <!-- Identificação do Cliente -->
+        <div class="p-6 border-b border-slate-100 bg-slate-50 shrink-0">
+            <h2 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center"><i class="ph-fill ph-user text-brand-500 mr-2 text-lg"></i> Identificação</h2>
+            
+            <div class="space-y-3">
+                <div class="relative">
+                    <i class="ph-bold ph-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="pdv-telefone" onblur="buscarClientePDV(this.value)" placeholder="Telefone (Opcional)" class="w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500 transition-colors">
+                </div>
+                <div class="relative">
+                    <i class="ph-bold ph-user absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="pdv-nome" placeholder="Nome do Cliente (Avulso)" class="w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500 transition-colors">
+                </div>
+            </div>
+
+            <!-- Box de Alerta/Fidelidade -->
+            <div id="box-cliente-info" class="mt-3 hidden p-3 rounded-xl border text-xs font-bold shadow-inner"></div>
+        </div>
+
+        <!-- Lista do Carrinho -->
+        <div class="flex-1 overflow-y-auto p-6 no-scrollbar bg-white" id="carrinho-itens">
+            <div class="h-full flex flex-col items-center justify-center text-slate-300 opacity-50">
+                <i class="ph-fill ph-shopping-cart text-6xl mb-4"></i>
+                <p class="font-bold text-sm uppercase tracking-widest">Caixa Livre</p>
             </div>
         </div>
 
+        <!-- Checkout e Pagamento -->
+        <div class="p-6 bg-slate-900 text-white shrink-0 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] relative">
+            <div class="flex justify-between items-end mb-4">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total a Pagar</span>
+                <span class="text-4xl font-black text-brand-400 tracking-tighter" id="carrinho-total">R$ 0,00</span>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Meio de Pagamento</label>
+                <select id="pdv-pagamento" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white font-bold outline-none focus:border-brand-500 appearance-none text-sm cursor-pointer shadow-inner">
+                    <option value="">Carregando formas...</option>
+                </select>
+            </div>
+
+            <button onclick="finalizarVenda()" id="btn-finalizar" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-xl shadow-lg shadow-brand-500/20 transition-all active:scale-95 uppercase tracking-widest text-sm flex items-center justify-center">
+                Confirmar Pagamento <i class="ph-bold ph-check-circle ml-2 text-lg"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MODAL DE EXTRAS DO PRODUTO -->
+    <div id="modal-extras" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative">
+            <button onclick="fecharModalExtras()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-slate-100 p-2 rounded-full transition-colors"><i class="ph-bold ph-x"></i></button>
+            <h3 class="text-xl font-black text-slate-800 mb-1" id="modal-produto-nome">Nome Produto</h3>
+            <p class="text-brand-500 font-black mb-4" id="modal-produto-preco">R$ 0,00</p>
+            
+            <div id="container-grupos-extras" class="space-y-4 max-h-64 overflow-y-auto no-scrollbar pr-2 mb-4"></div>
+
+            <div class="mb-4 pt-4 border-t border-slate-100">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Observação (Ex: Sem cebola)</label>
+                <input type="text" id="modal-produto-obs" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-brand-500 bg-slate-50">
+            </div>
+
+            <button onclick="confirmarAdicaoItem()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs">
+                Adicionar ao Pedido
+            </button>
+        </div>
     </div>
+
+    <!-- MODAL DE SUCESSO E IMPRESSÃO -->
+    <div id="modal-sucesso" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex-col items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-[2rem] p-8 shadow-2xl relative text-center">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph-fill ph-check-circle text-5xl"></i>
+            </div>
+            <h2 class="text-2xl font-black text-slate-800 mb-1">Venda Concluída!</h2>
+            <p class="text-slate-500 text-sm mb-6">Senha do Pedido: <span id="sucesso-senha" class="font-black text-xl text-brand-500">000</span></p>
+            
+            <div class="space-y-3">
+                <button onclick="window.print()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center">
+                    <i class="ph-bold ph-printer text-xl mr-2"></i> Imprimir Comanda
+                </button>
+                <button onclick="emitirNotaFiscal()" class="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 font-black py-4 rounded-xl transition-colors flex items-center justify-center">
+                    <i class="ph-bold ph-receipt text-xl mr-2"></i> Emitir Cupom Fiscal (NFC-e)
+                </button>
+                <button onclick="novaVenda()" class="w-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-black py-4 rounded-xl transition-colors mt-4">
+                    Voltar / Nova Venda
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ÁREA INVISÍVEL: ESPELHO DA IMPRESSORA TÉRMICA -->
+    <!-- ========================================== -->
+    <div id="cupom-print" class="hidden text-xs">
+        <div style="text-align: center; margin-bottom: 10px; border-bottom: 1px dashed black; padding-bottom: 10px;">
+            <h2 style="font-size: 16px; font-weight: bold; margin: 0;" id="print-loja-nome">ART'S BURGUER</h2>
+            <p style="margin: 2px 0;" id="print-loja-cnpj">CNPJ: 00.000.000/0000-00</p>
+            <p style="margin: 2px 0;" id="print-loja-end">Endereço da Empresa</p>
+        </div>
+        <div style="text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 10px; border-bottom: 1px dashed black; padding-bottom: 10px;">
+            * DOCUMENTO NÃO FISCAL *
+        </div>
+        <div style="margin-bottom: 10px; border-bottom: 1px dashed black; padding-bottom: 10px;">
+            <p style="margin: 2px 0;"><strong>Senha:</strong> <span id="print-senha-ticket" style="font-size: 18px; font-weight: bold;">000</span></p>
+            <p style="margin: 2px 0;"><strong>Data:</strong> <span id="print-data">00/00/0000 00:00</span></p>
+            <p style="margin: 2px 0;"><strong>Cliente:</strong> <span id="print-cliente">Avulso</span></p>
+            <p style="margin: 2px 0;"><strong>Pagamento:</strong> <span id="print-pagamento">Dinheiro</span></p>
+        </div>
+        <table style="width: 100%; text-align: left; border-collapse: collapse; margin-bottom: 10px;">
+            <thead><tr style="border-bottom: 1px dashed black;"><th style="padding-bottom: 5px;">Qtd x Item</th><th style="text-align: right; padding-bottom: 5px;">Total</th></tr></thead>
+            <tbody id="print-itens"></tbody>
+        </table>
+        <div style="text-align: right; font-size: 16px; font-weight: bold; border-top: 1px dashed black; padding-top: 10px;">
+            TOTAL: <span id="print-total">R$ 0,00</span>
+        </div>
+        <div style="text-align: center; margin-top: 15px; font-size: 10px;">
+            Agradecemos a preferência!<br>Volte sempre!
+        </div>
+    </div>
+
 
     <script>
-        // ==========================
-        // LÓGICA DE NAVEGAÇÃO DE ABAS
-        // ==========================
-        function trocarAbaPDV(idAba, btnClicado) {
-            document.querySelectorAll('.aba-conteudo').forEach(aba => aba.classList.remove('active'));
-            document.querySelectorAll('.btn-aba').forEach(btn => {
-                btn.classList.remove('bg-slate-800', 'text-white', 'shadow-inner');
-                btn.classList.add('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
-            });
-            
-            document.getElementById(idAba).classList.add('active');
-            btnClicado.classList.add('bg-slate-800', 'text-white', 'shadow-inner');
-            btnClicado.classList.remove('text-slate-400');
+        let cardapio = [];
+        let carrinho = [];
+        let configLoja = {};
+        let clienteSelecionado = null;
+        let produtoSendoAdicionado = null;
 
-            if (idAba === 'aba-pedidos') { carregarListaPedidosPDV(); }
+        document.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('nome-operador').innerText = localStorage.getItem('funcionario_nome') || "Caixa";
+            await carregarConfigLoja();
+            await carregarCardapio();
+        });
+
+        async function carregarConfigLoja() {
+            try {
+                const res = await fetch('/api/gestao/configuracoes');
+                configLoja = await res.json();
+                
+                // Prepara o cabeçalho de impressão
+                document.getElementById('print-loja-nome').innerText = configLoja.nome_empresa || "MINHA EMPRESA";
+                document.getElementById('print-loja-cnpj').innerText = `CNPJ: ${configLoja.cnpj || '00.000.000/0000-00'}`;
+                document.getElementById('print-loja-end').innerText = configLoja.endereco || "Endereço não cadastrado";
+
+                atualizarMetodosPagamento();
+            } catch(e) { console.error("Erro config:", e); }
         }
 
-        // ==========================
-        // MOTOR DO PDV E CARRINHO
-        // ==========================
-        let produtosServer = [];
-        let carrinhoPDV = [];
-        let dadosClienteVip = null;
+        // LÓGICA ANTI-FIADO: Só aparece fiado se o cliente for válido e tiver a permissão
+        function atualizarMetodosPagamento() {
+            const selectPag = document.getElementById('pdv-pagamento');
+            let pgs = configLoja.formas_pagamento ? configLoja.formas_pagamento.split(',') : ['dinheiro', 'pix'];
+            
+            let htmlPg = '';
+            if(pgs.includes('dinheiro')) htmlPg += '<option value="dinheiro">Dinheiro (Espécie)</option>';
+            if(pgs.includes('maquininha')) htmlPg += '<option value="maquina_credito">Cartão de Crédito (Máquina)</option><option value="maquina_debito">Cartão de Débito (Máquina)</option>';
+            if(pgs.includes('pix_online') || pgs.includes('pix')) htmlPg += '<option value="pix">PIX (Transferência)</option>';
+            if(pgs.includes('vr_online') || pgs.includes('vr')) htmlPg += '<option value="vale_refeicao">Vale Refeição/Alimentação</option>';
+            
+            // HABILITAR FIADO SOMENTE SE O CLIENTE TEM PERMISSÃO E NÃO ESTÁ BLOQUEADO
+            if(clienteSelecionado && clienteSelecionado.permite_fiado && !clienteSelecionado.bloqueado) {
+                htmlPg += '<option value="fiado" class="font-bold text-amber-500">Fiado / Caderneta da Loja</option>';
+            }
+            
+            if(htmlPg === '') htmlPg = '<option value="dinheiro">Dinheiro</option>';
+            selectPag.innerHTML = htmlPg;
+        }
 
-        document.addEventListener('DOMContentLoaded', carregarCardapioPDV);
-
-        async function carregarCardapioPDV() {
+        async function carregarCardapio() {
             try {
                 const res = await fetch('/api/cardapio');
-                produtosServer = await res.json();
-                renderizarProdutosPDV(produtosServer);
-            } catch (e) {
-                document.getElementById('grid-produtos').innerHTML = '<p class="col-span-full text-center text-red-500 font-bold">Erro de conexão com o servidor.</p>';
+                cardapio = await res.json();
+                renderizarCategorias();
+                renderizarProdutos("Todos");
+            } catch(e) {
+                document.getElementById('grid-produtos').innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">Erro de conexão.</div>';
             }
         }
 
-        function renderizarProdutosPDV(lista) {
+        function renderizarCategorias() {
+            const categorias = ["Todos", ...new Set(cardapio.map(p => p.categoria).filter(c => c))];
+            const container = document.getElementById('container-categorias');
+            container.innerHTML = categorias.map(c => `
+                <button onclick="renderizarProdutos('${c}')" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest mr-2 transition-all shadow-sm ${c === 'Todos' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'} btn-cat">
+                    ${c}
+                </button>
+            `).join('');
+        }
+
+        function renderizarProdutos(categoriaFiltro) {
+            document.querySelectorAll('.btn-cat').forEach(b => {
+                if(b.innerText.trim() === categoriaFiltro) { b.classList.add('bg-slate-900', 'text-white'); b.classList.remove('bg-slate-100', 'text-slate-500'); }
+                else { b.classList.remove('bg-slate-900', 'text-white'); b.classList.add('bg-slate-100', 'text-slate-500'); }
+            });
+
             const grid = document.getElementById('grid-produtos');
-            if(lista.length === 0) {
-                grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-10">Produto não encontrado.</p>';
-                return;
-            }
-            grid.innerHTML = lista.map(p => `
-                <div onclick="addCarrinhoPDV(${p.id})" class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm hover:border-brand-500 hover:shadow-md cursor-pointer transition-all active:scale-95 flex flex-col justify-between h-36 relative overflow-hidden group">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover:bg-brand-500 transition-colors"></div>
-                    <div class="pl-2">
-                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">${p.categoria}</span>
-                        <h3 class="font-bold text-slate-800 mt-2 leading-tight text-sm">${p.nome}</h3>
+            const produtosFiltrados = categoriaFiltro === "Todos" ? cardapio : cardapio.filter(p => p.categoria === categoriaFiltro);
+            
+            if(produtosFiltrados.length === 0) { grid.innerHTML = '<div class="col-span-full text-center py-20 text-slate-400 font-bold">Vazio.</div>'; return; }
+
+            grid.innerHTML = produtosFiltrados.map(p => `
+                <div onclick="selecionarProduto(${p.id})" class="item-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div class="h-28 bg-slate-100 w-full relative">
+                        ${p.imagem_url ? `<img src="${p.imagem_url}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="ph-fill ph-image text-3xl"></i></div>`}
+                        <span class="absolute top-2 right-2 bg-white/90 backdrop-blur border border-slate-200 text-slate-800 text-[9px] font-black uppercase px-2 py-1 rounded shadow-sm">${p.categoria || 'Geral'}</span>
                     </div>
-                    <div class="font-black text-brand-500 text-lg pl-2">R$ ${p.preco_venda.toFixed(2).replace('.', ',')}</div>
+                    <div class="p-4 flex flex-col flex-1 justify-between">
+                        <h3 class="font-black text-slate-800 text-sm leading-tight mb-2 line-clamp-2">${p.nome}</h3>
+                        <p class="font-black text-brand-500 text-lg tracking-tight">R$ ${p.preco_venda.toFixed(2).replace('.',',')}</p>
+                    </div>
                 </div>
             `).join('');
         }
 
         function filtrarProdutos() {
             const termo = document.getElementById('busca-produto').value.toLowerCase();
-            const filtrados = produtosServer.filter(p => p.nome.toLowerCase().includes(termo) || p.categoria.toLowerCase().includes(termo));
-            renderizarProdutosPDV(filtrados);
+            const grid = document.getElementById('grid-produtos');
+            const filtrados = cardapio.filter(p => p.nome.toLowerCase().includes(termo));
+            if(filtrados.length === 0) { grid.innerHTML = '<div class="col-span-full text-center py-20 text-slate-400 font-bold">Produto não encontrado.</div>'; return; }
+            grid.innerHTML = filtrados.map(p => `<div onclick="selecionarProduto(${p.id})" class="item-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col"><div class="h-28 bg-slate-100 w-full relative">${p.imagem_url ? `<img src="${p.imagem_url}" class="w-full h-full object-cover">` : ``}</div><div class="p-4 flex flex-col flex-1 justify-between"><h3 class="font-black text-slate-800 text-sm leading-tight mb-2">${p.nome}</h3><p class="font-black text-brand-500 text-lg tracking-tight">R$ ${p.preco_venda.toFixed(2).replace('.',',')}</p></div></div>`).join('');
         }
 
-        function addCarrinhoPDV(id) {
-            const produto = produtosServer.find(p => p.id === id);
-            const itemExistente = carrinhoPDV.find(i => i.produto_id === id);
-            
-            if(itemExistente) { itemExistente.quantidade++; } 
-            else { carrinhoPDV.push({ produto_id: produto.id, nome: produto.nome, preco: produto.preco_venda, quantidade: 1, observacao: "" }); }
-            renderizarCarrinhoPDV();
+        async function selecionarProduto(id) {
+            const produto = cardapio.find(p => p.id === id);
+            if(!produto) return;
+            try {
+                const res = await fetch(`/api/produtos/${id}/complementos`);
+                const gruposExtras = await res.json();
+                if(gruposExtras && gruposExtras.length > 0) {
+                    produtoSendoAdicionado = { ...produto, valor_base: produto.preco_venda, grupos: gruposExtras };
+                    abrirModalExtras(produtoSendoAdicionado);
+                } else {
+                    addAoCarrinho(id, produto.nome, produto.preco_venda, "");
+                }
+            } catch(e) { addAoCarrinho(id, produto.nome, produto.preco_venda, ""); }
         }
 
-        function alterarQtd(index, delta) {
-            carrinhoPDV[index].quantidade += delta;
-            if(carrinhoPDV[index].quantidade <= 0) carrinhoPDV.splice(index, 1);
-            renderizarCarrinhoPDV();
-        }
-
-        function addObs(index) {
-            const obsAtual = carrinhoPDV[index].observacao;
-            const novaObs = prompt(`Deseja adicionar observação para: ${carrinhoPDV[index].nome}?`, obsAtual);
-            if(novaObs !== null) {
-                carrinhoPDV[index].observacao = novaObs;
-                renderizarCarrinhoPDV();
-            }
-        }
-
-        function renderizarCarrinhoPDV() {
-            const container = document.getElementById('pdv-carrinho');
-            if(carrinhoPDV.length === 0) {
-                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300"><i class="ph-fill ph-shopping-cart text-6xl mb-2"></i><p class="font-medium text-sm">Carrinho vazio</p></div>`;
-                atualizarTotais(); return;
-            }
-
-            container.innerHTML = carrinhoPDV.map((item, index) => `
-                <div class="bg-white border-b border-slate-100 py-3 flex flex-col">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="flex-1 pr-2">
-                            <h4 class="font-bold text-slate-800 text-sm leading-tight">${item.nome}</h4>
-                            <p class="font-bold text-slate-500 text-xs mt-0.5">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</p>
-                        </div>
-                        <button onclick="addObs(${index})" class="text-slate-400 hover:text-amber-500 transition-colors bg-slate-50 p-1.5 rounded"><i class="ph-fill ph-chat-teardrop-text text-lg"></i></button>
-                    </div>
-                    ${item.observacao ? `<p class="text-[10px] text-amber-600 bg-amber-50 px-2 py-1 rounded mb-2 font-semibold inline-block border border-amber-100">⚠️ ${item.observacao}</p>` : ''}
-                    <div class="flex items-center justify-between mt-auto">
-                        <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200">
-                            <button onclick="alterarQtd(${index}, -1)" class="w-8 h-8 bg-white rounded-md shadow-sm font-bold text-slate-600 hover:bg-red-50 hover:text-red-500 transition-colors">-</button>
-                            <span class="w-10 text-center font-bold text-sm text-slate-800">${item.quantidade}</span>
-                            <button onclick="alterarQtd(${index}, 1)" class="w-8 h-8 bg-white rounded-md shadow-sm font-bold text-slate-600 hover:bg-green-50 hover:text-green-600 transition-colors">+</button>
-                        </div>
+        function abrirModalExtras(produto) {
+            document.getElementById('modal-produto-nome').innerText = produto.nome;
+            document.getElementById('modal-produto-preco').innerText = `R$ ${produto.valor_base.toFixed(2).replace('.',',')}`;
+            document.getElementById('modal-produto-obs').value = "";
+            const container = document.getElementById('container-grupos-extras');
+            container.innerHTML = produto.grupos.map(g => `
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50">
+                    <h4 class="font-black text-xs uppercase tracking-widest text-slate-700 mb-2 flex justify-between">${g.nome} <span class="${g.obrigatorio ? 'text-red-500' : 'text-slate-400'}">${g.obrigatorio ? 'Obrigatório' : 'Opcional'}</span></h4>
+                    <div class="space-y-2">
+                        ${g.itens.map(i => `
+                            <label class="flex items-center justify-between text-sm cursor-pointer p-2 hover:bg-white rounded border border-transparent hover:border-slate-200 transition-colors">
+                                <div class="flex items-center font-bold text-slate-600"><input type="${g.max === 1 ? 'radio' : 'checkbox'}" name="grupo_${g.id}" value="${i.nome}|${i.preco}" class="mr-2 text-brand-500">${i.nome}</div>
+                                ${i.preco > 0 ? `<span class="text-emerald-500 font-black text-xs">+ R$ ${i.preco.toFixed(2).replace('.',',')}</span>` : `<span class="text-slate-400 text-[10px] uppercase">Grátis</span>`}
+                            </label>
+                        `).join('')}
                     </div>
                 </div>
             `).join('');
-            atualizarTotais();
+            document.getElementById('modal-extras').classList.replace('hidden', 'flex');
         }
 
-        async function buscarClientePDV() {
-            const tel = document.getElementById('pdv-tel').value.replace(/\D/g, '');
-            const nomeInput = document.getElementById('pdv-nome');
-            const painelFid = document.getElementById('painel-fidelidade');
+        function fecharModalExtras() { document.getElementById('modal-extras').classList.replace('flex', 'hidden'); produtoSendoAdicionado = null; }
 
-            if(tel.length < 10) return alert("Digite um número válido com DDD.");
+        function confirmarAdicaoItem() {
+            if(!produtoSendoAdicionado) return;
+            let precoTotal = produtoSendoAdicionado.valor_base;
+            let observacoes = [];
+            for (const g of produtoSendoAdicionado.grupos) {
+                const selecionados = Array.from(document.querySelectorAll(`input[name="grupo_${g.id}"]:checked`));
+                if (g.obrigatorio && selecionados.length < g.min) { alert(`O grupo "${g.nome}" é obrigatório!`); return; }
+                if (selecionados.length > g.max) { alert(`No grupo "${g.nome}", você pode escolher no máximo ${g.max} opções.`); return; }
+                selecionados.forEach(sel => { const partes = sel.value.split('|'); observacoes.push(`+ ${partes[0]}`); precoTotal += parseFloat(partes[1]); });
+            }
+            const obsManual = document.getElementById('modal-produto-obs').value.trim();
+            if(obsManual) observacoes.push(`OBS: ${obsManual}`);
+            addAoCarrinho(produtoSendoAdicionado.id, produtoSendoAdicionado.nome, precoTotal, observacoes.join(' | '));
+            fecharModalExtras();
+        }
+
+        function addAoCarrinho(id, nome, precoCalculado, obs) {
+            const indiceExistente = carrinho.findIndex(i => i.produto_id === id && i.observacao === obs);
+            if (indiceExistente >= 0) carrinho[indiceExistente].quantidade++;
+            else carrinho.push({ produto_id: id, nome: nome, preco: precoCalculado, quantidade: 1, observacao: obs });
+            atualizarCarrinhoUI();
+        }
+
+        function alterarQuantidade(index, delta) {
+            carrinho[index].quantidade += delta;
+            if (carrinho[index].quantidade <= 0) carrinho.splice(index, 1);
+            atualizarCarrinhoUI();
+        }
+
+        function atualizarCarrinhoUI() {
+            const container = document.getElementById('carrinho-itens');
+            const totalEl = document.getElementById('carrinho-total');
+            if (carrinho.length === 0) {
+                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 opacity-50"><i class="ph-fill ph-shopping-cart text-6xl mb-4"></i><p class="font-bold text-sm uppercase tracking-widest">Caixa Livre</p></div>`;
+                totalEl.innerText = 'R$ 0,00';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = carrinho.map((item, index) => {
+                total += (item.preco * item.quantidade);
+                return `
+                <div class="flex items-center justify-between border-b border-slate-100 py-4">
+                    <div class="flex-1 pr-4">
+                        <h4 class="font-black text-slate-800 text-sm leading-tight">${item.nome}</h4>
+                        ${item.observacao ? `<p class="text-[10px] text-slate-400 font-bold mt-1 line-clamp-2 leading-snug">${item.observacao}</p>` : ''}
+                        <p class="text-brand-500 font-black text-sm mt-1">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.',',')}</p>
+                    </div>
+                    <div class="flex items-center bg-slate-100 rounded-lg border border-slate-200 p-1 shadow-inner">
+                        <button onclick="alterarQuantidade(${index}, -1)" class="w-7 h-7 flex items-center justify-center bg-white rounded shadow-sm text-slate-600 font-black hover:text-brand-500"><i class="ph-bold ph-minus"></i></button>
+                        <span class="w-8 text-center font-black text-sm">${item.quantidade}</span>
+                        <button onclick="alterarQuantidade(${index}, 1)" class="w-7 h-7 flex items-center justify-center bg-white rounded shadow-sm text-slate-600 font-black hover:text-emerald-500"><i class="ph-bold ph-plus"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Lógica do desconto na compra (Cashback)
+            if (clienteSelecionado && document.getElementById('check-usar-cashback') && document.getElementById('check-usar-cashback').checked) {
+                const desconto = clienteSelecionado.cashback;
+                if(total >= desconto) total -= desconto;
+                else total = 0;
+            }
+
+            totalEl.innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
+        }
+
+        async function buscarClientePDV(telefoneRaw) {
+            const telefone = telefoneRaw.replace(/\D/g, '');
+            const box = document.getElementById('box-cliente-info');
+            clienteSelecionado = null;
+
+            if(telefone.length < 10) { box.classList.add('hidden'); atualizarMetodosPagamento(); return; }
+
+            box.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Buscando na base...';
+            box.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-200', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+            box.classList.add('bg-slate-100', 'text-slate-500', 'border-slate-200');
 
             try {
-                const res = await fetch(`/api/pdv/cliente/${tel}`);
+                const res = await fetch(`/api/pdv/cliente/${telefone}`);
                 if(res.ok) {
-                    dadosClienteVip = await res.json();
-                    if(dadosClienteVip.bloqueado) {
-                        alert("⚠️ BLOQUEADO: Cliente com restrições financeiras ou histórico ruim.");
-                        document.getElementById('pdv-status-cliente').className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700";
-                        document.getElementById('pdv-status-cliente').innerText = "BLOQUEADO";
-                    } else {
-                        document.getElementById('pdv-status-cliente').className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700";
-                        document.getElementById('pdv-status-cliente').innerText = "ATIVO";
-                    }
-                    nomeInput.value = dadosClienteVip.nome; nomeInput.classList.remove('hidden'); painelFid.classList.remove('hidden');
+                    clienteSelecionado = await res.json();
+                    document.getElementById('pdv-nome').value = clienteSelecionado.nome;
                     
-                    document.getElementById('pdv-pts-disp').innerText = dadosClienteVip.pontos;
-                    document.getElementById('pdv-cash-disp').innerText = dadosClienteVip.cashback.toFixed(2).replace('.', ',');
-                    document.getElementById('pdv-usar-cash').max = dadosClienteVip.cashback;
-                    document.getElementById('pdv-usar-cash').value = 0; document.getElementById('pdv-usar-pontos').checked = false;
-                    document.getElementById('pdv-usar-pontos').disabled = dadosClienteVip.pontos < 10;
+                    if(clienteSelecionado.bloqueado) {
+                        box.classList.replace('bg-slate-100', 'bg-red-50'); box.classList.replace('text-slate-500', 'text-red-700'); box.classList.replace('border-slate-200', 'border-red-200');
+                        box.innerHTML = `<i class="ph-fill ph-warning-circle text-lg mr-1 align-middle"></i> <span class="uppercase tracking-widest">Aviso Severo:</span> Cliente bloqueado por inadimplência. Venda Fiado proibida!`;
+                    } else {
+                        box.classList.replace('bg-slate-100', 'bg-emerald-50'); box.classList.replace('text-slate-500', 'text-emerald-700'); box.classList.replace('border-slate-200', 'border-emerald-200');
+                        let fidHtml = `<i class="ph-fill ph-check-circle text-lg mr-1 align-middle"></i> Cliente Ouro. `;
+                        
+                        // Exibe se tem permissão de Fiado
+                        if(clienteSelecionado.permite_fiado) fidHtml += `<strong>(Autorizado para Fiado)</strong>`;
+                        
+                        if(configLoja.sistema_fidelidade === 'CASHBACK' && clienteSelecionado.cashback > 0) {
+                            fidHtml += `<br><label class="mt-2 flex items-center cursor-pointer text-emerald-800"><input type="checkbox" id="check-usar-cashback" onchange="atualizarCarrinhoUI()" class="mr-2 rounded text-emerald-600"> Usar R$ ${clienteSelecionado.cashback.toFixed(2).replace('.',',')} de Cashback nesta venda</label>`;
+                        } else if(configLoja.sistema_fidelidade === 'PONTOS') {
+                            fidHtml += `<br><span class="mt-1 block text-[10px] uppercase tracking-widest text-emerald-800">Saldo Atual: ${clienteSelecionado.pontos} Pts (10 = Troca)</span>`;
+                        }
+                        box.innerHTML = fidHtml;
+                    }
+                    atualizarMetodosPagamento(); // Adiciona o Fiado no select se o cliente puder
                 } else {
-                    dadosClienteVip = null; painelFid.classList.add('hidden'); nomeInput.classList.remove('hidden');
-                    nomeInput.value = ""; nomeInput.focus(); alert("Cliente não encontrado! Digite o nome para registrar.");
+                    box.classList.add('hidden'); // Cliente novo
+                    atualizarMetodosPagamento();
                 }
-            } catch(e) { alert("Erro ao comunicar com o servidor."); }
-            atualizarTotais();
+            } catch(e) { box.classList.add('hidden'); atualizarMetodosPagamento(); }
+            
+            atualizarCarrinhoUI(); 
         }
 
-        function atualizarTotais() {
-            let subtotal = carrinhoPDV.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
-            let cashbackUsado = 0; let pontosUsados = false;
-            document.getElementById('pdv-subtotal').innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+        async function finalizarVenda() {
+            if(carrinho.length === 0) { alert("Carrinho vazio!"); return; }
+            const formaPgto = document.getElementById('pdv-pagamento').value;
+            if(!formaPgto) { alert("Selecione a forma de pagamento!"); return; }
 
-            if(dadosClienteVip && carrinhoPDV.length > 0) {
-                cashbackUsado = parseFloat(document.getElementById('pdv-usar-cash').value) || 0;
-                if(cashbackUsado > dadosClienteVip.cashback) cashbackUsado = dadosClienteVip.cashback;
-                if(cashbackUsado > subtotal) cashbackUsado = subtotal; 
-                pontosUsados = document.getElementById('pdv-usar-pontos').checked;
-            }
+            const btn = document.getElementById('btn-finalizar');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i>';
+            btn.disabled = true;
 
-            const linhaCash = document.getElementById('linha-desc-cash'); const linhaPts = document.getElementById('linha-desc-pts');
-            if(cashbackUsado > 0) { linhaCash.classList.remove('hidden'); document.getElementById('pdv-desc-cash').innerText = `- R$ ${cashbackUsado.toFixed(2).replace('.', ',')}`; } else { linhaCash.classList.add('hidden'); }
-            pontosUsados ? linhaPts.classList.remove('hidden') : linhaPts.classList.add('hidden');
+            const usarCashbackCB = document.getElementById('check-usar-cashback');
+            const valorCashbackUsado = (usarCashbackCB && usarCashbackCB.checked && clienteSelecionado) ? clienteSelecionado.cashback : 0.0;
 
-            let totalFinal = subtotal - cashbackUsado;
-            document.getElementById('pdv-total-final').innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
-        }
-
-        async function finalizarVendaPDV() {
-            if(carrinhoPDV.length === 0) return alert("Carrinho vazio! Adicione lanches primeiro.");
-            let telefone = document.getElementById('pdv-tel').value.replace(/\D/g, '') || "BALCAO";
-            let nome = document.getElementById('pdv-nome').value || "Consumidor Final";
-            let formaPag = document.getElementById('pdv-forma-pag').value;
-            let usarCashback = 0; let usarPontos = false;
-
-            if(dadosClienteVip) {
-                usarCashback = parseFloat(document.getElementById('pdv-usar-cash').value) || 0;
-                usarPontos = document.getElementById('pdv-usar-pontos').checked;
-            }
-
+            const nomeCli = document.getElementById('pdv-nome').value || "Avulso";
+            
             const payload = {
-                nome_cliente: nome, telefone_cliente: telefone, forma_pagamento: formaPag,
-                itens: carrinhoPDV.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao })),
-                usar_saldo_cashback: usarCashback, usar_pontos: usarPontos
+                nome_cliente: nomeCli,
+                telefone_cliente: document.getElementById('pdv-telefone').value.replace(/\D/g, '') || "BALCAO",
+                forma_pagamento: formaPgto,
+                usar_saldo_cashback: valorCashbackUsado,
+                usar_pontos: false,
+                itens: carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao }))
             };
 
-            const btn = document.getElementById('btn-finalizar-pdv');
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin mr-2"></i> Emitindo...'; btn.disabled = true;
-
             try {
-                const res = await fetch('/api/pedidos/pdv', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const res = await fetch('/api/pedidos/pdv', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 const data = await res.json();
                 
                 if(res.ok) {
-                    // IMPRIME AUTOMATICAMENTE E LIMPA A TELA!
-                    imprimirCupom(data.pedido_id);
-                    carrinhoPDV = []; dadosClienteVip = null;
-                    document.getElementById('pdv-tel').value = ""; document.getElementById('pdv-nome').value = "";
-                    document.getElementById('pdv-nome').classList.add('hidden'); document.getElementById('painel-fidelidade').classList.add('hidden');
-                    document.getElementById('pdv-usar-cash').value = 0; document.getElementById('pdv-usar-pontos').checked = false;
-                    renderizarCarrinhoPDV();
-                } else { alert(`Erro: ${data.detail}`); }
-            } catch(e) { alert("Falha ao comunicar com o servidor."); } 
-            finally { btn.innerHTML = '<i class="ph-fill ph-check-circle mr-2 text-2xl"></i> Concluir Venda'; btn.disabled = false; }
-        }
+                    // PREPARA O ESPELHO DA IMPRESSORA
+                    document.getElementById('sucesso-senha').innerText = data.senha_diaria;
+                    document.getElementById('print-senha-ticket').innerText = data.senha_diaria;
+                    
+                    const dataAtual = new Date();
+                    document.getElementById('print-data').innerText = dataAtual.toLocaleDateString('pt-BR') + ' ' + dataAtual.toLocaleTimeString('pt-BR');
+                    document.getElementById('print-cliente').innerText = nomeCli;
+                    document.getElementById('print-pagamento').innerText = document.getElementById('pdv-pagamento').options[document.getElementById('pdv-pagamento').selectedIndex].text;
+                    
+                    // Renderiza os itens no layout da bobina
+                    document.getElementById('print-itens').innerHTML = carrinho.map(i => `
+                        <tr>
+                            <td style="padding: 3px 0; font-size: 11px;">
+                                <strong>${i.quantidade}x ${i.nome}</strong><br>
+                                <span style="font-size: 9px; color: #555;">${i.observacao ? i.observacao : ''}</span>
+                            </td>
+                            <td style="text-align: right; vertical-align: top; padding: 3px 0; font-size: 11px;">
+                                R$ ${(i.preco * i.quantidade).toFixed(2).replace('.',',')}
+                            </td>
+                        </tr>
+                    `).join('');
+                    
+                    document.getElementById('print-total').innerText = document.getElementById('carrinho-total').innerText;
 
-        // ==========================
-        // GESTÃO DE PEDIDOS (ABA 2)
-        // ==========================
-        async function carregarListaPedidosPDV() {
-            const tbody = document.getElementById('lista-pedidos-pdv');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-slate-400"><i class="ph ph-spinner animate-spin text-2xl mb-2 block"></i> Buscando...</td></tr>';
-            
-            try {
-                // Reaproveitamos a rota de logística que já traz os pedidos recentes
-                const res = await fetch('/api/logistica/pedidos');
-                const data = await res.json();
-                
-                // Junta os prontos e em rota (Você pode adaptar para buscar todos depois)
-                const todos = [...data.prontos, ...data.em_rota].slice(0, 15); // Mostra os 15 mais recentes
-
-                if(todos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-slate-400 font-medium">Nenhum pedido processado ainda.</td></tr>';
-                    return;
+                    // ABRE O MODAL DE SUCESSO E IMPRESSÃO
+                    document.getElementById('modal-sucesso').classList.replace('hidden', 'flex');
+                } else {
+                    alert("Atenção: " + data.detail);
                 }
-
-                tbody.innerHTML = todos.map(p => {
-                    const badgeCor = p.status === 'PRONTO' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700';
-                    return `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
-                        <td class="py-4 px-6 font-black text-slate-800">#${p.id}</td>
-                        <td class="py-4 px-6 font-semibold text-slate-600">${p.cliente}</td>
-                        <td class="py-4 px-6"><span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${p.tipo}</span></td>
-                        <td class="py-4 px-6 font-black text-brand-500">...</td>
-                        <td class="py-4 px-6"><span class="px-2 py-1 rounded text-xs font-bold ${badgeCor}">${p.status.replace(/_/g, ' ')}</span></td>
-                        <td class="py-4 px-6 text-center space-x-3">
-                            <button onclick="imprimirCupom(${p.id})" class="text-slate-500 hover:text-brand-500 bg-slate-100 p-2 rounded-lg transition-colors border border-slate-200" title="Imprimir Comanda">
-                                <i class="ph-fill ph-printer text-xl"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `}).join('');
-            } catch(e) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-red-500 font-bold">Erro ao buscar banco de dados.</td></tr>';
-            }
+            } catch(e) { alert("Falha de Comunicação."); }
+            
+            btn.innerHTML = 'Confirmar Pagamento <i class="ph-bold ph-check-circle ml-2 text-lg"></i>';
+            btn.disabled = false;
         }
 
-        // ==========================
-        // MOTOR DE IMPRESSÃO TÉRMICA (BOBINA 58mm/80mm)
-        // ==========================
-        async function imprimirCupom(pedidoId) {
-            try {
-                const res = await fetch(`/api/pedidos/${pedidoId}/recibo`);
-                const dados = await res.json();
-                if (!res.ok) { alert("Erro ao puxar dados: " + dados.detail); return; }
+        function novaVenda() {
+            carrinho = [];
+            document.getElementById('pdv-nome').value = '';
+            document.getElementById('pdv-telefone').value = '';
+            document.getElementById('box-cliente-info').classList.add('hidden');
+            clienteSelecionado = null;
+            atualizarCarrinhoUI();
+            atualizarMetodosPagamento();
+            document.getElementById('modal-sucesso').classList.replace('flex', 'hidden');
+        }
 
-                let itensHtml = dados.itens.map(i => `
-                    <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
-                        <span style="font-weight: bold;">${i.quantidade}x ${i.nome}</span>
-                        <span>R$ ${i.subtotal.toFixed(2).replace('.', ',')}</span>
-                    </div>
-                    ${i.observacao ? `<div style="font-size: 11px; margin-bottom: 6px; padding-left: 10px; text-transform: uppercase;">-> OBS: ${i.observacao}</div>` : ''}
-                `).join('');
-
-                const conteudoCupom = `
-                    <html>
-                    <head>
-                        <title>Comanda #${dados.id}</title>
-                        <style>
-                            @page { margin: 0; }
-                            body { font-family: 'Courier New', Courier, monospace; width: 75mm; margin: 0 auto; padding: 10px; color: #000; background: #fff; }
-                            .text-center { text-align: center; }
-                            .font-bold { font-weight: bold; }
-                            .text-lg { font-size: 20px; }
-                            .text-sm { font-size: 13px; }
-                            .divisor { border-bottom: 1px dashed #000; margin: 10px 0; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="text-center font-bold text-lg mb-2">ART'S BURGUER</div>
-                        <div class="text-center text-sm">Pedido #${dados.id}</div>
-                        <div class="text-center text-sm" style="margin-bottom: 10px;">${dados.data_hora}</div>
-                        
-                        <div class="divisor"></div>
-                        <div class="text-sm font-bold">Cliente: ${dados.cliente_nome}</div>
-                        <div class="text-sm font-bold">Tel: ${dados.cliente_telefone}</div>
-                        
-                        <div class="divisor"></div>
-                        <div class="text-sm font-bold text-center" style="font-size: 16px;">TIPO: ${dados.tipo}</div>
-                        ${dados.tipo === 'DELIVERY' ? `<div class="text-sm" style="margin-top: 5px; text-transform: uppercase;"><b>End:</b> ${dados.endereco}</div>` : ''}
-                        <div class="divisor"></div>
-                        
-                        <div class="font-bold text-center mb-2" style="font-size: 14px;">ITENS DO PEDIDO</div>
-                        ${itensHtml}
-                        
-                        <div class="divisor"></div>
-                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
-                            <span>TOTAL PAGO:</span>
-                            <span>R$ ${dados.total.toFixed(2).replace('.', ',')}</span>
-                        </div>
-                        <div class="text-sm mt-2" style="text-transform: uppercase;"><b>PAGAMENTO:</b> ${dados.forma_pagamento}</div>
-                        <div class="divisor"></div>
-                        
-                        <div class="text-center text-sm mt-4">Agradecemos a preferencia!</div>
-                        <div class="text-center text-sm mt-1" style="margin-bottom: 20px;">.</div>
-                    </body>
-                    </html>
-                `;
-
-                // Mecanismo fantasma para chamar a impressora do sistema operacional
-                const janelaImpressao = window.open('', '', 'width=400,height=600');
-                janelaImpressao.document.write(conteudoCupom);
-                janelaImpressao.document.close();
-                janelaImpressao.focus();
-                
-                setTimeout(() => {
-                    janelaImpressao.print();
-                    janelaImpressao.close();
-                }, 500);
-
-            } catch(e) { alert("Falha na comunicação com a impressora."); console.error(e); }
+        function emitirNotaFiscal() {
+            alert("Módulo NFC-e / SAT Sefaz em desenvolvimento pela franquia.\n(Requer integração com Certificado Digital A1).");
         }
     </script>
 </body>
