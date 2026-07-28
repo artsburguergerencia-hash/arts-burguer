@@ -545,15 +545,16 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
 @app.get("/api/pdv/cliente/{telefone}")
 def buscar_cliente_pdv(telefone: str, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == telefone).first()
-    if not cliente: 
-        raise HTTPException(status_code=404, detail="Cliente não encontrado")
     
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        
     return {
-        "nome": cliente.nome, 
-        "pontos": getattr(cliente, 'pontos_fidelidade', 0), 
-        "cashback": getattr(cliente, 'saldo_cashback', 0.0), 
+        "nome": cliente.nome,
+        "pontos": getattr(cliente, 'pontos_fidelidade', 0),
+        "cashback": getattr(cliente, 'saldo_cashback', 0.0),
         "bloqueado": getattr(cliente, 'bloqueado', False),
-        "permite_fiado": getattr(cliente, 'permite_fiado', False) # LIBERA O FIADO NO PDV
+        "permite_fiado": getattr(cliente, 'permite_fiado', False) 
     }
 
 
@@ -1815,6 +1816,18 @@ def atualizar_perfil_colaborador(func_id: int, dados: EditarPerfilColaborador, d
     db.commit()
     return {"status": "sucesso"}
 
+@app.put("/api/gestao/clientes/{cliente_id}/fiado")
+def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
+    cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    
+    if not cliente: 
+        raise HTTPException(status_code=404)
+        
+    cliente.permite_fiado = not getattr(cliente, 'permite_fiado', False)
+    db.commit()
+    
+    return {"status": "sucesso"}
+    
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
