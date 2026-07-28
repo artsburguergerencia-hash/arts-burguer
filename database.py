@@ -16,8 +16,8 @@ class ConfiguracaoLojaModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     nome_empresa = Column(String, default="Art's Burguer")
     cnpj = Column(String, default="")
-    inscricao_estadual = Column(String, default="") # NOVO
-    horario_funcionamento = Column(String, default="") # NOVO
+    inscricao_estadual = Column(String, default="")
+    horario_funcionamento = Column(String, default="")
     endereco = Column(String, default="")
     telefone = Column(String, default="")
     logo_url = Column(String, default="https://via.placeholder.com/150")
@@ -173,12 +173,12 @@ class ItemComplementoModel(Base):
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
 
-# 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL (Cura todos os erros) 🚨
+# 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL 🚨
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
-   colunas_novas = [
+    colunas_novas = [
         "ALTER TABLE configuracoes_loja ADD COLUMN inscricao_estadual VARCHAR DEFAULT '';",
         "ALTER TABLE configuracoes_loja ADD COLUMN horario_funcionamento VARCHAR DEFAULT '';",
         "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
@@ -223,18 +223,22 @@ def inicializar_banco():
         "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
         "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto,Gympass';",
         "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';",
-        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;" 
+        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;"
     ]
     
     for sql in colunas_novas:
-        try: db.execute(text(sql)); db.commit()
-        except Exception: db.rollback() 
+        try: 
+            db.execute(text(sql))
+            db.commit()
+        except Exception: 
+            db.rollback() 
 
     try:
         cargo_admin = db.query(Cargo).filter(Cargo.permissoes == "total").first()
         if not cargo_admin:
             cargo_admin = Cargo(nome="Administrador", permissoes="total")
-            db.add(cargo_admin); db.flush() 
+            db.add(cargo_admin)
+            db.flush() 
 
         if not db.query(FuncionarioModel).first():
             from passlib.context import CryptContext
@@ -244,17 +248,22 @@ def inicializar_banco():
             config = ConfiguracaoLojaModel()
             db.add(config)
             db.commit()
-    except Exception as e: db.rollback()
-    db.close()
+    except Exception: 
+        db.rollback()
+    finally:
+        db.close()
 
 def cadastrar_insumo(db, nome, unidade, qtd_inicial, qtd_min, custo):
     novo = InsumoModel(nome=nome, unidade_medida=unidade, quantidade_atual=qtd_inicial, quantidade_minima=qtd_min, custo_unitario=custo)
-    db.add(novo); db.commit(); db.refresh(novo)
+    db.add(novo)
+    db.commit()
+    db.refresh(novo)
     return novo
 
 def processar_baixa_estoque(db, produto_id, quantidade_vendida):
     fichas = db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).all()
     for f in fichas:
         insumo = db.query(InsumoModel).filter(InsumoModel.id == f.insumo_id).first()
-        if insumo: insumo.quantidade_atual -= (f.quantidade_necessaria * quantidade_vendida)
+        if insumo: 
+            insumo.quantidade_atual -= (f.quantidade_necessaria * quantidade_vendida)
     db.commit()
