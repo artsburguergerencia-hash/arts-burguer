@@ -33,6 +33,7 @@ class StatusPedido(str, enum.Enum):
 class ClienteModel(Base):
     """Cadastro unificado de clientes do Art's Burguer."""
     __tablename__ = "clientes"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, nullable=False)
@@ -51,10 +52,10 @@ class ClienteModel(Base):
     pontos_fidelidade = Column(Integer, default=0)
     saldo_cashback = Column(Float, default=0.0)
     bloqueado = Column(Boolean, default=False)
+    permite_fiado = Column(Boolean, default=False) # 👈 NOVA REGRA ANTI-FIADO
     
     pedidos = relationship("PedidoModel", back_populates="cliente")
-    
-    
+        
     # Relacionamento: Um cliente pode ter vários pedidos
     pedidos = relationship("PedidoModel", back_populates="cliente")
 
