@@ -1,261 +1,279 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Art's Burguer | Menu Digital</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Cardápio Digital | Art's Burguer</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
-    </script>
+    
+    <!-- SDK DO MERCADO PAGO MANTIDO -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    
     <style>
-        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .modal-up { animation: slideUp 0.3s ease-out forwards; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .glass { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .modal-enter { animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalSlideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
-    <!-- SDK DO MERCADO PAGO -->
-    <script src="https://sdk.mercadopago.com/js/v2"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans pb-24">
+<body class="pb-24 overflow-x-hidden selection:bg-brand-500 selection:text-white">
 
-    <!-- CABEÇALHO E LOGIN -->
-    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
-        <div class="px-4 py-3 flex justify-between items-center max-w-2xl mx-auto">
-            <div class="flex items-center space-x-2">
-                <i class="ph-fill ph-hamburger text-brand-500 text-2xl"></i>
-                <h1 class="font-bold text-lg tracking-tight">Art's Burguer</h1>
+    <!-- CABEÇALHO DA LOJA -->
+    <header class="glass fixed top-0 w-full z-30 transition-all duration-300">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-brand-500 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-500/40 border-2 border-slate-800">A</div>
+                <div>
+                    <h1 class="font-black text-lg tracking-tight text-white leading-none">Art's Burguer</h1>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-400 mt-1 flex items-center">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Aberto agora
+                    </p>
+                </div>
             </div>
             
-            <div id="area-auth">
-                <button onclick="abrirModalAuth()" class="text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full font-medium transition-colors flex items-center">
-                    <i class="ph ph-user mr-2"></i> Entrar
+            <div id="area-auth" class="flex items-center space-x-4">
+                <button onclick="abrirModalAuth()" class="text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full font-bold transition-colors flex items-center text-white">
+                    <i class="ph-bold ph-user mr-2"></i> Entrar
                 </button>
             </div>
         </div>
 
-        <div id="barra-fidelidade" class="hidden bg-slate-800 px-4 py-2 text-sm border-t border-slate-700">
+        <div id="barra-fidelidade" class="hidden bg-slate-800/80 px-4 py-2 text-xs border-t border-slate-700/50 backdrop-blur-md">
             <div class="max-w-2xl mx-auto flex justify-between items-center">
-                <span class="text-amber-400 font-bold flex items-center"><i class="ph-fill ph-star mr-1"></i> <span id="fid-pontos">0</span> pts</span>
-                <span class="text-green-400 font-bold flex items-center"><i class="ph-fill ph-money mr-1"></i> Cashback: R$ <span id="fid-cashback">0,00</span></span>
+                <span class="text-amber-400 font-black uppercase tracking-widest flex items-center"><i class="ph-fill ph-star mr-1 text-lg"></i> <span id="fid-pontos">0</span> pts</span>
+                <span class="text-emerald-400 font-black uppercase tracking-widest flex items-center"><i class="ph-fill ph-money mr-1 text-lg"></i> Cashback: R$ <span id="fid-cashback">0,00</span></span>
             </div>
         </div>
+
+        <!-- MENU DE CATEGORIAS SCROLLÁVEL -->
+        <nav class="max-w-2xl mx-auto px-4 py-3 overflow-x-auto no-scrollbar flex space-x-3 border-t border-slate-800" id="nav-categorias">
+            <div class="h-8 flex items-center text-slate-500 text-xs font-bold animate-pulse">Carregando cardápio...</div>
+        </nav>
     </header>
 
-    <nav class="bg-white shadow-sm z-20 py-3 px-4 overflow-x-auto no-scrollbar flex space-x-3 whitespace-nowrap border-b border-slate-100">
-        <a href="#categoria-Burger" class="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-semibold">🍔 Burgers</a>
-        <a href="#categoria-Porcao" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-full text-sm font-semibold border border-slate-200">🍟 Porções</a>
-        <a href="#categoria-Bebida" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-full text-sm font-semibold border border-slate-200">🥤 Bebidas</a>
-    </nav>
-
-    <!-- LISTA DE PRODUTOS -->
-    <main class="p-4 max-w-2xl mx-auto space-y-8" id="container-cardapio">
-        <div class="text-center py-10">
-            <i class="ph ph-spinner animate-spin text-4xl text-brand-500 mb-3"></i>
-            <p class="text-slate-500 font-medium">A carregar as delícias...</p>
-        </div>
-    </main>
-
-    <!-- BOTÃO FLUTUANTE CARRINHO -->
-    <div id="barra-carrinho" class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-10px_20px_-15px_rgba(0,0,0,0.1)] transition-transform duration-300 transform translate-y-full z-30">
-        <div class="max-w-2xl mx-auto">
-            <button onclick="abrirCarrinho()" class="w-full bg-brand-500 text-white rounded-xl p-4 flex justify-between items-center shadow-lg active:scale-95 transition-transform">
-                <div class="flex items-center">
-                    <div class="bg-white/20 px-3 py-1 rounded-lg mr-3 font-bold" id="carrinho-qtd">0</div>
-                    <span class="font-semibold">Ver Carrinho</span>
-                </div>
-                <span class="font-bold text-lg" id="carrinho-total-flutuante">R$ 0,00</span>
-            </button>
+    <!-- BANNER DE DESTAQUE -->
+    <div class="mt-32 md:mt-36 max-w-2xl mx-auto px-4 mb-6">
+        <div class="bg-gradient-to-r from-brand-600 to-brand-500 rounded-2xl p-6 relative overflow-hidden shadow-xl shadow-brand-500/20">
+            <i class="ph-fill ph-hamburger absolute -right-4 -bottom-4 text-[120px] text-white opacity-20 transform -rotate-12"></i>
+            <div class="relative z-10">
+                <span class="bg-white/20 text-white px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest backdrop-blur-sm">Novidade</span>
+                <h2 class="text-2xl font-black text-white mt-2 mb-1 leading-tight tracking-tight">O Melhor Burger<br>da Cidade.</h2>
+                <p class="text-white/80 text-xs font-medium">Faça seu pedido agora sem filas.</p>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL DO PRODUTO E EXTRAS -->
-    <div id="modal-produto" class="fixed inset-0 bg-slate-900/50 z-40 hidden flex items-end justify-center backdrop-blur-sm">
-        <div class="bg-white w-full max-w-2xl rounded-t-3xl max-h-[90vh] flex flex-col modal-up overflow-hidden">
-            <div class="relative h-48 bg-slate-200 shrink-0">
-                <img id="modal-prod-img" src="" class="w-full h-full object-cover hidden">
-                <button onclick="fecharModalProduto()" class="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 backdrop-blur-md">
-                    <i class="ph ph-x text-lg"></i>
-                </button>
+    <!-- GRADE DE PRODUTOS -->
+    <main class="max-w-2xl mx-auto px-4 space-y-8" id="lista-produtos"></main>
+
+    <!-- BOTÃO FLUTUANTE DE CARRINHO -->
+    <div id="barra-carrinho" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-30 transition-transform duration-300 translate-y-32">
+        <button onclick="abrirCarrinho()" class="w-full bg-brand-500 text-white p-4 rounded-2xl shadow-[0_10px_40px_rgba(255,71,87,0.4)] flex items-center justify-between active:scale-95 transition-all">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm" id="carrinho-qtd">1</div>
+                <span class="font-bold text-sm uppercase tracking-widest">Ver Sacola</span>
             </div>
-            <div class="p-5 overflow-y-auto no-scrollbar flex-1 bg-slate-50">
-                <h2 id="modal-prod-nome" class="text-2xl font-black text-slate-800 leading-tight mb-1">Nome</h2>
-                <p id="modal-prod-desc" class="text-sm text-slate-500 mb-4">Descrição do produto vai aqui.</p>
-                <div class="text-xl font-bold text-brand-500 mb-6">R$ <span id="modal-prod-preco">0,00</span></div>
-                
+            <span class="font-black text-lg" id="carrinho-total-flutuante">R$ 0,00</span>
+        </button>
+    </div>
+
+    <!-- MODAL DO PRODUTO (EXTRAS E COMPLEMENTOS) -->
+    <div id="modal-produto" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden flex-col justify-end">
+        <div class="bg-slate-900 w-full max-w-2xl mx-auto rounded-t-3xl h-[85vh] flex flex-col relative modal-enter">
+            <button onclick="fecharModalProduto()" class="absolute right-4 top-4 w-8 h-8 bg-slate-800 text-slate-400 rounded-full flex items-center justify-center z-10 hover:text-white transition-colors"><i class="ph-bold ph-x"></i></button>
+            <div id="modal-img-container" class="h-48 shrink-0 bg-slate-800 relative w-full overflow-hidden rounded-t-3xl"></div>
+            
+            <div class="flex-1 overflow-y-auto p-5 no-scrollbar pb-32">
+                <h2 id="modal-prod-nome" class="text-2xl font-black text-white tracking-tight mb-1">Nome</h2>
+                <p id="modal-prod-desc" class="text-sm text-slate-400 leading-relaxed mb-4">Descrição</p>
+                <div class="inline-block bg-brand-500/10 border border-brand-500/20 text-brand-400 px-3 py-1.5 rounded-lg font-black text-lg mb-6">R$ <span id="modal-prod-preco">0,00</span></div>
+
                 <div id="area-complementos" class="space-y-6"></div>
-                
-                <div class="mt-6 pt-4 border-t border-slate-200">
-                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Alguma observação?</label>
-                    <textarea id="modal-prod-obs" rows="2" placeholder="Tirar cebola, ponto da carne..." class="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none resize-none"></textarea>
+
+                <div class="mt-6">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Observações (Opcional)</label>
+                    <textarea id="modal-prod-obs" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition-colors" placeholder="Ex: Tirar cebola..."></textarea>
                 </div>
             </div>
-            <div class="p-4 bg-white border-t border-slate-200 shadow-md">
-                <button onclick="confirmarAdicaoProduto()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg flex justify-center items-center active:scale-95 transition-transform">
-                    Adicionar <span class="mx-2">•</span> R$ <span id="modal-prod-total-btn">0,00</span>
+
+            <div class="absolute bottom-0 w-full bg-slate-900 border-t border-slate-800 p-4">
+                <button onclick="confirmarAdicaoProduto()" class="w-full bg-brand-500 text-white font-black py-4 rounded-xl shadow-[0_10px_30px_rgba(255,71,87,0.3)] flex justify-between px-6 active:scale-95 transition-transform">
+                    <span class="uppercase tracking-widest text-xs mt-0.5">Adicionar à Sacola</span>
+                    <span>R$ <span id="modal-prod-total-btn">0,00</span></span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL LOGIN/CADASTRO -->
-    <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative modal-up">
-            <button onclick="fecharModalAuth()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
+    <!-- MODAL LOGIN / CADASTRO -->
+    <div id="modal-auth" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl relative modal-enter border border-slate-800">
+            <button onclick="fecharModalAuth()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="ph-bold ph-x text-xl"></i></button>
             
-            <div class="flex border-b border-slate-100 mb-6 mt-2">
-                <button onclick="alternarAbaAuth('login')" id="aba-login" class="flex-1 pb-3 text-brand-500 font-bold border-b-2 border-brand-500">Entrar</button>
-                <button onclick="alternarAbaAuth('cadastro')" id="aba-cadastro" class="flex-1 pb-3 text-slate-400 font-semibold border-b-2 border-transparent">Criar Conta</button>
+            <div class="flex border-b border-slate-800 mb-6 mt-2">
+                <button onclick="alternarAbaAuth('login')" id="aba-login" class="flex-1 pb-3 text-brand-500 font-black tracking-widest uppercase text-xs border-b-2 border-brand-500 transition-colors">Entrar</button>
+                <button onclick="alternarAbaAuth('cadastro')" id="aba-cadastro" class="flex-1 pb-3 text-slate-500 font-bold tracking-widest uppercase text-xs border-b-2 border-transparent transition-colors">Criar Conta</button>
             </div>
 
+            <!-- FORM LOGIN -->
             <form id="form-login" onsubmit="fazerLogin(event)" class="space-y-4">
-                <input type="tel" id="log-tel" placeholder="Seu Telefone (Apenas números)" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
-                <input type="password" id="log-senha" placeholder="Sua Senha" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
-                <button type="submit" class="w-full bg-brand-500 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95">Acessar Cardápio</button>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Telefone</label>
+                    <input type="tel" id="log-tel" placeholder="(00) 00000-0000" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3.5 text-sm text-white font-bold outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Senha</label>
+                    <input type="password" id="log-senha" placeholder="••••••••" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3.5 text-sm text-white font-bold outline-none focus:border-brand-500">
+                </div>
+                <button type="submit" class="w-full bg-brand-500 text-white font-black uppercase tracking-widest text-xs py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-2">Acessar Conta</button>
             </form>
 
-            <form id="form-cadastro" onsubmit="fazerCadastro(event)" class="space-y-4 hidden h-[60vh] overflow-y-auto no-scrollbar px-1">
-                <input type="text" id="cad-nome" placeholder="Nome Completo" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
-                <input type="tel" id="cad-tel" placeholder="Telefone / WhatsApp" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
-                <input type="password" id="cad-senha" placeholder="Crie uma Senha" required class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+            <!-- FORM CADASTRO -->
+            <form id="form-cadastro" onsubmit="fazerCadastro(event)" class="space-y-4 hidden h-[60vh] overflow-y-auto no-scrollbar px-1 pb-4">
+                <input type="text" id="cad-nome" placeholder="Nome Completo" required class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
+                <input type="tel" id="cad-tel" placeholder="WhatsApp (Apenas números)" required class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
+                <input type="password" id="cad-senha" placeholder="Crie uma Senha" required class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="text" id="cad-cpf" placeholder="CPF (Opcional)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
-                    <input type="text" id="cad-nasc" placeholder="Aniversário (DD/MM)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                    <input type="text" id="cad-cpf" placeholder="CPF (Opcional)" class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
+                    <input type="text" id="cad-nasc" placeholder="Nasc (DD/MM)" class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
                 </div>
-                <h3 class="text-xs font-bold text-slate-400 uppercase pt-2">Endereço de Entrega</h3>
-                <input type="text" id="cad-cep" placeholder="CEP" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-2">Endereço de Entrega</h3>
+                <input type="text" id="cad-cep" placeholder="CEP (Auto-busca)" class="w-full px-4 py-3 bg-slate-800 text-brand-400 font-bold border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
                 <div class="grid grid-cols-3 gap-3">
-                    <input type="text" id="cad-rua" placeholder="Rua" class="col-span-2 w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
-                    <input type="text" id="cad-num" placeholder="Nº" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
+                    <input type="text" id="cad-rua" placeholder="Rua" class="col-span-2 w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
+                    <input type="text" id="cad-num" placeholder="Nº" class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
                 </div>
-                <input type="text" id="cad-bairro" placeholder="Bairro" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500">
-                <input type="text" id="cad-comp" placeholder="Complemento (Ex: Casa 2)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 mb-2">
-                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95">Finalizar Cadastro</button>
+                <input type="text" id="cad-bairro" placeholder="Bairro" class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
+                <input type="text" id="cad-comp" placeholder="Complemento (Ex: Casa 2)" class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
+                
+                <button type="submit" class="w-full bg-slate-100 text-slate-900 font-black uppercase tracking-widest text-xs py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-4">Finalizar Cadastro</button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DO CARRINHO FINAL (COM DADOS DO CLIENTE CONSERTADO) -->
-    <div id="modal-carrinho" class="fixed inset-0 bg-slate-900/50 z-40 hidden flex items-end justify-center backdrop-blur-sm">
-        <div class="bg-white w-full max-w-2xl rounded-t-3xl h-[85vh] flex flex-col modal-up">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100">
-                <h2 class="text-xl font-bold text-slate-800"><i class="ph-fill ph-shopping-bag text-brand-500 mr-2"></i> Seu Pedido</h2>
-                <button onclick="fecharCarrinho()" class="bg-slate-100 p-2 rounded-full hover:bg-slate-200"><i class="ph ph-x"></i></button>
-            </div>
+    <!-- MODAL DO PERFIL VIP (LOGADO) -->
+    <div id="modal-perfil" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-end">
+        <div class="bg-slate-900 w-full max-w-md mx-auto rounded-t-3xl h-[85vh] flex flex-col relative modal-enter border-t border-slate-800">
+            <button onclick="fecharModalPerfil()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="ph-bold ph-x text-xl"></i></button>
             
-            <div class="flex-1 overflow-y-auto p-5 bg-slate-50">
-                <div id="lista-carrinho-modal" class="space-y-4 mb-6"></div>
-                
-                <!-- ÁREA DE DADOS DO CLIENTE E ENTREGA -->
-                <div id="area-dados-cliente" class="space-y-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-4">
-                    <h3 class="text-sm font-bold text-slate-700 border-b border-slate-100 pb-2 mb-3"><i class="ph-fill ph-map-pin mr-1 text-brand-500"></i> Dados de Entrega e Cobrança</h3>
-
-                    <!-- FORMULÁRIO PARA QUEM NÃO FEZ LOGIN -->
-                    <div id="area-guest" class="space-y-3">
-                        <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mb-2">
-                            <p class="text-[11px] text-amber-700 font-semibold"><i class="ph-fill ph-star text-amber-500"></i> Dica: Faça login para ganhar Pontos e Cashback nesta compra!</p>
-                        </div>
-                        <input type="text" id="guest-nome" placeholder="Seu Nome Completo" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 text-sm">
-                        <input type="tel" id="guest-tel" placeholder="WhatsApp (DDD + Número)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 text-sm">
-                        <textarea id="guest-end" rows="2" placeholder="Rua, Número, Bairro e Complemento..." class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 resize-none text-sm"></textarea>
-                        <div class="pt-1">
-                            <input type="text" id="guest-cpf" placeholder="CPF (Obrigatório para Pix/Cartão)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 text-sm" maxlength="14">
-                        </div>
-                    </div>
-
-                    <!-- RESUMO PARA QUEM JÁ FEZ LOGIN -->
-                    <div id="area-logado" class="hidden space-y-3">
-                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <p class="text-sm font-bold text-slate-800" id="logado-nome-resumo">Nome do Cliente</p>
-                            <p class="text-xs text-slate-500 mt-1 leading-relaxed" id="logado-end-resumo">Endereço Completo</p>
-                        </div>
-                        <div class="pt-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Confirme seu CPF para o Pagamento</label>
-                            <input type="text" id="logado-cpf" placeholder="Digite seu CPF (Apenas números)" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 text-sm" maxlength="14">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-5 bg-white border-t border-slate-200 shadow-[0_-10px_20px_-15px_rgba(0,0,0,0.05)]">
-                <div class="mb-4">
-                    <label class="text-xs font-bold text-slate-500 uppercase">Forma de Pagamento</label>
-                    <select id="forma-pag-online" onchange="toggleAreaCartao()" class="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 outline-none font-semibold text-slate-700">
-                        <option value="pix">⚡ Pix (Aprovação Imediata)</option>
-                        <option value="credito">💳 Cartão de Crédito / VR</option>
-                        <option value="entrega">💵 Pagar na Entrega</option>
-                    </select>
-                </div>
-
-                <!-- ÁREA DO CARTÃO (Inicia Escondida) -->
-                <div id="area-cartao" class="hidden mb-4 p-4 border border-slate-200 rounded-xl bg-slate-50 space-y-3 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
-                    <h3 class="text-sm font-bold text-slate-700 mb-2 flex items-center"><i class="ph-fill ph-credit-card mr-2 text-brand-500"></i> Dados do Cartão</h3>
-                    
-                    <input type="text" id="cc-num" placeholder="Número do Cartão" class="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500" maxlength="19">
-                    <input type="text" id="cc-nome" placeholder="Nome Impresso" class="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 uppercase">
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="cc-val" placeholder="Validade (MM/AA)" class="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500" maxlength="5">
-                        <input type="tel" id="cc-cvv" placeholder="CVV" class="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500" maxlength="4">
-                    </div>
-                    
-                    <select id="cc-parcelas" class="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold text-slate-700">
-                        <option value="1">1x sem juros</option>
-                    </select>
-                </div>
-                <button onclick="finalizarPedidoOnline()" id="btn-finalizar-online" class="w-full bg-green-500 text-white font-bold py-4 rounded-xl flex justify-center items-center text-lg active:scale-95 transition-transform">
-                    Confirmar Pedido <span class="mx-2">•</span> <span id="carrinho-total-final">R$ 0,00</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DO PERFIL VIP -->
-    <div id="modal-perfil" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl relative modal-up flex flex-col max-h-[85vh]">
-            <div class="bg-slate-900 p-6 text-white shrink-0">
-                <button onclick="fecharModalPerfil()" class="absolute top-4 right-4 text-white/50 hover:text-white"><i class="ph ph-x text-xl"></i></button>
-                <div class="flex items-center mb-4">
-                    <img id="vip-foto" src="" class="w-14 h-14 rounded-full border-2 border-brand-500 mr-4">
+            <div class="p-6 border-b border-slate-800">
+                <div class="flex items-center mb-6">
+                    <img id="vip-foto" src="" class="w-16 h-16 rounded-full border-2 border-brand-500 mr-4 shadow-lg shadow-brand-500/20">
                     <div>
-                        <h2 id="vip-nome" class="text-xl font-black tracking-tight">Nome</h2>
+                        <h2 id="vip-nome" class="text-xl font-black text-white tracking-tight">Nome</h2>
                         <p id="vip-tel" class="text-sm text-slate-400">Telefone</p>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white/10 rounded-xl p-3 border border-white/10">
-                        <p class="text-xs text-amber-400 font-bold uppercase mb-1"><i class="ph-fill ph-star"></i> Pontos</p>
-                        <p id="vip-pontos" class="text-2xl font-black">0</p>
+                    <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+                        <p class="text-[10px] text-amber-400 font-bold uppercase tracking-widest mb-1"><i class="ph-fill ph-star text-base"></i> Pontos</p>
+                        <p id="vip-pontos" class="text-3xl font-black text-white">0</p>
                     </div>
-                    <div class="bg-white/10 rounded-xl p-3 border border-white/10">
-                        <p class="text-xs text-green-400 font-bold uppercase mb-1"><i class="ph-fill ph-money"></i> Cashback</p>
-                        <p id="vip-cashback" class="text-2xl font-black">R$ 0,00</p>
+                    <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+                        <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1"><i class="ph-fill ph-money text-base"></i> Cashback</p>
+                        <p id="vip-cashback" class="text-3xl font-black text-white">R$ 0,00</p>
                     </div>
                 </div>
             </div>
             
-            <div class="p-5 flex-1 overflow-y-auto bg-slate-50 no-scrollbar">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4"><i class="ph-fill ph-clock-counter-clockwise mr-1"></i> Últimos Pedidos</h3>
-                <div id="lista-historico" class="space-y-3"></div>
+            <div class="flex-1 overflow-y-auto p-6 bg-slate-900 no-scrollbar">
+                <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center"><i class="ph-bold ph-clock-counter-clockwise mr-2 text-lg"></i> Últimos Pedidos</h3>
+                <div id="lista-historico" class="space-y-4"></div>
             </div>
             
-            <div class="p-4 bg-white border-t border-slate-100 shrink-0">
-                <button onclick="fazerLogout()" class="w-full py-3 text-red-500 font-bold bg-red-50 rounded-xl hover:bg-red-100 transition-colors active:scale-95">
-                    <i class="ph ph-sign-out mr-2"></i> Sair da minha conta
+            <div class="p-6 bg-slate-900 border-t border-slate-800 shrink-0">
+                <button onclick="fazerLogout()" class="w-full py-4 text-red-400 font-black uppercase tracking-widest text-xs bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-colors active:scale-95">
+                    <i class="ph-bold ph-sign-out mr-2 text-lg"></i> Sair da conta
                 </button>
             </div>
         </div>
     </div>
-        
+
+    <!-- MODAL DO CARRINHO FINAL (CHECKOUT) -->
+    <div id="modal-carrinho" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden flex-col justify-end">
+        <div class="bg-slate-900 w-full max-w-2xl mx-auto rounded-t-3xl h-[90vh] flex flex-col relative modal-enter">
+            <div class="flex justify-between items-center p-5 border-b border-slate-800 shrink-0">
+                <h2 class="text-xl font-black text-white"><i class="ph-fill ph-shopping-bag text-brand-500 mr-2"></i> Sua Sacola</h2>
+                <button onclick="fecharCarrinho()" class="bg-slate-800 text-slate-400 p-2 rounded-full hover:text-white transition-colors"><i class="ph-bold ph-x"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-5 no-scrollbar pb-32">
+                <div id="lista-carrinho-modal" class="space-y-4 mb-6"></div>
+                
+                <div class="space-y-4 pt-4 border-t border-slate-800">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center"><i class="ph-fill ph-map-pin mr-2 text-brand-500 text-lg"></i> Entrega e Cobrança</h3>
+
+                    <!-- FORM GUEST -->
+                    <div id="area-guest" class="space-y-3 bg-slate-800 border border-slate-700 p-4 rounded-2xl">
+                        <div class="bg-brand-500/10 p-3 rounded-xl border border-brand-500/20 mb-4">
+                            <p class="text-[11px] text-brand-400 font-bold leading-snug"><i class="ph-fill ph-star"></i> Faça login (Feche a sacola e vá em "Entrar") para ganhar Pontos nesta compra!</p>
+                        </div>
+                        <input type="text" id="guest-nome" placeholder="Seu Nome Completo" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 text-sm">
+                        <input type="tel" id="guest-tel" placeholder="WhatsApp (Apenas números)" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 text-sm">
+                        <textarea id="guest-end" rows="2" placeholder="Endereço Completo (Rua, Bairro, Nº)" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 resize-none text-sm"></textarea>
+                        <input type="text" id="guest-cpf" placeholder="CPF (Obrigatório para Pix/Cartão)" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 text-sm" maxlength="14">
+                    </div>
+
+                    <!-- RESUMO LOGADO -->
+                    <div id="area-logado" class="hidden space-y-3">
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl">
+                            <p class="text-sm font-black text-white" id="logado-nome-resumo">Nome</p>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed" id="logado-end-resumo">Endereço</p>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Confirme seu CPF para Pagamento</label>
+                            <input type="text" id="logado-cpf" placeholder="Apenas números" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 text-sm" maxlength="14">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGAMENTO -->
+                <div class="mt-8 pt-6 border-t border-slate-800">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3">Forma de Pagamento</label>
+                    <select id="forma-pag-online" onchange="toggleAreaCartao()" class="w-full px-4 py-4 bg-slate-800 border border-slate-700 rounded-xl outline-none font-bold text-white mb-4 appearance-none shadow-sm">
+                        <option value="pix">⚡ Pix (Aprovação Imediata)</option>
+                        <option value="credito">💳 Cartão de Crédito</option>
+                        <option value="entrega">💵 Pagar na Entrega</option>
+                    </select>
+
+                    <div id="area-cartao" class="hidden bg-slate-800 border border-slate-700 rounded-2xl p-4 space-y-3 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
+                        <h3 class="text-xs font-black text-white uppercase tracking-widest mb-3 flex items-center"><i class="ph-bold ph-credit-card mr-2 text-brand-500 text-lg"></i> Dados do Cartão</h3>
+                        <input type="text" id="cc-num" placeholder="Número do Cartão" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 text-sm" maxlength="19">
+                        <input type="text" id="cc-nome" placeholder="Nome Impresso" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 text-sm uppercase">
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="text" id="cc-val" placeholder="Validade (MM/AA)" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 text-sm" maxlength="5">
+                            <input type="tel" id="cc-cvv" placeholder="CVV" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 text-sm" maxlength="4">
+                        </div>
+                        <select id="cc-parcelas" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-brand-500 text-sm font-bold appearance-none">
+                            <option value="1">1x sem juros</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-0 w-full bg-slate-900 border-t border-slate-800 p-4">
+                <button onclick="finalizarPedidoOnline()" id="btn-finalizar-online" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl flex justify-between px-6 items-center shadow-[0_10px_30px_rgba(16,185,129,0.2)] active:scale-95 transition-transform uppercase tracking-widest text-xs">
+                    <span>Confirmar Pedido</span>
+                    <span id="carrinho-total-final" class="text-sm">R$ 0,00</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        tailwind.config = { theme: { extend: { colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
+
         let produtosServer = [];
         let carrinho = [];
         let clienteLogado = null;
         let produtoSendoMontado = null;
+        let complementosAtuais = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             verificarSessao();
@@ -263,7 +281,7 @@
         });
 
         // ==========================
-        // AUTOCOMPLETAR CEP (ViaCEP)
+        // VIACEP
         // ==========================
         document.getElementById('cad-cep').addEventListener('blur', async (e) => {
             let cep = e.target.value.replace(/\D/g, ''); 
@@ -285,7 +303,7 @@
         });
 
         // ==========================
-        // SISTEMA DE AUTH E CRM
+        // AUTH E PERFIL VIP
         // ==========================
         function verificarSessao() {
             const dados = localStorage.getItem('arts_cliente');
@@ -295,21 +313,19 @@
             if (dados) {
                 clienteLogado = JSON.parse(dados);
                 document.getElementById('area-auth').innerHTML = `
-                    <div class="flex items-center cursor-pointer hover:opacity-80 transition-opacity" onclick="abrirModalPerfil()">
-                        <div class="text-right mr-3">
-                            <p class="text-xs text-slate-400">Olá,</p>
-                            <p class="text-sm font-bold leading-none text-white">${clienteLogado.nome.split(' ')[0]}</p>
+                    <div class="flex items-center cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 py-1.5 px-2 rounded-full transition-colors" onclick="abrirModalPerfil()">
+                        <div class="text-right mr-3 hidden sm:block pl-2">
+                            <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">Cliente VIP</p>
+                            <p class="text-xs font-black leading-none text-white">${clienteLogado.nome.split(' ')[0]}</p>
                         </div>
-                        <img src="https://ui-avatars.com/api/?name=${clienteLogado.nome}&background=ff4757&color=fff" class="w-10 h-10 rounded-full border-2 border-slate-700">
+                        <img src="https://ui-avatars.com/api/?name=${clienteLogado.nome}&background=ff4757&color=fff" class="w-8 h-8 rounded-full border border-slate-600">
                     </div>
                 `;
                 document.getElementById('barra-fidelidade').classList.remove('hidden');
                 document.getElementById('fid-pontos').innerText = clienteLogado.pontos || 0;
-                
                 const cashbackVal = parseFloat(clienteLogado.cashback) || 0;
                 document.getElementById('fid-cashback').innerText = cashbackVal.toFixed(2).replace('.', ',');
                 
-                // Exibe Resumo e esconde Guest
                 if(areaGuest) areaGuest.classList.add('hidden');
                 if(areaLogado) {
                     areaLogado.classList.remove('hidden');
@@ -332,7 +348,7 @@
             document.getElementById('vip-cashback').innerText = "R$ " + cashbackVal.toFixed(2).replace('.', ',');
             
             const listaHistorico = document.getElementById('lista-historico');
-            listaHistorico.innerHTML = '<p class="text-center text-slate-400 text-sm py-4"><i class="ph ph-spinner animate-spin text-2xl"></i><br>Buscando histórico...</p>';
+            listaHistorico.innerHTML = '<p class="text-center text-slate-500 text-sm py-4"><i class="ph-bold ph-spinner animate-spin text-2xl"></i></p>';
             
             document.getElementById('modal-perfil').classList.remove('hidden');
             document.getElementById('modal-perfil').classList.add('flex');
@@ -348,33 +364,29 @@
                 
                 listaHistorico.innerHTML = historico.map(p => {
                     const statusCores = {
-                        "RECEBIDO": "bg-slate-100 text-slate-600",
-                        "EM_PREPARO": "bg-amber-100 text-amber-700",
-                        "PRONTO": "bg-blue-100 text-blue-700",
-                        "SAIU_PARA_ENTREGA": "bg-purple-100 text-purple-700",
-                        "ENTREGUE": "bg-green-100 text-green-700",
-                        "CANCELADO": "bg-red-100 text-red-700"
+                        "RECEBIDO": "bg-slate-800 text-slate-300 border-slate-700",
+                        "EM_PREPARO": "bg-amber-500/20 text-amber-400 border-amber-500/30",
+                        "PRONTO": "bg-blue-500/20 text-blue-400 border-blue-500/30",
+                        "SAIU_PARA_ENTREGA": "bg-purple-500/20 text-purple-400 border-purple-500/30",
+                        "ENTREGUE": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+                        "CANCELADO": "bg-red-500/20 text-red-400 border-red-500/30"
                     };
-                    const cor = statusCores[p.status] || "bg-slate-100 text-slate-600";
+                    const cor = statusCores[p.status] || "bg-slate-800 text-slate-400 border-slate-700";
                     return `
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="font-black text-slate-800">Pedido #${p.id}</span>
-                                <span class="text-[10px] font-bold px-2 py-1 rounded uppercase ${cor}">${p.status.replace(/_/g, ' ')}</span>
+                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="font-black text-white text-sm">Pedido #${p.id}</span>
+                                <span class="text-[9px] font-black tracking-widest px-2 py-1 border rounded uppercase ${cor}">${p.status.replace(/_/g, ' ')}</span>
                             </div>
-                            <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-2">${p.itens_resumo}</p>
-                            <p class="font-bold text-brand-500 text-sm">R$ ${p.total.toFixed(2).replace('.', ',')}</p>
+                            <p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-3 font-medium">${p.itens_resumo}</p>
+                            <p class="font-black text-brand-400 text-sm">R$ ${p.total.toFixed(2).replace('.', ',')}</p>
                         </div>
                     `;
                 }).join('');
             } catch(e) { listaHistorico.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Erro ao carregar histórico.</p>'; }
         }
 
-        function fecharModalPerfil() {
-            document.getElementById('modal-perfil').classList.add('hidden');
-            document.getElementById('modal-perfil').classList.remove('flex');
-        }
-
+        function fecharModalPerfil() { document.getElementById('modal-perfil').classList.add('hidden'); document.getElementById('modal-perfil').classList.remove('flex'); }
         function fazerLogout() { localStorage.removeItem('arts_cliente'); window.location.reload(); }
 
         function abrirModalAuth() { document.getElementById('modal-auth').classList.remove('hidden'); document.getElementById('modal-auth').classList.add('flex'); }
@@ -385,8 +397,8 @@
             document.getElementById('form-login').classList.toggle('hidden', !isLogin);
             document.getElementById('form-cadastro').classList.toggle('hidden', isLogin);
             
-            document.getElementById('aba-login').className = isLogin ? "flex-1 pb-3 text-brand-500 font-bold border-b-2 border-brand-500" : "flex-1 pb-3 text-slate-400 font-semibold border-b-2 border-transparent";
-            document.getElementById('aba-cadastro').className = !isLogin ? "flex-1 pb-3 text-brand-500 font-bold border-b-2 border-brand-500" : "flex-1 pb-3 text-slate-400 font-semibold border-b-2 border-transparent";
+            document.getElementById('aba-login').className = isLogin ? "flex-1 pb-3 text-brand-500 font-black tracking-widest uppercase text-xs border-b-2 border-brand-500 transition-colors" : "flex-1 pb-3 text-slate-500 font-bold tracking-widest uppercase text-xs border-b-2 border-transparent transition-colors";
+            document.getElementById('aba-cadastro').className = !isLogin ? "flex-1 pb-3 text-brand-500 font-black tracking-widest uppercase text-xs border-b-2 border-brand-500 transition-colors" : "flex-1 pb-3 text-slate-500 font-bold tracking-widest uppercase text-xs border-b-2 border-transparent transition-colors";
         }
 
         async function fazerLogin(e) {
@@ -395,10 +407,8 @@
             try {
                 const res = await fetch('/api/cliente/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 const data = await res.json();
-                if(res.ok) {
-                    localStorage.setItem('arts_cliente', JSON.stringify(data.cliente));
-                    fecharModalAuth(); verificarSessao(); window.location.reload();
-                } else { alert(data.detail); }
+                if(res.ok) { localStorage.setItem('arts_cliente', JSON.stringify(data.cliente)); fecharModalAuth(); verificarSessao(); window.location.reload(); } 
+                else { alert(data.detail); }
             } catch(err) { alert("Erro de conexão"); }
         }
 
@@ -413,74 +423,76 @@
             };
             try {
                 const res = await fetch('/api/cliente/registrar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if(res.ok) { alert("Sucesso! Faça login agora."); alternarAbaAuth('login'); }
+                if(res.ok) { alert("Cadastro realizado com sucesso! Faça login para continuar."); alternarAbaAuth('login'); }
                 else { const data = await res.json(); alert(data.detail); }
             } catch(err) { alert("Erro de conexão"); }
         }
 
         // ==========================
-        // CARDÁPIO E PRODUTOS
+        // RENDERIZAÇÃO DO CARDÁPIO
         // ==========================
         async function carregarCardapioDigital() {
             try {
                 const res = await fetch('/api/cardapio');
                 produtosServer = await res.json();
-                renderizarCardapio();
-            } catch (e) { document.getElementById('container-cardapio').innerHTML = '<p class="text-center text-red-500">Erro ao carregar cardápio.</p>'; }
-        }
-
-        function renderizarCardapio() {
-            const container = document.getElementById('container-cardapio');
-            container.innerHTML = '';
-            if(produtosServer.length === 0) return;
-
-            const categorias = [...new Set(produtosServer.map(p => p.categoria))];
-            categorias.forEach(cat => {
-                const produtos = produtosServer.filter(p => p.categoria === cat);
-                let html = `<div id="categoria-${cat}" class="pt-2 scroll-mt-20"><h2 class="text-xl font-bold mb-4 flex items-center"><span class="bg-brand-500 w-1.5 h-6 rounded-full mr-2"></span> ${cat}</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
                 
-                produtos.forEach(p => {
-                    const imgUrl = p.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500&auto=format&fit=crop";
-                    html += `
-                        <div onclick="abrirModalMontagem(${p.id})" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 flex cursor-pointer hover:shadow-md transition-shadow">
-                            <div class="w-1/3 bg-slate-200 shrink-0"><img src="${imgUrl}" class="w-full h-full object-cover"></div>
-                            <div class="p-4 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <h3 class="font-bold text-slate-800 leading-tight mb-1">${p.nome}</h3>
-                                    <p class="text-[10px] text-slate-400 line-clamp-2 leading-tight">${p.descricao || 'Delicioso '+p.categoria}</p>
-                                </div>
-                                <div class="flex justify-between items-end mt-2">
-                                    <span class="font-black text-brand-500">R$ ${p.preco_venda.toFixed(2).replace('.', ',')}</span>
-                                    <div class="bg-slate-50 w-8 h-8 rounded-full flex items-center justify-center border border-slate-200 text-brand-500"><i class="ph ph-plus font-bold"></i></div>
-                                </div>
+                const categorias = [...new Set(produtosServer.map(p => p.categoria).filter(c => c))];
+                
+                document.getElementById('nav-categorias').innerHTML = categorias.map((c, i) => `
+                    <a href="#cat-${c.replace(/\s+/g, '-')}" class="shrink-0 px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-colors ${i===0 ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30' : 'bg-slate-800 border border-slate-700 text-slate-400 hover:text-white'}">${c}</a>
+                `).join('');
+
+                document.getElementById('lista-produtos').innerHTML = categorias.map(cat => {
+                    const prodsCat = produtosServer.filter(p => p.categoria === cat);
+                    return `
+                        <div id="cat-${cat.replace(/\s+/g, '-')}" class="pt-24 -mt-20 mb-8">
+                            <h3 class="text-xl font-black text-white mb-4 tracking-tight flex items-center">
+                                <span class="w-1.5 h-6 bg-brand-500 rounded-full mr-3 block"></span> ${cat}
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${prodsCat.map(p => {
+                                    const imgUrl = p.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
+                                    return `
+                                    <div onclick="abrirModalMontagem(${p.id})" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-3xl p-4 flex gap-4 cursor-pointer transition-colors active:scale-95 shadow-md">
+                                        <div class="flex-1 flex flex-col justify-between pr-2">
+                                            <div>
+                                                <h4 class="font-black text-white text-base leading-tight mb-1">${p.nome}</h4>
+                                                <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">${p.descricao || 'Experimente esta delícia!'}</p>
+                                            </div>
+                                            <span class="font-black text-emerald-400 text-sm">R$ ${p.preco_venda.toFixed(2).replace('.',',')}</span>
+                                        </div>
+                                        <div class="w-28 h-28 shrink-0 bg-slate-900 rounded-2xl overflow-hidden relative border border-slate-700">
+                                            <img src="${imgUrl}" class="w-full h-full object-cover">
+                                            <button class="absolute bottom-1 right-1 w-7 h-7 bg-white/90 backdrop-blur text-brand-500 rounded-xl flex items-center justify-center font-black shadow-md"><i class="ph-bold ph-plus"></i></button>
+                                        </div>
+                                    </div>
+                                `}).join('')}
                             </div>
                         </div>
                     `;
-                });
-                html += `</div></div>`;
-                container.insertAdjacentHTML('beforeend', html);
-            });
+                }).join('');
+            } catch (e) { document.getElementById('lista-produtos').innerHTML = '<p class="text-center text-brand-500 font-bold py-10">Lojinha fechada no momento.</p>'; }
         }
 
         // ==========================
-        // MONTAGEM E EXTRAS
+        // MODAL DE PRODUTO E EXTRAS
         // ==========================
-        let complementosAtuais = []; 
         async function abrirModalMontagem(id) {
             produtoSendoMontado = produtosServer.find(p => p.id === id);
             document.getElementById('modal-prod-nome').innerText = produtoSendoMontado.nome;
-            document.getElementById('modal-prod-desc').innerText = produtoSendoMontado.descricao || "Toque especial do chef.";
+            document.getElementById('modal-prod-desc').innerText = produtoSendoMontado.descricao || "Feito com carinho para você.";
             document.getElementById('modal-prod-preco').innerText = produtoSendoMontado.preco_venda.toFixed(2).replace('.', ',');
             document.getElementById('modal-prod-total-btn').innerText = produtoSendoMontado.preco_venda.toFixed(2).replace('.', ',');
             
-            const imgEl = document.getElementById('modal-prod-img');
-            imgEl.src = produtoSendoMontado.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
-            imgEl.classList.remove('hidden');
+            const imgContainer = document.getElementById('modal-img-container');
+            const imgUrl = produtoSendoMontado.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
+            imgContainer.innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover opacity-80"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>`;
             document.getElementById('modal-prod-obs').value = "";
             
             const areaComp = document.getElementById('area-complementos');
-            areaComp.innerHTML = '<p class="text-center text-slate-400 text-sm py-4"><i class="ph ph-spinner animate-spin"></i> A preparar opções...</p>';
+            areaComp.innerHTML = '<p class="text-center text-slate-500 text-sm py-4"><i class="ph-bold ph-spinner animate-spin text-xl"></i></p>';
             document.getElementById('modal-produto').classList.remove('hidden');
+            document.getElementById('modal-produto').classList.add('flex');
 
             try {
                 const res = await fetch(`/api/produtos/${id}/complementos`);
@@ -492,25 +504,25 @@
         function renderizarComplementos() {
             const areaComp = document.getElementById('area-complementos');
             areaComp.innerHTML = complementosAtuais.map((grupo, gIndex) => `
-                <div class="bg-white p-4 rounded-xl border border-slate-200">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-bold text-slate-800">${grupo.nome}</h4>
-                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${grupo.obrigatorio ? 'bg-brand-50 text-brand-600 border border-brand-200' : 'bg-slate-100 text-slate-500'}">
-                            ${grupo.obrigatorio ? 'Obrigatório' : 'Opcional'}
-                        </span>
+                <div class="bg-slate-800 border border-slate-700 p-5 rounded-2xl">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-black text-white text-sm tracking-tight">${grupo.nome}</h4>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Escolha de ${grupo.min} até ${grupo.max} opções</p>
+                        </div>
+                        ${grupo.obrigatorio ? '<span class="bg-brand-500/20 text-brand-400 text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded">Obrigatório</span>' : ''}
                     </div>
-                    <p class="text-xs text-slate-500 mb-3">Escolha de ${grupo.min} até ${grupo.max} opções.</p>
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         ${grupo.itens.map((item, iIndex) => {
                             const type = grupo.max === 1 ? 'radio' : 'checkbox';
                             const precoText = item.preco > 0 ? `+ R$ ${item.preco.toFixed(2).replace('.', ',')}` : 'Grátis';
                             return `
-                                <label class="flex justify-between items-center p-3 border border-slate-100 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                                <label class="flex justify-between items-center p-4 border border-slate-700 bg-slate-800 hover:bg-slate-700/50 rounded-xl cursor-pointer transition-colors group">
                                     <div class="flex items-center">
-                                        <input type="${type}" name="grupo_${gIndex}" value="${item.id}" data-nome="${item.nome}" data-preco="${item.preco}" onchange="recalcularTotalModal()" class="w-4 h-4 text-brand-500 focus:ring-brand-500">
-                                        <span class="ml-3 text-sm font-semibold text-slate-700">${item.nome}</span>
+                                        <input type="${type}" name="grupo_${gIndex}" value="${item.id}" data-nome="${item.nome}" data-preco="${item.preco}" onchange="recalcularTotalModal()" class="w-4 h-4 accent-brand-500 bg-slate-900 border-slate-600">
+                                        <span class="ml-3 text-sm font-bold text-slate-300 group-hover:text-white">${item.nome}</span>
                                     </div>
-                                    <span class="text-xs font-black text-brand-500">${precoText}</span>
+                                    <span class="text-[11px] font-black text-emerald-400 uppercase tracking-widest">${precoText}</span>
                                 </label>
                             `;
                         }).join('')}
@@ -528,7 +540,7 @@
             document.getElementById('modal-prod-total-btn').innerText = totalGeral.toFixed(2).replace('.', ',');
         }
 
-        function fecharModalProduto() { document.getElementById('modal-produto').classList.add('hidden'); }
+        function fecharModalProduto() { document.getElementById('modal-produto').classList.add('hidden'); document.getElementById('modal-produto').classList.remove('flex'); }
 
         function confirmarAdicaoProduto() {
             let totalAdicionais = 0;
@@ -538,11 +550,11 @@
             complementosAtuais.forEach((grupo, gIndex) => {
                 const selecionados = document.querySelectorAll(`input[name="grupo_${gIndex}"]:checked`);
                 if(grupo.obrigatorio && selecionados.length < grupo.min) {
-                    alert(`⚠️ Atenção: Você precisa escolher pelo menos ${grupo.min} opção em "${grupo.nome}".`);
+                    alert(`⚠️ Obrigatório: Escolha pelo menos ${grupo.min} opção em "${grupo.nome}".`);
                     inputsInvalidos = true;
                 }
                 if(selecionados.length > grupo.max) {
-                    alert(`⚠️ Atenção: Você pode escolher no máximo ${grupo.max} opções em "${grupo.nome}".`);
+                    alert(`⚠️ Limite excedido: Máximo de ${grupo.max} opções em "${grupo.nome}".`);
                     inputsInvalidos = true;
                 }
                 selecionados.forEach(sel => {
@@ -566,7 +578,7 @@
         }
 
         // ==========================
-        // CARRINHO E CHECKOUT
+        // CARRINHO GLOBAL
         // ==========================
         function atualizarContadores() {
             const total = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
@@ -578,27 +590,28 @@
             document.getElementById('carrinho-qtd').innerText = qtd;
             
             const barra = document.getElementById('barra-carrinho');
-            qtd > 0 ? barra.classList.remove('translate-y-full') : barra.classList.add('translate-y-full');
+            qtd > 0 ? barra.classList.remove('translate-y-32') : barra.classList.add('translate-y-32');
             if(qtd === 0) fecharCarrinho();
         }
 
         function abrirCarrinho() {
             const lista = document.getElementById('lista-carrinho-modal');
             lista.innerHTML = carrinho.map((item, index) => `
-                <div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between shadow-sm">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-slate-800 text-sm">${item.quantidade}x ${item.nome}</h4>
-                        ${item.observacao ? `<p class="text-[10px] text-amber-500 font-semibold mt-1 bg-amber-50 inline-block px-1 rounded">⚠️ ${item.observacao}</p>` : ''}
-                        <p class="font-bold text-brand-500 text-sm mt-1">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</p>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex justify-between shadow-sm">
+                    <div class="flex-1 pr-2">
+                        <h4 class="font-black text-white text-sm mb-1">${item.quantidade}x ${item.nome}</h4>
+                        ${item.observacao ? `<p class="text-[10px] text-brand-400 font-medium leading-snug mb-2 bg-brand-500/10 p-1.5 rounded-lg border border-brand-500/20">⚠️ ${item.observacao}</p>` : ''}
+                        <p class="font-black text-brand-400 text-sm mt-1">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</p>
                     </div>
-                    <button onclick="removerItem(${index})" class="text-red-400 hover:text-red-600"><i class="ph-fill ph-trash text-xl"></i></button>
+                    <button onclick="removerItem(${index})" class="text-slate-500 hover:text-brand-500 bg-slate-900 w-10 h-10 rounded-full flex items-center justify-center border border-slate-700 transition-colors"><i class="ph-bold ph-trash text-lg"></i></button>
                 </div>
             `).join('');
             document.getElementById('modal-carrinho').classList.remove('hidden');
+            document.getElementById('modal-carrinho').classList.add('flex');
         }
 
         function removerItem(index) { carrinho.splice(index, 1); atualizarContadores(); abrirCarrinho(); }
-        function fecharCarrinho() { document.getElementById('modal-carrinho').classList.add('hidden'); }
+        function fecharCarrinho() { document.getElementById('modal-carrinho').classList.add('hidden'); document.getElementById('modal-carrinho').classList.remove('flex'); }
 
         function toggleAreaCartao() {
             const forma = document.getElementById('forma-pag-online').value;
@@ -607,7 +620,7 @@
         }
 
         // ==========================
-        // FINALIZAR PEDIDO MERCADO PAGO
+        // FINALIZAR PEDIDO (MERCADO PAGO)
         // ==========================
         async function finalizarPedidoOnline() {
             let nome, tel, end, cliente_id, cpf;
@@ -616,25 +629,21 @@
                 nome = clienteLogado.nome; tel = clienteLogado.telefone;
                 end = clienteLogado.endereco_completo || "Retirada/Não informado";
                 cliente_id = clienteLogado.id; 
-                // Garante que só vai enviar NÚMEROS para o Mercado Pago
                 cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
             } else {
                 nome = document.getElementById('guest-nome').value.trim();
                 tel = document.getElementById('guest-tel').value.trim();
                 end = document.getElementById('guest-end').value.trim();
-                // Garante que só vai enviar NÚMEROS para o Mercado Pago
                 cpf = document.getElementById('guest-cpf').value.replace(/\D/g, ''); 
                 cliente_id = null;
-
-                if (!nome || !tel || !end) { alert("⚠️ Preencha o seu Nome, WhatsApp e Endereço para entrega."); return; }
+                if (!nome || !tel || !end) { alert("⚠️ Preencha Nome, WhatsApp e Endereço de entrega."); return; }
             }
 
             const tipoPgto = document.getElementById('forma-pag-online').value;
-            
             if ((tipoPgto === 'pix' || tipoPgto === 'credito') && !cpf) {
-                alert("⚠️ O CPF é obrigatório para gerar a cobrança online de forma segura.");
-                if(clienteLogado) { document.getElementById('logado-cpf').focus(); }
-                else { document.getElementById('guest-cpf').focus(); }
+                alert("⚠️ O CPF é obrigatório para gerar a cobrança online segura.");
+                if(clienteLogado) document.getElementById('logado-cpf').focus();
+                else document.getElementById('guest-cpf').focus();
                 return;
             }
 
@@ -645,9 +654,10 @@
 
             const btn = document.getElementById('btn-finalizar-online');
             const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-2xl"></i> Processando...';
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl mr-2"></i> Processando...';
             btn.disabled = true;
 
+            // TOKENIZAÇÃO DO CARTÃO - MERCADO PAGO 
             if (tipoPgto === 'credito') {
                 const numCartao = document.getElementById('cc-num').value.replace(/\D/g, '');
                 const nomeCartao = document.getElementById('cc-nome').value;
@@ -676,7 +686,7 @@
                     payload.payment_method_id = metodos.results[0].id;
                     payload.parcelas = document.getElementById('cc-parcelas').value;
                 } catch (e) {
-                    alert("⚠️ Erro: Dados do cartão incorretos ou não validados pelo Mercado Pago.");
+                    alert("⚠️ Erro: Dados do cartão incorretos ou não validados pela operadora.");
                     btn.disabled = false; btn.innerHTML = txtOriginal; return;
                 }
             }
@@ -688,20 +698,16 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    if (data.status === "checkout_transparente") {
-                        prompt("✅ SEU PIX FOI GERADO!\n\nCopie o código abaixo e pague no seu banco:", data.copia_e_cola);
-                    } else if (tipoPgto === 'credito') {
-                        alert("✅ PAGAMENTO APROVADO!\nSeu pedido foi para a cozinha.");
-                    } else {
-                        alert("✅ Pedido enviado para a cozinha com sucesso!");
-                    }
+                    if (data.status === "checkout_transparente") { prompt("✅ SEU PIX FOI GERADO!\n\nCopie o código abaixo e pague no app do banco:", data.copia_e_cola); } 
+                    else if (tipoPgto === 'credito') { alert("✅ PAGAMENTO APROVADO!\nSeu pedido foi para a cozinha."); } 
+                    else { alert("✅ Pedido enviado para a cozinha com sucesso!"); }
                     window.location.reload();
                 } else { 
                     alert("Erro: " + (data.detail || "Pagamento recusado.")); 
                     btn.disabled = false; btn.innerHTML = txtOriginal;
                 }
             } catch(e) { 
-                alert("Falha de conexão."); btn.disabled = false; btn.innerHTML = txtOriginal;
+                alert("Falha de conexão com a loja."); btn.disabled = false; btn.innerHTML = txtOriginal;
             }
         }
     </script>
