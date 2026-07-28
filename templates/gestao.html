@@ -518,18 +518,57 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-8">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Categorias (Cardápio)</label>
-                                <textarea id="conf-cat-cardapio" rows="3" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl resize-none text-sm font-medium outline-none focus:border-brand-500" placeholder="Lanches, Bebidas, Sobremesas (separados por vírgula)"></textarea>
+                        <!-- NOVO SISTEMA DE CADASTRO DINÂMICO (CRUD) -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-100 pt-8 mt-4">
+                            <!-- Categorias do Cardápio -->
+                            <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-inner">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Categorias (Cardápio)</label>
+                                <div class="flex space-x-2 mb-4">
+                                    <input type="text" id="input-cat-cardapio" placeholder="Ex: Bebidas" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500">
+                                    <button type="button" onclick="addTagSetup('cardapio')" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-slate-800 transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                <div id="tags-cardapio" class="flex flex-wrap gap-2"></div>
                             </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Categorias (Fornecedores)</label>
-                                <textarea id="conf-cat-fornecedor" rows="3" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl resize-none text-sm font-medium outline-none focus:border-brand-500" placeholder="Insumos, Embalagens, Limpeza (separados por vírgula)"></textarea>
+
+                            <!-- Categorias de Fornecedores -->
+                            <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-inner">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Categorias (Fornecedores)</label>
+                                <div class="flex space-x-2 mb-4">
+                                    <input type="text" id="input-cat-fornecedor" placeholder="Ex: Embalagens" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500">
+                                    <button type="button" onclick="addTagSetup('fornecedor')" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-slate-800 transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                <div id="tags-fornecedor" class="flex flex-wrap gap-2"></div>
                             </div>
+
+                            <!-- Planos de Saúde e Benefícios -->
+                            <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-inner">
+                                <label class="block text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Planos de Saúde / Benefícios</label>
+                                <div class="flex space-x-2 mb-4">
+                                    <input type="text" id="input-beneficio" placeholder="Ex: Odonto SulAmérica" class="flex-1 px-4 py-2 rounded-xl border border-emerald-200 outline-none text-sm font-bold focus:border-emerald-500">
+                                    <button type="button" onclick="addTagSetup('beneficio')" class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-emerald-700 transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                <div id="tags-beneficio" class="flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 pt-8 mt-4">
+                            <!-- Formas de Pagamento Dinâmicas -->
+                            <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-inner">
+                                <h4 class="text-sm font-black text-slate-800 mb-4 uppercase tracking-widest">Meios de Pagamento Cadastrados</h4>
+                                <div class="flex space-x-2 mb-4">
+                                    <input type="text" id="input-pagamento" placeholder="Ex: Vale Refeição (VR)" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500">
+                                    <button type="button" onclick="addTagSetup('pagamento')" class="bg-brand-500 text-white px-5 py-3 rounded-xl font-black shadow-md hover:bg-brand-600 transition-colors">Cadastrar</button>
+                                </div>
+                                <div id="tags-pagamento" class="flex flex-wrap gap-2 mt-4 border-t border-slate-200 pt-4"></div>
+                            </div>
+
+                            <!-- Integrações Seguras API -->
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Planos de Saúde / Benefícios</label>
-                                <textarea id="conf-planos-saude" rows="3" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl resize-none text-sm font-medium outline-none focus:border-brand-500" placeholder="Nenhum, Gympass, Amil, SulAmerica (separados por vírgula)"></textarea>
+                                <h4 class="text-sm font-black text-slate-800 mb-4 uppercase tracking-widest">Integrações Seguras (API Keys)</h4>
+                                <div class="space-y-4">
+                                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Mercado Pago / Asaas (Token)</label><input type="password" placeholder="APP_USR-..." class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm font-mono outline-none focus:border-brand-500"></div>
+                                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Token de Disparo WhatsApp</label><input type="password" placeholder="wapp_..." class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm font-mono outline-none focus:border-brand-500"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -1000,16 +1039,66 @@
         // -------------------------
         // SETUP E CONFIGURAÇÕES DA LOJA
         // -------------------------
+        // ==========================================
+        // MOTOR DE CADASTRO DINÂMICO (CRUD DE SETUP) E RELATÓRIOS
+        // ==========================================
+        let listaCatCardapio = [];
+        let listaCatFornecedor = [];
+        let listaBeneficios = [];
+        let listaPagamentos = [];
+
+        function renderTagsSetup(tipo) {
+            let arr = []; let containerId = ''; let cor = 'bg-white border-slate-300 text-slate-700';
+            
+            if(tipo === 'cardapio') { arr = listaCatCardapio; containerId = 'tags-cardapio'; }
+            if(tipo === 'fornecedor') { arr = listaCatFornecedor; containerId = 'tags-fornecedor'; }
+            if(tipo === 'beneficio') { arr = listaBeneficios; containerId = 'tags-beneficio'; cor = 'bg-emerald-50 border-emerald-200 text-emerald-800'; }
+            if(tipo === 'pagamento') { arr = listaPagamentos; containerId = 'tags-pagamento'; cor = 'bg-blue-50 border-blue-200 text-blue-800'; }
+            
+            const html = arr.map((item, index) => `
+                <span class="${cor} border text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center shadow-sm">
+                    ${item}
+                    <button type="button" onclick="removeTagSetup('${tipo}', ${index})" class="ml-2 text-red-500 hover:text-red-700 bg-white rounded-full p-0.5"><i class="ph-bold ph-x"></i></button>
+                </span>
+            `).join('');
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        function addTagSetup(tipo) {
+            let inputId = ''; let arr = [];
+            if(tipo === 'cardapio') { inputId = 'input-cat-cardapio'; arr = listaCatCardapio; }
+            if(tipo === 'fornecedor') { inputId = 'input-cat-fornecedor'; arr = listaCatFornecedor; }
+            if(tipo === 'beneficio') { inputId = 'input-beneficio'; arr = listaBeneficios; }
+            if(tipo === 'pagamento') { inputId = 'input-pagamento'; arr = listaPagamentos; }
+            
+            const val = document.getElementById(inputId).value.trim();
+            if(val && !arr.includes(val)) {
+                arr.push(val);
+                document.getElementById(inputId).value = '';
+                renderTagsSetup(tipo);
+            }
+        }
+
+        function removeTagSetup(tipo, index) {
+            if(tipo === 'cardapio') listaCatCardapio.splice(index, 1);
+            if(tipo === 'fornecedor') listaCatFornecedor.splice(index, 1);
+            if(tipo === 'beneficio') listaBeneficios.splice(index, 1);
+            if(tipo === 'pagamento') listaPagamentos.splice(index, 1);
+            renderTagsSetup(tipo);
+        }
+
         async function carregarConfiguracoesInit() {
             try {
                 const res = await fetch('/api/gestao/configuracoes'); 
                 const conf = await res.json();
                 
                 document.getElementById('conf-nome').value = conf.nome_empresa || ""; 
-                document.getElementById('sidebar-nome-loja').innerText = conf.nome_empresa || "ERP V5";
+                document.getElementById('sidebar-nome-loja').innerText = conf.nome_empresa || "ERP V6";
                 document.getElementById('conf-cnpj').value = conf.cnpj || ""; 
+                document.getElementById('conf-ie').value = conf.inscricao_estadual || ""; 
                 document.getElementById('conf-endereco').value = conf.endereco || "";
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
+                document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
                 document.getElementById('conf-logo').value = conf.logo_url || "";
                 
                 document.getElementById('conf-tempo').value = conf.tempo_preparo || 30; 
@@ -1018,50 +1107,33 @@
                 document.getElementById('conf-auto').checked = conf.aceite_automatico;
                 document.getElementById('conf-fidelidade').value = conf.sistema_fidelidade || "CASHBACK"; 
                 
-                document.getElementById('conf-cat-cardapio').value = conf.categorias_cardapio || ""; 
-                document.getElementById('conf-cat-fornecedor').value = conf.categorias_fornecedor || ""; 
-                document.getElementById('conf-planos-saude').value = conf.planos_saude_opcoes || "Nenhum";
+                // Carrega os arrays do banco e joga nas tags
+                listaCatCardapio = conf.categorias_cardapio ? conf.categorias_cardapio.split(',').filter(x => x.trim() !== "") : ["Burger Artesanal", "Bebidas"];
+                listaCatFornecedor = conf.categorias_fornecedor ? conf.categorias_fornecedor.split(',').filter(x => x.trim() !== "") : ["Carnes", "Embalagens"];
+                listaBeneficios = conf.planos_saude_opcoes ? conf.planos_saude_opcoes.split(',').filter(x => x.trim() !== "") : ["Nenhum"];
+                listaPagamentos = conf.formas_pagamento ? conf.formas_pagamento.split(',').filter(x => x.trim() !== "") : ["Pix", "Dinheiro"];
                 
-                const pgs = conf.formas_pagamento || ""; 
-                document.getElementById('pag-dinheiro').checked = pgs.includes('dinheiro'); 
-                document.getElementById('pag-maquininha').checked = pgs.includes('maquininha'); 
-                document.getElementById('pag-pix-online').checked = pgs.includes('pix_online'); 
-                document.getElementById('pag-credito-online').checked = pgs.includes('credito_online'); 
-                document.getElementById('pag-vr-online').checked = pgs.includes('vr_online');
+                renderTagsSetup('cardapio'); renderTagsSetup('fornecedor'); renderTagsSetup('beneficio'); renderTagsSetup('pagamento');
                 
-                carregarCategoriasSelect('prod-categoria', 'conf-cat-cardapio'); 
-                carregarCategoriasSelect('forn-cat', 'conf-cat-fornecedor');
-                carregarCategoriasSelect('dos-plano', 'conf-planos-saude'); // Popula o modal de Dossiê do RH
+                // Popula os Selects das outras abas (Se existirem na tela)
+                carregarCategoriasSelect('prod-categoria', listaCatCardapio); 
+                carregarCategoriasSelect('forn-cat', listaCatFornecedor);
+                carregarCategoriasSelect('dos-plano', listaBeneficios); 
                 
                 if(document.getElementById('aba-relatorios').classList.contains('active')) {
                     filtrarRelatorios();
                 }
-            } catch (e) { }
+            } catch (e) { console.error("Erro ao carregar setup:", e); }
         }
 
-        function carregarCategoriasSelect(idSelect, idOrigemConfig) { 
+        function carregarCategoriasSelect(idSelect, arrayOpcoes) { 
             const select = document.getElementById(idSelect); 
             if(!select) return; 
-            const strCats = document.getElementById(idOrigemConfig).value; 
-            
-            // Limpa e popula opções
-            let opçõesHtml = '';
-            if(idSelect === 'dos-plano') opçõesHtml += '<option value="Nenhum">Nenhum (Sem Benefício)</option>';
-            else opçõesHtml += '<option value="Geral">Categoria Padrão</option>';
-            
-            opçõesHtml += strCats.split(',').filter(c => c.trim() !== "").map(c => `<option value="${c.trim()}">${c.trim()}</option>`).join(''); 
-            select.innerHTML = opçõesHtml;
+            select.innerHTML = arrayOpcoes.map(c => `<option value="${c.trim()}">${c.trim()}</option>`).join(''); 
         }
 
         async function salvarConfiguracoesLoja(e) {
             e.preventDefault(); 
-            let arr = []; 
-            if(document.getElementById('pag-dinheiro').checked) arr.push('dinheiro'); 
-            if(document.getElementById('pag-maquininha').checked) arr.push('maquininha'); 
-            if(document.getElementById('pag-pix-online').checked) arr.push('pix_online'); 
-            if(document.getElementById('pag-credito-online').checked) arr.push('credito_online'); 
-            if(document.getElementById('pag-vr-online').checked) arr.push('vr_online');
-            
             const payload = { 
                 nome_empresa: document.getElementById('conf-nome').value, 
                 cnpj: document.getElementById('conf-cnpj').value, 
@@ -1075,23 +1147,66 @@
                 aceita_retirada: document.getElementById('conf-retirada').checked, 
                 aceite_automatico: document.getElementById('conf-auto').checked, 
                 sistema_fidelidade: document.getElementById('conf-fidelidade').value, 
-                categorias_cardapio: document.getElementById('conf-cat-cardapio').value, 
-                categorias_fornecedor: document.getElementById('conf-cat-fornecedor').value, 
-                planos_saude_opcoes: document.getElementById('conf-planos-saude').value, 
-                formas_pagamento: arr.join(',') 
+                
+                // Salva os arrays convertidos em texto de volta pro banco
+                categorias_cardapio: listaCatCardapio.join(','),
+                categorias_fornecedor: listaCatFornecedor.join(','),
+                planos_saude_opcoes: listaBeneficios.join(','),
+                formas_pagamento: listaPagamentos.join(',')
             };
             
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = "Subindo para a Nuvem...";
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Subindo para a Nuvem...";
+            btn.disabled = true;
             
             try {
-                await fetch('/api/gestao/configuracoes', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
-                alert("✅ Servidor Master Atualizado com Sucesso!"); 
-                carregarConfiguracoesInit();
+                const res = await fetch('/api/gestao/configuracoes', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+                if(res.ok) {
+                    alert("✅ Servidor Master Atualizado! Categorias salvas com sucesso."); 
+                    carregarConfiguracoesInit();
+                }
             } catch(err) {
-                alert("Falha de Comunicação.");
+                alert("Falha de Comunicação ao salvar.");
             }
             btn.innerHTML = "Aplicar Setup e Atualizar Nuvem";
+            btn.disabled = false;
+        }
+
+        // ==========================================
+        // RELATÓRIOS E DRE (Corrigido o botão de Filtrar)
+        // ==========================================
+        async function filtrarRelatorios() {
+            const dataInicio = document.getElementById('filtro-inicio').value; 
+            const dataFim = document.getElementById('filtro-fim').value; 
+            let queryUrl = (dataInicio && dataFim) ? `?data_inicio=${dataInicio}&data_fim=${dataFim}` : '';
+            
+            try {
+                const res = await fetch(`/api/gestao/financeiro/lucratividade${queryUrl}`); 
+                const data = await res.json(); 
+                
+                document.getElementById('rel-faturamento').innerText = `R$ ${data.faturamento.toFixed(2).replace('.', ',')}`; 
+                document.getElementById('rel-despesas-empresa').innerText = `R$ ${data.despesas_empresa.toFixed(2).replace('.', ',')}`; 
+                document.getElementById('rel-despesas-casa').innerText = `R$ ${data.despesas_casa.toFixed(2).replace('.', ',')}`; 
+                document.getElementById('rel-margem').innerText = `${data.margem_lucro}%`; 
+                document.getElementById('rel-lucro-real').innerText = `R$ ${data.lucro_liquido.toFixed(2).replace('.', ',')}`;
+                
+                const rAbc = await fetch(`/api/gestao/relatorios/curva-abc${queryUrl}`); 
+                const abc = await rAbc.json(); 
+                
+                if (abc.length === 0) {
+                    document.getElementById('lista-curva-abc').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">Nenhum dado encontrado para esse filtro.</td></tr>';
+                } else {
+                    document.getElementById('lista-curva-abc').innerHTML = abc.map((p, x) => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 font-black text-brand-500 text-lg">${x+1}º</td>
+                        <td class="py-4 px-6 font-bold text-slate-700">${p.nome} <br> <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${p.categoria}</span></td>
+                        <td class="py-4 px-6 text-center font-black text-slate-600 bg-slate-50 rounded-lg border border-slate-100">${p.quantidade_vendida}x</td>
+                        <td class="py-4 px-6 text-right font-black text-emerald-500">R$ ${p.faturamento_gerado.toFixed(2).replace('.', ',')}</td>
+                    </tr>`).join('');
+                }
+            } catch (err) {
+                console.log("Aguardando gerar vendas para o relatório...");
+            }
         }
 
 
