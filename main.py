@@ -545,15 +545,15 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
 @app.get("/api/pdv/cliente/{telefone}")
 def buscar_cliente_pdv(telefone: str, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == telefone).first()
-    
-    if not cliente:
+    if not cliente: 
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
-        
+    
     return {
-        "nome": cliente.nome,
-        "pontos": getattr(cliente, 'pontos_fidelidade', 0),
-        "cashback": getattr(cliente, 'saldo_cashback', 0.0),
-        "bloqueado": getattr(cliente, 'bloqueado', False)
+        "nome": cliente.nome, 
+        "pontos": getattr(cliente, 'pontos_fidelidade', 0), 
+        "cashback": getattr(cliente, 'saldo_cashback', 0.0), 
+        "bloqueado": getattr(cliente, 'bloqueado', False),
+        "permite_fiado": getattr(cliente, 'permite_fiado', False) # LIBERA O FIADO NO PDV
     }
 
 
