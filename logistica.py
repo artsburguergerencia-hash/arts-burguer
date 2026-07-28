@@ -1,158 +1,252 @@
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Boolean
-from sqlalchemy.orm import relationship
-
-# Importando a base do nosso sistema
-from database import Base, SessionLocal
-from vendas_pdv import PedidoModel, StatusPedido
-
-# ==============================================================================
-# 1. MODELOS DO BANCO DE DADOS (Logística e Entregadores)
-# ==============================================================================
-
-class MotoboyModel(Base):
-    """Cadastro da frota de entregadores."""
-    __tablename__ = "motoboys"
-
-    id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, nullable=False)
-    telefone = Column(String, nullable=False)
-    placa_moto = Column(String, nullable=True)
-    ativo = Column(Boolean, default=True)
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Despacho e Logística | Art's Burguer</title>
     
-    # Modelo de remuneração (ex: R$ 2,00 fixo + valor por KM, ou taxa integral)
-    taxa_fixa_por_entrega = Column(Float, default=0.0)
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    entregas = relationship("EntregaModel", back_populates="motoboy")
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .card-enter { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex flex-col h-screen text-slate-800 overflow-hidden">
 
-
-class EntregaModel(Base):
-    """Registro de cada corrida feita por um motoboy."""
-    __tablename__ = "entregas"
-
-    id = Column(Integer, primary_key=True, index=True)
-    pedido_id = Column(Integer, ForeignKey("pedidos.id"), unique=True, nullable=False)
-    motoboy_id = Column(Integer, ForeignKey("motoboys.id"), nullable=False)
-    
-    distancia_km = Column(Float, default=0.0)
-    valor_pago_motoboy = Column(Float, nullable=False) # Comissão/Taxa desta corrida
-    
-    hora_saida = Column(DateTime, default=datetime.utcnow)
-    hora_entrega = Column(DateTime, nullable=True)
-    
-    pedido = relationship("PedidoModel")
-    motoboy = relationship("MotoboyModel", back_populates="entregas")
-
-# ==============================================================================
-# 2. LÓGICA DE NEGÓCIO E ROTEIRIZAÇÃO
-# ==============================================================================
-
-def calcular_distancia_e_taxa(endereco_cliente: dict):
-    """
-    Simula a integração com a API do Google Maps ou Waze para roteirização.
-    Aqui calculamos a distância entre o Art's Burguer e a casa do cliente.
-    """
-    # Em um cenário real, enviaríamos o endereço da hamburgueria e do cliente para a API.
-    # Exemplo mockado de processamento em Fazenda Rio Grande:
-    bairro_cliente = endereco_cliente.get("bairro", "").lower()
-    
-    # Tabela de contingência/raio de entrega (Mock)
-    if bairro_cliente == "centro":
-        return {"distancia_km": 1.5, "taxa_cobrada_cliente": 5.00}
-    elif bairro_cliente == "eucaliptos":
-        return {"distancia_km": 3.2, "taxa_cobrada_cliente": 8.00}
-    elif bairro_cliente == "nações":
-        return {"distancia_km": 5.0, "taxa_cobrada_cliente": 12.00}
-    else:
-        # Cálculo genérico para outros bairros via API
-        distancia_simulada = 4.5
-        taxa_base = 3.00
-        taxa_por_km = 1.50
-        taxa_final = taxa_base + (distancia_simulada * taxa_por_km)
-        return {"distancia_km": distancia_simulada, "taxa_cobrada_cliente": round(taxa_final, 2)}
-
-
-def despachar_pedido(db, pedido_id: int, motoboy_id: int, distancia_km: float):
-    """
-    Pega o lanche que está 'Pronto' na cozinha e entrega para o motoboy.
-    """
-    pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
-    motoboy = db.query(MotoboyModel).filter(MotoboyModel.id == motoboy_id).first()
-    
-    if not pedido or not motoboy:
-        print("❌ Erro: Pedido ou Motoboy não encontrado.")
-        return False
+    <!-- HEADER LOGÍSTICA -->
+    <header class="bg-slate-900 text-white h-24 flex items-center justify-between px-8 shadow-xl shrink-0 z-10 relative">
+        <div class="absolute inset-0 opacity-10 overflow-hidden pointer-events-none">
+            <i class="ph-fill ph-map-pin text-[150px] absolute -right-10 -top-10"></i>
+        </div>
         
-    if pedido.status != StatusPedido.PRONTO:
-        print(f"⚠️ O pedido #{pedido.id} ainda não está pronto na cozinha!")
-        return False
+        <div class="relative z-10 flex items-center">
+            <div class="w-14 h-14 bg-brand-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-brand-500/30">
+                <i class="ph-bold ph-moped text-3xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black tracking-tight">Central de Expedição e Despacho</h1>
+                <p class="text-[10px] text-brand-400 font-bold uppercase tracking-widest mt-0.5 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse mr-2"></span>
+                    Monitoramento em Tempo Real
+                </p>
+            </div>
+        </div>
+        
+        <div class="relative z-10 flex items-center space-x-4">
+            <div class="bg-slate-800/80 backdrop-blur border border-slate-700 px-4 py-2.5 rounded-xl flex items-center shadow-inner hidden md:flex">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></div>
+                <span class="text-xs font-bold text-slate-300 tracking-wider">Sincronizado</span>
+            </div>
+            <button onclick="carregarPedidos()" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-3.5 rounded-xl transition-colors active:scale-95 shadow-sm" title="Atualizar Agora">
+                <i class="ph-bold ph-arrows-clockwise text-xl"></i>
+            </button>
+            <button onclick="window.close()" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 p-3.5 rounded-xl transition-colors active:scale-95 border border-red-500/20" title="Sair da Expedição">
+                <i class="ph-bold ph-x text-xl"></i>
+            </button>
+        </div>
+    </header>
 
-    # 1. Calcula quanto o motoboy vai ganhar nessa corrida
-    # (Pode ser a taxa de entrega integral que o cliente pagou, ou um valor fixo seu)
-    valor_comissao = motoboy.taxa_fixa_por_entrega
-    if valor_comissao == 0.0:
-        valor_comissao = pedido.taxa_entrega # Ele ganha a taxa 100%
+    <!-- KANBAN BOARD -->
+    <main class="flex-1 flex overflow-hidden p-4 md:p-8 space-x-4 md:space-x-8">
+        
+        <!-- COLUNA 1: PRONTOS PARA DESPACHO (Aguardando Entregador) -->
+        <section class="flex-1 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 bg-amber-50 border-b border-amber-100 flex justify-between items-center shrink-0">
+                <h2 class="font-black text-lg text-amber-900 flex items-center tracking-tight">
+                    <i class="ph-fill ph-package text-amber-500 mr-2 text-2xl"></i> Prontos para Despacho
+                </h2>
+                <span class="bg-amber-500 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="contador-prontos">0</span>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 no-scrollbar relative" id="lista-prontos">
+                <!-- CARDS INJETADOS AQUI -->
+                <div class="flex flex-col items-center justify-center h-full text-slate-300 opacity-50">
+                    <i class="ph-bold ph-spinner animate-spin text-5xl mb-4"></i>
+                    <p class="font-bold text-sm uppercase tracking-widest">Buscando Pedidos...</p>
+                </div>
+            </div>
+        </section>
 
-    # 2. Cria o registro de logística
-    nova_entrega = EntregaModel(
-        pedido_id=pedido.id,
-        motoboy_id=motoboy.id,
-        distancia_km=distancia_km,
-        valor_pago_motoboy=valor_comissao
-    )
-    db.add(nova_entrega)
-    
-    # 3. Atualiza o status do pedido (isso pode disparar um WhatsApp pro cliente!)
-    pedido.status = StatusPedido.EM_ROTA
-    
-    db.commit()
-    db.refresh(nova_entrega)
-    print(f"🛵 Pedido #{pedido.id} DESPACHADO! Motoboy: {motoboy.nome} | Comissão: R$ {valor_comissao:.2f}")
-    return nova_entrega
+        <!-- COLUNA 2: EM ROTA (Com o Cliente) -->
+        <section class="flex-1 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 bg-blue-50 border-b border-blue-100 flex justify-between items-center shrink-0">
+                <h2 class="font-black text-lg text-blue-900 flex items-center tracking-tight">
+                    <i class="ph-fill ph-motorcycle text-blue-500 mr-2 text-2xl"></i> Em Rota de Entrega
+                </h2>
+                <span class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="contador-rota">0</span>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 no-scrollbar relative" id="lista-rota">
+                <!-- CARDS INJETADOS AQUI -->
+                <div class="flex flex-col items-center justify-center h-full text-slate-300 opacity-50">
+                    <i class="ph-fill ph-motorcycle text-6xl mb-4"></i>
+                    <p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p>
+                </div>
+            </div>
+        </section>
 
+    </main>
 
-def fechar_acerto_motoboy(db, motoboy_id: int):
-    """
-    Gera o relatório de fim de noite para pagar o motoboy.
-    """
-    entregas_hoje = db.query(EntregaModel).filter(
-        EntregaModel.motoboy_id == motoboy_id,
-        EntregaModel.hora_saida >= datetime.utcnow().date() # Corridas do dia atual
-    ).all()
-    
-    total_corridas = len(entregas_hoje)
-    valor_total_receber = sum(entrega.valor_pago_motoboy for entrega in entregas_hoje)
-    
-    print("\n" + "="*40)
-    print(f"💸 ACERTO DE MOTOBOY - ID: {motoboy_id}")
-    print(f"   Corridas realizadas hoje: {total_corridas}")
-    print(f"   Valor a ser pago: R$ {valor_total_receber:.2f}")
-    print("="*40 + "\n")
-    
-    return valor_total_receber
+    <!-- SCRIPT DE EXPEDIÇÃO -->
+    <script>
+        // Inicia a tela carregando os pedidos e configurando o Auto-Refresh
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarPedidos();
+            // Atualiza a tela a cada 10 segundos automaticamente
+            setInterval(carregarPedidos, 10000);
+        });
 
-# ==============================================================================
-# 3. SIMULAÇÃO DO FLUXO DE DELIVERY
-# ==============================================================================
-if __name__ == "__main__":
-    db_session = SessionLocal()
-    
-    print("--- 1. Roteirização (Cliente finalizando no App) ---")
-    endereco_mock = {"logradouro": "Avenida das Araucárias", "bairro": "Centro"}
-    dados_rota = calcular_distancia_e_taxa(endereco_mock)
-    print(f"📍 Endereço analisado. Distância: {dados_rota['distancia_km']}km. Taxa calculada: R$ {dados_rota['taxa_cobrada_cliente']:.2f}")
-    
-    # (Em uma operação real, aqui o cliente faria o pedido pagando essa taxa)
-    
-    print("\n--- 2. Cadastrando Motoboy da casa ---")
-    # Cadastrando motoboy que ganha o valor integral da taxa de entrega
-    piloto_1 = MotoboyModel(nome="Carlos Silva", telefone="41999999999", placa_moto="ABC-1234", taxa_fixa_por_entrega=0.0)
-    db_session.add(piloto_1)
-    db_session.commit()
-    
-    # (Para o teste do despacho funcionar localmente, precisaríamos de um Pedido ID válido no banco 
-    # com status PRONTO, o que normalmente vem do kds.py)
-    # despachar_pedido(db_session, pedido_id=1, motoboy_id=piloto_1.id, distancia_km=dados_rota['distancia_km'])
-    # fechar_acerto_motoboy(db_session, piloto_1.id)
-    
-    db_session.close()
+        async function carregarPedidos() {
+            try {
+                const res = await fetch('/api/logistica/pedidos');
+                const data = await res.json();
+                
+                renderizarProntos(data.prontos);
+                renderizarEmRota(data.em_rota);
+                
+                document.getElementById('contador-prontos').innerText = data.prontos.length;
+                document.getElementById('contador-rota').innerText = data.em_rota.length;
+            } catch(e) {
+                console.error("Falha ao buscar pedidos da logística.");
+            }
+        }
+
+        function renderizarProntos(pedidos) {
+            const container = document.getElementById('lista-prontos');
+            if(pedidos.length === 0) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-300 opacity-50"><i class="ph-fill ph-check-circle text-6xl mb-4"></i><p class="font-bold text-sm uppercase tracking-widest">Expedição Limpa</p></div>`;
+                return;
+            }
+            
+            container.innerHTML = pedidos.map(p => `
+                <div class="card-enter bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
+                    
+                    <div class="flex justify-between items-start mb-3 pl-2">
+                        <div>
+                            <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-200 shadow-inner">#${p.senha_diaria}</span>
+                            <span class="${p.tipo === 'DELIVERY' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-orange-50 text-orange-700 border-orange-200'} px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest border shadow-sm">${p.tipo}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pl-2">
+                        <h3 class="font-black text-slate-800 text-lg mb-1 tracking-tight">${p.cliente}</h3>
+                        <p class="text-xs font-bold text-slate-500 mb-5 flex items-start leading-snug">
+                            <i class="ph-fill ph-map-pin text-brand-500 mr-1.5 mt-0.5 text-base"></i> 
+                            ${p.endereco}
+                        </p>
+                    </div>
+                    
+                    <div class="flex space-x-2 pl-2">
+                        <div class="relative flex-1">
+                            <i class="ph-bold ph-helmet absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="motoboy-${p.id}" placeholder="Nome do Entregador" class="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-amber-500 transition-colors shadow-inner" ${p.tipo === 'RETIRADA' ? 'disabled value="Cliente Retira no Balcão"' : ''}>
+                        </div>
+                        <button onclick="despacharPedido(${p.id}, '${p.tipo}')" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-transform active:scale-95 shadow-md flex items-center justify-center">
+                            <i class="ph-bold ph-paper-plane-tilt text-base md:mr-1"></i> <span class="hidden md:inline">Despachar</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderizarEmRota(pedidos) {
+            const container = document.getElementById('lista-rota');
+            if(pedidos.length === 0) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-300 opacity-50"><i class="ph-fill ph-motorcycle text-6xl mb-4"></i><p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p></div>`;
+                return;
+            }
+            
+            container.innerHTML = pedidos.map(p => `
+                <div class="card-enter bg-slate-900 text-white border border-slate-800 p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
+                    
+                    <div class="flex justify-between items-start mb-3 pl-2">
+                        <div>
+                            <span class="bg-slate-800 text-slate-300 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-700 shadow-inner">#${p.senha_diaria}</span>
+                            <span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="ph-fill ph-motorcycle mr-1"></i> A Caminho</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pl-2">
+                        <h3 class="font-black text-white text-lg mb-1 tracking-tight">${p.cliente}</h3>
+                        <p class="text-xs font-medium text-slate-400 mb-5 flex items-start leading-snug">
+                            <i class="ph-fill ph-map-pin text-brand-500 mr-1.5 mt-0.5 text-base"></i> 
+                            ${p.endereco}
+                        </p>
+                    </div>
+                    
+                    <button onclick="concluirEntrega(${p.id})" class="w-full ml-2 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-transform active:scale-95 shadow-lg flex items-center justify-center border border-blue-500">
+                        <i class="ph-bold ph-check-circle text-lg mr-2"></i> Baixar Entrega (Concluído)
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function despacharPedido(id, tipo) {
+            let nomeMotoboy = "Balcão";
+            
+            if(tipo !== 'RETIRADA') {
+                const input = document.getElementById(`motoboy-${id}`);
+                if(!input.value.trim()) {
+                    // Efeito visual de erro no input
+                    input.classList.add('border-red-500', 'bg-red-50', 'placeholder-red-400');
+                    setTimeout(() => input.classList.remove('border-red-500', 'bg-red-50', 'placeholder-red-400'), 1500);
+                    return;
+                }
+                nomeMotoboy = input.value.trim();
+            }
+
+            const btn = event.currentTarget;
+            const iconOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>';
+
+            try {
+                const res = await fetch(`/api/logistica/pedidos/${id}/despachar`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ nome_motoboy: nomeMotoboy })
+                });
+                if(res.ok) {
+                    carregarPedidos();
+                } else {
+                    btn.innerHTML = iconOriginal;
+                }
+            } catch(e) { 
+                alert("Erro de conexão com o banco de dados."); 
+                btn.innerHTML = iconOriginal;
+            }
+        }
+
+        async function concluirEntrega(id) {
+            if(!confirm("Atenção: Confirmar que a mercadoria foi entregue ao cliente com sucesso? A venda será finalizada e sairá desta tela.")) return;
+            
+            const btn = event.currentTarget;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Baixando...';
+
+            try {
+                const res = await fetch(`/api/logistica/pedidos/${id}/entregar`, { method: 'PUT' });
+                if(res.ok) {
+                    carregarPedidos();
+                } else {
+                    btn.innerHTML = '<i class="ph-bold ph-check-circle text-lg mr-2"></i> Baixar Entrega (Concluído)';
+                }
+            } catch(e) { 
+                alert("Erro de conexão."); 
+                btn.innerHTML = '<i class="ph-bold ph-check-circle text-lg mr-2"></i> Baixar Entrega (Concluído)';
+            }
+        }
+    </script>
+</body>
+</html>
