@@ -477,6 +477,9 @@
             <!-- ============================================== -->
             <!-- ABA: SETUP E CONFIG (Compactada) -->
             <!-- ============================================== -->
+            <!-- ============================================== -->
+            <!-- ABA: SETUP E CONFIG (Limpa e Unificada) -->
+            <!-- ============================================== -->
             <div id="aba-configuracoes" class="painel hidden">
                 <div class="bg-white rounded-3xl border border-slate-200 p-10 max-w-5xl mx-auto shadow-sm">
                     <h3 class="text-2xl font-black mb-2 flex items-center"><i class="ph-fill ph-gear-six text-slate-400 mr-3"></i> Setup Central da Franquia</h3>
@@ -518,13 +521,13 @@
                             </div>
                         </div>
 
-                        <!-- NOVO SISTEMA DE CADASTRO DINÂMICO (CRUD) -->
+                        <!-- CADASTROS DINÂMICOS (Categorias e Planos) -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-100 pt-8 mt-4">
                             <!-- Categorias do Cardápio -->
                             <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-inner">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Categorias (Cardápio)</label>
                                 <div class="flex space-x-2 mb-4">
-                                    <input type="text" id="input-cat-cardapio" placeholder="Ex: Bebidas" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500">
+                                    <input type="text" id="input-cat-cardapio" placeholder="Ex: Bebidas" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500 bg-white">
                                     <button type="button" onclick="addTagSetup('cardapio')" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-slate-800 transition-colors"><i class="ph-bold ph-plus"></i></button>
                                 </div>
                                 <div id="tags-cardapio" class="flex flex-wrap gap-2"></div>
@@ -534,7 +537,7 @@
                             <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-inner">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Categorias (Fornecedores)</label>
                                 <div class="flex space-x-2 mb-4">
-                                    <input type="text" id="input-cat-fornecedor" placeholder="Ex: Embalagens" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500">
+                                    <input type="text" id="input-cat-fornecedor" placeholder="Ex: Embalagens" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500 bg-white">
                                     <button type="button" onclick="addTagSetup('fornecedor')" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-slate-800 transition-colors"><i class="ph-bold ph-plus"></i></button>
                                 </div>
                                 <div id="tags-fornecedor" class="flex flex-wrap gap-2"></div>
@@ -544,23 +547,23 @@
                             <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-inner">
                                 <label class="block text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Planos de Saúde / Benefícios</label>
                                 <div class="flex space-x-2 mb-4">
-                                    <input type="text" id="input-beneficio" placeholder="Ex: Odonto SulAmérica" class="flex-1 px-4 py-2 rounded-xl border border-emerald-200 outline-none text-sm font-bold focus:border-emerald-500">
+                                    <input type="text" id="input-beneficio" placeholder="Ex: Odonto SulAmérica" class="flex-1 px-4 py-2 rounded-xl border border-emerald-200 outline-none text-sm font-bold focus:border-emerald-500 bg-white">
                                     <button type="button" onclick="addTagSetup('beneficio')" class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-emerald-700 transition-colors"><i class="ph-bold ph-plus"></i></button>
                                 </div>
                                 <div id="tags-beneficio" class="flex flex-wrap gap-2"></div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 pt-8">
+                        <!-- CADASTRO DE PAGAMENTOS E INTEGRAÇÕES (ÚNICO E LIMPO) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 pt-8 mt-4">
                             <!-- Formas de Pagamento Dinâmicas -->
                             <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-inner">
-                                <h4 class="text-sm font-black text-slate-800 mb-4 uppercase tracking-widest">Meios de Pagamento Cadastrados</h4>
+                                <h4 class="text-sm font-black text-slate-800 mb-4 uppercase tracking-widest">Meios de Pagamento Ativos</h4>
                                 <div class="flex space-x-2 mb-4">
                                     <input type="text" id="input-pagamento" placeholder="Ex: Vale Refeição (VR)" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500 bg-white">
                                     <button type="button" onclick="addTagSetup('pagamento')" class="bg-brand-500 text-white px-5 py-3 rounded-xl font-black shadow-md hover:bg-brand-600 transition-colors">Cadastrar</button>
                                 </div>
-                                <div id="tags-pagamento" class="flex flex-wrap gap-2 mt-4 border-t border-slate-200 pt-4">
-                                </div>
+                                <div id="tags-pagamento" class="flex flex-wrap gap-2 mt-4 border-t border-slate-200 pt-4"></div>
                             </div>
 
                             <!-- Integrações Seguras API -->
@@ -578,16 +581,13 @@
                                 </div>
                             </div>
                         </div>
-                            
 
                         <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-5 rounded-2xl text-lg shadow-xl shadow-slate-900/20 transition-transform active:scale-95 uppercase tracking-widest mt-8">
                             Salvar Configurações no Banco de Dados
                         </button>
                     </form>
                 </div>
-            </div>
-
-        </div> 
+            </div> 
     </main>
 
     <!-- MEGA MODAL DE DOSSIÊ DO RH (3 ABAS) -->
