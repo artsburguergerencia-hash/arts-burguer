@@ -528,6 +528,45 @@
         function emitirNotaFiscal() {
             alert("Módulo NFC-e / SAT Sefaz em desenvolvimento pela franquia.\n(Requer integração com Certificado Digital A1).");
         }
+
+        // ==========================================
+        // AUTO-SINCRONIZAÇÃO DO PDV COM A NUVEM
+        // ==========================================
+        async function sincronizarPagamentosPDV() {
+            try {
+                const res = await fetch('/api/gestao/configuracoes');
+                const config = await res.json();
+                
+                if (config && config.formas_pagamento) {
+                    const pagamentos = config.formas_pagamento.split(',');
+                    
+                    // 1. Tenta achar o select pelo ID padrão
+                    let selectCaixa = document.getElementById('forma-pagamento') || document.getElementById('forma_pagamento');
+                    
+                    // 2. Se não achar pelo ID, usa o "farejador" para achar o select de pagamentos
+                    if (!selectCaixa) {
+                        const todosSelects = document.querySelectorAll('select');
+                        todosSelects.forEach(sel => {
+                            if(sel.innerHTML.includes('Dinheiro') || sel.innerHTML.includes('Pix') || sel.innerHTML.includes('Espécie')) {
+                                selectCaixa = sel;
+                            }
+                        });
+                    }
+
+                    // 3. Injeta as formas de pagamento do Gestão direto no Caixa
+                    if (selectCaixa) {
+                        selectCaixa.innerHTML = pagamentos.map(p => `<option value="${p.trim()}">${p.trim()}</option>`).join('');
+                    }
+                }
+            } catch (e) {
+                console.error("Erro ao sincronizar pagamentos do PDV:", e);
+            }
+        }
+
+        // Chama o sincronizador automático assim que a tela do PDV abrir
+        document.addEventListener('DOMContentLoaded', () => {
+            sincronizarPagamentosPDV();
+        });
     </script>
 </body>
 </html>
