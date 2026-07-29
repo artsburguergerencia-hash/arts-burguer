@@ -232,20 +232,37 @@
             await carregarCardapio();
         });
 
-        async function carregarConfigLoja() {
+       async function carregarConfigLoja() {
             try {
                 const res = await fetch('/api/gestao/configuracoes');
                 configLoja = await res.json();
                 
-                // Trata a Logo Corporativa se o cliente fez upload no Gestão
+                // Trata a Logo Corporativa APENAS se a imagem for real e carregar perfeitamente
                 if(configLoja.logo_url && configLoja.logo_url.trim() !== '') {
-                    const logoDiv = document.getElementById('header-logo-pdv');
-                    if(logoDiv) {
-                        logoDiv.innerHTML = `<img src="${configLoja.logo_url}" class="w-full h-full object-cover">`;
-                        logoDiv.classList.remove('bg-gradient-to-br', 'from-brand-500', 'to-brand-600', 'border-brand-400');
-                        logoDiv.classList.add('bg-slate-100', 'border-slate-200');
-                    }
+                    const imgTeste = new Image();
+                    
+                    // Só troca o ícone se o download da imagem der 100% certo
+                    imgTeste.onload = function() {
+                        const logoDiv = document.getElementById('header-logo-pdv');
+                        if(logoDiv) {
+                            logoDiv.innerHTML = `<img src="${configLoja.logo_url}" class="w-full h-full object-cover">`;
+                            logoDiv.classList.remove('bg-gradient-to-br', 'from-brand-500', 'to-brand-600', 'border-brand-400');
+                            logoDiv.classList.add('bg-white', 'border-slate-200');
+                        }
+                    };
+                    
+                    // Se a imagem estiver quebrada ou for link falso, ele falha em silêncio e mantém o ícone!
+                    imgTeste.src = configLoja.logo_url;
                 }
+                
+                // Prepara o cabeçalho de impressão
+                document.getElementById('print-loja-nome').innerText = configLoja.nome_empresa || "MINHA EMPRESA";
+                document.getElementById('print-loja-cnpj').innerText = `CNPJ: ${configLoja.cnpj || '00.000.000/0000-00'}`;
+                document.getElementById('print-loja-end').innerText = configLoja.endereco || "Endereço não cadastrado";
+
+                atualizarMetodosPagamento();
+            } catch(e) { console.error("Erro config:", e); }
+        }
                 
                 // Prepara o cabeçalho de impressão
                 document.getElementById('print-loja-nome').innerText = configLoja.nome_empresa || "MINHA EMPRESA";
