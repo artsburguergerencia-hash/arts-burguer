@@ -263,15 +263,6 @@
                 atualizarMetodosPagamento();
             } catch(e) { console.error("Erro config:", e); }
         }
-                
-                // Prepara o cabeçalho de impressão
-                document.getElementById('print-loja-nome').innerText = configLoja.nome_empresa || "MINHA EMPRESA";
-                document.getElementById('print-loja-cnpj').innerText = `CNPJ: ${configLoja.cnpj || '00.000.000/0000-00'}`;
-                document.getElementById('print-loja-end').innerText = configLoja.endereco || "Endereço não cadastrado";
-
-                atualizarMetodosPagamento();
-            } catch(e) { console.error("Erro config:", e); }
-        }
 
         function atualizarMetodosPagamento() {
             const selectPag = document.getElementById('pdv-pagamento');
