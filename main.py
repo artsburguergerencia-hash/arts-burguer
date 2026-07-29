@@ -1613,19 +1613,21 @@ def ler_configuracoes(db: Session = Depends(get_db)):
 
 @app.put("/api/gestao/configuracoes")
 def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
+    # 1. Busca a configuração no banco
     config = db.query(ConfiguracaoLojaModel).first()
-    if not config:
+    
+    # Se não existir, cria a primeira
+    if not config: 
         config = ConfiguracaoLojaModel()
         db.add(config)
-    
-    config.nome_empresa = dados.get("nome_empresa", config.nome_empresa)
-    config.cnpj = dados.get("cnpj", config.cnpj)
-    config.endereco = dados.get("endereco", config.endereco)
-    config.telefone = dados.get("telefone", config.telefone)
-    config.formas_pagamento = dados.get("formas_pagamento", config.formas_pagamento)
-    config.sistema_fidelidade = dados.get("sistema_fidelidade", config.sistema_fidelidade)
-    config.aceite_automatico = dados.get("aceite_automatico", config.aceite_automatico)
-    
+        db.commit()
+        db.refresh(config)
+
+    # 2. O Laço Mágico: Varre TODOS os dados enviados pelo painel (Tags, Pagamentos, Categorias, etc) e salva automático
+    for key, value in dados.items():
+        if hasattr(config, key):
+            setattr(config, key, value)
+            
     db.commit()
     return {"status": "sucesso"}
 
