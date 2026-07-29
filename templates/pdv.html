@@ -40,22 +40,18 @@
 
     <!-- COLUNA ESQUERDA: CATÁLOGO DE PRODUTOS -->
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
-        <!-- Header Superior -->
+        <!-- Header Superior (CORRIGIDO) -->
         <header class="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0 shadow-sm">
             <div class="flex items-center">
-    <div class="w-10 h-10 bg-brand-500 text-white rounded-xl flex items-center justify-center mr-4 shadow-md shadow-brand-500/30 font-black text-lg">
-        <i class="ph-bold ph-storefront text-xl"></i>
-    </div>
-    <div class="flex items-center">
-    <!-- ÍCONE DO CAIXA COM COR FUNDO ESCURO -->
-    <div class="w-12 h-12 bg-slate-900 text-brand-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg border border-slate-800">
-        <i class="ph-fill ph-desktop text-2xl"></i>
-    </div>
-    <div>
-        <h1 class="text-xl font-black tracking-tight text-slate-800 leading-none mb-1">Frente de Caixa (PDV)</h1>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operador: <span id="nome-operador" class="text-brand-500">Caixa</span></p>
-    </div>
-</div>
+                <!-- ÍCONE DO CAIXA COM COR FUNDO ESCURO -->
+                <div class="w-12 h-12 bg-slate-900 text-brand-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg border border-slate-800">
+                    <i class="ph-fill ph-desktop text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight text-slate-800 leading-none mb-1">Frente de Caixa (PDV)</h1>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operador: <span id="nome-operador" class="text-brand-500">Caixa</span></p>
+                </div>
+            </div>
             
             <div class="flex items-center space-x-4">
                 <div class="relative">
@@ -229,23 +225,22 @@
             } catch(e) { console.error("Erro config:", e); }
         }
 
-        // LÓGICA ANTI-FIADO: Só aparece fiado se o cliente for válido e tiver a permissão
+        // LÓGICA DE PAGAMENTO E ANTI-FIADO INTEGRADA COM A NUVEM
         function atualizarMetodosPagamento() {
             const selectPag = document.getElementById('pdv-pagamento');
-            let pgs = configLoja.formas_pagamento ? configLoja.formas_pagamento.split(',') : ['dinheiro', 'pix'];
             
-            let htmlPg = '';
-            if(pgs.includes('dinheiro')) htmlPg += '<option value="dinheiro">Dinheiro (Espécie)</option>';
-            if(pgs.includes('maquininha')) htmlPg += '<option value="maquina_credito">Cartão de Crédito (Máquina)</option><option value="maquina_debito">Cartão de Débito (Máquina)</option>';
-            if(pgs.includes('pix_online') || pgs.includes('pix')) htmlPg += '<option value="pix">PIX (Transferência)</option>';
-            if(pgs.includes('vr_online') || pgs.includes('vr')) htmlPg += '<option value="vale_refeicao">Vale Refeição/Alimentação</option>';
+            // Puxa as tags do Gestão (ou usa um padrão de segurança)
+            let pgs = configLoja.formas_pagamento ? configLoja.formas_pagamento.split(',') : ['Dinheiro', 'Pix', 'Cartão'];
+            
+            // Mapeia todas as opções que vieram do painel
+            let htmlPg = pgs.map(pg => `<option value="${pg.trim()}">${pg.trim()}</option>`).join('');
             
             // HABILITAR FIADO SOMENTE SE O CLIENTE TEM PERMISSÃO E NÃO ESTÁ BLOQUEADO
             if(clienteSelecionado && clienteSelecionado.permite_fiado && !clienteSelecionado.bloqueado) {
-                htmlPg += '<option value="fiado" class="font-bold text-amber-500">Fiado / Caderneta da Loja</option>';
+                htmlPg += '<option value="Fiado (Conta Cliente)" class="font-bold text-amber-500">Fiado / Caderneta da Loja</option>';
             }
             
-            if(htmlPg === '') htmlPg = '<option value="dinheiro">Dinheiro</option>';
+            if(htmlPg === '') htmlPg = '<option value="Dinheiro">Dinheiro</option>';
             selectPag.innerHTML = htmlPg;
         }
 
@@ -529,44 +524,6 @@
             alert("Módulo NFC-e / SAT Sefaz em desenvolvimento pela franquia.\n(Requer integração com Certificado Digital A1).");
         }
 
-        // ==========================================
-        // AUTO-SINCRONIZAÇÃO DO PDV COM A NUVEM
-        // ==========================================
-        async function sincronizarPagamentosPDV() {
-            try {
-                const res = await fetch('/api/gestao/configuracoes');
-                const config = await res.json();
-                
-                if (config && config.formas_pagamento) {
-                    const pagamentos = config.formas_pagamento.split(',');
-                    
-                    // 1. Tenta achar o select pelo ID padrão
-                    let selectCaixa = document.getElementById('forma-pagamento') || document.getElementById('forma_pagamento');
-                    
-                    // 2. Se não achar pelo ID, usa o "farejador" para achar o select de pagamentos
-                    if (!selectCaixa) {
-                        const todosSelects = document.querySelectorAll('select');
-                        todosSelects.forEach(sel => {
-                            if(sel.innerHTML.includes('Dinheiro') || sel.innerHTML.includes('Pix') || sel.innerHTML.includes('Espécie')) {
-                                selectCaixa = sel;
-                            }
-                        });
-                    }
-
-                    // 3. Injeta as formas de pagamento do Gestão direto no Caixa
-                    if (selectCaixa) {
-                        selectCaixa.innerHTML = pagamentos.map(p => `<option value="${p.trim()}">${p.trim()}</option>`).join('');
-                    }
-                }
-            } catch (e) {
-                console.error("Erro ao sincronizar pagamentos do PDV:", e);
-            }
-        }
-
-        // Chama o sincronizador automático assim que a tela do PDV abrir
-        document.addEventListener('DOMContentLoaded', () => {
-            sincronizarPagamentosPDV();
-        });
     </script>
 </body>
 </html>
