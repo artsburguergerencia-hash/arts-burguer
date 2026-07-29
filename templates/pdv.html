@@ -13,6 +13,11 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- 🚨 CORREÇÃO: O MOTOR DE CORES DA MARCA VOLTOU! 🚨 -->
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 400: '#ff6b81', 500: '#ff4757', 600: '#e04050' } } } } }
+    </script>
+    
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -42,7 +47,8 @@
         <!-- Header Superior Corporativo -->
         <header class="h-20 bg-white px-8 flex items-center justify-between shrink-0 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] z-10 relative">
             <div class="flex items-center">
-                <div class="w-12 h-12 bg-slate-900 text-brand-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-slate-900/20 border border-slate-800">
+                <!-- ÍCONE DO CAIXA: Agora em gradiente vermelho vibrante -->
+                <div id="header-logo-pdv" class="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-600 text-white rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-brand-500/30 border border-brand-400 overflow-hidden">
                     <i class="ph-fill ph-desktop text-2xl"></i>
                 </div>
                 <div>
@@ -214,7 +220,6 @@
 
 
     <script>
-        // O MESMO MOTOR BLINDADO DE JAVASCRIPT
         let cardapio = [];
         let carrinho = [];
         let configLoja = {};
@@ -231,6 +236,16 @@
             try {
                 const res = await fetch('/api/gestao/configuracoes');
                 configLoja = await res.json();
+                
+                // Trata a Logo Corporativa se o cliente fez upload no Gestão
+                if(configLoja.logo_url && configLoja.logo_url.trim() !== '') {
+                    const logoDiv = document.getElementById('header-logo-pdv');
+                    if(logoDiv) {
+                        logoDiv.innerHTML = `<img src="${configLoja.logo_url}" class="w-full h-full object-cover">`;
+                        logoDiv.classList.remove('bg-gradient-to-br', 'from-brand-500', 'to-brand-600', 'border-brand-400');
+                        logoDiv.classList.add('bg-slate-100', 'border-slate-200');
+                    }
+                }
                 
                 // Prepara o cabeçalho de impressão
                 document.getElementById('print-loja-nome').innerText = configLoja.nome_empresa || "MINHA EMPRESA";
