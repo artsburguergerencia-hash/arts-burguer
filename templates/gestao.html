@@ -1122,7 +1122,7 @@
                 endereco: document.getElementById('conf-endereco').value, 
                 telefone: document.getElementById('conf-telefone').value, 
                 logo_url: document.getElementById('conf-logo').value, 
-                tempo_preparo: parseInt(document.getElementById('conf-tempo').value), 
+                tempo_preparo: parseInt(document.getElementById('conf-tempo').value) || 30, // Blindagem Anti-NaN
                 aceita_delivery: document.getElementById('conf-delivery').checked, 
                 aceita_retirada: document.getElementById('conf-retirada').checked, 
                 aceite_automatico: document.getElementById('conf-auto').checked, 
@@ -1136,19 +1136,29 @@
             };
             
             const btn = e.target.querySelector('button[type="submit"]');
+            const textoOriginal = btn.innerHTML; // Salva o texto original
             btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Subindo para a Nuvem...";
             btn.disabled = true;
             
             try {
-                const res = await fetch('/api/gestao/configuracoes', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+                const res = await fetch('/api/gestao/configuracoes', { 
+                    method: 'PUT', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                }); 
+                
                 if(res.ok) {
-                    alert("✅ Servidor Master Atualizado! Categorias salvas com sucesso."); 
+                    alert("✅ Servidor Master Atualizado! Configurações salvas com sucesso."); 
                     carregarConfiguracoesInit();
+                } else {
+                    const data = await res.json();
+                    alert("❌ O Banco de Dados recusou: " + data.detail);
                 }
             } catch(err) {
-                alert("Falha de Comunicação ao salvar.");
+                alert("❌ Falha de Rede ou Servidor Fora do Ar.");
             }
-            btn.innerHTML = "Aplicar Setup e Atualizar Nuvem";
+            
+            btn.innerHTML = textoOriginal;
             btn.disabled = false;
         }
 
