@@ -174,13 +174,31 @@ class ItemComplementoModel(Base):
     preco_adicional = Column(Float, default=0.0)
 
 # 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL 🚨
+# 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL (BLINDADO PARA POSTGRESQL NO RENDER) 🚨
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
     colunas_novas = [
+        # Forçando a criação de TODAS as colunas possíveis na loja caso o PostgreSQL do Render esteja desatualizado
+        "ALTER TABLE configuracoes_loja ADD COLUMN nome_empresa VARCHAR DEFAULT 'Art''s Burguer';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN cnpj VARCHAR DEFAULT '';",
         "ALTER TABLE configuracoes_loja ADD COLUMN inscricao_estadual VARCHAR DEFAULT '';",
         "ALTER TABLE configuracoes_loja ADD COLUMN horario_funcionamento VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN endereco VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN telefone VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN logo_url VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_delivery BOOLEAN DEFAULT TRUE;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_retirada BOOLEAN DEFAULT TRUE;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN aceite_automatico BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN tempo_preparo INTEGER DEFAULT 30;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN formas_pagamento VARCHAR DEFAULT 'Pix,Dinheiro,Cartão';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN sistema_fidelidade VARCHAR DEFAULT 'CASHBACK';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_cardapio VARCHAR DEFAULT 'Burger Artesanal,Bebidas,Porções';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_fornecedor VARCHAR DEFAULT 'Carnes,Hortifruti,Bebidas,Embalagens';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto,Gympass';",
+        
+        # Restante das colunas do RH e Clientes
         "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
         "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
         "ALTER TABLE info_rh ADD COLUMN status_admissao VARCHAR DEFAULT 'PENDENTE_PREENCHIMENTO';",
@@ -221,7 +239,6 @@ def inicializar_banco():
         "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
         "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0;",
         "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto,Gympass';",
         "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';",
         "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;"
     ]
@@ -234,20 +251,26 @@ def inicializar_banco():
             db.rollback() 
 
     try:
+        # Garante a criação do Cargo Administrador
         cargo_admin = db.query(Cargo).filter(Cargo.permissoes == "total").first()
         if not cargo_admin:
             cargo_admin = Cargo(nome="Administrador", permissoes="total")
             db.add(cargo_admin)
             db.flush() 
 
+        # Garante a criação do usuário Admin
         if not db.query(FuncionarioModel).first():
             from passlib.context import CryptContext
             pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
             admin = FuncionarioModel(nome="Admin Supremo", usuario="admin", senha_hash=pwd_context.hash("admin123"), cargo_id=cargo_admin.id, matricula_cracha="0001")
             db.add(admin)
-            config = ConfiguracaoLojaModel()
-            db.add(config)
-            db.commit()
+            
+        # Garante a criação da linha base de configuração se não existir
+        if not db.query(ConfiguracaoLojaModel).first():
+            config_base = ConfiguracaoLojaModel(nome_empresa="Art's Burguer")
+            db.add(config_base)
+            
+        db.commit()
     except Exception: 
         db.rollback()
     finally:
