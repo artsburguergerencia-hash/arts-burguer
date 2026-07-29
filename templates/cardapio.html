@@ -276,9 +276,63 @@
         let complementosAtuais = [];
 
         document.addEventListener('DOMContentLoaded', () => {
+            carregarConfiguracoes(); // AGORA SIM! Ligando o motor de configurações
             verificarSessao();
             carregarCardapioDigital();
         });
+
+        // ==========================
+        // CARREGAR SETUP DO GESTÃO
+        // ==========================
+        async function carregarConfiguracoes() {
+            try {
+                const res = await fetch('/api/gestao/configuracoes');
+                const configLoja = await res.json();
+                
+                // Popula o select de pagamentos dinamicamente com as tags do Gestão
+                const pgs = configLoja.formas_pagamento ? configLoja.formas_pagamento.split(',') : ['Dinheiro Físico', 'Pix', 'Cartão'];
+                const selectPg = document.getElementById('forma-pag-online');
+                
+                if(selectPg) {
+                    selectPg.innerHTML = pgs.map(pg => {
+                        let icone = '💵';
+                        let valLow = pg.toLowerCase();
+                        let valorParaOBanco = pg.trim(); // Nome exato para sair na comanda
+                        
+                        // Radar de Integração Mercado Pago
+                        if(valLow.includes('pix')) {
+                            icone = '⚡';
+                            valorParaOBanco = 'pix'; // Aciona o webhook de Pix
+                        } 
+                        else if(valLow.includes('crédito') || valLow.includes('credito') || valLow.includes('cartão online')) {
+                            icone = '💳';
+                            valorParaOBanco = 'credito'; // Aciona a tela de Cartão
+                        }
+                        else if(valLow.includes('vr') || valLow.includes('alimentação')) {
+                            icone = '🎟️';
+                            valorParaOBanco = 'vr';
+                        }
+                        else if(valLow.includes('débito') || valLow.includes('cartão')) {
+                            icone = '💳';
+                        }
+                        
+                        return `<option value="${valorParaOBanco}">${icone} ${pg.trim()}</option>`;
+                    }).join('');
+                }
+            } catch(e) { console.log("Config padrão assumida."); }
+        }
+
+        // Esta função mostra a tela do Cartão de Crédito se o cliente escolher essa opção
+        function toggleAreaCartao() {
+            const forma = document.getElementById('forma-pag-online').value.toLowerCase();
+            const area = document.getElementById('area-cartao');
+            
+            if(forma === 'credito' || forma === 'vr') {
+                area.classList.remove('hidden');
+            } else {
+                area.classList.add('hidden');
+            }
+        }
 
         // ==========================
         // VIACEP
