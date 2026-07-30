@@ -325,32 +325,6 @@ def inicializar_banco():
         # AGORA SIM A VARIÁVEL EXISTE PARA SER FECHADA
         db.close()
 
-    try:
-        # Garante a criação do Cargo Administrador
-        cargo_admin = db.query(Cargo).filter(Cargo.permissoes == "total").first()
-        if not cargo_admin:
-            cargo_admin = Cargo(nome="Administrador", permissoes="total")
-            db.add(cargo_admin)
-            db.flush() 
-
-        # Garante a criação do usuário Admin
-        if not db.query(FuncionarioModel).first():
-            from passlib.context import CryptContext
-            pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-            admin = FuncionarioModel(nome="Admin Supremo", usuario="admin", senha_hash=pwd_context.hash("admin123"), cargo_id=cargo_admin.id, matricula_cracha="0001")
-            db.add(admin)
-            
-        # Garante a criação da linha base de configuração se não existir
-        if not db.query(ConfiguracaoLojaModel).first():
-            config_base = ConfiguracaoLojaModel(nome_empresa="Art's Burguer")
-            db.add(config_base)
-            
-        db.commit()
-    except Exception: 
-        db.rollback()
-    finally:
-        db.close()
-
 def cadastrar_insumo(db, nome, unidade, qtd_inicial, qtd_min, custo):
     novo = InsumoModel(nome=nome, unidade_medida=unidade, quantidade_atual=qtd_inicial, quantidade_minima=qtd_min, custo_unitario=custo)
     db.add(novo)
