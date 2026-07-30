@@ -227,9 +227,7 @@ def inicializar_banco():
         "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_elegibilidade VARCHAR DEFAULT 'TODOS';",
         "ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
         "ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
+        
         
         # Restante das colunas do RH e Clientes
         "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
@@ -274,6 +272,9 @@ def inicializar_banco():
         "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
         "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';",
         "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;"
+        "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
     ]
     
     for sql in colunas_novas:
