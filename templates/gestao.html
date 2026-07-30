@@ -913,6 +913,61 @@
             </form>
         </div>
     </div>
+
+    <!-- MODAL DE EDIÇÃO DE CLIENTE (CRM) -->
+    <div id="modal-editar-cliente" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] p-8 shadow-2xl relative">
+            <button onclick="document.getElementById('modal-editar-cliente').classList.replace('flex','hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 bg-slate-100 p-2 rounded-full transition-colors"><i class="ph-bold ph-x"></i></button>
+            <h2 class="font-black text-2xl mb-6 text-slate-800 flex items-center"><i class="ph-fill ph-user-circle-gear text-brand-500 mr-3 text-3xl"></i> Dossiê do Cliente</h2>
+            
+            <form id="form-edit-cliente" onsubmit="salvarEdicaoCliente(event)" class="space-y-4">
+                <input type="hidden" id="edit-cli-id">
+                
+                <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
+                    <div>
+                        <p class="font-black text-slate-800 text-sm">Status da Conta</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Inadimplente (Travar compras Fiado).</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="edit-cli-bloqueado" class="sr-only peer">
+                        <!-- Verde quando OK (Desmarcado), Vermelho quando Bloqueado (Marcado) -->
+                        <div class="w-14 h-7 bg-emerald-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
+                        <span class="ml-3 text-xs font-black uppercase tracking-widest text-slate-600" id="label-status-cli">Cliente OK</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Completo</label>
+                        <input type="text" id="edit-cli-nome" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">WhatsApp</label>
+                        <input type="text" id="edit-cli-telefone" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-mono text-sm outline-none focus:border-brand-500">
+                    </div>
+                </div>
+                
+                <!-- MOTOR VIP DE MANIPULAÇÃO -->
+                <div class="grid grid-cols-2 gap-4 mt-2 p-5 bg-amber-50 rounded-xl border border-amber-200 shadow-inner">
+                    <div class="col-span-2 mb-1">
+                        <h4 class="text-[10px] font-black text-amber-900 uppercase tracking-widest flex items-center"><i class="ph-fill ph-crown mr-1 text-sm"></i> Carteira de Fidelidade (Edição Manual)</h4>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1">Saldo de Pontos</label>
+                        <input type="number" id="edit-cli-pontos" required class="w-full px-4 py-3 border border-amber-200 bg-white rounded-xl font-black text-amber-600 outline-none focus:border-amber-500 text-center shadow-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1">Cashback (R$)</label>
+                        <input type="text" oninput="mascaraMoeda(this)" id="edit-cli-cashback" required class="w-full px-4 py-3 border border-amber-200 bg-white rounded-xl font-black text-emerald-600 outline-none focus:border-amber-500 text-center shadow-sm">
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">
+                    Gravar Dossiê do Cliente
+                </button>
+            </form>
+        </div>
+    </div>
     
     <!-- ALERTA CUSTOMIZADO PREMIUM -->
     <div id="alerta-customizado" class="fixed inset-0 bg-slate-900/80 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
@@ -2047,12 +2102,77 @@
                 <td class="py-4 px-6 text-center"><span class="bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600 font-black">${x.pontos} Pts</span></td>
                 <td class="py-4 px-6 text-center font-black text-emerald-500 text-lg">R$ ${x.cashback.toFixed(2).replace('.',',')}</td>
                 <td class="py-4 px-6">${x.bloqueado ? '<span class="bg-red-100 text-red-700 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-red-200">INADIMPLENTE</span>' : '<span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-100">CLIENTE OK</span>'}</td>
-                <td class="py-4 px-6">
-                    <button onclick="if(confirm('Alterar bloqueio deste cliente (Não poderá pedir fiado)?')){fetch('/api/gestao/clientes/${x.id}/bloqueio', {method:'PUT'}).then(carregarClientesPainel)}" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-md active:scale-95">
-                        ${x.bloqueado ? 'Desbloquear Venda' : 'Travar (Fiado)'}
+                <td class="py-4 px-6 flex space-x-2">
+                    <button onclick="abrirModalEditarCliente(${x.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                    <button onclick="if(confirm('Alterar bloqueio automático para este cliente?')){fetch('/api/gestao/clientes/${x.id}/bloqueio', {method:'PUT'}).then(carregarClientesPainel)}" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm active:scale-95">
+                        ${x.bloqueado ? 'Desbloquear' : 'Travar'}
                     </button>
                 </td>
             </tr>`).join(''); 
+        }
+
+        // --- FUNÇÕES DE EDIÇÃO MANUAL DE CLIENTES (CRM) ---
+        async function abrirModalEditarCliente(id) {
+            try {
+                const res = await fetch('/api/gestao/clientes');
+                const clientes = await res.json();
+                const c = clientes.find(x => x.id === id);
+                if(!c) return;
+
+                document.getElementById('edit-cli-id').value = c.id;
+                document.getElementById('edit-cli-nome').value = c.nome;
+                document.getElementById('edit-cli-telefone').value = c.telefone || "";
+                document.getElementById('edit-cli-pontos').value = c.pontos || 0;
+                document.getElementById('edit-cli-cashback').value = formataMoedaParaInput(c.cashback || 0.0);
+                
+                const checkBloqueado = document.getElementById('edit-cli-bloqueado');
+                checkBloqueado.checked = c.bloqueado; // True = Conta Travada
+                document.getElementById('label-status-cli').innerText = c.bloqueado ? "Inadimplente (Bloqueado)" : "Cliente OK (Liberado)";
+                
+                checkBloqueado.onchange = (e) => {
+                    document.getElementById('label-status-cli').innerText = e.target.checked ? "Inadimplente (Bloqueado)" : "Cliente OK (Liberado)";
+                };
+
+                document.getElementById('modal-editar-cliente').classList.replace('hidden', 'flex');
+            } catch(e) {
+                alertaPremium("Erro ao carregar dados do cliente.", "Erro", "erro");
+            }
+        }
+
+        async function salvarEdicaoCliente(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-cli-id').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Gravando Dossiê...";
+            btn.disabled = true;
+
+            const payload = {
+                nome: document.getElementById('edit-cli-nome').value,
+                telefone: document.getElementById('edit-cli-telefone').value, // Mantém a digitação visual
+                pontos: parseInt(document.getElementById('edit-cli-pontos').value) || 0,
+                cashback: parseMoeda(document.getElementById('edit-cli-cashback').value),
+                bloqueado: document.getElementById('edit-cli-bloqueado').checked
+            };
+
+            try {
+                const res = await fetch(`/api/gestao/clientes/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if(res.ok) {
+                    alertaPremium("Dossiê do cliente atualizado com sucesso!", "CRM Atualizado", "sucesso");
+                    document.getElementById('modal-editar-cliente').classList.replace('flex', 'hidden');
+                    carregarClientesPainel();
+                } else {
+                    alertaPremium("Erro ao salvar cliente no banco.", "Falha", "erro");
+                }
+            } catch(err) {
+                alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
+            }
+            btn.innerHTML = "Gravar Dossiê do Cliente";
+            btn.disabled = false;
         }
     </script>
 </body>
