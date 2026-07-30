@@ -1676,15 +1676,17 @@ def listar_clientes_painel(db: Session = Depends(get_db)):
     return lista_clientes
 
 @app.put("/api/gestao/clientes/{cliente_id}")
-def atualizar_dossie_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
+def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
         cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
         if not cliente:
             raise HTTPException(status_code=404, detail="Cliente não encontrado na base.")
         
-        # Injeção dinâmica de dados (Só atualiza o que for enviado)
         if "nome" in dados: cliente.nome = dados["nome"]
         if "telefone" in dados: cliente.telefone = dados["telefone"]
+        if "cpf" in dados: cliente.cpf = dados["cpf"]
+        if "cep" in dados: cliente.cep = dados["cep"]
+        if "endereco" in dados: cliente.endereco = dados["endereco"]
         if "pontos" in dados: cliente.pontos = dados["pontos"]
         if "cashback" in dados: cliente.cashback = dados["cashback"]
         if "bloqueado" in dados: cliente.bloqueado = dados["bloqueado"]
@@ -1694,6 +1696,25 @@ def atualizar_dossie_cliente(cliente_id: int, dados: dict, db: Session = Depends
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/gestao/clientes/{cliente_id}/pedidos")
+def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
+    try:
+        cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
+        if not cliente: return []
+        
+        # Busca os últimos 10 pedidos do cliente pelo telefone
+        pedidos = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == cliente.telefone).order_by(PedidoModel.id.desc()).limit(10).all()
+        
+        return [{
+            "id": p.id,
+            "data": p.data_pedido.strftime("%d/%m/%Y %H:%M") if p.data_pedido else "N/A",
+            "valor": p.valor_total,
+            "status": p.status,
+            "pagamento": p.forma_pagamento
+        } for p in pedidos]
+    except Exception as e:
+        return []
 
 @app.put("/api/gestao/clientes/{cliente_id}/editar")
 def editar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
