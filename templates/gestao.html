@@ -1818,45 +1818,103 @@
             alertaPremium("Lanche Registrado no Cardápio!", "Sucesso", "sucesso"); 
         }
 
-        async function carregarCardapio() { 
+       async function carregarCardapio() { 
             const res = await fetch('/api/cardapio'); 
             const produtos = await res.json(); 
             
-            document.getElementById('lista-cardapio').innerHTML = produtos.map(x => `
-            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                <td class="py-4 px-6 font-bold text-slate-700">${x.nome} <br> <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded inline-block mt-1">${x.categoria}</span></td>
-                <td class="py-4 px-6 font-black text-emerald-500 text-lg">R$ ${x.preco_venda.toFixed(2).replace('.', ',')}</td>
-                <td class="py-4 px-6 text-center space-x-2">
-                    <button onclick="abrirModalCriarGrupo(${x.id}, '${x.nome}')" class="text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-colors">Adicionais</button> 
-                    <button onclick="if(confirm('Apagar lanche do cardápio?')){fetch('/api/gestao/produto/${x.id}', {method: 'DELETE'}).then(carregarCardapio)}" class="text-red-400 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
-                </td>
-            </tr>`).join(''); 
+            document.getElementById('lista-cardapio').innerHTML = produtos.map(x => {
+                // Se a coluna ativo for false ou 0, mostra pausado (Trata undefined como true por padrão)
+                const isAtivo = x.ativo !== false && x.ativo !== 0; 
+                const badgeStatus = isAtivo ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ml-2">Ativo</span>' : '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ml-2">Pausado</span>';
+
+                return `
+                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors ${!isAtivo ? 'opacity-60 bg-slate-50/50' : ''}">
+                    <td class="py-4 px-6 font-bold text-slate-800 flex items-center">
+                        <div class="w-10 h-10 rounded-lg bg-slate-200 mr-3 overflow-hidden shrink-0 border border-slate-300">
+                            ${x.imagem_url ? `<img src="${x.imagem_url}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-slate-400"><i class="ph-bold ph-image"></i></div>`}
+                        </div>
+                        <div>
+                            ${x.nome} ${badgeStatus}
+                            <br> <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded inline-block mt-1">${x.categoria}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6 font-black text-emerald-500 text-lg">R$ ${x.preco_venda.toFixed(2).replace('.', ',')}</td>
+                    <td class="py-4 px-6 text-center space-x-2">
+                        <button onclick="abrirModalEditarProduto(${x.id})" class="text-blue-600 bg-blue-50 border border-blue-100 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-pencil-simple text-sm"></i></button> 
+                        <button onclick="abrirModalCriarGrupo(${x.id}, '${x.nome}')" class="text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-colors shadow-sm">Extras</button> 
+                        <button onclick="if(confirm('Tem certeza? Isso apagará o lanche permanentemente!')){fetch('/api/gestao/produto/${x.id}', {method: 'DELETE'}).then(carregarCardapio)}" class="text-red-400 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
+                    </td>
+                </tr>`;
+            }).join(''); 
         }
 
-        function abrirModalCriarGrupo(id, nome) { 
-            document.getElementById('add-grupo-prod-id').value = id; 
-            document.getElementById('add-grupo-prod-nome').innerText = "LANCHE: " + nome; 
-            itensDoGrupoLocal = []; 
-            document.getElementById('lista-add-itens').innerHTML = ''; 
-            document.getElementById('modal-add-grupo').classList.replace('hidden', 'flex'); 
+        // --- FUNÇÕES DE EDIÇÃO DE PRODUTO ---
+        async function abrirModalEditarProduto(id) {
+            try {
+                const res = await fetch('/api/cardapio');
+                const produtos = await res.json();
+                const p = produtos.find(x => x.id === id);
+                if(!p) return;
+
+                document.getElementById('edit-prod-id').value = p.id;
+                document.getElementById('edit-prod-nome').value = p.nome;
+                document.getElementById('edit-prod-preco').value = formataMoedaParaInput(p.preco_venda);
+                document.getElementById('edit-prod-desc').value = p.descricao || "";
+                document.getElementById('edit-prod-img').value = p.imagem_url || "";
+                
+                carregarCategoriasSelect('edit-prod-categoria', listaCatCardapio);
+                setTimeout(() => { document.getElementById('edit-prod-categoria').value = p.categoria; }, 100);
+
+                const isAtivo = p.ativo !== false && p.ativo !== 0;
+                const checkAtivo = document.getElementById('edit-prod-ativo');
+                checkAtivo.checked = isAtivo;
+                document.getElementById('label-status-prod').innerText = isAtivo ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
+                
+                checkAtivo.onchange = (e) => {
+                    document.getElementById('label-status-prod').innerText = e.target.checked ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
+                };
+
+                document.getElementById('modal-editar-produto').classList.replace('hidden', 'flex');
+            } catch(e) {
+                alertaPremium("Erro ao carregar dados do produto.", "Erro", "erro");
+            }
         }
 
-        function adicionarItemAoGrupoLocal() { 
-            const nome = document.getElementById('add-item-nome').value; 
-            const preco = parseMoeda(document.getElementById('add-item-preco').value); 
-            
-            if(nome) { 
-                itensDoGrupoLocal.push({ nome: nome, preco_adicional: preco }); 
+        async function salvarEdicaoProduto(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-prod-id').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+            btn.disabled = true;
+
+            const payload = {
+                nome: document.getElementById('edit-prod-nome').value,
+                preco: parseMoeda(document.getElementById('edit-prod-preco').value),
+                descricao: document.getElementById('edit-prod-desc').value,
+                imagem_url: document.getElementById('edit-prod-img').value,
+                categoria: document.getElementById('edit-prod-categoria').value,
+                ativo: document.getElementById('edit-prod-ativo').checked
+            };
+
+            try {
+                const res = await fetch(`/api/gestao/produto/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
                 
-                document.getElementById('lista-add-itens').innerHTML = itensDoGrupoLocal.map((x, i) => `
-                <div class="flex justify-between items-center border border-slate-200 bg-slate-50 rounded-xl p-3 mb-2 shadow-sm">
-                    <span class="font-bold text-slate-700 text-sm">${x.nome} <span class="text-emerald-500 ml-2 font-black">(+ R$ ${x.preco_adicional.toFixed(2).replace('.',',')})</span></span>
-                    <button type="button" onclick="itensDoGrupoLocal.splice(${i}, 1); adicionarItemAoGrupoLocal()" class="text-red-400 hover:text-red-600"><i class="ph-bold ph-trash"></i></button>
-                </div>`).join(''); 
-                
-                document.getElementById('add-item-nome').value = ''; 
-                document.getElementById('add-item-preco').value = ''; 
-            } 
+                if(res.ok) {
+                    alertaPremium("Produto atualizado e sincronizado com o Cardápio e PDV!", "Edição Salva", "sucesso");
+                    document.getElementById('modal-editar-produto').classList.replace('flex', 'hidden');
+                    carregarCardapio();
+                } else {
+                    alertaPremium("Erro ao salvar alterações no banco.", "Falha", "erro");
+                }
+            } catch(err) {
+                alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
+            }
+            btn.innerHTML = "Salvar Alterações";
+            btn.disabled = false;
         }
 
         async function salvarGrupoComplemento(e) { 
