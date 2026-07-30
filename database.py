@@ -211,6 +211,8 @@ def inicializar_banco():
         "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_gasto_minimo FLOAT DEFAULT 0.0;",
         "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_resgate FLOAT DEFAULT 0.0;",
         "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_elegibilidade VARCHAR DEFAULT 'TODOS';",
+        "ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
+        "ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT TRUE;",
         
         # Restante das colunas do RH e Clientes
         "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
