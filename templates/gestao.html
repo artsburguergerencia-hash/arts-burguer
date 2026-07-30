@@ -477,69 +477,174 @@
             <!-- ============================================== -->
             <!-- ABA: SETUP E CONFIG (Limpa e Unificada) -->
             <!-- ============================================== -->
+            <!-- ============================================== -->
+            <!-- ABA: SETUP E CONFIG (Enterprise V5) -->
+            <!-- ============================================== -->
             <div id="aba-configuracoes" class="painel hidden">
-                <div class="bg-white rounded-3xl border border-slate-200 p-10 max-w-5xl mx-auto shadow-sm">
-                    <h3 class="text-2xl font-black mb-2 flex items-center"><i class="ph-fill ph-gear-six text-slate-400 mr-3"></i> Setup Central da Franquia</h3>
-                    <p class="text-sm text-slate-500 mb-8 font-medium">Todas as alterações feitas aqui refletem em tempo real no Site, KDS e PDV.</p>
+                <div class="bg-white rounded-[2rem] border border-slate-200 p-8 md:p-12 max-w-6xl mx-auto shadow-sm">
+                    <h3 class="text-2xl font-black mb-2 flex items-center tracking-tight"><i class="ph-fill ph-gear-six text-slate-400 mr-3"></i> Setup Central da Franquia</h3>
+                    <p class="text-sm text-slate-500 mb-10 font-medium">Configure a operação, integrações e o motor de fidelidade em tempo real.</p>
                     
-                    <form onsubmit="salvarConfiguracoesLoja(event)" class="space-y-8">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Estabelecimento</label><input type="text" id="conf-nome" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500"></div>
+                    <form onsubmit="salvarConfiguracoesLoja(event)" class="space-y-10">
+                        
+                        <!-- BLOCO 1: Informações Base -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="lg:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Estabelecimento</label><input type="text" id="conf-nome" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500 shadow-inner"></div>
+                            
                             <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Upload da Logo da Empresa</label>
-        <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
-            <img id="preview-logo-setup" src="" class="w-full h-full object-cover hidden">
-            <i id="icone-logo-setup" class="ph-bold ph-image text-slate-400 text-xl"></i>
-        </div>
-        <input type="hidden" id="conf-logo-base64">
-                        <label class="bg-white border border-slate-200 text-slate-600 px-4 py-3 rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-50 transition-colors w-full text-center shadow-sm">
-            Escolher Imagem
-            <input type="file" accept="image/*" class="hidden" onchange="lerLogoSetup(event)">
-        </label>
-    </div>
-</div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CNPJ</label><input type="text" id="conf-cnpj" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Inscrição Estadual (IE)</label><input type="text" id="conf-ie" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Telefone WhatsApp</label><input type="text" id="conf-telefone" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Horário de Funcionamento</label><input type="text" id="conf-horario" placeholder="Ex: Seg a Sab - 18h às 23h" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
-                            <div class="col-span-1 md:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço Físico</label><input type="text" id="conf-endereco" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Upload da Logo</label>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                        <img id="preview-logo-setup" src="" class="w-full h-full object-cover hidden">
+                                        <i id="icone-logo-setup" class="ph-bold ph-image text-slate-400 text-xl"></i>
+                                    </div>
+                                    <input type="hidden" id="conf-logo-base64">
+                                    <label class="bg-white border border-slate-200 text-slate-600 px-4 py-3 rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-50 transition-colors w-full text-center shadow-sm">
+                                        Escolher Arquivo
+                                        <input type="file" accept="image/*" class="hidden" onchange="lerLogoSetup(event)">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CNPJ</label><input type="text" id="conf-cnpj" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
+                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Inscrição Estadual</label><input type="text" id="conf-ie" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
+                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Telefone / WhatsApp</label><input type="text" id="conf-telefone" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
+                            
+                            <div class="lg:col-span-1"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Horário de Func.</label><input type="text" id="conf-horario" placeholder="Ex: 18h às 23h" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
+                            <div class="lg:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label><input type="text" id="conf-endereco" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-slate-100 pt-8">
-                            <div class="bg-blue-50 border border-blue-100 p-6 rounded-2xl">
-                                <h4 class="text-sm font-black text-blue-900 mb-4 uppercase tracking-widest">Regras de Operação</h4>
-                                <label class="block text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1">Tempo Médio de Preparo (Minutos)</label>
-                                <input type="number" id="conf-tempo" class="w-full px-4 py-3 border border-blue-200 bg-white rounded-xl mb-4 font-bold outline-none focus:border-blue-500">
+                        <!-- BLOCO 2: Operação e Motor de Retenção -->
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 border-t border-slate-100 pt-10">
+                            <!-- Regras da Cozinha -->
+                            <div class="bg-blue-50/50 border border-blue-100 p-8 rounded-[1.5rem]">
+                                <h4 class="text-sm font-black text-blue-900 mb-6 uppercase tracking-widest flex items-center"><i class="ph-fill ph-cooking-pot text-xl mr-2 text-blue-500"></i> Regras da Loja</h4>
+                                <label class="block text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-2">Tempo Médio de Preparo (Minutos)</label>
+                                <input type="number" id="conf-tempo" class="w-full px-4 py-3 border border-blue-200 bg-white rounded-xl mb-6 font-black outline-none focus:border-blue-500 shadow-sm text-blue-700">
                                 
-                                <div class="space-y-3">
-                                    <label class="flex items-center cursor-pointer"><input type="checkbox" id="conf-delivery" class="w-5 h-5 text-blue-600 rounded mr-2"><span class="font-bold text-sm text-blue-900">Aceitar Delivery</span></label>
-                                    <label class="flex items-center cursor-pointer"><input type="checkbox" id="conf-retirada" class="w-5 h-5 text-blue-600 rounded mr-2"><span class="font-bold text-sm text-blue-900">Aceitar Retirada Balcão</span></label>
-                                    <label class="flex items-center cursor-pointer"><input type="checkbox" id="conf-auto" class="w-5 h-5 text-blue-600 rounded mr-2"><span class="font-bold text-sm text-blue-900">Aceite Automático de Pedidos (KDS)</span></label>
+                                <div class="space-y-4">
+                                    <label class="flex items-center cursor-pointer p-3 bg-white border border-blue-100 rounded-xl shadow-sm hover:border-blue-300 transition-colors"><input type="checkbox" id="conf-delivery" class="w-5 h-5 text-blue-600 rounded mr-3 accent-blue-600"><span class="font-bold text-sm text-blue-900">Delivery Ativo</span></label>
+                                    <label class="flex items-center cursor-pointer p-3 bg-white border border-blue-100 rounded-xl shadow-sm hover:border-blue-300 transition-colors"><input type="checkbox" id="conf-retirada" class="w-5 h-5 text-blue-600 rounded mr-3 accent-blue-600"><span class="font-bold text-sm text-blue-900">Retirada Balcão Ativa</span></label>
+                                    <label class="flex items-center cursor-pointer p-3 bg-white border border-blue-100 rounded-xl shadow-sm hover:border-blue-300 transition-colors"><input type="checkbox" id="conf-auto" class="w-5 h-5 text-blue-600 rounded mr-3 accent-blue-600"><span class="font-bold text-sm text-blue-900">Aceite Automático (KDS)</span></label>
                                 </div>
                             </div>
                             
-                            <div class="bg-amber-50 border border-amber-100 p-6 rounded-2xl">
-    <h4 class="text-sm font-black text-amber-900 mb-4 uppercase tracking-widest flex items-center"><i class="ph-fill ph-crown mr-2 text-xl"></i> Motor de Retenção</h4>
-    <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1">Estratégia de Fidelidade</label>
-    <select id="conf-fidelidade" class="w-full px-4 py-3 border border-amber-200 bg-white rounded-xl font-bold text-amber-900 outline-none focus:border-amber-500 mb-4 shadow-sm">
-        <option value="CASHBACK">Cashback Financeiro</option>
-        <option value="PONTOS">Acúmulo de Pontos</option>
-        <option value="DESATIVADO">Desativado</option>
-    </select>
-    
-    <div class="grid grid-cols-2 gap-2">
-        <div>
-            <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1">% Cashback</label>
-            <input type="number" id="conf-cashback-pct" placeholder="Ex: 5" class="w-full px-4 py-3 border border-amber-200 bg-white rounded-xl font-black text-amber-700 outline-none focus:border-amber-500 shadow-sm text-center">
-        </div>
-        <div>
-            <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1">Pts para Troca</label>
-            <input type="number" id="conf-pontos-troca" placeholder="Ex: 10" class="w-full px-4 py-3 border border-amber-200 bg-white rounded-xl font-black text-amber-700 outline-none focus:border-amber-500 shadow-sm text-center">
-        </div>
-    </div>
-    <p class="text-[10px] font-bold text-amber-700/70 mt-3 leading-relaxed">Defina a porcentagem devolvida em R$ ou a quantidade de compras necessárias para liberar o resgate de um lanche.</p>
-</div>
+                            <!-- O NOVO MOTOR DE FIDELIDADE AVANÇADO -->
+                            <div class="bg-amber-50/60 border border-amber-200 p-8 rounded-[1.5rem]">
+                                <h4 class="text-sm font-black text-amber-900 mb-6 uppercase tracking-widest flex items-center"><i class="ph-fill ph-crown mr-2 text-2xl text-amber-500"></i> Motor de Retenção VIP</h4>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1">Estratégia Principal</label>
+                                        <select id="conf-fidelidade" class="w-full px-4 py-3 border border-amber-200 bg-white rounded-xl font-bold text-amber-900 outline-none focus:border-amber-500 shadow-sm">
+                                            <option value="CASHBACK">Cashback Financeiro</option>
+                                            <option value="PONTOS">Acúmulo de Pontos</option>
+                                            <option value="DESATIVADO">Desativado</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1">Modo de Acúmulo</label>
+                                        <select id="conf-regra-acumulo" class="w-full px-4 py-3 border border-amber-200 bg-white rounded-xl font-bold text-amber-900 outline-none focus:border-amber-500 shadow-sm text-sm">
+                                            <option value="POR_PEDIDO">Fixo por Pedido</option>
+                                            <option value="POR_VALOR">Por Valor Gasto (R$)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-3 mb-6">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1 leading-tight">Ganho <br>(Pts/%)</label>
+                                        <input type="number" step="0.01" id="conf-fidelidade-ganho" placeholder="Ex: 5" class="w-full px-3 py-3 border border-amber-200 bg-white rounded-xl font-black text-amber-700 outline-none focus:border-amber-500 shadow-sm text-center">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1 leading-tight">A Cada <br>(R$ Gasto)</label>
+                                        <input type="number" step="0.01" id="conf-fidelidade-gasto" placeholder="Ex: 10" class="w-full px-3 py-3 border border-amber-200 bg-white rounded-xl font-black text-amber-700 outline-none focus:border-amber-500 shadow-sm text-center">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-1 leading-tight">Meta <br>(Resgate)</label>
+                                        <input type="number" step="0.01" id="conf-fidelidade-resgate" placeholder="Ex: 10" class="w-full px-3 py-3 border border-amber-200 bg-white rounded-xl font-black text-amber-700 outline-none focus:border-amber-500 shadow-sm text-center">
+                                    </div>
+                                </div>
+
+                                <div class="pt-5 border-t border-amber-200/50">
+                                    <label class="block text-[10px] font-black text-amber-900 uppercase tracking-wider mb-3">Quais Produtos Participam?</label>
+                                    <div class="flex flex-col space-y-3">
+                                        <label class="flex items-center cursor-pointer text-amber-900 text-sm font-bold bg-white p-3 rounded-xl border border-amber-100 shadow-sm hover:border-amber-300">
+                                            <input type="radio" name="conf_elegibilidade" value="TODOS" id="eleg-todos" checked class="mr-3 accent-amber-500 w-5 h-5">
+                                            Todo o Cardápio
+                                        </label>
+                                        <label class="flex items-center cursor-pointer text-amber-900 text-sm font-bold bg-white p-3 rounded-xl border border-amber-100 shadow-sm hover:border-amber-300">
+                                            <input type="radio" name="conf_elegibilidade" value="ESPECIFICOS" id="eleg-especificos" class="mr-3 accent-amber-500 w-5 h-5">
+                                            Apenas Lanches Selecionados
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BLOCO 3: Cadastros Dinâmicos (Corrigido o Grid) -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 border-t border-slate-100 pt-10">
+                            <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-inner">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Categorias (Cardápio)</label>
+                                <div class="flex space-x-2 mb-4">
+                                    <input type="text" id="input-cat-cardapio" placeholder="Ex: Bebidas" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500 bg-white">
+                                    <button type="button" onclick="addTagSetup('cardapio')" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-slate-800 transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                <div id="tags-cardapio" class="flex flex-wrap gap-2"></div>
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-inner">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Categorias (Fornecedores)</label>
+                                <div class="flex space-x-2 mb-4">
+                                    <input type="text" id="input-cat-fornecedor" placeholder="Ex: Embalagens" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500 bg-white">
+                                    <button type="button" onclick="addTagSetup('fornecedor')" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-slate-800 transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                <div id="tags-fornecedor" class="flex flex-wrap gap-2"></div>
+                            </div>
+
+                            <div class="bg-emerald-50/50 border border-emerald-100 p-6 rounded-2xl shadow-inner">
+                                <label class="block text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-3">Planos de Saúde / Benefícios</label>
+                                <div class="flex space-x-2 mb-4">
+                                    <input type="text" id="input-beneficio" placeholder="Ex: Odonto SulAmérica" class="flex-1 px-4 py-2 rounded-xl border border-emerald-200 outline-none text-sm font-bold focus:border-emerald-500 bg-white">
+                                    <button type="button" onclick="addTagSetup('beneficio')" class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-emerald-700 transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                <div id="tags-beneficio" class="flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- BLOCO 4: Pagamentos e API -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 border-t border-slate-100 pt-10">
+                            <div class="bg-slate-50 border border-slate-200 p-8 rounded-2xl shadow-inner">
+                                <h4 class="text-sm font-black text-slate-800 mb-4 uppercase tracking-widest">Meios de Pagamento Ativos</h4>
+                                <div class="flex space-x-2 mb-6">
+                                    <input type="text" id="input-pagamento" placeholder="Ex: Vale Refeição (VR)" class="flex-1 px-4 py-3.5 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500 bg-white">
+                                    <button type="button" onclick="addTagSetup('pagamento')" class="bg-brand-500 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-brand-600 transition-colors">Cadastrar</button>
+                                </div>
+                                <div id="tags-pagamento" class="flex flex-wrap gap-2 mt-4 border-t border-slate-200 pt-6"></div>
+                            </div>
+
+                            <div class="bg-slate-900 p-8 rounded-2xl text-white shadow-xl relative overflow-hidden">
+                                <div class="absolute top-0 right-0 opacity-10"><i class="ph-fill ph-lock-key text-[150px]"></i></div>
+                                <h4 class="text-sm font-black text-brand-400 mb-6 uppercase tracking-widest flex items-center relative z-10"><i class="ph-fill ph-plugs-connected mr-2 text-xl"></i> Integrações Seguras (API Keys)</h4>
+                                <div class="space-y-5 relative z-10">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Mercado Pago / Asaas (Token)</label>
+                                        <input type="password" placeholder="APP_USR-..." class="w-full px-4 py-3.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-mono text-white outline-none focus:border-brand-500 transition-colors">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Token de Disparo WhatsApp</label>
+                                        <input type="password" placeholder="wapp_..." class="w-full px-4 py-3.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-mono text-white outline-none focus:border-brand-500 transition-colors">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-5 rounded-2xl text-lg shadow-[0_15px_40px_rgba(255,71,87,0.4)] transition-transform active:scale-95 uppercase tracking-widest mt-4">
+                            Salvar Motor Corporativo no Banco de Dados
+                        </button>
+                    </form>
+                </div>
+            </div>
 
                         <!-- CADASTROS DINÂMICOS (Categorias e Planos) -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-100 pt-8 mt-4">
