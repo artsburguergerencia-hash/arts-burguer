@@ -1206,6 +1206,27 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.put("/api/gestao/produto/{produto_id}")
+def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db)):
+    try:
+        produto = db.query(Produto).filter(Produto.id == produto_id).first()
+        if not produto:
+            raise HTTPException(status_code=404, detail="Produto não encontrado.")
+        
+        if "nome" in dados: produto.nome = dados["nome"]
+        if "descricao" in dados: produto.descricao = dados["descricao"]
+        if "preco" in dados: produto.preco_venda = dados["preco"]
+        if "imagem_url" in dados: produto.imagem_url = dados["imagem_url"]
+        if "categoria" in dados: produto.categoria = dados["categoria"]
+        if "ativo" in dados: produto.ativo = dados["ativo"]
+        if "participa_fidelidade" in dados: produto.participa_fidelidade = dados["participa_fidelidade"]
+        
+        db.commit()
+        return {"mensagem": "Produto atualizado com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/gestao/insumos")
 def listar_insumos_disp(db: Session = Depends(get_db)):
