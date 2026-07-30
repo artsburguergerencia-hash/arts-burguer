@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Query, Request
+from fastapi import FastAPI, Depends, HTTPException, Query, Request, Body
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -8,7 +8,6 @@ from datetime import datetime, date
 from sqlalchemy import desc
 import uvicorn
 from passlib.context import CryptContext
-from fastapi import Body
 
 # ==========================================
 # IMPORTAÇÕES DOS MÓDULOS (ART'S BURGUER)
