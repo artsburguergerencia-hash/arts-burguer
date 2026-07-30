@@ -110,7 +110,7 @@
         </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto bg-slate-50">
+    <main class="flex-1 overflow-y-auto bg-slate-50 relative">
         <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-slate-200 shadow-sm sticky top-0 z-10">
             <h2 id="titulo-painel" class="text-xl font-black text-slate-800 tracking-tight">Painel de Gestão Corporativa</h2>
         </header>
@@ -195,7 +195,6 @@
                     </div>
                     
                     <div id="lista-solicitacoes-rh" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <!-- Cards das solicitações são injetados aqui via JS -->
                         <div class="col-span-2 text-center py-6 text-indigo-400 font-medium text-sm">
                             <i class="ph-fill ph-check-circle text-4xl mb-2 opacity-50"></i><br>
                             Nenhuma solicitação ou atestado pendente no momento.
@@ -305,7 +304,7 @@
             </div>
 
             <!-- ============================================== -->
-            <!-- ABA: CARDÁPIO (Compactada) -->
+            <!-- ABA: CARDÁPIO -->
             <!-- ============================================== -->
             <div id="aba-cardapio" class="painel hidden">
                 <div class="bg-white rounded-2xl p-8 mb-8 border border-slate-200 shadow-sm">
@@ -350,7 +349,7 @@
             </div>
             
             <!-- ============================================== -->
-            <!-- ABA: ESTOQUE (Compactada) -->
+            <!-- ABA: ESTOQUE -->
             <!-- ============================================== -->
             <div id="aba-estoque" class="painel hidden">
                 <div class="bg-white rounded-2xl p-8 mb-8 border border-slate-200 shadow-sm">
@@ -383,7 +382,7 @@
             </div>
             
             <!-- ============================================== -->
-            <!-- ABA: FORNECEDORES (Compactada) -->
+            <!-- ABA: FORNECEDORES -->
             <!-- ============================================== -->
             <div id="aba-fornecedores" class="painel hidden">
                 <div class="bg-white rounded-2xl p-8 mb-8 border border-slate-200 shadow-sm">
@@ -410,7 +409,7 @@
             </div>
             
             <!-- ============================================== -->
-            <!-- ABA: FINANCEIRO (Compactada) -->
+            <!-- ABA: FINANCEIRO -->
             <!-- ============================================== -->
             <div id="aba-financeiro" class="painel hidden">
                 <div class="grid grid-cols-2 gap-6 mb-8">
@@ -456,7 +455,7 @@
             </div>
             
             <!-- ============================================== -->
-            <!-- ABA: CLIENTES (Compactada) -->
+            <!-- ABA: CLIENTES -->
             <!-- ============================================== -->
             <div id="aba-clientes" class="painel hidden">
                 <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
@@ -473,10 +472,7 @@
                     </table>
                 </div>
             </div>
-           
-            <!-- ============================================== -->
-            <!-- ABA: SETUP E CONFIG (Limpa e Unificada) -->
-            <!-- ============================================== -->
+            
             <!-- ============================================== -->
             <!-- ABA: SETUP E CONFIG (Enterprise V5) -->
             <!-- ============================================== -->
@@ -582,7 +578,7 @@
                             </div>
                         </div>
 
-                        <!-- BLOCO 3: Cadastros Dinâmicos (Corrigido o Grid) -->
+                        <!-- BLOCO 3: Cadastros Dinâmicos -->
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 border-t border-slate-100 pt-10">
                             <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-inner">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Categorias (Cardápio)</label>
@@ -644,75 +640,9 @@
                         </button>
                     </form>
                 </div>
-            </div>
-
-                        <!-- CADASTROS DINÂMICOS (Categorias e Planos) -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-100 pt-8 mt-4">
-                            <!-- Categorias do Cardápio -->
-                            <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-inner">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Categorias (Cardápio)</label>
-                                <div class="flex space-x-2 mb-4">
-                                    <input type="text" id="input-cat-cardapio" placeholder="Ex: Bebidas" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500 bg-white">
-                                    <button type="button" onclick="addTagSetup('cardapio')" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-slate-800 transition-colors"><i class="ph-bold ph-plus"></i></button>
-                                </div>
-                                <div id="tags-cardapio" class="flex flex-wrap gap-2"></div>
-                            </div>
-
-                            <!-- Categorias de Fornecedores -->
-                            <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-inner">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Categorias (Fornecedores)</label>
-                                <div class="flex space-x-2 mb-4">
-                                    <input type="text" id="input-cat-fornecedor" placeholder="Ex: Embalagens" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500 bg-white">
-                                    <button type="button" onclick="addTagSetup('fornecedor')" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-slate-800 transition-colors"><i class="ph-bold ph-plus"></i></button>
-                                </div>
-                                <div id="tags-fornecedor" class="flex flex-wrap gap-2"></div>
-                            </div>
-
-                            <!-- Planos de Saúde e Benefícios -->
-                            <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-inner">
-                                <label class="block text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Planos de Saúde / Benefícios</label>
-                                <div class="flex space-x-2 mb-4">
-                                    <input type="text" id="input-beneficio" placeholder="Ex: Odonto SulAmérica" class="flex-1 px-4 py-2 rounded-xl border border-emerald-200 outline-none text-sm font-bold focus:border-emerald-500 bg-white">
-                                    <button type="button" onclick="addTagSetup('beneficio')" class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-emerald-700 transition-colors"><i class="ph-bold ph-plus"></i></button>
-                                </div>
-                                <div id="tags-beneficio" class="flex flex-wrap gap-2"></div>
-                            </div>
-                        </div>
-
-                        <!-- CADASTRO DE PAGAMENTOS E INTEGRAÇÕES (ÚNICO E LIMPO) -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 pt-8 mt-4">
-                            <!-- Formas de Pagamento Dinâmicas -->
-                            <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-inner">
-                                <h4 class="text-sm font-black text-slate-800 mb-4 uppercase tracking-widest">Meios de Pagamento Ativos</h4>
-                                <div class="flex space-x-2 mb-4">
-                                    <input type="text" id="input-pagamento" placeholder="Ex: Vale Refeição (VR)" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm font-bold focus:border-brand-500 bg-white">
-                                    <button type="button" onclick="addTagSetup('pagamento')" class="bg-brand-500 text-white px-5 py-3 rounded-xl font-black shadow-md hover:bg-brand-600 transition-colors">Cadastrar</button>
-                                </div>
-                                <div id="tags-pagamento" class="flex flex-wrap gap-2 mt-4 border-t border-slate-200 pt-4"></div>
-                            </div>
-
-                            <!-- Integrações Seguras API -->
-                            <div>
-                                <h4 class="text-sm font-black text-slate-800 mb-4 uppercase tracking-widest">Integrações Seguras (API Keys)</h4>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Mercado Pago / Asaas (Token)</label>
-                                        <input type="password" placeholder="APP_USR-..." class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm font-mono outline-none focus:border-brand-500">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Token de Disparo WhatsApp</label>
-                                        <input type="password" placeholder="wapp_..." class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm font-mono outline-none focus:border-brand-500">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-5 rounded-2xl text-lg shadow-xl shadow-slate-900/20 transition-transform active:scale-95 uppercase tracking-widest mt-8">
-                            Salvar Configurações no Banco de Dados
-                        </button>
-                    </form>
-                </div>
             </div> 
+
+        </div> 
     </main>
 
     <!-- MEGA MODAL DE DOSSIÊ DO RH (3 ABAS) -->
@@ -950,10 +880,50 @@
         </div>
     </div>
 
+    <!-- ALERTA CUSTOMIZADO PREMIUM -->
+    <div id="alerta-customizado" class="fixed inset-0 bg-slate-900/80 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
+            <div id="alerta-icone-bg" class="w-20 h-20 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
+                <i id="alerta-icone" class="ph-fill ph-bell-ringing text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-800 mb-2 tracking-tight" id="alerta-titulo">Aviso do Sistema</h3>
+            <p class="text-slate-500 text-sm font-medium mb-6 leading-relaxed" id="alerta-mensagem">Mensagem...</p>
+            <button onclick="document.getElementById('alerta-customizado').classList.replace('flex','hidden')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs">
+                Entendi
+            </button>
+        </div>
+    </div>
+
     <!-- ============================================================== -->
     <!-- MOTOR JAVASCRIPT GERAL DO SISTEMA ERP -->
     <!-- ============================================================== -->
     <script>
+        // Esta função substitui o "alert()" padrão do navegador
+        function alertaPremium(mensagem, titulo = "Aviso do Sistema", tipo = "info") {
+            document.getElementById('alerta-titulo').innerText = titulo;
+            document.getElementById('alerta-mensagem').innerText = mensagem;
+            
+            const icone = document.getElementById('alerta-icone');
+            const bg = document.getElementById('alerta-icone-bg');
+            
+            if(tipo === 'sucesso') {
+                icone.className = "ph-fill ph-check-circle text-4xl";
+                bg.className = "w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md";
+            } else if (tipo === 'erro') {
+                icone.className = "ph-fill ph-warning-circle text-4xl";
+                bg.className = "w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md";
+            } else {
+                icone.className = "ph-fill ph-bell-ringing text-4xl";
+                bg.className = "w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md";
+            }
+            
+            document.getElementById('alerta-customizado').classList.replace('hidden', 'flex');
+        }
+        
+        // Sobrescreve o alert nativo do JS temporariamente para aproveitar o código antigo
+        window.alert = function(msg) { alertaPremium(msg); };
+
+
         const diasSemana = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
         const nomesDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
@@ -972,20 +942,6 @@
         // -------------------------
         // UTILITÁRIOS E MÁSCARAS
         // -------------------------
-        function lerLogoSetup(event) {
-    const file = event.target.files[0];
-    if(file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            document.getElementById('conf-logo-base64').value = reader.result;
-            document.getElementById('preview-logo-setup').src = reader.result;
-            document.getElementById('preview-logo-setup').classList.remove('hidden');
-            document.getElementById('icone-logo-setup').classList.add('hidden');
-        };
-        reader.readAsDataURL(file);
-    }
-}
-        
         function mascaraMoeda(input) {
             let v = input.value.replace(/\D/g, '');
             if (v === "") { input.value = ""; return; }
@@ -1034,6 +990,20 @@
                     document.getElementById('dos-foto-base64').value = reader.result;
                     document.getElementById('preview-foto').src = reader.result;
                     document.getElementById('preview-foto-header').src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function lerLogoSetup(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    document.getElementById('conf-logo-base64').value = reader.result;
+                    document.getElementById('preview-logo-setup').src = reader.result;
+                    document.getElementById('preview-logo-setup').classList.remove('hidden');
+                    document.getElementById('icone-logo-setup').classList.add('hidden');
                 };
                 reader.readAsDataURL(file);
             }
@@ -1218,13 +1188,32 @@
                 document.getElementById('conf-endereco').value = conf.endereco || "";
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
                 document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
-                document.getElementById('conf-logo').value = conf.logo_url || "";
+                
+                // Lê a Logo Secreta Base64
+                if(conf.logo_url) {
+                    document.getElementById('conf-logo-base64').value = conf.logo_url;
+                    document.getElementById('preview-logo-setup').src = conf.logo_url;
+                    document.getElementById('preview-logo-setup').classList.remove('hidden');
+                    document.getElementById('icone-logo-setup').classList.add('hidden');
+                }
                 
                 document.getElementById('conf-tempo').value = conf.tempo_preparo || 30; 
                 document.getElementById('conf-delivery').checked = conf.aceita_delivery;
                 document.getElementById('conf-retirada').checked = conf.aceita_retirada; 
                 document.getElementById('conf-auto').checked = conf.aceite_automatico;
                 document.getElementById('conf-fidelidade').value = conf.sistema_fidelidade || "CASHBACK"; 
+                
+                // Dados Avançados de Retenção
+                document.getElementById('conf-regra-acumulo').value = conf.regra_acumulo || "POR_PEDIDO";
+                document.getElementById('conf-fidelidade-ganho').value = conf.fidelidade_ganho || 0;
+                document.getElementById('conf-fidelidade-gasto').value = conf.fidelidade_gasto_minimo || 0;
+                document.getElementById('conf-fidelidade-resgate').value = conf.fidelidade_resgate || 0;
+                
+                if(conf.fidelidade_elegibilidade === "ESPECIFICOS") {
+                    document.getElementById('eleg-especificos').checked = true;
+                } else {
+                    document.getElementById('eleg-todos').checked = true;
+                }
                 
                 // Carrega os arrays do banco e joga nas tags
                 listaCatCardapio = conf.categorias_cardapio ? conf.categorias_cardapio.split(',').filter(x => x.trim() !== "") : ["Burger Artesanal", "Bebidas"];
@@ -1234,7 +1223,7 @@
                 
                 renderTagsSetup('cardapio'); renderTagsSetup('fornecedor'); renderTagsSetup('beneficio'); renderTagsSetup('pagamento');
                 
-                // Popula os Selects das outras abas (Se existirem na tela)
+                // Popula os Selects das outras abas
                 carregarCategoriasSelect('prod-categoria', listaCatCardapio); 
                 carregarCategoriasSelect('forn-cat', listaCatFornecedor);
                 carregarCategoriasSelect('dos-plano', listaBeneficios); 
@@ -1260,12 +1249,19 @@
                 horario_funcionamento: document.getElementById('conf-horario').value,
                 endereco: document.getElementById('conf-endereco').value, 
                 telefone: document.getElementById('conf-telefone').value, 
-                logo_url: document.getElementById('conf-logo').value, 
-                tempo_preparo: parseInt(document.getElementById('conf-tempo').value) || 30, // Blindagem Anti-NaN
+                logo_url: document.getElementById('conf-logo-base64').value, 
+                tempo_preparo: parseInt(document.getElementById('conf-tempo').value) || 30,
                 aceita_delivery: document.getElementById('conf-delivery').checked, 
                 aceita_retirada: document.getElementById('conf-retirada').checked, 
                 aceite_automatico: document.getElementById('conf-auto').checked, 
+                
+                // Motor de Retenção Dinâmico
                 sistema_fidelidade: document.getElementById('conf-fidelidade').value, 
+                regra_acumulo: document.getElementById('conf-regra-acumulo').value,
+                fidelidade_ganho: parseFloat(document.getElementById('conf-fidelidade-ganho').value) || 0,
+                fidelidade_gasto_minimo: parseFloat(document.getElementById('conf-fidelidade-gasto').value) || 0,
+                fidelidade_resgate: parseFloat(document.getElementById('conf-fidelidade-resgate').value) || 0,
+                fidelidade_elegibilidade: document.querySelector('input[name="conf_elegibilidade"]:checked').value,
                 
                 // Salva os arrays convertidos em texto de volta pro banco
                 categorias_cardapio: listaCatCardapio.join(','),
@@ -1287,14 +1283,14 @@
                 }); 
                 
                 if(res.ok) {
-                    alert("✅ Servidor Master Atualizado! Configurações salvas com sucesso."); 
+                    alertaPremium("✅ Servidor Master Atualizado! Configurações salvas com sucesso.", "Operação Concluída", "sucesso"); 
                     carregarConfiguracoesInit();
                 } else {
                     const data = await res.json();
-                    alert("❌ O Banco de Dados recusou: " + data.detail);
+                    alertaPremium("❌ O Banco de Dados recusou: " + data.detail, "Falha de Sincronização", "erro");
                 }
             } catch(err) {
-                alert("❌ Falha de Rede ou Servidor Fora do Ar.");
+                alertaPremium("❌ Falha de Rede ou Servidor Fora do Ar.", "Erro de Conexão", "erro");
             }
             
             btn.innerHTML = textoOriginal;
@@ -1302,7 +1298,7 @@
         }
 
         // ==========================================
-        // RELATÓRIOS E DRE (Corrigido o botão de Filtrar)
+        // RELATÓRIOS E DRE
         // ==========================================
         async function filtrarRelatorios() {
             const dataInicio = document.getElementById('filtro-inicio').value; 
@@ -1358,11 +1354,11 @@
             const res = await fetch('/api/gestao/cargos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({nome: n, permissoes: p}) });
             
             if(res.ok) { 
-                alert("Cargo Corporativo criado e disponibilizado no sistema!"); 
+                alertaPremium("Cargo Corporativo criado e disponibilizado no sistema!", "Sucesso", "sucesso"); 
                 document.getElementById('form-cargo').reset(); 
                 carregarCargosParaRH(); 
             } else { 
-                alert("Este cargo já existe ou erro na nuvem."); 
+                alertaPremium("Este cargo já existe ou erro na nuvem.", "Erro", "erro"); 
             }
         }
 
@@ -1396,7 +1392,7 @@
 
         function copiarLinkAdmissao() { 
             navigator.clipboard.writeText(window.location.origin + "/admissao"); 
-            alert("✅ Link do formulário LGPD copiado para a área de transferência! Envie para o futuro colaborador."); 
+            alertaPremium("Link do formulário LGPD copiado para a área de transferência! Envie para o futuro colaborador.", "Link Copiado", "sucesso"); 
         }
 
         async function cadastrarColaborador(e) {
@@ -1420,14 +1416,14 @@
                 const data = await res.json();
                 
                 if(res.ok) { 
-                    alert(data.mensagem); 
+                    alertaPremium(data.mensagem, "Contrato Gerado", "sucesso"); 
                     document.getElementById('form-rh').reset(); 
                     carregarColaboradores(); 
                 } else { 
-                    alert("Atenção: " + data.detail); 
+                    alertaPremium("Atenção: " + data.detail, "Erro no Cadastro", "erro"); 
                 }
             } catch(error) { 
-                alert("Falha na rede. Verifique sua internet."); 
+                alertaPremium("Falha na rede. Verifique sua internet.", "Erro de Conexão", "erro"); 
             }
             btn.innerHTML = 'Contratar'; 
             btn.disabled = false;
@@ -1512,8 +1508,8 @@
             if(senha_nova) {
                 try {
                     const res = await fetch(`/api/gestao/funcionarios/${id}/readmitir?senha_nova=${senha_nova}`, { method: 'PUT' });
-                    if(res.ok) { alert("✅ Funcionário readmitido com sucesso!"); carregarColaboradores(); }
-                } catch(e) { alert("Erro de conexão."); }
+                    if(res.ok) { alertaPremium("Funcionário readmitido com sucesso!", "Sucesso", "sucesso"); carregarColaboradores(); }
+                } catch(e) { alertaPremium("Erro de conexão.", "Erro", "erro"); }
             }
         }
 
@@ -1590,7 +1586,7 @@
                 alternarAbaDossie('aba-dos-legal', document.querySelector('.btn-aba-dossie')); // Reseta para primeira aba
                 
             } catch(e) { 
-                alert("Erro grave de banco de dados ao puxar Dossiê do RH."); 
+                alertaPremium("Erro grave de banco de dados ao puxar Dossiê do RH.", "Erro Crítico", "erro"); 
             }
         }
 
@@ -1627,11 +1623,11 @@
             try {
                 const r = await fetch(`/api/gestao/funcionarios/${id}/dossie`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
                 if(r.ok) { 
-                    alert("✅ Documentos Pessoais Salvos com Sucesso na Nuvem!"); 
+                    alertaPremium("Documentos Pessoais Salvos com Sucesso na Nuvem!", "Dossiê Atualizado", "sucesso"); 
                     carregarColaboradores(); 
                 }
             } catch(err) {
-                alert("Falha de Comunicação com servidor ERP.");
+                alertaPremium("Falha de Comunicação com servidor ERP.", "Erro", "erro");
             } 
             
             btn.innerHTML = "Salvar Documentos Oficiais";
@@ -1682,10 +1678,10 @@
             try {
                 const r = await fetch(`/api/gestao/funcionarios/${id}/financeiro`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payloadFin) });
                 if(r.ok) { 
-                    alert("✅ Parâmetros Financeiros e Escala de Trabalho Salvos!"); 
+                    alertaPremium("Parâmetros Financeiros e Escala de Trabalho Salvos!", "Contrato Atualizado", "sucesso"); 
                 }
             } catch(err) {
-                alert("Erro ao validar contrato financeiro.");
+                alertaPremium("Erro ao validar contrato financeiro.", "Erro", "erro");
             } 
             
             btn.innerHTML = "Gravar Contrato e Escala";
@@ -1714,42 +1710,6 @@
                     }
                 }
             } catch(e) {}
-        }
-
-
-        // -------------------------
-        // RELATÓRIOS E DRE (Dashboard Inicial)
-        // -------------------------
-        async function filtrarRelatorios() {
-            const dataInicio = document.getElementById('filtro-inicio').value; 
-            const dataFim = document.getElementById('filtro-fim').value; 
-            let queryUrl = (dataInicio && dataFim) ? `?data_inicio=${dataInicio}&data_fim=${dataFim}` : '';
-            
-            try {
-                const res = await fetch(`/api/gestao/financeiro/lucratividade${queryUrl}`); 
-                const data = await res.json(); 
-                
-                document.getElementById('rel-faturamento').innerText = `R$ ${data.faturamento.toFixed(2).replace('.', ',')}`; 
-                document.getElementById('rel-despesas-empresa').innerText = `R$ ${data.despesas_empresa.toFixed(2).replace('.', ',')}`; 
-                document.getElementById('rel-despesas-casa').innerText = `R$ ${data.despesas_casa.toFixed(2).replace('.', ',')}`; 
-                document.getElementById('rel-margem').innerText = `${data.margem_lucro}%`; 
-                document.getElementById('rel-lucro-real').innerText = `R$ ${data.lucro_liquido.toFixed(2).replace('.', ',')}`;
-                
-                const rAbc = await fetch(`/api/gestao/relatorios/curva-abc${queryUrl}`); 
-                const abc = await rAbc.json(); 
-                
-                if (abc.length === 0) {
-                    document.getElementById('lista-curva-abc').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Sem vendas registradas no período.</td></tr>';
-                } else {
-                    document.getElementById('lista-curva-abc').innerHTML = abc.map((p, x) => `
-                    <tr class="border-b border-slate-50 hover:bg-slate-50">
-                        <td class="py-3 px-6 font-black text-brand-500 text-lg">${x+1}º</td>
-                        <td class="py-3 px-6 font-bold text-slate-700">${p.nome} <br> <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${p.categoria}</span></td>
-                        <td class="py-3 px-6 text-center font-black text-slate-600 bg-slate-50 rounded-lg border border-slate-100">${p.quantidade_vendida}x</td>
-                        <td class="py-3 px-6 text-right font-black text-emerald-500">R$ ${p.faturamento_gerado.toFixed(2).replace('.', ',')}</td>
-                    </tr>`).join('');
-                }
-            } catch (err) {}
         }
 
 
@@ -1804,7 +1764,7 @@
             ingredientesFicha = []; 
             document.getElementById('lista-ingredientes-produto').innerHTML = ''; 
             carregarCardapio(); 
-            alert("✅ Lanche Registrado no Cardápio!"); 
+            alertaPremium("Lanche Registrado no Cardápio!", "Sucesso", "sucesso"); 
         }
 
         async function carregarCardapio() { 
@@ -1860,7 +1820,7 @@
             }; 
             
             await fetch('/api/gestao/complementos', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
-            alert("✅ Extras vinculados ao produto!"); 
+            alertaPremium("Extras vinculados ao produto!", "Cardápio Atualizado", "sucesso"); 
             document.getElementById('modal-add-grupo').classList.replace('flex', 'hidden'); 
         }
 
@@ -1875,7 +1835,7 @@
             }; 
             
             await fetch('/api/gestao/insumo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
-            alert("✅ Insumo registrado!"); 
+            alertaPremium("Insumo registrado no estoque!", "Sucesso", "sucesso"); 
             
             document.getElementById('ins-nome').value = '';
             document.getElementById('ins-qtd').value = '';
@@ -1985,46 +1945,6 @@
                 </td>
             </tr>`).join(''); 
         }
-    </script>
-    <!-- ALERTA CUSTOMIZADO PREMIUM -->
-    <div id="alerta-customizado" class="fixed inset-0 bg-slate-900/80 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
-            <div id="alerta-icone-bg" class="w-20 h-20 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
-                <i id="alerta-icone" class="ph-fill ph-bell-ringing text-4xl"></i>
-            </div>
-            <h3 class="text-xl font-black text-slate-800 mb-2 tracking-tight" id="alerta-titulo">Aviso do Sistema</h3>
-            <p class="text-slate-500 text-sm font-medium mb-6 leading-relaxed" id="alerta-mensagem">Mensagem...</p>
-            <button onclick="document.getElementById('alerta-customizado').classList.replace('flex','hidden')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs">
-                Entendi
-            </button>
-        </div>
-    </div>
-
-    <script>
-        // Esta função substitui o "alert()" padrão do navegador
-        function alertaPremium(mensagem, titulo = "Aviso do Sistema", tipo = "info") {
-            document.getElementById('alerta-titulo').innerText = titulo;
-            document.getElementById('alerta-mensagem').innerText = mensagem;
-            
-            const icone = document.getElementById('alerta-icone');
-            const bg = document.getElementById('alerta-icone-bg');
-            
-            if(tipo === 'sucesso') {
-                icone.className = "ph-fill ph-check-circle text-4xl";
-                bg.className = "w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md";
-            } else if (tipo === 'erro') {
-                icone.className = "ph-fill ph-warning-circle text-4xl";
-                bg.className = "w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md";
-            } else {
-                icone.className = "ph-fill ph-bell-ringing text-4xl";
-                bg.className = "w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md";
-            }
-            
-            document.getElementById('alerta-customizado').classList.replace('hidden', 'flex');
-        }
-        
-        // Sobrescreve o alert nativo do JS temporariamente para aproveitar o código antigo
-        window.alert = function(msg) { alertaPremium(msg); };
     </script>
 </body>
 </html>
