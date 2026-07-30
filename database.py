@@ -198,8 +198,12 @@ class ItemComplementoModel(Base):
 
 # 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL 🚨
 # 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL (BLINDADO PARA POSTGRESQL NO RENDER) 🚨
+# 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL E CRIAÇÃO DE ADMIN 🚨
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
+    
+    # A LINHA QUE ESTAVA FALTANDO E CAUSOU O ERRO:
+    db = SessionLocal()
     
     # --- MOTOR DE ATUALIZAÇÃO AUTOMÁTICA (MIGRATIONS) ---
     try:
@@ -291,6 +295,35 @@ def inicializar_banco():
             conn.commit()
     except Exception as e:
         print("Erro interno no motor de atualização:", e)
+
+    # --- CRIAÇÃO DO ADMIN E CONFIG PADRÃO ---
+    try:
+        # Garante a criação do Cargo Administrador
+        cargo_admin = db.query(Cargo).filter(Cargo.permissoes == "total").first()
+        if not cargo_admin:
+            cargo_admin = Cargo(nome="Administrador", permissoes="total")
+            db.add(cargo_admin)
+            db.flush() 
+
+        # Garante a criação do usuário Admin
+        if not db.query(FuncionarioModel).first():
+            from passlib.context import CryptContext
+            pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+            admin = FuncionarioModel(nome="Admin Supremo", usuario="admin", senha_hash=pwd_context.hash("admin123"), cargo_id=cargo_admin.id, matricula_cracha="0001")
+            db.add(admin)
+            
+        # Garante a criação da linha base de configuração se não existir
+        if not db.query(ConfiguracaoLojaModel).first():
+            config_base = ConfiguracaoLojaModel(nome_empresa="Art's Burguer")
+            db.add(config_base)
+            
+        db.commit()
+    except Exception as e: 
+        print("Erro ao criar admin base:", e)
+        db.rollback()
+    finally:
+        # AGORA SIM A VARIÁVEL EXISTE PARA SER FECHADA
+        db.close()
 
     try:
         # Garante a criação do Cargo Administrador
