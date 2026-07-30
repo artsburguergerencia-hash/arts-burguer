@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from fastapi import Body
 
 # Importando o motor que já construímos
 from database import SessionLocal, ProdutoModel
