@@ -30,7 +30,13 @@ class ConfiguracaoLojaModel(Base):
     categorias_cardapio = Column(String, default="Burger Artesanal,Bebidas,Porções")
     categorias_fornecedor = Column(String, default="Carnes,Hortifruti,Bebidas,Embalagens")
     planos_saude_opcoes = Column(String, default="Nenhum,Amil Básico,Bradesco Odonto,Gympass") 
-
+    # NOVAS COLUNAS DO MOTOR DE RETENÇÃO FALTANDO NO PYTHON:
+    regra_acumulo = Column(String, default="POR_PEDIDO")
+    fidelidade_ganho = Column(Float, default=0.0)
+    fidelidade_gasto_minimo = Column(Float, default=0.0)
+    fidelidade_resgate = Column(Float, default=0.0)
+    fidelidade_elegibilidade = Column(String, default="TODOS")
+    
 class Cargo(Base):
     __tablename__ = "cargos"
     __table_args__ = {'extend_existing': True}
@@ -99,7 +105,10 @@ class PontoModel(Base):
     entrada = Column(String, default="")
     saida = Column(String, default="")
     horas_trabalhadas = Column(Float, default=0.0) 
-    horas_extras = Column(Float, default=0.0) 
+    horas_extras = Column(Float, default=0.0)
+    # NOVAS COLUNAS QUE ESTAVAM FALTANDO NO PYTHON:
+    ativo = Column(Boolean, default=True)
+    participa_fidelidade = Column(Boolean, default=True)
 
 class OcorrenciaRHModel(Base):
     __tablename__ = "ocorrencias_rh"
