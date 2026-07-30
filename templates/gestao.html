@@ -914,9 +914,9 @@
         </div>
     </div>
 
-    <!-- MODAL DE EDIÇÃO DE CLIENTE (CRM) -->
-    <div id="modal-editar-cliente" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-lg rounded-[2rem] p-8 shadow-2xl relative">
+    <!-- MEGA MODAL DE EDIÇÃO DE CLIENTE (CRM) -->
+    <div id="modal-editar-cliente" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white w-full max-w-3xl rounded-[2rem] p-8 shadow-2xl relative my-auto">
             <button onclick="document.getElementById('modal-editar-cliente').classList.replace('flex','hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 bg-slate-100 p-2 rounded-full transition-colors"><i class="ph-bold ph-x"></i></button>
             <h2 class="font-black text-2xl mb-6 text-slate-800 flex items-center"><i class="ph-fill ph-user-circle-gear text-brand-500 mr-3 text-3xl"></i> Dossiê do Cliente</h2>
             
@@ -930,14 +930,13 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="edit-cli-bloqueado" class="sr-only peer">
-                        <!-- Verde quando OK (Desmarcado), Vermelho quando Bloqueado (Marcado) -->
                         <div class="w-14 h-7 bg-emerald-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
                         <span class="ml-3 text-xs font-black uppercase tracking-widest text-slate-600" id="label-status-cli">Cliente OK</span>
                     </label>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Completo</label>
                         <input type="text" id="edit-cli-nome" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
                     </div>
@@ -946,8 +945,24 @@
                         <input type="text" id="edit-cli-telefone" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-mono text-sm outline-none focus:border-brand-500">
                     </div>
                 </div>
+
+                <!-- ENDEREÇO E CPF -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2 border-t border-slate-100">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CPF</label>
+                        <input type="text" id="edit-cli-cpf" placeholder="000.000.000-00" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CEP (Busca Auto)</label>
+                        <input type="text" id="edit-cli-cep" onblur="buscarCEP(this.value, 'edit-cli-endereco')" placeholder="00000-000" class="w-full px-4 py-3 border border-blue-200 bg-blue-50 text-blue-700 rounded-xl text-sm font-bold outline-none focus:border-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço de Entrega</label>
+                        <input type="text" id="edit-cli-endereco" placeholder="Rua, Número, Bairro" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+                    </div>
+                </div>
                 
-                <!-- MOTOR VIP DE MANIPULAÇÃO -->
+                <!-- MOTOR VIP -->
                 <div class="grid grid-cols-2 gap-4 mt-2 p-5 bg-amber-50 rounded-xl border border-amber-200 shadow-inner">
                     <div class="col-span-2 mb-1">
                         <h4 class="text-[10px] font-black text-amber-900 uppercase tracking-widest flex items-center"><i class="ph-fill ph-crown mr-1 text-sm"></i> Carteira de Fidelidade (Edição Manual)</h4>
@@ -961,9 +976,21 @@
                         <input type="text" oninput="mascaraMoeda(this)" id="edit-cli-cashback" required class="w-full px-4 py-3 border border-amber-200 bg-white rounded-xl font-black text-emerald-600 outline-none focus:border-amber-500 text-center shadow-sm">
                     </div>
                 </div>
+
+                <!-- HISTÓRICO DE PEDIDOS -->
+                <div class="mt-4 pt-4 border-t border-slate-200">
+                    <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center mb-3"><i class="ph-fill ph-receipt text-slate-400 mr-2 text-sm"></i> Últimos Pedidos</h4>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl overflow-y-auto max-h-40 no-scrollbar">
+                        <table class="w-full text-left text-xs">
+                            <tbody id="lista-historico-pedidos">
+                                <tr><td class="p-4 text-center text-slate-400 font-bold">Carregando histórico...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 
                 <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">
-                    Gravar Dossiê do Cliente
+                    Gravar Dossiê Completo
                 </button>
             </form>
         </div>
@@ -2111,9 +2138,10 @@
             </tr>`).join(''); 
         }
 
-        // --- FUNÇÕES DE EDIÇÃO MANUAL DE CLIENTES (CRM) ---
+       // --- FUNÇÕES DE EDIÇÃO MANUAL DE CLIENTES (CRM) ---
         async function abrirModalEditarCliente(id) {
             try {
+                // 1. Puxa os dados do cliente
                 const res = await fetch('/api/gestao/clientes');
                 const clientes = await res.json();
                 const c = clientes.find(x => x.id === id);
@@ -2122,20 +2150,59 @@
                 document.getElementById('edit-cli-id').value = c.id;
                 document.getElementById('edit-cli-nome').value = c.nome;
                 document.getElementById('edit-cli-telefone').value = c.telefone || "";
+                document.getElementById('edit-cli-cpf').value = c.cpf || "";
+                document.getElementById('edit-cli-cep').value = c.cep || "";
+                document.getElementById('edit-cli-endereco').value = c.endereco || "";
                 document.getElementById('edit-cli-pontos').value = c.pontos || 0;
                 document.getElementById('edit-cli-cashback').value = formataMoedaParaInput(c.cashback || 0.0);
                 
                 const checkBloqueado = document.getElementById('edit-cli-bloqueado');
-                checkBloqueado.checked = c.bloqueado; // True = Conta Travada
+                checkBloqueado.checked = c.bloqueado; 
                 document.getElementById('label-status-cli').innerText = c.bloqueado ? "Inadimplente (Bloqueado)" : "Cliente OK (Liberado)";
                 
                 checkBloqueado.onchange = (e) => {
                     document.getElementById('label-status-cli').innerText = e.target.checked ? "Inadimplente (Bloqueado)" : "Cliente OK (Liberado)";
                 };
 
+                // 2. Puxa o Histórico de Pedidos
+                document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold"><i class="ph-bold ph-spinner animate-spin"></i> Buscando...</td></tr>';
                 document.getElementById('modal-editar-cliente').classList.replace('hidden', 'flex');
+
+                const resPed = await fetch(`/api/gestao/clientes/${id}/pedidos`);
+                const pedidos = await resPed.json();
+                
+                if (pedidos.length === 0) {
+                    document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold">Nenhum pedido encontrado.</td></tr>';
+                } else {
+                    document.getElementById('lista-historico-pedidos').innerHTML = pedidos.map(p => `
+                        <tr class="border-b border-slate-100 last:border-0 hover:bg-white">
+                            <td class="p-3 font-bold text-slate-700">#${p.id}</td>
+                            <td class="p-3 font-mono text-slate-500">${p.data}</td>
+                            <td class="p-3 font-black text-emerald-500">R$ ${p.valor.toFixed(2).replace('.',',')}</td>
+                            <td class="p-3"><span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-black uppercase">${p.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
             } catch(e) {
                 alertaPremium("Erro ao carregar dados do cliente.", "Erro", "erro");
+            }
+        }
+
+        // Função utilitária para o CEP (usada pelo RH e pelo Cliente)
+        async function buscarCEP(cepInput, campoAlvoId) {
+            const cep = cepInput.replace(/\D/g, '');
+            if(cep.length === 8) {
+                const endField = document.getElementById(campoAlvoId);
+                endField.value = "Buscando...";
+                try {
+                    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    const data = await res.json();
+                    if(!data.erro) {
+                        endField.value = `${data.logradouro}, Bairro: ${data.bairro}, ${data.localidade} - ${data.uf}`;
+                    } else {
+                        endField.value = "CEP não encontrado.";
+                    }
+                } catch(e) { endField.value = ""; }
             }
         }
 
@@ -2143,12 +2210,15 @@
             e.preventDefault();
             const id = document.getElementById('edit-cli-id').value;
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Gravando Dossiê...";
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Gravando...";
             btn.disabled = true;
 
             const payload = {
                 nome: document.getElementById('edit-cli-nome').value,
-                telefone: document.getElementById('edit-cli-telefone').value, // Mantém a digitação visual
+                telefone: document.getElementById('edit-cli-telefone').value,
+                cpf: document.getElementById('edit-cli-cpf').value,
+                cep: document.getElementById('edit-cli-cep').value,
+                endereco: document.getElementById('edit-cli-endereco').value,
                 pontos: parseInt(document.getElementById('edit-cli-pontos').value) || 0,
                 cashback: parseMoeda(document.getElementById('edit-cli-cashback').value),
                 bloqueado: document.getElementById('edit-cli-bloqueado').checked
@@ -2166,12 +2236,13 @@
                     document.getElementById('modal-editar-cliente').classList.replace('flex', 'hidden');
                     carregarClientesPainel();
                 } else {
-                    alertaPremium("Erro ao salvar cliente no banco.", "Falha", "erro");
+                    const erroData = await res.json();
+                    alertaPremium("Erro: " + erroData.detail, "Falha", "erro");
                 }
             } catch(err) {
                 alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
             }
-            btn.innerHTML = "Gravar Dossiê do Cliente";
+            btn.innerHTML = "Gravar Dossiê Completo";
             btn.disabled = false;
         }
     </script>
