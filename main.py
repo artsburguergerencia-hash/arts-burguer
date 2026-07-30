@@ -1675,6 +1675,25 @@ def listar_clientes_painel(db: Session = Depends(get_db)):
         
     return lista_clientes
 
+@app.put("/api/gestao/clientes/{cliente_id}")
+def atualizar_dossie_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
+    try:
+        cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
+        if not cliente:
+            raise HTTPException(status_code=404, detail="Cliente não encontrado na base.")
+        
+        # Injeção dinâmica de dados (Só atualiza o que for enviado)
+        if "nome" in dados: cliente.nome = dados["nome"]
+        if "telefone" in dados: cliente.telefone = dados["telefone"]
+        if "pontos" in dados: cliente.pontos = dados["pontos"]
+        if "cashback" in dados: cliente.cashback = dados["cashback"]
+        if "bloqueado" in dados: cliente.bloqueado = dados["bloqueado"]
+        
+        db.commit()
+        return {"mensagem": "Dossiê do cliente atualizado com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/api/gestao/clientes/{cliente_id}/editar")
 def editar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
