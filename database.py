@@ -30,13 +30,26 @@ class ConfiguracaoLojaModel(Base):
     categorias_cardapio = Column(String, default="Burger Artesanal,Bebidas,Porções")
     categorias_fornecedor = Column(String, default="Carnes,Hortifruti,Bebidas,Embalagens")
     planos_saude_opcoes = Column(String, default="Nenhum,Amil Básico,Bradesco Odonto,Gympass") 
-    # NOVAS COLUNAS DO MOTOR DE RETENÇÃO FALTANDO NO PYTHON:
     regra_acumulo = Column(String, default="POR_PEDIDO")
     fidelidade_ganho = Column(Float, default=0.0)
     fidelidade_gasto_minimo = Column(Float, default=0.0)
     fidelidade_resgate = Column(Float, default=0.0)
     fidelidade_elegibilidade = Column(String, default="TODOS")
-    
+
+# --- A CLASSE CLIENTE QUE ESTAVA FALTANDO VOLTOU ---
+class Cliente(Base):
+    __tablename__ = "clientes"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, index=True)
+    telefone = Column(String, unique=True, index=True)
+    pontos = Column(Integer, default=0)
+    cashback = Column(Float, default=0.0)
+    bloqueado = Column(Boolean, default=False)
+    cpf = Column(String, default="")
+    cep = Column(String, default="")
+    endereco = Column(String, default="")
+
 class Cargo(Base):
     __tablename__ = "cargos"
     __table_args__ = {'extend_existing': True}
@@ -106,9 +119,7 @@ class PontoModel(Base):
     saida = Column(String, default="")
     horas_trabalhadas = Column(Float, default=0.0) 
     horas_extras = Column(Float, default=0.0)
-    # NOVAS COLUNAS QUE ESTAVAM FALTANDO NO PYTHON:
-    ativo = Column(Boolean, default=True)
-    participa_fidelidade = Column(Boolean, default=True)
+    # Aqui foi limpo! As colunas de produto saíram daqui.
 
 class OcorrenciaRHModel(Base):
     __tablename__ = "ocorrencias_rh"
@@ -154,6 +165,9 @@ class ProdutoModel(Base):
     preco_venda = Column(Float)
     categoria = Column(String)
     imagem_url = Column(String, default="")
+    # --- COLUNAS CORRETAS NO LUGAR CERTO ---
+    ativo = Column(Boolean, default=True)
+    participa_fidelidade = Column(Boolean, default=True)
 
 class FichaTecnicaModel(Base):
     __tablename__ = "fichas_tecnicas"
@@ -213,6 +227,9 @@ def inicializar_banco():
         "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_elegibilidade VARCHAR DEFAULT 'TODOS';",
         "ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
         "ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT TRUE;",
+        "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
         
         # Restante das colunas do RH e Clientes
         "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
