@@ -859,6 +859,61 @@
         </div>
     </div>
 
+    <!-- MODAL DE EDIÇÃO DE PRODUTO -->
+    <div id="modal-editar-produto" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-2xl rounded-[2rem] p-8 shadow-2xl relative">
+            <button onclick="document.getElementById('modal-editar-produto').classList.replace('flex','hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 bg-slate-100 p-2 rounded-full transition-colors"><i class="ph-bold ph-x"></i></button>
+            <h2 class="font-black text-2xl mb-6 text-slate-800 flex items-center"><i class="ph-fill ph-pencil-simple text-brand-500 mr-3 text-3xl"></i> Editar Produto</h2>
+            
+            <form id="form-edit-produto" onsubmit="salvarEdicaoProduto(event)" class="space-y-4">
+                <input type="hidden" id="edit-prod-id">
+                
+                <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
+                    <div>
+                        <p class="font-black text-slate-800 text-sm">Status de Venda</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Pausar esconde o item do Salão e Delivery.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="edit-prod-ativo" class="sr-only peer">
+                        <div class="w-14 h-7 bg-red-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <span class="ml-3 text-xs font-black uppercase tracking-widest text-slate-600" id="label-status-prod">Ativo</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Lanche</label>
+                        <input type="text" id="edit-prod-nome" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Preço Final (R$)</label>
+                        <input type="text" id="edit-prod-preco" oninput="mascaraMoeda(this)" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-black text-emerald-600 outline-none focus:border-brand-500">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Descrição</label>
+                    <textarea id="edit-prod-desc" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 h-20"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">URL da Imagem</label>
+                        <input type="text" id="edit-prod-img" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Categoria</label>
+                        <select id="edit-prod-categoria" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500"></select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">
+                    Salvar Alterações
+                </button>
+            </form>
+        </div>
+    </div>
+    
     <!-- ALERTA CUSTOMIZADO PREMIUM -->
     <div id="alerta-customizado" class="fixed inset-0 bg-slate-900/80 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
