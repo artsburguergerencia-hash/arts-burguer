@@ -179,11 +179,9 @@
             </div>
 
             <!-- ============================================== -->
-            <!-- ABA: RH, DOSSIÊ E DEPARTAMENTO PESSOAL (V5) -->
+            <!-- ABA: RH E COLABORADORES -->
             <!-- ============================================== -->
             <div id="aba-colaboradores" class="painel hidden">
-                
-                <!-- CAIXA DE ENTRADA RH (APROVAÇÕES) -->
                 <div class="bg-indigo-50 border border-indigo-200 rounded-3xl p-8 mb-8 shadow-sm">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-black text-indigo-900 tracking-tight flex items-center">
@@ -203,8 +201,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                    
-                    <!-- GESTÃO DE CARGOS -->
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 col-span-1">
                         <h3 class="text-lg font-black text-slate-800 tracking-tight mb-4 border-l-4 border-brand-500 pl-3">Criar Cargo</h3>
                         <form id="form-cargo" onsubmit="criarCargoDinamico(event)" class="space-y-4">
@@ -215,13 +211,10 @@
                                 <option value="cozinha">Cozinheiro (KDS)</option>
                                 <option value="logistica">Despacho / Logística</option>
                             </select>
-                            <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-colors text-sm">
-                                Registrar Cargo
-                            </button>
+                            <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-colors text-sm">Registrar Cargo</button>
                         </form>
                     </div>
 
-                    <!-- ADMISSÃO RÁPIDA -->
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 col-span-2">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-lg font-black text-slate-800 tracking-tight border-l-4 border-blue-500 pl-3">Admissão de Colaborador</h3>
@@ -232,44 +225,21 @@
                         
                         <form id="form-rh" onsubmit="cadastrarColaborador(event)" class="space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="col-span-2">
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Completo</label>
-                                    <input type="text" id="rh-nome" required class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-bold text-sm outline-none focus:border-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CPF</label>
-                                    <input type="text" id="rh-cpf" required placeholder="000.000.000-00" class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-bold text-sm outline-none focus:border-blue-500">
-                                </div>
+                                <div class="col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Completo</label><input type="text" id="rh-nome" required class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-bold text-sm outline-none focus:border-blue-500"></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CPF</label><input type="text" id="rh-cpf" required placeholder="000.000.000-00" class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-bold text-sm outline-none focus:border-blue-500"></div>
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">WhatsApp</label>
-                                    <input type="text" id="rh-tel" placeholder="(00) 00000-0000" class="w-full px-4 py-3 rounded-xl border bg-slate-50 text-sm outline-none focus:border-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">E-mail Corporativo</label>
-                                    <input type="email" id="rh-email" placeholder="nome@empresa.com" class="w-full px-4 py-3 rounded-xl border bg-slate-50 text-sm outline-none focus:border-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Cargo Oficial</label>
-                                    <select id="rh-cargo" required class="w-full px-4 py-3 rounded-xl border bg-white font-bold text-blue-600 outline-none focus:border-blue-500 text-sm"></select>
-                                </div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">WhatsApp</label><input type="text" id="rh-tel" placeholder="(00) 00000-0000" class="w-full px-4 py-3 rounded-xl border bg-slate-50 text-sm outline-none focus:border-blue-500"></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">E-mail Corporativo</label><input type="email" id="rh-email" placeholder="nome@empresa.com" class="w-full px-4 py-3 rounded-xl border bg-slate-50 text-sm outline-none focus:border-blue-500"></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Cargo Oficial</label><select id="rh-cargo" required class="w-full px-4 py-3 rounded-xl border bg-white font-bold text-blue-600 outline-none focus:border-blue-500 text-sm"></select></div>
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-4 mt-2">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Usuário Login (Portal)</label>
-                                    <input type="text" id="rh-usuario" required placeholder="ex: joao.silva" class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-bold text-sm outline-none focus:border-blue-500">
-                                </div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Usuário Login (Portal)</label><input type="text" id="rh-usuario" required placeholder="ex: joao.silva" class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-bold text-sm outline-none focus:border-blue-500"></div>
                                 <div class="flex space-x-2 items-end">
-                                    <div class="flex-1">
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Senha Inicial</label>
-                                        <input type="password" id="rh-senha" required placeholder="••••••" class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-bold text-sm outline-none focus:border-blue-500">
-                                    </div>
-                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-xl transition-colors text-sm shadow-md h-[46px]">
-                                        Contratar
-                                    </button>
+                                    <div class="flex-1"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Senha Inicial</label><input type="password" id="rh-senha" required placeholder="••••••" class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-bold text-sm outline-none focus:border-blue-500"></div>
+                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-xl transition-colors text-sm shadow-md h-[46px]">Contratar</button>
                                 </div>
                             </div>
                         </form>
@@ -278,12 +248,8 @@
 
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">
-                            <i class="ph-fill ph-users text-brand-500 mr-2"></i> Quadro de Funcionários
-                        </h3>
-                        <button onclick="carregarColaboradores()" class="text-xs bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-sm">
-                            Atualizar Tabela
-                        </button>
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest"><i class="ph-fill ph-users text-brand-500 mr-2"></i> Quadro de Funcionários</h3>
+                        <button onclick="carregarColaboradores()" class="text-xs bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-sm">Atualizar Tabela</button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
@@ -1128,9 +1094,6 @@
         // -------------------------
         // SETUP E CONFIGURAÇÕES DA LOJA
         // -------------------------
-        // ==========================================
-        // MOTOR DE CADASTRO DINÂMICO (CRUD DE SETUP) E RELATÓRIOS
-        // ==========================================
         let listaCatCardapio = [];
         let listaCatFornecedor = [];
         let listaBeneficios = [];
@@ -1189,7 +1152,6 @@
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
                 document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
                 
-                // Lê a Logo Secreta Base64
                 if(conf.logo_url) {
                     document.getElementById('conf-logo-base64').value = conf.logo_url;
                     document.getElementById('preview-logo-setup').src = conf.logo_url;
@@ -1203,7 +1165,6 @@
                 document.getElementById('conf-auto').checked = conf.aceite_automatico;
                 document.getElementById('conf-fidelidade').value = conf.sistema_fidelidade || "CASHBACK"; 
                 
-                // Dados Avançados de Retenção
                 document.getElementById('conf-regra-acumulo').value = conf.regra_acumulo || "POR_PEDIDO";
                 document.getElementById('conf-fidelidade-ganho').value = conf.fidelidade_ganho || 0;
                 document.getElementById('conf-fidelidade-gasto').value = conf.fidelidade_gasto_minimo || 0;
@@ -1215,7 +1176,6 @@
                     document.getElementById('eleg-todos').checked = true;
                 }
                 
-                // Carrega os arrays do banco e joga nas tags
                 listaCatCardapio = conf.categorias_cardapio ? conf.categorias_cardapio.split(',').filter(x => x.trim() !== "") : ["Burger Artesanal", "Bebidas"];
                 listaCatFornecedor = conf.categorias_fornecedor ? conf.categorias_fornecedor.split(',').filter(x => x.trim() !== "") : ["Carnes", "Embalagens"];
                 listaBeneficios = conf.planos_saude_opcoes ? conf.planos_saude_opcoes.split(',').filter(x => x.trim() !== "") : ["Nenhum"];
@@ -1223,7 +1183,6 @@
                 
                 renderTagsSetup('cardapio'); renderTagsSetup('fornecedor'); renderTagsSetup('beneficio'); renderTagsSetup('pagamento');
                 
-                // Popula os Selects das outras abas
                 carregarCategoriasSelect('prod-categoria', listaCatCardapio); 
                 carregarCategoriasSelect('forn-cat', listaCatFornecedor);
                 carregarCategoriasSelect('dos-plano', listaBeneficios); 
@@ -1255,7 +1214,6 @@
                 aceita_retirada: document.getElementById('conf-retirada').checked, 
                 aceite_automatico: document.getElementById('conf-auto').checked, 
                 
-                // Motor de Retenção Dinâmico
                 sistema_fidelidade: document.getElementById('conf-fidelidade').value, 
                 regra_acumulo: document.getElementById('conf-regra-acumulo').value,
                 fidelidade_ganho: parseFloat(document.getElementById('conf-fidelidade-ganho').value) || 0,
@@ -1263,7 +1221,6 @@
                 fidelidade_resgate: parseFloat(document.getElementById('conf-fidelidade-resgate').value) || 0,
                 fidelidade_elegibilidade: document.querySelector('input[name="conf_elegibilidade"]:checked').value,
                 
-                // Salva os arrays convertidos em texto de volta pro banco
                 categorias_cardapio: listaCatCardapio.join(','),
                 categorias_fornecedor: listaCatFornecedor.join(','),
                 planos_saude_opcoes: listaBeneficios.join(','),
@@ -1271,7 +1228,7 @@
             };
             
             const btn = e.target.querySelector('button[type="submit"]');
-            const textoOriginal = btn.innerHTML; // Salva o texto original
+            const textoOriginal = btn.innerHTML; 
             btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Subindo para a Nuvem...";
             btn.disabled = true;
             
@@ -1283,14 +1240,14 @@
                 }); 
                 
                 if(res.ok) {
-                    alertaPremium("✅ Servidor Master Atualizado! Configurações salvas com sucesso.", "Operação Concluída", "sucesso"); 
+                    alertaPremium("Servidor Master Atualizado! Configurações salvas com sucesso.", "Operação Concluída", "sucesso"); 
                     carregarConfiguracoesInit();
                 } else {
                     const data = await res.json();
-                    alertaPremium("❌ O Banco de Dados recusou: " + data.detail, "Falha de Sincronização", "erro");
+                    alertaPremium("O Banco de Dados recusou: " + data.detail, "Falha de Sincronização", "erro");
                 }
             } catch(err) {
-                alertaPremium("❌ Falha de Rede ou Servidor Fora do Ar.", "Erro de Conexão", "erro");
+                alertaPremium("Falha de Rede ou Servidor Fora do Ar.", "Erro de Conexão", "erro");
             }
             
             btn.innerHTML = textoOriginal;
@@ -1538,14 +1495,12 @@
                 document.getElementById('dos-esc').value = r.escolaridade || "Ensino Médio"; 
                 document.getElementById('dos-filhos').value = r.qtd_filhos_menores || 0; 
                 
-                // Trata o plano de saúde se for válido
                 if(r.plano_saude_escolhido) {
                     const sel = document.getElementById('dos-plano');
                     const exists = Array.from(sel.options).some(o => o.value === r.plano_saude_escolhido);
                     if(exists) sel.value = r.plano_saude_escolhido;
                 }
                 
-                // Trata Imagens
                 if(r.foto_3x4) { 
                     document.getElementById('preview-foto').src = r.foto_3x4; 
                     document.getElementById('preview-foto-header').src = r.foto_3x4; 
@@ -1572,7 +1527,6 @@
                 document.getElementById('fin-diaria').value = formataMoedaParaInput(r.diaria_motoboy); 
                 document.getElementById('fin-repasse').value = formataMoedaParaInput(r.repasse_por_entrega);
 
-                // Matriz Escala JSON
                 const escalaSalva = r.escala_matriz_json ? JSON.parse(r.escala_matriz_json) : {};
                 diasSemana.forEach(d => {
                     const info = escalaSalva[d] || { folga: false, in: '', out: '' };
@@ -1583,7 +1537,7 @@
                 });
 
                 document.getElementById('modal-dossie').classList.replace('hidden', 'flex');
-                alternarAbaDossie('aba-dos-legal', document.querySelector('.btn-aba-dossie')); // Reseta para primeira aba
+                alternarAbaDossie('aba-dos-legal', document.querySelector('.btn-aba-dossie')); 
                 
             } catch(e) { 
                 alertaPremium("Erro grave de banco de dados ao puxar Dossiê do RH.", "Erro Crítico", "erro"); 
@@ -1639,19 +1593,17 @@
             const btn = e.target.querySelector('button[type="submit"]'); 
             btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Validando Banco...";
 
-            // Salva dados bancários na mesma Rota Legal para economizar código e não criar 10 mil rotas Python
             const payloadBancario = {
                 banco: document.getElementById('fin-banco').value, 
                 agencia: document.getElementById('fin-agencia').value, 
                 conta: document.getElementById('fin-conta').value,
-                cpf: document.getElementById('dos-cpf').value, // Evita Validation Error
-                email: document.getElementById('dos-email').value, // Evita Validation Error
-                endereco_completo: document.getElementById('dos-end').value, // Evita Validation Error
-                foto_3x4: document.getElementById('dos-foto-base64').value // Preserva foto
+                cpf: document.getElementById('dos-cpf').value, 
+                email: document.getElementById('dos-email').value, 
+                endereco_completo: document.getElementById('dos-end').value, 
+                foto_3x4: document.getElementById('dos-foto-base64').value 
             };
             await fetch(`/api/gestao/funcionarios/${id}/dossie`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payloadBancario) });
 
-            // Salva Valores Financeiros e a Matriz JSON de Escala
             let escalaJsonFinal = {}; 
             diasSemana.forEach(d => { 
                 escalaJsonFinal[d] = { 
