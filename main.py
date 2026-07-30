@@ -1830,6 +1830,23 @@ def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
     db.commit()
     
     return {"status": "sucesso"}
+
+@app.delete("/api/sistema/zerar-dados")
+def limpar_banco_dados(db: Session = Depends(get_db)):
+    try:
+        # Apaga os registros, mas mantém a estrutura das tabelas viva
+        db.query(ItemPedido).delete()
+        db.query(PedidoModel).delete()
+        db.query(Produto).delete()
+        db.query(Insumo).delete()
+        db.query(Cliente).delete()
+        db.query(ContaPagar).delete()
+        db.query(Fornecedor).delete()
+        db.commit()
+        return {"mensagem": "Dados de teste apagados! O sistema está limpo para produção."}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
