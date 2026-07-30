@@ -8,6 +8,7 @@ from datetime import datetime, date
 from sqlalchemy import desc
 import uvicorn
 from passlib.context import CryptContext
+from fastapi import Body
 
 # ==========================================
 # IMPORTAÇÕES DOS MÓDULOS (ART'S BURGUER)
