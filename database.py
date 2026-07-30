@@ -200,89 +200,97 @@ class ItemComplementoModel(Base):
 # 🚨 SCRIPT DE AUTO-MIGRAÇÃO TOTAL (BLINDADO PARA POSTGRESQL NO RENDER) 🚨
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
     
-    colunas_novas = [
-        # Forçando a criação de TODAS as colunas possíveis na loja caso o PostgreSQL do Render esteja desatualizado
-        "ALTER TABLE configuracoes_loja ADD COLUMN nome_empresa VARCHAR DEFAULT 'Art''s Burguer';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN cnpj VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN inscricao_estadual VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN horario_funcionamento VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN endereco VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN telefone VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN logo_url VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_delivery BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_retirada BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN aceite_automatico BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN tempo_preparo INTEGER DEFAULT 30;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN formas_pagamento VARCHAR DEFAULT 'Pix,Dinheiro,Cartão';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN sistema_fidelidade VARCHAR DEFAULT 'CASHBACK';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_cardapio VARCHAR DEFAULT 'Burger Artesanal,Bebidas,Porções';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_fornecedor VARCHAR DEFAULT 'Carnes,Hortifruti,Bebidas,Embalagens';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto,Gympass';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN regra_acumulo VARCHAR DEFAULT 'POR_PEDIDO';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_ganho FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_gasto_minimo FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_resgate FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_elegibilidade VARCHAR DEFAULT 'TODOS';",
-        "ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT TRUE;",
-        
-        
-        # Restante das colunas do RH e Clientes
-        "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
-        "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN status_admissao VARCHAR DEFAULT 'PENDENTE_PREENCHIMENTO';",
-        "ALTER TABLE info_rh ADD COLUMN aceite_lgpd BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE info_rh ADD COLUMN data_aceite_lgpd VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN telefone VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN email VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN salario FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN escala VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE info_rh ADD COLUMN tipo_comissao VARCHAR DEFAULT 'PERCENTUAL';",
-        "ALTER TABLE info_rh ADD COLUMN valor_comissao FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN valor_vt FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN valor_va FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN diaria_motoboy FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}';",
-        "ALTER TABLE info_rh ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN naturalidade VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN estado_civil VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN rg VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN cpf VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN pis_pasep VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN titulo_eleitor VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN reservista VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN cep VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN endereco_completo VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN banco VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN agencia VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN conta VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN dados_bancarios VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN escolaridade VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN qtd_filhos_menores INTEGER DEFAULT 0;",
-        "ALTER TABLE info_rh ADD COLUMN cnh VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN plano_saude_escolhido VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN link_pasta_documentos VARCHAR DEFAULT '';",
-        "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
-        "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0;",
-        "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
-        "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';",
-        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;"
-        "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
-    ]
-    
-    for sql in colunas_novas:
-        try: 
-            db.execute(text(sql))
-            db.commit()
-        except Exception: 
-            db.rollback() 
+    # --- MOTOR DE ATUALIZAÇÃO AUTOMÁTICA (MIGRATIONS) ---
+    try:
+        with engine.connect() as conn:
+            colunas_novas = [
+                # Configurações da Loja
+                "ALTER TABLE configuracoes_loja ADD COLUMN nome_empresa VARCHAR DEFAULT 'Art''s Burguer';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN cnpj VARCHAR DEFAULT '';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN inscricao_estadual VARCHAR DEFAULT '';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN horario_funcionamento VARCHAR DEFAULT '';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN endereco VARCHAR DEFAULT '';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN telefone VARCHAR DEFAULT '';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN logo_url VARCHAR DEFAULT '';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN aceita_delivery BOOLEAN DEFAULT 1;",
+                "ALTER TABLE configuracoes_loja ADD COLUMN aceita_retirada BOOLEAN DEFAULT 1;",
+                "ALTER TABLE configuracoes_loja ADD COLUMN aceite_automatico BOOLEAN DEFAULT 0;",
+                "ALTER TABLE configuracoes_loja ADD COLUMN tempo_preparo INTEGER DEFAULT 30;",
+                "ALTER TABLE configuracoes_loja ADD COLUMN formas_pagamento VARCHAR DEFAULT 'Pix,Dinheiro,Cartão';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN sistema_fidelidade VARCHAR DEFAULT 'CASHBACK';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN categorias_cardapio VARCHAR DEFAULT 'Burger Artesanal,Bebidas,Porções';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN categorias_fornecedor VARCHAR DEFAULT 'Carnes,Hortifruti,Bebidas,Embalagens';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto,Gympass';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN regra_acumulo VARCHAR DEFAULT 'POR_PEDIDO';",
+                "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_ganho FLOAT DEFAULT 0.0;",
+                "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_gasto_minimo FLOAT DEFAULT 0.0;",
+                "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_resgate FLOAT DEFAULT 0.0;",
+                "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_elegibilidade VARCHAR DEFAULT 'TODOS';",
+                
+                # Produtos e Cardápio
+                "ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT 1;",
+                "ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT 1;",
+                
+                # Recursos Humanos (RH)
+                "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
+                "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN status_admissao VARCHAR DEFAULT 'PENDENTE_PREENCHIMENTO';",
+                "ALTER TABLE info_rh ADD COLUMN aceite_lgpd BOOLEAN DEFAULT 0;",
+                "ALTER TABLE info_rh ADD COLUMN data_aceite_lgpd VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN telefone VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN email VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN salario FLOAT DEFAULT 0.0;",
+                "ALTER TABLE info_rh ADD COLUMN escala VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT 0;",
+                "ALTER TABLE info_rh ADD COLUMN tipo_comissao VARCHAR DEFAULT 'PERCENTUAL';",
+                "ALTER TABLE info_rh ADD COLUMN valor_comissao FLOAT DEFAULT 0.0;",
+                "ALTER TABLE info_rh ADD COLUMN valor_vt FLOAT DEFAULT 0.0;",
+                "ALTER TABLE info_rh ADD COLUMN valor_va FLOAT DEFAULT 0.0;",
+                "ALTER TABLE info_rh ADD COLUMN diaria_motoboy FLOAT DEFAULT 0.0;",
+                "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0;",
+                "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0;",
+                "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}';",
+                "ALTER TABLE info_rh ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN naturalidade VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN estado_civil VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN rg VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN cpf VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN pis_pasep VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN titulo_eleitor VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN reservista VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN cep VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN endereco_completo VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN banco VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN agencia VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN conta VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN dados_bancarios VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN escolaridade VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN qtd_filhos_menores INTEGER DEFAULT 0;",
+                "ALTER TABLE info_rh ADD COLUMN cnh VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN plano_saude_escolhido VARCHAR DEFAULT '';",
+                "ALTER TABLE info_rh ADD COLUMN link_pasta_documentos VARCHAR DEFAULT '';",
+                "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
+                "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0;",
+                "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
+                "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';",
+                
+                # CRM e Clientes
+                "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT 0;",
+                "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
+                "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
+                "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';"
+            ]
+            
+            # Executa uma por uma. Se já existir no banco, ele ignora silenciosamente.
+            for cmd in colunas_novas:
+                try:
+                    conn.execute(text(cmd))
+                except Exception:
+                    pass
+            conn.commit()
+    except Exception as e:
+        print("Erro interno no motor de atualização:", e)
 
     try:
         # Garante a criação do Cargo Administrador
