@@ -1661,29 +1661,31 @@ def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
 @app.get("/api/gestao/clientes")
 def listar_clientes_gestao(db: Session = Depends(get_db)):
     try:
-        clientes = db.query(Cliente).all()
-        lista_blindada = []
+        from sqlalchemy import text
         
-        # Montamos a lista "na mão" para blindar contra valores Nulos (NULL) de testes antigos
-        for c in clientes:
+        # Acesso Direto (Raw SQL) - Ignora qualquer erro de coluna faltando
+        resultado = db.execute(text("SELECT * FROM clientes")).mappings().all()
+        
+        lista_blindada = []
+        for c in resultado:
             lista_blindada.append({
-                "id": c.id,
-                "nome": c.nome or "Cliente não identificado",
-                "telefone": c.telefone or "Sem número",
-                "pontos": c.pontos or 0,
-                "cashback": c.cashback or 0.0,
-                "bloqueado": bool(c.bloqueado), # Força transformar Nulo em Falso (Desbloqueado)
+                "id": c.get("id"),
+                "nome": c.get("nome") or "Visitante",
+                "telefone": c.get("telefone") or "Sem Contato",
+                "pontos": c.get("pontos") or 0,
+                "cashback": c.get("cashback") or 0.0,
+                "bloqueado": bool(c.get("bloqueado")),
                 
-                # O getattr protege contra colunas que possam não existir em tabelas antigas
-                "cpf": getattr(c, 'cpf', "") or "",
-                "cep": getattr(c, 'cep', "") or "",
-                "endereco": getattr(c, 'endereco', "") or ""
+                # O .get() protege o sistema. Se a coluna não existir, ele envia em branco sem travar!
+                "cpf": c.get("cpf", ""),
+                "cep": c.get("cep", ""),
+                "endereco": c.get("endereco", "")
             })
             
         return lista_blindada
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao blindar lista: {str(e)}")
-        
+        print("Erro Crítico no GET Clientes:", str(e))
+        raise HTTPException(status_code=500, detail=str(e))        
 @app.put("/api/gestao/clientes/{cliente_id}")
 def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
