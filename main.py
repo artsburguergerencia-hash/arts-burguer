@@ -52,7 +52,8 @@ from database import (
     ProdutoModel, 
     FichaTecnicaModel, 
     GrupoComplementoModel, 
-    ItemComplementoModel
+    ItemComplementoModel,
+    Cliente
 )
 
 # ==========================================
