@@ -2025,6 +2025,7 @@ def consertar_banco(db: Session = Depends(get_db)):
         "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
         "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
         "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"
+        "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
     ]
     
     logs = []
