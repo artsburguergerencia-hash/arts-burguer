@@ -294,6 +294,10 @@ def inicializar_banco():
                 "ALTER TABLE clientes ADD COLUMN numero VARCHAR DEFAULT '';",
                 "ALTER TABLE clientes ADD COLUMN bairro VARCHAR DEFAULT '';",
                 "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';"
+                # ADICIONE ESTAS 3 LINHAS AQUI:
+                "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
+                "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
+                "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"
             ]
             
             # Executa uma por uma. Se já existir no banco, ele ignora silenciosamente.
