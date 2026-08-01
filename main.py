@@ -1942,10 +1942,18 @@ def limpar_banco_dados(db: Session = Depends(get_db)):
 def consertar_banco(db: Session = Depends(get_db)):
     from sqlalchemy import text
     comandos = [
+        # Colunas do Cardápio Online
+        "ALTER TABLE clientes ADD COLUMN senha VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN numero VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN bairro VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';",
+        
+        # Colunas do Dossiê do RH/Gestão
         "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT 0;"
+        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;"
     ]
     logs = []
     for cmd in comandos:
@@ -1955,7 +1963,7 @@ def consertar_banco(db: Session = Depends(get_db)):
             logs.append(f"Sucesso: {cmd}")
         except Exception as e:
             db.rollback()
-            logs.append(f"Ignorado (já existe): {cmd}")
+            logs.append(f"Ignorado (já existe ou deu erro): {str(e)}")
             
     return {"status": "Banco Atualizado a Força!", "logs": logs}
     
