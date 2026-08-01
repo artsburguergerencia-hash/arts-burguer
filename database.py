@@ -43,12 +43,17 @@ class Cliente(Base):
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, index=True)
     telefone = Column(String, unique=True, index=True)
+    senha = Column(String, default="") # <- NOVA COLUNA
     pontos = Column(Integer, default=0)
     cashback = Column(Float, default=0.0)
     bloqueado = Column(Boolean, default=False)
     cpf = Column(String, default="")
+    data_nascimento = Column(String, default="") # <- NOVA COLUNA
     cep = Column(String, default="")
     endereco = Column(String, default="")
+    numero = Column(String, default="") # <- NOVA COLUNA
+    bairro = Column(String, default="") # <- NOVA COLUNA
+    complemento = Column(String, default="") # <- NOVA COLUNA
 
 class Cargo(Base):
     __tablename__ = "cargos"
@@ -283,7 +288,12 @@ def inicializar_banco():
                 "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT 0;",
                 "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
                 "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
-                "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';"
+                "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
+                "ALTER TABLE clientes ADD COLUMN senha VARCHAR DEFAULT '';",
+                "ALTER TABLE clientes ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
+                "ALTER TABLE clientes ADD COLUMN numero VARCHAR DEFAULT '';",
+                "ALTER TABLE clientes ADD COLUMN bairro VARCHAR DEFAULT '';",
+                "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';"
             ]
             
             # Executa uma por uma. Se já existir no banco, ele ignora silenciosamente.
