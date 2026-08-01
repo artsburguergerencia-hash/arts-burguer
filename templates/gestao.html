@@ -2122,10 +2122,17 @@
         async function carregarClientesPainel() { 
             try {
                 const res = await fetch('/api/gestao/clientes'); 
-                const clientes = await res.json(); 
+                const data = await res.json(); 
+                
+                // ESCUDO: Se o Python travar, ele cospe o erro real no console para nós!
+                if (!res.ok) {
+                    console.error("Erro vindo do Python:", data);
+                    throw new Error(data.detail || "Falha crítica na rota de clientes.");
+                }
+
+                const clientes = data;
                 const tbody = document.getElementById('lista-clientes-painel');
 
-                // SE O BANCO ESTIVER ZERADO, MOSTRA A MENSAGEM BONITA:
                 if (clientes.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="ph-bold ph-ghost text-4xl mb-3 text-slate-300 block"></i><span class="font-black uppercase tracking-widest text-xs">Nenhum cliente cadastrado ainda.</span><br><span class="text-[10px] font-medium mt-1 block">Os clientes aparecerão aqui assim que a primeira venda for feita no PDV ou Cardápio.</span></td></tr>';
                     return;
@@ -2145,10 +2152,9 @@
                     </td>
                 </tr>`).join(''); 
             } catch(e) {
-                document.getElementById('lista-clientes-painel').innerHTML = '<tr><td colspan="5" class="py-8 text-center text-red-500 font-bold">Erro de conexão ao buscar base de clientes.</td></tr>';
+                document.getElementById('lista-clientes-painel').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500 font-bold">Erro: ${e.message}</td></tr>`;
             }
         }
-
        // --- FUNÇÕES DE EDIÇÃO MANUAL DE CLIENTES (CRM) ---
         async function abrirModalEditarCliente(id) {
             try {
