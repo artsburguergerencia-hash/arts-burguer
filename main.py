@@ -2012,7 +2012,7 @@ def consertar_banco(db: Session = Depends(get_db)):
         "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
         "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';",
         
-        # CRM e Clientes (As que faltavam pro Cardápio)
+        # CRM e Clientes
         "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;",
         "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
@@ -2021,8 +2021,7 @@ def consertar_banco(db: Session = Depends(get_db)):
         "ALTER TABLE clientes ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN numero VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN bairro VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';"
-        # AS TRÊS COLUNAS CLÁSSICAS QUE O POSTGRESQL TINHA ESQUECIDO:
+        "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
         "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
         "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"
@@ -2036,7 +2035,7 @@ def consertar_banco(db: Session = Depends(get_db)):
             logs.append(f"Sucesso: {cmd}")
         except Exception as e:
             db.rollback()
-            logs.append(f"Ignorado (já existe ou deu erro): {str(e)}")
+            logs.append(f"Ignorado: {str(e)}")
             
     return {"status": "Sincronização Mestra Concluída!", "logs": logs}
     
