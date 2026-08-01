@@ -2039,6 +2039,26 @@ def consertar_banco(db: Session = Depends(get_db)):
             logs.append(f"Ignorado: {str(e)}")
             
     return {"status": "Sincronização Mestra Concluída!", "logs": logs}
+
+@app.get("/api/cura-final")
+def forcar_colunas_fidelidade(db: Session = Depends(get_db)):
+    from sqlalchemy import text
+    comandos = [
+        "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
+        "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
+        "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"
+    ]
+    logs = []
+    for cmd in comandos:
+        try:
+            db.execute(text(cmd))
+            db.commit()
+            logs.append(f"SUCESSO ABSOLUTO: {cmd}")
+        except Exception as e:
+            db.rollback()
+            logs.append(f"Ignorado: {str(e)}")
+            
+    return {"status": "As 3 colunas foram injetadas!", "resultado": logs}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
