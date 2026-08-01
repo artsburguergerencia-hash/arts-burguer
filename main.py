@@ -1916,6 +1916,27 @@ def limpar_banco_dados(db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/consertar-banco")
+def consertar_banco(db: Session = Depends(get_db)):
+    from sqlalchemy import text
+    comandos = [
+        "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT 0;"
+    ]
+    logs = []
+    for cmd in comandos:
+        try:
+            db.execute(text(cmd))
+            db.commit()
+            logs.append(f"Sucesso: {cmd}")
+        except Exception as e:
+            db.rollback()
+            logs.append(f"Ignorado (já existe): {cmd}")
+            
+    return {"status": "Banco Atualizado a Força!", "logs": logs}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
