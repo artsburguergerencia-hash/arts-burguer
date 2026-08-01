@@ -2022,6 +2022,10 @@ def consertar_banco(db: Session = Depends(get_db)):
         "ALTER TABLE clientes ADD COLUMN numero VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN bairro VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';"
+        # AS TRÊS COLUNAS CLÁSSICAS QUE O POSTGRESQL TINHA ESQUECIDO:
+        "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
+        "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
+        "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"
     ]
     
     logs = []
