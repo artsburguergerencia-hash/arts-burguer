@@ -1942,19 +1942,88 @@ def limpar_banco_dados(db: Session = Depends(get_db)):
 def consertar_banco(db: Session = Depends(get_db)):
     from sqlalchemy import text
     comandos = [
-        # Colunas do Cardápio Online
+        # Configurações da Loja
+        "ALTER TABLE configuracoes_loja ADD COLUMN nome_empresa VARCHAR DEFAULT 'Art''s Burguer';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN cnpj VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN inscricao_estadual VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN horario_funcionamento VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN endereco VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN telefone VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN logo_url VARCHAR DEFAULT '';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_delivery BOOLEAN DEFAULT TRUE;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_retirada BOOLEAN DEFAULT TRUE;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN aceite_automatico BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN tempo_preparo INTEGER DEFAULT 30;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN formas_pagamento VARCHAR DEFAULT 'Pix,Dinheiro,Cartão';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN sistema_fidelidade VARCHAR DEFAULT 'CASHBACK';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_cardapio VARCHAR DEFAULT 'Burger Artesanal,Bebidas,Porções';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_fornecedor VARCHAR DEFAULT 'Carnes,Hortifruti,Bebidas,Embalagens';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto,Gympass';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN regra_acumulo VARCHAR DEFAULT 'POR_PEDIDO';",
+        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_ganho FLOAT DEFAULT 0.0;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_gasto_minimo FLOAT DEFAULT 0.0;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_resgate FLOAT DEFAULT 0.0;",
+        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_elegibilidade VARCHAR DEFAULT 'TODOS';",
+        
+        # Produtos e Cardápio
+        "ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
+        "ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT TRUE;",
+        
+        # Recursos Humanos (RH)
+        "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
+        "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN status_admissao VARCHAR DEFAULT 'PENDENTE_PREENCHIMENTO';",
+        "ALTER TABLE info_rh ADD COLUMN aceite_lgpd BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE info_rh ADD COLUMN data_aceite_lgpd VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN telefone VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN email VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN salario FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN escala VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE info_rh ADD COLUMN tipo_comissao VARCHAR DEFAULT 'PERCENTUAL';",
+        "ALTER TABLE info_rh ADD COLUMN valor_comissao FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN valor_vt FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN valor_va FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN diaria_motoboy FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0;",
+        "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}';",
+        "ALTER TABLE info_rh ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN naturalidade VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN estado_civil VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN rg VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN cpf VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN pis_pasep VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN titulo_eleitor VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN reservista VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN cep VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN endereco_completo VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN banco VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN agencia VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN conta VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN dados_bancarios VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN escolaridade VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN qtd_filhos_menores INTEGER DEFAULT 0;",
+        "ALTER TABLE info_rh ADD COLUMN cnh VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN plano_saude_escolhido VARCHAR DEFAULT '';",
+        "ALTER TABLE info_rh ADD COLUMN link_pasta_documentos VARCHAR DEFAULT '';",
+        "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
+        "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0;",
+        "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
+        "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';",
+        
+        # CRM e Clientes (As que faltavam pro Cardápio)
+        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
+        "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN senha VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN numero VARCHAR DEFAULT '';",
         "ALTER TABLE clientes ADD COLUMN bairro VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';",
-        
-        # Colunas do Dossiê do RH/Gestão
-        "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;"
+        "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';"
     ]
+    
     logs = []
     for cmd in comandos:
         try:
@@ -1965,7 +2034,7 @@ def consertar_banco(db: Session = Depends(get_db)):
             db.rollback()
             logs.append(f"Ignorado (já existe ou deu erro): {str(e)}")
             
-    return {"status": "Banco Atualizado a Força!", "logs": logs}
+    return {"status": "Sincronização Mestra Concluída!", "logs": logs}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
