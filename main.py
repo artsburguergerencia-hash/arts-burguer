@@ -1659,22 +1659,30 @@ def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/api/gestao/clientes")
-def listar_clientes_painel(db: Session = Depends(get_db)):
-    clientes = db.query(ClienteModel).all()
-    lista_clientes = []
-    
-    for c in clientes:
-        lista_clientes.append({
-            "id": c.id, 
-            "nome": c.nome, 
-            "telefone": c.telefone, 
-            "bloqueado": getattr(c, 'bloqueado', False), 
-            "pontos": getattr(c, 'pontos_fidelidade', 0), 
-            "cashback": getattr(c, 'saldo_cashback', 0.0)
-        })
+def listar_clientes_gestao(db: Session = Depends(get_db)):
+    try:
+        clientes = db.query(Cliente).all()
+        lista_blindada = []
         
-    return lista_clientes
-
+        # Montamos a lista "na mão" para blindar contra valores Nulos (NULL) de testes antigos
+        for c in clientes:
+            lista_blindada.append({
+                "id": c.id,
+                "nome": c.nome or "Cliente não identificado",
+                "telefone": c.telefone or "Sem número",
+                "pontos": c.pontos or 0,
+                "cashback": c.cashback or 0.0,
+                "bloqueado": bool(c.bloqueado), # Força transformar Nulo em Falso (Desbloqueado)
+                
+                # O getattr protege contra colunas que possam não existir em tabelas antigas
+                "cpf": getattr(c, 'cpf', "") or "",
+                "cep": getattr(c, 'cep', "") or "",
+                "endereco": getattr(c, 'endereco', "") or ""
+            })
+            
+        return lista_blindada
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao blindar lista: {str(e)}")
 @app.put("/api/gestao/clientes/{cliente_id}")
 def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
