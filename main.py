@@ -1683,6 +1683,7 @@ def listar_clientes_gestao(db: Session = Depends(get_db)):
         return lista_blindada
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao blindar lista: {str(e)}")
+        
 @app.put("/api/gestao/clientes/{cliente_id}")
 def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
