@@ -330,28 +330,45 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
 # ==========================================
 
 @app.post("/api/cliente/registrar")
-def registrar_cliente_cardapio(dados: RegistroClienteData, db: Session = Depends(get_db)):
-    cliente_existente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
-    
-    if cliente_existente:
-        raise HTTPException(status_code=400, detail="Este telefone já está registado na base de dados!")
-    
-    novo_cliente = ClienteModel(
-        nome=dados.nome, 
-        telefone=dados.telefone, 
-        senha_hash=pwd_context.hash(dados.senha),
-        cpf=dados.cpf, 
-        data_nascimento=dados.data_nascimento, 
-        cep=dados.cep,
-        logradouro=dados.logradouro, 
-        numero=dados.numero, 
-        bairro=dados.bairro, 
-        complemento=dados.complemento
-    )
-    db.add(novo_cliente)
-    db.commit()
-    
-    return {"status": "sucesso", "mensagem": "Conta criada com sucesso!"}
+def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db)):
+    try:
+        telefone_cliente = dados.get("telefone")
+        if not telefone_cliente:
+            raise HTTPException(status_code=400, detail="O telefone é obrigatório.")
+
+        # Verifica se o cliente já existe para não duplicar
+        cliente_existente = db.query(Cliente).filter(Cliente.telefone == telefone_cliente).first()
+        if cliente_existente:
+            raise HTTPException(status_code=400, detail="Este telefone já está cadastrado. Faça o login.")
+
+        # Cria o novo cliente capturando todos os campos novos do Cardápio
+        novo_cliente = Cliente(
+            nome=dados.get("nome", "Cliente Visitante"),
+            telefone=telefone_cliente,
+            senha=dados.get("senha", ""),
+            cpf=dados.get("cpf", ""),
+            data_nascimento=dados.get("data_nascimento", ""),
+            cep=dados.get("cep", ""),
+            endereco=dados.get("endereco", ""),
+            numero=dados.get("numero", ""),
+            bairro=dados.get("bairro", ""),
+            complemento=dados.get("complemento", ""),
+            pontos=0,
+            cashback=0.0,
+            bloqueado=False
+        )
+        
+        db.add(novo_cliente)
+        db.commit()
+        db.refresh(novo_cliente)
+        
+        return {"mensagem": "Conta criada com sucesso!", "cliente_id": novo_cliente.id}
+        
+    except HTTPException as he:
+        raise he # Repassa os erros 400 conhecidos
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno ao criar conta: {str(e)}")
 
 
 @app.post("/api/cliente/login")
