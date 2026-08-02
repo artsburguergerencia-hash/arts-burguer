@@ -2133,6 +2133,80 @@ def excluir_conta(conta_id: int, db: Session = Depends(get_db)):
     db.delete(conta)
     db.commit()
     return {"status": "sucesso", "mensagem": "Conta excluída!"}
+
+# ==========================================
+# MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 2)
+# ==========================================
+
+# 1. Atualizar Produto (Cardápio)
+@app.put("/api/gestao/produto/{produto_id}")
+def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db)):
+    from models import ProdutoModel
+    produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
+    if not produto:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    
+    # Atualiza as informações (mapeamento inteligente)
+    if 'nome' in dados: produto.nome = dados['nome']
+    if 'descricao' in dados: produto.descricao = dados['descricao']
+    if 'imagem_url' in dados: produto.imagem_url = dados['imagem_url']
+    if 'categoria' in dados: produto.categoria = dados['categoria']
+    if 'ativo' in dados: produto.ativo = dados['ativo']
+    
+    # O frontend manda como "preco", mas o banco salva como "preco_venda"
+    if 'preco' in dados: produto.preco_venda = dados['preco']
+        
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Produto atualizado!"}
+
+# 2. Excluir Produto Definitivamente
+@app.delete("/api/gestao/produto/{produto_id}")
+def excluir_produto(produto_id: int, db: Session = Depends(get_db)):
+    from models import ProdutoModel
+    produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
+    if not produto:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+        
+    db.delete(produto)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Produto excluído permanentemente!"}
+
+# 3. Atualizar Dossiê do Cliente (CRM)
+@app.put("/api/gestao/clientes/{cliente_id}")
+def atualizar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
+    from models import ClienteModel
+    cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    
+    # Injetando os novos dados no banco
+    if 'nome' in dados: cliente.nome = dados['nome']
+    if 'telefone' in dados: cliente.telefone = dados['telefone']
+    if 'cpf' in dados: cliente.cpf = dados['cpf']
+    if 'cep' in dados: cliente.cep = dados['cep']
+    if 'endereco' in dados: cliente.endereco = dados['endereco']
+    
+    # Nossas preciosas colunas de fidelidade
+    if 'pontos' in dados: cliente.pontos = dados['pontos']
+    if 'cashback' in dados: cliente.cashback = dados['cashback']
+    if 'bloqueado' in dados: cliente.bloqueado = dados['bloqueado']
+    
+    db.commit()
+    return {"status": "sucesso", "mensagem": "CRM do cliente atualizado!"}
+
+# 4. Travar/Destravar Cliente Rápido
+@app.put("/api/gestao/clientes/{cliente_id}/bloqueio")
+def toggle_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
+    from models import ClienteModel
+    cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    
+    # Se estava bloqueado, desbloqueia. Se estava liberado, bloqueia.
+    cliente.bloqueado = not cliente.bloqueado
+    db.commit()
+    
+    return {"status": "sucesso", "bloqueado": cliente.bloqueado}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
