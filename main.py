@@ -376,18 +376,34 @@ def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db
 def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
     
-    if not cliente or not cliente.senha_hash or not pwd_context.verify(dados.senha, cliente.senha_hash):
+    # 1. Verifica se o cliente existe e tem a coluna 'senha' (NOME CORRETO)
+    if not cliente or not cliente.senha:
+        raise HTTPException(status_code=401, detail="Telefone ou senha incorretos.")
+        
+    # 2. Blindagem Dupla de Senha (aceita hash ou texto puro)
+    senha_valida = False
+    try:
+        if pwd_context.verify(dados.senha, cliente.senha):
+            senha_valida = True
+    except:
+        pass
+        
+    if dados.senha == cliente.senha: # Caso a senha tenha sido salva sem hash
+        senha_valida = True
+        
+    if not senha_valida:
         raise HTTPException(status_code=401, detail="Telefone ou senha incorretos.")
     
+    # 3. Retorna os dados usando os NOMES CORRETOS do banco de dados
     return {
         "status": "sucesso",
         "cliente": {
             "id": cliente.id,
             "nome": cliente.nome,
             "telefone": cliente.telefone,
-            "endereco_completo": f"{cliente.logradouro}, {cliente.numero} - {cliente.bairro} ({cliente.complemento})",
-            "pontos": cliente.pontos_fidelidade,
-            "cashback": cliente.saldo_cashback
+            "endereco_completo": f"{cliente.endereco}, {cliente.numero} - {cliente.bairro} ({cliente.complemento})",
+            "pontos": cliente.pontos,
+            "cashback": cliente.cashback
         }
     }
 
