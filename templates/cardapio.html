@@ -71,7 +71,7 @@
     <!-- GRADE DE PRODUTOS -->
     <main class="max-w-2xl mx-auto px-4 space-y-8" id="lista-produtos"></main>
 
-    <!-- BOTÃO FLUTUANTE DE CARRINHO (AGORA NÃO ESMAGA MAIS O BOTÃO DE CHECKOUT) -->
+    <!-- BOTÃO FLUTUANTE DE CARRINHO -->
     <div id="barra-carrinho" class="fixed bottom-6 left-0 w-full px-4 md:left-1/2 md:-translate-x-1/2 md:max-w-md z-30 translate-y-40 transition-transform duration-500 ease-out pointer-events-none">
         <button onclick="abrirCarrinho()" class="w-full bg-brand-500 hover:bg-brand-600 text-white p-4 rounded-2xl shadow-[0_15px_40px_rgba(255,71,87,0.5)] flex items-center justify-between active:scale-95 transition-all border border-brand-400 pointer-events-auto">
             <div class="flex items-center space-x-3">
@@ -82,13 +82,13 @@
         </button>
     </div>
 
-    <!-- MODAL ZOOM IMAGEM (NOVO!) -->
+    <!-- MODAL ZOOM IMAGEM -->
     <div id="modal-zoom" class="fixed inset-0 bg-black/95 z-[100] hidden items-center justify-center p-4 backdrop-blur-md cursor-pointer" onclick="fecharZoom()">
         <button class="absolute top-6 right-6 text-white bg-white/10 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/20 transition-colors"><i class="ph-bold ph-x"></i></button>
         <img id="img-zoom" src="" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl transform transition-transform duration-300 scale-95">
     </div>
 
-    <!-- MODAL DO PRODUTO (EXTRAS E COMPLEMENTOS) -->
+    <!-- MODAL DO PRODUTO -->
     <div id="modal-produto" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-end">
         <div class="bg-slate-900 w-full max-w-2xl mx-auto rounded-t-3xl h-[85vh] flex flex-col relative modal-enter">
             <button onclick="fecharModalProduto()" class="absolute right-4 top-4 w-8 h-8 bg-slate-800 text-slate-400 rounded-full flex items-center justify-center z-10 hover:text-white transition-colors"><i class="ph-bold ph-x"></i></button>
@@ -201,7 +201,7 @@
     </div>
 
     <!-- MODAL DO CARRINHO FINAL (CHECKOUT) -->
-    <div id="modal-carrinho" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-end">
+    <div id="modal-carrinho" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden flex-col justify-end">
         <div class="bg-slate-900 w-full max-w-2xl mx-auto rounded-t-3xl h-[90vh] flex flex-col relative modal-enter">
             <div class="flex justify-between items-center p-5 border-b border-slate-800 shrink-0">
                 <h2 class="text-xl font-black text-white"><i class="ph-fill ph-shopping-bag text-brand-500 mr-2"></i> Sua Sacola</h2>
@@ -210,6 +210,13 @@
             
             <div class="flex-1 overflow-y-auto p-5 no-scrollbar pb-32">
                 <div id="lista-carrinho-modal" class="space-y-4 mb-6"></div>
+                
+                <!-- AQUI ENTRA O NOVO CAMPO DE CUPOM! -->
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl mb-4 flex items-center space-x-2">
+                    <input type="text" id="input-cupom" placeholder="Possui cupom de desconto?" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold uppercase text-white outline-none focus:border-brand-500">
+                    <button type="button" onclick="aplicarCupom()" class="bg-slate-900 hover:bg-slate-800 text-white font-black text-xs px-4 py-2.5 rounded-xl border border-slate-700 transition-colors uppercase tracking-wider">Aplicar</button>
+                </div>
+                <div id="status-cupom" class="text-xs font-bold mb-4 hidden"></div>
                 
                 <div class="space-y-4 pt-4 border-t border-slate-800">
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center"><i class="ph-fill ph-map-pin mr-2 text-brand-500 text-lg"></i> Entrega e Cobrança</h3>
@@ -280,6 +287,10 @@
         let clienteLogado = null;
         let produtoSendoMontado = null;
         let complementosAtuais = [];
+        
+        // NOVAS VARIÁVEIS PARA O CUPOM
+        let cupomAplicado = null;
+        let valorDescontoCupom = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
             carregarConfiguracoes(); 
@@ -660,10 +671,45 @@
         }
 
         // ==========================
-        // CARRINHO GLOBAL
+        // SISTEMA DE CUPONS E CARRINHO
         // ==========================
+        async function aplicarCupom() {
+            const codigo = document.getElementById('input-cupom').value.trim();
+            const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+            const statusDiv = document.getElementById('status-cupom');
+
+            if(!codigo) {
+                alert("Digite o código do cupom.");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/carrinho/validar-cupom', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ codigo, subtotal })
+                });
+                const data = await res.json();
+
+                if(res.ok) {
+                    cupomAplicado = data.codigo;
+                    valorDescontoCupom = data.valor_desconto;
+                    statusDiv.className = "text-xs font-bold mb-4 text-emerald-400 block";
+                    statusDiv.innerText = `✅ Cupom "${data.codigo}" aplicado! Desconto de R$ ${data.valor_desconto.toFixed(2).replace('.', ',')}`;
+                    atualizarContadores();
+                } else {
+                    statusDiv.className = "text-xs font-bold mb-4 text-red-400 block";
+                    statusDiv.innerText = `❌ ${data.detail || "Cupom inválido."}`;
+                    cupomAplicado = null;
+                    valorDescontoCupom = 0;
+                    atualizarContadores();
+                }
+            } catch(e) { alert("Erro ao validar cupom."); }
+        }
+
         function atualizarContadores() {
-            const total = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+            const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+            const total = Math.max(0, subtotal - valorDescontoCupom);
             const qtd = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
             const form = `R$ ${total.toFixed(2).replace('.', ',')}`;
             
@@ -676,6 +722,10 @@
                 barra.classList.remove('translate-y-40');
             } else {
                 barra.classList.add('translate-y-40');
+                cupomAplicado = null;
+                valorDescontoCupom = 0;
+                const sc = document.getElementById('status-cupom');
+                if(sc) { sc.classList.add('hidden'); document.getElementById('input-cupom').value = ''; }
                 fecharCarrinho();
             }
         }
