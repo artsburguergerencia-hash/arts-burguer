@@ -1719,7 +1719,8 @@ def listar_clientes_gestao(db: Session = Depends(get_db)):
         return lista_blindada
     except Exception as e:
         print("Erro Crítico no GET Clientes:", str(e))
-        raise HTTPException(status_code=500, detail=str(e))        
+        raise HTTPException(status_code=500, detail=str(e))
+        
 @app.put("/api/gestao/clientes/{cliente_id}")
 def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
@@ -1805,6 +1806,10 @@ def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
 # ROTAS VISUAIS (TELAS HTML SERVIDAS PELO FASTAPI)
 # ==========================================
 
+@app.get("/portal")
+def abrir_portal_central():
+    return FileResponse("portal.html")
+    
 @app.get("/login", response_class=HTMLResponse)
 def abrir_tela_login(): 
     if Path("templates/login.html").exists():
