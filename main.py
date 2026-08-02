@@ -2075,6 +2075,64 @@ def forcar_colunas_fidelidade(db: Session = Depends(get_db)):
             logs.append(f"Ignorado: {str(e)}")
             
     return {"status": "As 3 colunas foram injetadas!", "resultado": logs}
+
+# ==========================================
+# MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 1)
+# ==========================================
+
+# 1. Atualizar Fornecedor
+@app.put("/api/fornecedores/{fornecedor_id}")
+def atualizar_fornecedor(fornecedor_id: int, dados: dict, db: Session = Depends(get_db)):
+    from models import FornecedorModel # Certifique-se que o nome do seu model está correto
+    fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
+    if not fornecedor:
+        raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
+    
+    for key, value in dados.items():
+        if hasattr(fornecedor, key):
+            setattr(fornecedor, key, value)
+            
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Fornecedor atualizado!"}
+
+# 2. Excluir Fornecedor
+@app.delete("/api/fornecedores/{fornecedor_id}")
+def excluir_fornecedor(fornecedor_id: int, db: Session = Depends(get_db)):
+    from models import FornecedorModel
+    fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
+    if not fornecedor:
+        raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
+        
+    db.delete(fornecedor)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Fornecedor excluído!"}
+
+# 3. Atualizar Conta a Pagar
+@app.put("/api/contas_pagar/{conta_id}")
+def atualizar_conta(conta_id: int, dados: dict, db: Session = Depends(get_db)):
+    from models import ContaPagarModel # Certifique-se que o nome do seu model está correto
+    conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
+    if not conta:
+        raise HTTPException(status_code=404, detail="Conta não encontrada")
+    
+    for key, value in dados.items():
+        if hasattr(conta, key):
+            setattr(conta, key, value)
+            
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Conta atualizada!"}
+
+# 4. Excluir Conta a Pagar
+@app.delete("/api/contas_pagar/{conta_id}")
+def excluir_conta(conta_id: int, db: Session = Depends(get_db)):
+    from models import ContaPagarModel
+    conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
+    if not conta:
+        raise HTTPException(status_code=404, detail="Conta não encontrada")
+        
+    db.delete(conta)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Conta excluída!"}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
