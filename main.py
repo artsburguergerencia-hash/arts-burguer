@@ -2245,7 +2245,86 @@ def atualizar_funcionario(func_id: int, dados: dict, db: Session = Depends(get_d
 
     db.commit()
     return {"status": "sucesso", "mensagem": "Colaborador atualizado!"}
+
+# ==========================================
+# MÁQUINA DE VENDAS: CUPONS E PROMOÇÕES
+# ==========================================
+
+from sqlalchemy import Column, Integer, String, Float, Boolean
+
+# Definição do Model para o Banco de Dados (caso queira colocar em models.py ou direto aqui)
+class CupomModel(Base):
+    __tablename__ = "cupons_desconto"
     
+    id = Column(Integer, primary_key=True, index=True)
+    codigo = Column(String, unique=True, index=True)
+    tipo = Column(String, default="PERCENTUAL") # PERCENTUAL ou VALOR_FIXO
+    valor = Column(Float, default=0.0)
+    ativo = Column(Boolean, default=True)
+
+# 1. Listar Cupons no Gestão
+@app.get("/api/gestao/cupons")
+def listar_cupons(db: Session = Depends(get_db)):
+    return db.query(CupomModel).all()
+
+# 2. Criar Novo Cupom
+@app.post("/api/gestao/cupons")
+def criar_cupom(dados: dict, db: Session = Depends(get_db)):
+    codigo = dados.get("codigo", "").upper().strip()
+    if not codigo:
+        raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
+        
+    existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
+    if existe:
+        raise HTTPException(status_code=400, detail="Este código de cupom já existe.")
+        
+    novo = CupomModel(
+        codigo=codigo,
+        tipo=dados.get("tipo", "PERCENTUAL"),
+        valor=float(dados.get("valor", 0.0)),
+        ativo=True
+    )
+    db.add(novo)
+    db.commit()
+    return {"status": "sucesso", "mensagem": f"Cupom {codigo} criado com sucesso!"}
+
+# 3. Excluir Cupom
+@app.delete("/api/gestao/cupons/{cupom_id}")
+def excluir_cupom(cupom_id: int, db: Session = Depends(get_db)):
+    cupom = db.query(CupomModel).filter(CupomModel.id == cupom_id).first()
+    if not cupom:
+        raise HTTPException(status_code=404, detail="Cupom não encontrado.")
+    db.delete(cupom)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Cupom excluído!"}
+
+# 4. Validar Cupom no Carrinho (Cliente)
+@app.post("/api/carrinho/validar-cupom")
+def validar_cupom(dados: dict, db: Session = Depends(get_db)):
+    codigo = dados.get("codigo", "").upper().strip()
+    subtotal = float(dados.get("subtotal", 0.0))
+    
+    cupom = db.query(CupomModel).filter(CupomModel.codigo == codigo, CupomModel.ativo == True).first()
+    if not cupom:
+        raise HTTPException(status_code=404, detail="Cupom inválido ou expirado.")
+        
+    desconto = 0.0
+    if cupom.tipo == "PERCENTUAL":
+        desconto = subtotal * (cupom.valor / 100.0)
+    else:
+        desconto = cupom.valor
+        
+    if desconto > subtotal:
+        desconto = subtotal
+        
+    return {
+        "status": "sucesso",
+        "codigo": cupom.codigo,
+        "tipo": cupom.tipo,
+        "valor_desconto": round(desconto, 2),
+        "total_com_desconto": round(subtotal - desconto, 2)
+    }
+
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
