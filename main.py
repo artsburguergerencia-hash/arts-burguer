@@ -2342,26 +2342,6 @@ class CupomModel(Base):
 def listar_cupons(db: Session = Depends(get_db)):
     return db.query(CupomModel).all()
 
-@app.post("/api/gestao/cupons")
-def criar_cupom(dados: dict, db: Session = Depends(get_db)):
-    codigo = dados.get("codigo", "").upper().strip()
-    if not codigo:
-        raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
-        
-    existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
-    if existe:
-        raise HTTPException(status_code=400, detail="Este código de cupom já existe.")
-        
-    novo = CupomModel(
-        codigo=codigo,
-        tipo=dados.get("tipo", "PERCENTUAL"),
-        valor=float(dados.get("valor", 0.0)),
-        ativo=True
-    )
-    db.add(novo)
-    db.commit()
-    return {"status": "sucesso", "mensagem": f"Cupom {codigo} criado com sucesso!"}
-
 @app.delete("/api/gestao/cupons/{cupom_id}")
 def excluir_cupom(cupom_id: int, db: Session = Depends(get_db)):
     cupom = db.query(CupomModel).filter(CupomModel.id == cupom_id).first()
