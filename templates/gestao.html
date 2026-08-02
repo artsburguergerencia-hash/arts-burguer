@@ -1050,6 +1050,59 @@
         </div>
     </div>
 
+    <!-- MODAL DE EDIÇÃO DE ESTOQUE -->
+    <div id="modal-editar-estoque" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] p-8 shadow-2xl relative">
+            <button onclick="document.getElementById('modal-editar-estoque').classList.replace('flex','hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 bg-slate-100 p-2 rounded-full transition-colors"><i class="ph-bold ph-x"></i></button>
+            <h2 class="font-black text-2xl mb-6 text-slate-800 flex items-center"><i class="ph-fill ph-package text-brand-500 mr-3 text-3xl"></i> Editar Insumo</h2>
+
+            <form id="form-edit-estoque" onsubmit="salvarEdicaoEstoque(event)" class="space-y-4">
+                <input type="hidden" id="edit-ins-id">
+                <input type="text" id="edit-ins-nome" required placeholder="Nome do Insumo" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="edit-ins-unidade" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 font-bold">
+                        <option value="un">Unidade (un)</option>
+                        <option value="g">Gramas (g)</option>
+                        <option value="ml">Mililitros (ml)</option>
+                    </select>
+                    <input type="text" id="edit-ins-custo" oninput="mascaraMoeda(this)" required placeholder="Custo (R$)" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Qtd Atual</label>
+                        <input type="number" step="0.1" id="edit-ins-qtd" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 font-black text-blue-600">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Alerta Mínimo</label>
+                        <input type="number" step="0.1" id="edit-ins-min" required class="w-full px-4 py-3 border border-red-200 bg-red-50 rounded-xl outline-none focus:border-red-500 font-black text-red-600">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">Atualizar Estoque</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDIÇÃO BÁSICA DE COLABORADOR -->
+    <div id="modal-editar-colaborador" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] p-8 shadow-2xl relative">
+            <button onclick="document.getElementById('modal-editar-colaborador').classList.replace('flex','hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 bg-slate-100 p-2 rounded-full transition-colors"><i class="ph-bold ph-x"></i></button>
+            <h2 class="font-black text-2xl mb-6 text-slate-800 flex items-center"><i class="ph-fill ph-identification-badge text-brand-500 mr-3 text-3xl"></i> Editar Dados Iniciais</h2>
+
+            <form id="form-edit-colab" onsubmit="salvarEdicaoColaborador(event)" class="space-y-4">
+                <input type="hidden" id="edit-colab-id">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Completo</label>
+                    <input type="text" id="edit-colab-nome" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Matrícula (Ex: 0001)</label>
+                    <input type="text" id="edit-colab-mat" placeholder="0000" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-mono font-bold outline-none focus:border-brand-500">
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+    
     <!-- ============================================================== -->
     <!-- MOTOR JAVASCRIPT GERAL DO SISTEMA ERP -->
     <!-- ============================================================== -->
@@ -1629,13 +1682,18 @@
                     }
                     
                     let acaoAdmin = '';
-                    if (f.permissoes === 'total') {
-                        acaoAdmin = '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Acesso Supremo</span>';
-                    } else if (f.status_admissao === 'DEMITIDO') {
-                        acaoAdmin = `<button onclick="readmitirColaborador(${f.id})" class="text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm"><i class="ph-bold ph-arrow-counter-clockwise mr-1"></i> Readmitir</button>`;
-                    } else {
-                        acaoAdmin = `<button onclick="abrirDossie(${f.id}, '${f.nome}', '${f.matricula}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black mr-2 transition-colors shadow-sm">Dossiê</button><button onclick="demitirColaborador(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>`;
-                    }
+            if (f.permissoes === 'total') {
+                acaoAdmin = '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Acesso Supremo</span>';
+            } else if (f.status_admissao === 'DEMITIDO') {
+                acaoAdmin = `<button onclick="readmitirColaborador(${f.id})" class="text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm"><i class="ph-bold ph-arrow-counter-clockwise mr-1"></i> Readmitir</button>`;
+            } else {
+                acaoAdmin = `
+                <div class="flex space-x-1 justify-center">
+                    <button onclick="abrirModalEditarColaborador(${f.id}, '${f.nome}', '${f.matricula || ''}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar Nome/Matrícula"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                    <button onclick="abrirDossie(${f.id}, '${f.nome}', '${f.matricula}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm">Dossiê</button>
+                    <button onclick="demitirColaborador(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
+                </div>`;
+            }
                     
                     let pontoHtml = '';
                     if(f.status_admissao === 'ATIVO' && f.permissoes !== 'total') {
@@ -2075,6 +2133,9 @@
             carregarEstoque(); 
         }
 
+        // ==============================================================
+        // MÓDULO DE ESTOQUE (EDIÇÃO E EXCLUSÃO)
+        // ==============================================================
         async function carregarEstoque() { 
             const res = await fetch('/api/gestao/insumos'); 
             const insumos = await res.json(); 
@@ -2084,8 +2145,54 @@
                 <td class="py-4 px-6 font-bold text-slate-700">${x.nome}</td>
                 <td class="py-4 px-6 font-black ${x.quantidade_atual <= x.quantidade_minima ? 'text-red-500' : 'text-slate-700'}">${x.quantidade_atual} <span class="text-xs uppercase text-slate-400 font-bold tracking-widest">${x.unidade}</span></td>
                 <td class="py-4 px-6 font-bold text-slate-400">${x.quantidade_minima} <span class="text-xs uppercase text-slate-300 font-bold tracking-widest">${x.unidade}</span></td>
-                <td class="py-4 px-6 text-center"><button onclick="if(confirm('Remover insumo?')){fetch('/api/gestao/insumo/${x.id}', {method: 'DELETE'}).then(carregarEstoque)}" class="text-red-400 hover:text-white hover:bg-red-500 px-3 py-2 rounded-xl transition-colors border border-slate-200 shadow-sm"><i class="ph-bold ph-trash text-base"></i></button></td>
+                <td class="py-4 px-6 text-center space-x-2 flex justify-center">
+                    <button onclick="abrirModalEditarEstoque(${x.id})" class="text-blue-600 bg-blue-50 hover:text-white hover:bg-blue-600 px-3 py-2 rounded-xl transition-colors border border-blue-200 shadow-sm"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                    <button onclick="if(confirm('Remover insumo?')){fetch('/api/gestao/insumo/${x.id}', {method: 'DELETE'}).then(carregarEstoque)}" class="text-red-400 hover:text-white hover:bg-red-500 px-3 py-2 rounded-xl transition-colors border border-slate-200 shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
+                </td>
             </tr>`).join(''); 
+        }
+
+        async function abrirModalEditarEstoque(id) {
+            try {
+                const res = await fetch('/api/gestao/insumos');
+                const insumos = await res.json();
+                const ins = insumos.find(x => x.id === id);
+                if(!ins) return;
+
+                document.getElementById('edit-ins-id').value = ins.id;
+                document.getElementById('edit-ins-nome').value = ins.nome;
+                document.getElementById('edit-ins-unidade').value = ins.unidade;
+                document.getElementById('edit-ins-qtd').value = ins.quantidade_atual;
+                document.getElementById('edit-ins-min').value = ins.quantidade_minima;
+                document.getElementById('edit-ins-custo').value = formataMoedaParaInput(ins.custo);
+
+                document.getElementById('modal-editar-estoque').classList.replace('hidden', 'flex');
+            } catch(e) { alertaPremium("Erro ao carregar.", "Erro", "erro"); }
+        }
+
+        async function salvarEdicaoEstoque(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-ins-id').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+
+            const payload = {
+                nome: document.getElementById('edit-ins-nome').value,
+                unidade: document.getElementById('edit-ins-unidade').value,
+                quantidade: parseFloat(document.getElementById('edit-ins-qtd').value),
+                minimo: parseFloat(document.getElementById('edit-ins-min').value),
+                custo: parseMoeda(document.getElementById('edit-ins-custo').value)
+            };
+
+            try {
+                const res = await fetch(`/api/gestao/insumo/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if(res.ok) {
+                    alertaPremium("Estoque atualizado!", "Sucesso", "sucesso");
+                    document.getElementById('modal-editar-estoque').classList.replace('flex', 'hidden');
+                    carregarEstoque();
+                }
+            } catch(err) { alertaPremium("Erro de comunicação.", "Falha", "erro"); }
+            btn.innerHTML = "Atualizar Estoque";
         }
 
         async function cadastrarFornecedor(e) { 
