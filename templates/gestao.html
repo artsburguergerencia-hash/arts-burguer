@@ -76,6 +76,9 @@
             <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-gear text-xl mr-3"></i> Setup da Loja
             </button>
+            <button onclick="abrirAba('aba-cupons', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+    <i class="ph ph-ticket text-xl mr-3"></i> Promoções & Cupons
+</button>
 
             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-800 pt-4">Operação (Ao Vivo)</p>
             
@@ -436,6 +439,37 @@
                             <th class="py-4 px-6">Ações Preventivas</th>
                         </thead>
                         <tbody id="lista-clientes-painel"></tbody>
+                    </table>
+                </div>
+            </div>
+
+    <!-- ============================================== -->
+            <!-- ABA: PROMOÇÕES E CUPONS (NOVA) -->
+            <!-- ============================================== -->
+            <div id="aba-cupons" class="painel hidden">
+                <div class="bg-white rounded-2xl p-8 mb-8 border border-slate-200 shadow-sm">
+                    <h3 class="text-xl font-black mb-4 flex items-center"><i class="ph-fill ph-ticket text-brand-500 mr-2"></i> Criar Cupom de Desconto</h3>
+                    <form id="form-cupom" onsubmit="criarCupom(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="text" id="cupom-codigo" placeholder="Código (Ex: ARTS10)" required class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold uppercase outline-none focus:border-brand-500">
+                        <select id="cupom-tipo" class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 font-bold">
+                            <option value="PERCENTUAL">Desconto Percentual (%)</option>
+                            <option value="VALOR_FIXO">Valor Fixo (R$)</option>
+                        </select>
+                        <input type="number" step="0.01" id="cupom-valor" placeholder="Valor (Ex: 10 ou 15.00)" required class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
+                        <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl transition-colors">Cadastrar Cupom</button>
+                    </form>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+                    <h3 class="text-lg font-black mb-4">Cupons Ativos na Franquia</h3>
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-100">
+                            <th class="py-4 px-6">Código</th>
+                            <th class="py-4 px-6">Tipo</th>
+                            <th class="py-4 px-6">Valor do Desconto</th>
+                            <th class="py-4 px-6 text-center">Ações</th>
+                        </thead>
+                        <tbody id="lista-cupons"></tbody>
                     </table>
                 </div>
             </div>
@@ -1528,6 +1562,57 @@
             btn.disabled = false;
         }
 
+        async function carregarCupons() {
+    try {
+        const res = await fetch('/api/gestao/cupons');
+        const cupons = await res.json();
+        const tbody = document.getElementById('lista-cupons');
+        if(cupons.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">Nenhum cupom cadastrado.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = cupons.map(c => `
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="py-4 px-6 font-black text-slate-800 tracking-wider">${c.codigo}</td>
+                <td class="py-4 px-6"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase">${c.tipo}</span></td>
+                <td class="py-4 px-6 font-bold text-emerald-600">${c.tipo === 'PERCENTUAL' ? c.valor + '%' : 'R$ ' + c.valor.toFixed(2).replace('.', ',')}</td>
+                <td class="py-4 px-6 text-center">
+                    <button onclick="excluirCupom(${c.id})" class="text-red-400 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    } catch(e) { console.log(e); }
+}
+
+async function criarCupom(e) {
+    e.preventDefault();
+    const payload = {
+        codigo: document.getElementById('cupom-codigo').value,
+        tipo: document.getElementById('cupom-tipo').value,
+        valor: parseFloat(document.getElementById('cupom-valor').value)
+    };
+    const res = await fetch('/api/gestao/cupons', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    });
+    if(res.ok) {
+        alertaPremium("Cupom criado com sucesso!", "Sucesso", "sucesso");
+        document.getElementById('form-cupom').reset();
+        carregarCupons();
+    } else {
+        const err = await res.json();
+        alertaPremium(err.detail, "Erro", "erro");
+    }
+}
+
+async function excluirCupom(id) {
+    if(confirm("Tem certeza que deseja excluir este cupom?")) {
+        await fetch(`/api/gestao/cupons/${id}`, {method: 'DELETE'});
+        carregarCupons();
+    }
+}
+        
         // ==========================================
         // RELATÓRIOS E DRE
         // ==========================================
