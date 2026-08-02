@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Central | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#e04050', 600: '#a32a35' } } } } }
+    </script>
+    <style>
+        body { background-color: #0f172a; font-family: 'Inter', sans-serif; }
+        .card-link { transition: all 0.3s ease; }
+        .card-link:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="min-h-screen text-slate-200 p-6 md:p-12 selection:bg-brand-500 selection:text-white flex flex-col">
+
+    <!-- CABEÇALHO -->
+    <header class="max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center justify-between mb-16 border-b border-slate-800 pb-8">
+        <div class="flex items-center space-x-4 mb-6 md:mb-0">
+            <div class="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30">
+                <i class="ph-fill ph-rocket-launch text-4xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-black text-white tracking-tight uppercase">Hub Central</h1>
+                <p class="text-sm font-bold text-slate-500 tracking-widest uppercase mt-1">artsburguer.com.br</p>
+            </div>
+        </div>
+        <div class="bg-slate-800/50 px-6 py-3 rounded-full border border-slate-700 flex items-center space-x-3">
+            <span class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sistema Operacional Online</span>
+        </div>
+    </header>
+
+    <!-- CORPO DE LINKS -->
+    <main class="max-w-6xl mx-auto w-full flex-1">
+        
+        <!-- SEÇÃO 1: CORPORATIVO E GESTÃO -->
+        <div class="mb-12">
+            <h2 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center"><i class="ph-bold ph-buildings mr-2 text-lg"></i> Corporativo & Backoffice</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <a href="/gestao" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-brand-500 group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><i class="ph-fill ph-chart-line-up text-7xl text-white"></i></div>
+                    <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-brand-500 transition-colors">
+                        <i class="ph-bold ph-lock-key text-xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white mb-2">Painel de Gestão</h3>
+                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Relatórios, Financeiro, CRM, Estoque e Setup de Franquia.</p>
+                    <span class="text-[10px] font-mono font-bold text-brand-400 bg-brand-500/10 px-2 py-1 rounded">/gestao</span>
+                </a>
+
+                <a href="/portal_colaborador" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-blue-500 group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><i class="ph-fill ph-users text-7xl text-white"></i></div>
+                    <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition-colors">
+                        <i class="ph-bold ph-identification-badge text-xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white mb-2">Portal do RH</h3>
+                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Holerites, Atestados e Solicitações de Férias/Folgas.</p>
+                    <span class="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded">/portal_colaborador</span>
+                </a>
+
+                <a href="/admin" class="card-link block bg-slate-900 border border-slate-800 shadow-inner rounded-3xl p-8 hover:border-purple-500 group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-20 transition-opacity"><i class="ph-fill ph-cpu text-7xl text-white"></i></div>
+                    <div class="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-500 transition-colors">
+                        <i class="ph-bold ph-terminal-window text-xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white mb-2">Admin SaaS Master</h3>
+                    <p class="text-sm font-medium text-slate-500 leading-relaxed mb-4">Acesso exclusivo do CEO para licenciar novas empresas.</p>
+                    <span class="text-[10px] font-mono font-bold text-purple-400 bg-purple-500/10 px-2 py-1 rounded">/admin</span>
+                </a>
+
+            </div>
+        </div>
+
+        <!-- SEÇÃO 2: OPERAÇÃO INTERNA -->
+        <div class="mb-12">
+            <h2 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center"><i class="ph-bold ph-cooking-pot mr-2 text-lg"></i> Operação de Loja (Ao Vivo)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <a href="/pdv" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
+                    <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors">
+                        <i class="ph-bold ph-monitor text-xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white mb-2">Frente de Caixa (PDV)</h3>
+                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Lançamento de pedidos no balcão e recebimento rápido.</p>
+                    <span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">/pdv</span>
+                </a>
+
+                <a href="/kds" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-amber-500 group relative overflow-hidden">
+                    <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-colors">
+                        <i class="ph-bold ph-fire text-xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white mb-2">Monitor Cozinha (KDS)</h3>
+                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Tela de produção de lanches para chapeiros e montadores.</p>
+                    <span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-1 rounded">/kds</span>
+                </a>
+
+                <a href="/logistica" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-sky-500 group relative overflow-hidden">
+                    <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-sky-500 transition-colors">
+                        <i class="ph-bold ph-moped text-xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white mb-2">Logística e Despacho</h3>
+                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Roteirização e atribuição de pedidos para motoboys.</p>
+                    <span class="text-[10px] font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-1 rounded">/logistica</span>
+                </a>
+
+            </div>
+        </div>
+
+        <!-- SEÇÃO 3: FRENTE DE LOJA (PÚBLICO) -->
+        <div>
+            <h2 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center"><i class="ph-bold ph-storefront mr-2 text-lg"></i> Vitrine e Salão (Público)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <a href="/" target="_blank" class="card-link block bg-gradient-to-r from-brand-600 to-brand-500 border border-brand-400 rounded-3xl p-8 group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-6 opacity-20"><i class="ph-fill ph-device-mobile text-7xl text-white"></i></div>
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6">
+                        <i class="ph-bold ph-hamburger text-xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-white mb-2">Cardápio Online (Delivery)</h3>
+                    <p class="text-sm font-medium text-brand-100 leading-relaxed mb-4">A vitrine do cliente. Onde eles fazem login, escolhem os lanches e ganham cashback.</p>
+                    <span class="text-[10px] font-mono font-bold text-white bg-black/20 px-3 py-1.5 rounded">Menu Principal ( / )</span>
+                </a>
+
+                <a href="/totem" target="_blank" class="card-link block bg-emerald-900 border border-emerald-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><i class="ph-fill ph-screencast text-7xl text-white"></i></div>
+                    <div class="w-12 h-12 bg-emerald-800 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors">
+                        <i class="ph-bold ph-monitor-play text-xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-white mb-2">Totem de Autoatendimento</h3>
+                    <p class="text-sm font-medium text-emerald-100/70 leading-relaxed mb-4">A tela da TV do salão que chama a voz "Arts!" e mostra as senhas prontas.</p>
+                    <span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded">/totem</span>
+                </a>
+
+            </div>
+        </div>
+        
+    </main>
+
+    <footer class="max-w-6xl mx-auto w-full mt-16 pt-8 border-t border-slate-800 text-center text-slate-600 text-xs font-bold tracking-widest uppercase">
+        © Art's Burguer Sistema SaaS - Todos os direitos reservados.
+    </footer>
+
+</body>
+</html>
