@@ -2207,6 +2207,37 @@ def toggle_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
     db.commit()
     
     return {"status": "sucesso", "bloqueado": cliente.bloqueado}
+
+# 5. Atualizar Insumo (Estoque)
+@app.put("/api/gestao/insumo/{insumo_id}")
+def atualizar_insumo(insumo_id: int, dados: dict, db: Session = Depends(get_db)):
+    from models import InsumoModel
+    insumo = db.query(InsumoModel).filter(InsumoModel.id == insumo_id).first()
+    if not insumo:
+        raise HTTPException(status_code=404, detail="Insumo não encontrado")
+
+    if 'nome' in dados: insumo.nome = dados['nome']
+    if 'unidade' in dados: insumo.unidade = dados['unidade']
+    if 'quantidade' in dados: insumo.quantidade_atual = dados['quantidade']
+    if 'minimo' in dados: insumo.quantidade_minima = dados['minimo']
+    if 'custo' in dados: insumo.custo = dados['custo']
+
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Insumo atualizado!"}
+
+# 6. Atualizar Colaborador (Nome e Matrícula)
+@app.put("/api/gestao/funcionarios/{func_id}")
+def atualizar_funcionario(func_id: int, dados: dict, db: Session = Depends(get_db)):
+    from models import FuncionarioModel
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    if not func:
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+
+    if 'nome' in dados: func.nome = dados['nome']
+    if 'matricula' in dados: func.matricula = dados['matricula']
+
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Colaborador atualizado!"}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
