@@ -1806,9 +1806,11 @@ def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
 # ROTAS VISUAIS (TELAS HTML SERVIDAS PELO FASTAPI)
 # ==========================================
 
-@app.get("/portal")
-def abrir_portal_central():
-    return FileResponse("portal.html")
+@app.get("/portal", response_class=HTMLResponse)
+def abrir_portal_central(): 
+    if Path("templates/portal.html").exists():
+        return Path("templates/portal.html").read_text(encoding="utf-8")
+    return "Erro: Arquivo portal.html não encontrado na pasta templates."
     
 @app.get("/login", response_class=HTMLResponse)
 def abrir_tela_login(): 
