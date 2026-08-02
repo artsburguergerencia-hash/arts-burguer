@@ -71,22 +71,28 @@
     <!-- GRADE DE PRODUTOS -->
     <main class="max-w-2xl mx-auto px-4 space-y-8" id="lista-produtos"></main>
 
-<!-- BOTÃO FLUTUANTE DE CARRINHO (CORRIGIDO E TRAVADO) -->
-<div id="barra-carrinho" class="fixed bottom-6 left-0 w-full px-4 md:left-1/2 md:-translate-x-1/2 md:max-w-md z-50">
-    <button onclick="abrirCarrinho()" class="w-full bg-brand-500 hover:bg-brand-600 text-white p-4 rounded-2xl shadow-[0_15px_40px_rgba(255,71,87,0.5)] flex items-center justify-between active:scale-95 transition-all border border-brand-400">
-        <div class="flex items-center space-x-3">
-            <div class="bg-white text-brand-500 w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shadow-inner" id="carrinho-qtd">0</div>
-            <span class="font-black text-sm uppercase tracking-widest">Ver Sacola</span>
-        </div>
-        <span class="font-black text-xl tracking-tighter" id="carrinho-total-flutuante">R$ 0,00</span>
-    </button>
-</div>
+    <!-- BOTÃO FLUTUANTE DE CARRINHO (AGORA NÃO ESMAGA MAIS O BOTÃO DE CHECKOUT) -->
+    <div id="barra-carrinho" class="fixed bottom-6 left-0 w-full px-4 md:left-1/2 md:-translate-x-1/2 md:max-w-md z-30 translate-y-40 transition-transform duration-500 ease-out pointer-events-none">
+        <button onclick="abrirCarrinho()" class="w-full bg-brand-500 hover:bg-brand-600 text-white p-4 rounded-2xl shadow-[0_15px_40px_rgba(255,71,87,0.5)] flex items-center justify-between active:scale-95 transition-all border border-brand-400 pointer-events-auto">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white text-brand-500 w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shadow-inner" id="carrinho-qtd">0</div>
+                <span class="font-black text-sm uppercase tracking-widest">Ver Sacola</span>
+            </div>
+            <span class="font-black text-xl tracking-tighter" id="carrinho-total-flutuante">R$ 0,00</span>
+        </button>
+    </div>
+
+    <!-- MODAL ZOOM IMAGEM (NOVO!) -->
+    <div id="modal-zoom" class="fixed inset-0 bg-black/95 z-[100] hidden items-center justify-center p-4 backdrop-blur-md cursor-pointer" onclick="fecharZoom()">
+        <button class="absolute top-6 right-6 text-white bg-white/10 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/20 transition-colors"><i class="ph-bold ph-x"></i></button>
+        <img id="img-zoom" src="" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl transform transition-transform duration-300 scale-95">
+    </div>
 
     <!-- MODAL DO PRODUTO (EXTRAS E COMPLEMENTOS) -->
-    <div id="modal-produto" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden flex-col justify-end">
+    <div id="modal-produto" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-end">
         <div class="bg-slate-900 w-full max-w-2xl mx-auto rounded-t-3xl h-[85vh] flex flex-col relative modal-enter">
             <button onclick="fecharModalProduto()" class="absolute right-4 top-4 w-8 h-8 bg-slate-800 text-slate-400 rounded-full flex items-center justify-center z-10 hover:text-white transition-colors"><i class="ph-bold ph-x"></i></button>
-            <div id="modal-img-container" class="h-48 shrink-0 bg-slate-800 relative w-full overflow-hidden rounded-t-3xl"></div>
+            <div id="modal-img-container" class="h-48 shrink-0 bg-slate-800 relative w-full overflow-hidden rounded-t-3xl cursor-pointer" title="Clique para ampliar"></div>
             
             <div class="flex-1 overflow-y-auto p-5 no-scrollbar pb-32">
                 <h2 id="modal-prod-nome" class="text-2xl font-black text-white tracking-tight mb-1">Nome</h2>
@@ -195,7 +201,7 @@
     </div>
 
     <!-- MODAL DO CARRINHO FINAL (CHECKOUT) -->
-    <div id="modal-carrinho" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden flex-col justify-end">
+    <div id="modal-carrinho" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-end">
         <div class="bg-slate-900 w-full max-w-2xl mx-auto rounded-t-3xl h-[90vh] flex flex-col relative modal-enter">
             <div class="flex justify-between items-center p-5 border-b border-slate-800 shrink-0">
                 <h2 class="text-xl font-black text-white"><i class="ph-fill ph-shopping-bag text-brand-500 mr-2"></i> Sua Sacola</h2>
@@ -276,10 +282,32 @@
         let complementosAtuais = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            carregarConfiguracoes(); // AGORA SIM! Ligando o motor de configurações
+            carregarConfiguracoes(); 
             verificarSessao();
             carregarCardapioDigital();
         });
+
+        // ==========================
+        // SISTEMA DE ZOOM NAS IMAGENS
+        // ==========================
+        function abrirZoom(url) {
+            const modal = document.getElementById('modal-zoom');
+            const img = document.getElementById('img-zoom');
+            img.src = url;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { img.classList.replace('scale-95', 'scale-100'); }, 10);
+        }
+        
+        function fecharZoom() { 
+            const modal = document.getElementById('modal-zoom');
+            const img = document.getElementById('img-zoom');
+            img.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => { 
+                modal.classList.add('hidden'); 
+                modal.classList.remove('flex'); 
+            }, 200);
+        }
 
         // ==========================
         // CARREGAR SETUP DO GESTÃO
@@ -289,7 +317,6 @@
                 const res = await fetch('/api/gestao/configuracoes');
                 const configLoja = await res.json();
                 
-                // Popula o select de pagamentos dinamicamente com as tags do Gestão
                 const pgs = configLoja.formas_pagamento ? configLoja.formas_pagamento.split(',') : ['Dinheiro Físico', 'Pix', 'Cartão'];
                 const selectPg = document.getElementById('forma-pag-online');
                 
@@ -297,16 +324,15 @@
                     selectPg.innerHTML = pgs.map(pg => {
                         let icone = '💵';
                         let valLow = pg.toLowerCase();
-                        let valorParaOBanco = pg.trim(); // Nome exato para sair na comanda
+                        let valorParaOBanco = pg.trim(); 
                         
-                        // Radar de Integração Mercado Pago
                         if(valLow.includes('pix')) {
                             icone = '⚡';
-                            valorParaOBanco = 'pix'; // Aciona o webhook de Pix
+                            valorParaOBanco = 'pix'; 
                         } 
                         else if(valLow.includes('crédito') || valLow.includes('credito') || valLow.includes('cartão online')) {
                             icone = '💳';
-                            valorParaOBanco = 'credito'; // Aciona a tela de Cartão
+                            valorParaOBanco = 'credito'; 
                         }
                         else if(valLow.includes('vr') || valLow.includes('alimentação')) {
                             icone = '🎟️';
@@ -322,7 +348,6 @@
             } catch(e) { console.log("Config padrão assumida."); }
         }
 
-        // Esta função mostra a tela do Cartão de Crédito se o cliente escolher essa opção
         function toggleAreaCartao() {
             const forma = document.getElementById('forma-pag-online').value.toLowerCase();
             const area = document.getElementById('area-cartao');
@@ -335,7 +360,7 @@
         }
 
         // ==========================
-        // VIACEP
+        // VIACEP E CEP
         // ==========================
         document.getElementById('cad-cep').addEventListener('blur', async (e) => {
             let cep = e.target.value.replace(/\D/g, ''); 
@@ -507,17 +532,20 @@
                                 ${prodsCat.map(p => {
                                     const imgUrl = p.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
                                     return `
-                                    <div onclick="abrirModalMontagem(${p.id})" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-3xl p-4 flex gap-4 cursor-pointer transition-colors active:scale-95 shadow-md">
-                                        <div class="flex-1 flex flex-col justify-between pr-2">
+                                    <div class="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-3xl p-4 flex gap-4 transition-colors shadow-md relative">
+                                        <div class="flex-1 flex flex-col justify-between pr-2 cursor-pointer active:scale-95 transition-transform" onclick="abrirModalMontagem(${p.id})">
                                             <div>
                                                 <h4 class="font-black text-white text-base leading-tight mb-1">${p.nome}</h4>
                                                 <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">${p.descricao || 'Experimente esta delícia!'}</p>
                                             </div>
                                             <span class="font-black text-emerald-400 text-sm">R$ ${p.preco_venda.toFixed(2).replace('.',',')}</span>
                                         </div>
-                                        <div class="w-28 h-28 shrink-0 bg-slate-900 rounded-2xl overflow-hidden relative border border-slate-700">
-                                            <img src="${imgUrl}" class="w-full h-full object-cover">
-                                            <button class="absolute bottom-1 right-1 w-7 h-7 bg-white/90 backdrop-blur text-brand-500 rounded-xl flex items-center justify-center font-black shadow-md"><i class="ph-bold ph-plus"></i></button>
+                                        <div onclick="abrirZoom('${imgUrl}')" class="w-28 h-28 shrink-0 bg-slate-900 rounded-2xl overflow-hidden relative border border-slate-700 cursor-pointer group" title="Clique para dar Zoom">
+                                            <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                            <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <i class="ph-bold ph-arrows-out text-white text-2xl drop-shadow-md"></i>
+                                            </div>
+                                            <button onclick="event.stopPropagation(); abrirModalMontagem(${p.id})" class="absolute bottom-1 right-1 w-7 h-7 bg-white/90 backdrop-blur text-brand-500 rounded-xl flex items-center justify-center font-black shadow-md hover:scale-110 transition-transform"><i class="ph-bold ph-plus"></i></button>
                                         </div>
                                     </div>
                                 `}).join('')}
@@ -540,7 +568,7 @@
             
             const imgContainer = document.getElementById('modal-img-container');
             const imgUrl = produtoSendoMontado.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
-            imgContainer.innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover opacity-80"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>`;
+            imgContainer.innerHTML = `<img src="${imgUrl}" onclick="abrirZoom('${imgUrl}')" class="w-full h-full object-cover opacity-80 cursor-pointer hover:opacity-100 transition-opacity"><div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none"></div>`;
             document.getElementById('modal-prod-obs').value = "";
             
             const areaComp = document.getElementById('area-complementos');
@@ -644,8 +672,12 @@
             document.getElementById('carrinho-qtd').innerText = qtd;
             
             const barra = document.getElementById('barra-carrinho');
-            qtd > 0 ? barra.classList.remove('translate-y-32') : barra.classList.add('translate-y-32');
-            if(qtd === 0) fecharCarrinho();
+            if (qtd > 0) {
+                barra.classList.remove('translate-y-40');
+            } else {
+                barra.classList.add('translate-y-40');
+                fecharCarrinho();
+            }
         }
 
         function abrirCarrinho() {
@@ -666,12 +698,6 @@
 
         function removerItem(index) { carrinho.splice(index, 1); atualizarContadores(); abrirCarrinho(); }
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.add('hidden'); document.getElementById('modal-carrinho').classList.remove('flex'); }
-
-        function toggleAreaCartao() {
-            const forma = document.getElementById('forma-pag-online').value;
-            const area = document.getElementById('area-cartao');
-            forma === 'credito' ? area.classList.remove('hidden') : area.classList.add('hidden');
-        }
 
         // ==========================
         // FINALIZAR PEDIDO (MERCADO PAGO)
