@@ -3,57 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem de Retirada | Art's Burguer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <title>Totem Digital | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { 200: '#ffb3b8', 600: '#e04050', 800: '#a32a35' } } } } }
+        tailwind.config = { 
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: { brand: { 600: '#e04050', 800: '#a32a35' } } 
+                } 
+            } 
+        }
     </script>
     <style>
-        body { font-family: 'Montserrat', sans-serif; }
-        .blink { animation: blinker 1.5s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        body { font-family: 'Poppins', sans-serif; background-color: #0f172a; }
+        
+        /* Efeito de neon para as senhas prontas */
+        .neon-box {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4), inset 0 0 10px rgba(16, 185, 129, 0.2);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Efeito de destaque rápido quando chega senha nova */
+        .flash-highlight { animation: flash-green 1.5s ease-out; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes flash-green {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(16, 185, 129, 0.3); }
+        }
+
+        /* Ocultar barra de rolagem para ficar tela de TV limpa */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-black h-screen w-screen overflow-hidden flex flex-col">
-    <header class="bg-brand-600 h-24 flex items-center justify-center border-b-8 border-brand-800 shrink-0 shadow-2xl z-10 relative">
-        <h1 class="text-white text-5xl font-black tracking-widest uppercase flex items-center">
-            Art's Burguer <span class="bg-brand-800 text-brand-200 text-2xl ml-6 px-4 py-1 rounded-full shadow-inner">Retirada</span>
+<body class="h-screen w-screen overflow-hidden flex flex-col text-slate-100 selection:bg-transparent relative">
+    
+    <!-- Aviso para liberar o Áudio (Some ao clicar) -->
+    <div id="overlay-audio" class="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500">
+        <svg class="w-24 h-24 text-brand-600 mb-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M11 19l-7-7 7-7v14z"></path></svg>
+        <h2 class="text-4xl font-black tracking-wider text-white">CLIQUE NA TELA PARA INICIAR</h2>
+        <p class="text-slate-400 mt-2 text-xl">Isso habilita a voz e os sons do painel</p>
+    </div>
+
+    <!-- CABEÇALHO MODERNO -->
+    <header class="bg-gradient-to-r from-slate-900 via-brand-800 to-slate-900 h-28 flex flex-col items-center justify-center shrink-0 border-b border-slate-700 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-20">
+        <h1 class="text-white text-5xl md:text-6xl font-black tracking-[0.2em] uppercase drop-shadow-lg">
+            ART'S BURGUER
         </h1>
+        <p class="text-brand-200 tracking-widest text-sm md:text-base font-semibold mt-1 opacity-80 uppercase">Acompanhe seu pedido pelo painel</p>
     </header>
 
-    <div class="flex-1 flex text-white relative">
+    <!-- CORPO: DIVISÃO DE TELAS -->
+    <div class="flex-1 flex relative z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 to-slate-950">
+        
         <!-- LADO ESQUERDO: PREPARANDO -->
-        <div class="w-1/2 bg-slate-900 border-r-4 border-slate-950 flex flex-col z-10 shadow-2xl">
-            <div class="bg-slate-800 py-6 text-center shadow-lg border-b border-slate-700">
-                <h2 class="text-4xl text-slate-400 tracking-widest font-black">PREPARANDO</h2>
+        <div class="w-1/2 flex flex-col border-r border-slate-800 relative">
+            <div class="py-5 text-center bg-slate-900/50 backdrop-blur-sm border-b border-slate-800">
+                <h2 class="text-3xl md:text-4xl text-amber-500 tracking-[0.2em] font-black uppercase drop-shadow-md">Preparando</h2>
             </div>
-            <div id="lista-preparando" class="flex-1 p-10 grid grid-cols-2 md:grid-cols-3 gap-8 content-start text-6xl text-slate-300 font-bold text-center">
-                <div class="col-span-full text-2xl text-slate-600 mt-10">Aguardando pedidos...</div>
+            
+            <div id="lista-preparando" class="flex-1 p-8 grid grid-cols-2 md:grid-cols-3 gap-6 content-start overflow-hidden">
+                <!-- Senhas Preparando entram aqui -->
+                <div class="col-span-full text-center text-slate-600 mt-10 text-2xl animate-pulse">Aguardando pedidos...</div>
             </div>
         </div>
 
         <!-- LADO DIREITO: PRONTOS -->
-        <div class="w-1/2 bg-green-700 flex flex-col relative overflow-hidden z-10 shadow-2xl">
-            <!-- Textura de fundo para ficar chique -->
-            <div class="absolute inset-0 bg-green-800 opacity-40 mix-blend-overlay" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
-            
-            <div class="bg-green-800 py-6 text-center shadow-2xl relative z-10 border-b border-green-900">
-                <h2 class="text-4xl text-white tracking-widest font-black blink drop-shadow-md">PRONTO - RETIRE AQUI</h2>
+        <div id="container-prontos" class="w-1/2 flex flex-col relative bg-emerald-950/20">
+            <div class="py-5 text-center bg-emerald-900/40 backdrop-blur-sm border-b border-emerald-800/50">
+                <h2 class="text-3xl md:text-4xl text-emerald-400 tracking-[0.2em] font-black uppercase drop-shadow-[0_0_15px_rgba(52,211,153,0.8)]">Retire Aqui</h2>
             </div>
-            <div id="lista-pronto" class="flex-1 p-10 grid grid-cols-2 md:grid-cols-3 gap-8 content-start text-7xl text-white font-black text-center drop-shadow-2xl relative z-10">
-                <!-- Senhas Prontas injetadas aqui -->
+            
+            <div id="lista-pronto" class="flex-1 p-8 grid grid-cols-2 md:grid-cols-3 gap-6 content-start overflow-hidden">
+                <!-- Senhas Prontas entram aqui -->
             </div>
         </div>
     </div>
 
-    <!-- Áudio de aeroporto/chamada -->
-    <audio id="som-chamada" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_959952a233.mp3?filename=airport-chime-1-105106.mp3" preload="auto"></audio>
+    <!-- Áudio do plim inicial estilo iFood -->
+    <audio id="som-notificacao" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
         let senhasProntasAnteriores = [];
+        let painelIniciado = false;
+
+        // Desbloqueia o som ao primeiro clique na tela
+        document.getElementById('overlay-audio').addEventListener('click', function() {
+            painelIniciado = true;
+            this.classList.add('opacity-0');
+            
+            // Um toque silencioso apenas para o navegador liberar as travas de mídia
+            const plim = document.getElementById('som-notificacao');
+            plim.play().then(() => {
+                plim.pause();
+                plim.currentTime = 0;
+            }).catch(e => {});
+
+            // Ativa a síntese de voz vazia para liberar permissão
+            if ('speechSynthesis' in window) {
+                let msg = new SpeechSynthesisUtterance('');
+                window.speechSynthesis.speak(msg);
+            }
+
+            setTimeout(() => this.remove(), 500); // Remove o overlay do HTML
+            buscarTotem(); // Inicia a busca imediatamente
+            setInterval(buscarTotem, 4000); // Roda a cada 4 segundos
+        });
+
+        function chamarNoMicrofone(senha) {
+            if (!painelIniciado) return;
+
+            // 1. Toca o "Plim!"
+            const plim = document.getElementById('som-notificacao');
+            plim.play().catch(e => console.log("Áudio bloqueado"));
+            
+            // 2. Foca o fundo verde (efeito flash)
+            const containerProntos = document.getElementById('container-prontos');
+            containerProntos.classList.add('flash-highlight');
+            setTimeout(() => containerProntos.classList.remove('flash-highlight'), 1500);
+
+            // 3. A voz robótica fala "Arts! Pedido X pronto..."
+            setTimeout(() => {
+                if ('speechSynthesis' in window) {
+                    const mensagem = new SpeechSynthesisUtterance(`Arts! Pedido ${senha}, pronto para retirada.`);
+                    mensagem.lang = 'pt-BR'; // Sotaque Brasileiro
+                    mensagem.rate = 1.05;    // Velocidade levemente acelerada (dinâmica)
+                    mensagem.pitch = 1.1;    // Tom um pouco mais agudo para clareza
+                    window.speechSynthesis.speak(mensagem);
+                }
+            }, 900); // Espera o plim acabar para começar a falar
+        }
 
         async function buscarTotem() {
+            if (!painelIniciado) return;
+
             try {
                 const res = await fetch('/api/kds/pedidos');
                 const pedidos = await res.json();
@@ -62,40 +152,45 @@
                 const preparando = pedidos.filter(p => p.status === 'EM_PREPARO' || p.status === 'RECEBIDO').slice(0, 15);
                 const prontos = pedidos.filter(p => p.status === 'PRONTO').slice(0, 12);
 
+                // RENDERIZAR PREPARANDO (Design Limpo e Elegante)
                 if(preparando.length > 0) {
-                    document.getElementById('lista-preparando').innerHTML = preparando.map(p => `<div class="bg-slate-800 rounded-2xl py-4 shadow-inner border border-slate-700">${p.senha_diaria || p.id}</div>`).join('');
+                    document.getElementById('lista-preparando').innerHTML = preparando.map(p => `
+                        <div class="bg-slate-800/80 rounded-xl py-6 text-5xl text-center text-slate-300 font-bold border border-slate-700 shadow-md transform transition-all duration-500">
+                            ${p.senha_diaria || p.id}
+                        </div>
+                    `).join('');
                 } else {
-                    document.getElementById('lista-preparando').innerHTML = `<div class="col-span-full text-2xl text-slate-600 mt-10">Fila Limpa</div>`;
+                    document.getElementById('lista-preparando').innerHTML = `<div class="col-span-full text-center text-slate-600 mt-10 text-2xl font-semibold">Nenhum pedido na fila</div>`;
                 }
                 
+                // RENDERIZAR PRONTOS (Design Neon Chamativo)
                 if(prontos.length > 0) {
-                    document.getElementById('lista-pronto').innerHTML = prontos.map(p => `<div class="bg-green-600 rounded-2xl py-6 shadow-[0_10px_20px_rgba(0,0,0,0.3)] border-b-4 border-green-800 transform transition-transform hover:scale-105">${p.senha_diaria || p.id}</div>`).join('');
+                    document.getElementById('lista-pronto').innerHTML = prontos.map(p => `
+                        <div class="neon-box bg-emerald-600 rounded-xl py-8 text-6xl text-center text-white font-black border border-emerald-400">
+                            ${p.senha_diaria || p.id}
+                        </div>
+                    `).join('');
                 } else {
                     document.getElementById('lista-pronto').innerHTML = '';
                 }
 
-                // Toca a campainha se tiver uma senha nova na tela verde
-                const senhasAtuais = prontos.map(p => p.id);
-                const temNovo = senhasAtuais.some(id => !senhasProntasAnteriores.includes(id));
+                // LÓGICA DE DETECÇÃO PARA DISPARAR A VOZ
+                const senhasAtuais = prontos.map(p => p.senha_diaria || p.id);
+                // Procura quais senhas estão na tela agora que não estavam há 4 segundos atrás
+                const senhasNovas = senhasAtuais.filter(senha => !senhasProntasAnteriores.includes(senha));
                 
-                if (temNovo) {
-                    document.getElementById('som-chamada').play().catch(e => console.log("Áudio bloqueado pelo navegador. Clique na tela uma vez."));
+                if (senhasNovas.length > 0) {
+                    // Pega a senha mais recente que piscou e manda a voz chamar
+                    chamarNoMicrofone(senhasNovas[0]);
                 }
+                
+                // Atualiza a memória
                 senhasProntasAnteriores = senhasAtuais;
 
-            } catch (e) { console.log("Aguardando conexão com servidor..."); }
+            } catch (e) {
+                console.log("Aguardando conexão com servidor...");
+            }
         }
-
-        setInterval(buscarTotem, 4000); // Atualiza a cada 4 segundos
-        buscarTotem();
-
-        // Truque para liberar o áudio bloqueado do Chrome (Basta clicar em qualquer lugar da tela da TV ao ligar)
-        document.body.addEventListener('click', () => {
-            document.getElementById('som-chamada').play().then(()=> {
-                document.getElementById('som-chamada').pause();
-                document.getElementById('som-chamada').currentTime = 0;
-            }).catch(e=>{});
-        }, { once: true });
     </script>
 </body>
 </html>
