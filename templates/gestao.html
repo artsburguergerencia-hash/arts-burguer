@@ -77,8 +77,8 @@
                 <i class="ph ph-gear text-xl mr-3"></i> Setup da Loja
             </button>
             <button onclick="abrirAba('aba-cupons', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
-    <i class="ph ph-ticket text-xl mr-3"></i> Promoções & Cupons
-</button>
+                <i class="ph ph-ticket text-xl mr-3"></i> Promoções & Cupons
+            </button>
 
             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-800 pt-4">Operação (Ao Vivo)</p>
             
@@ -278,21 +278,18 @@
             <div id="aba-cardapio" class="painel hidden">
                 <div class="bg-white rounded-2xl p-8 mb-8 border border-slate-200 shadow-sm">
                     <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-    <h3 class="text-xl font-black text-slate-800">Novo Produto Simples</h3>
-    <button type="button" onclick="abrirAssistenteCombo()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black px-4 py-2.5 rounded-xl text-[10px] uppercase tracking-widest shadow-md transition-all flex items-center active:scale-95"><i class="ph-bold ph-lightning mr-2 text-sm"></i> Assistente de Combos VIP</button>
-</div>
-<form onsubmit="salvarProduto(event)" class="space-y-4">
-    <div class="grid grid-cols-2 gap-4">
-        <input type="text" id="prod-nome" placeholder="Nome do Produto" required class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                        <h3 class="text-xl font-black text-slate-800">Novo Produto Simples</h3>
+                        <button type="button" onclick="abrirAssistenteCombo()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black px-4 py-2.5 rounded-xl text-[10px] uppercase tracking-widest shadow-md transition-all flex items-center active:scale-95"><i class="ph-bold ph-lightning mr-2 text-sm"></i> Assistente de Combos VIP</button>
+                    </div>
                     <form onsubmit="salvarProduto(event)" class="space-y-4">
                         <div class="grid grid-cols-2 gap-4">
-                            <input type="text" id="prod-nome" placeholder="Nome do Produto" required class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
-                            <input type="text" id="prod-img" placeholder="URL da Foto" class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                            <input type="text" id="prod-nome" placeholder="Nome do Produto" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                            <input type="text" id="prod-img" placeholder="URL da Foto" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
                         </div>
                         <textarea id="prod-desc" placeholder="Descrição comercial do lanche" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></textarea>
                         <div class="grid grid-cols-2 gap-4">
-                            <input type="text" id="prod-preco" oninput="mascaraMoeda(this)" placeholder="Preço Final (R$)" required class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold text-green-600 outline-none focus:border-brand-500">
-                            <select id="prod-categoria" class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></select>
+                            <input type="text" id="prod-preco" oninput="mascaraMoeda(this)" placeholder="Preço Final (R$)" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold text-green-600 outline-none focus:border-brand-500">
+                            <select id="prod-categoria" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></select>
                         </div>
                         <div class="border-t border-slate-100 pt-4">
                             <label class="font-bold text-sm text-slate-500 uppercase tracking-widest mb-2 block">Ficha Técnica (Ingredientes)</label>
@@ -449,7 +446,7 @@
                 </div>
             </div>
 
-    <!-- ============================================== -->
+            <!-- ============================================== -->
             <!-- ABA: PROMOÇÕES E CUPONS (NOVA) -->
             <!-- ============================================== -->
             <div id="aba-cupons" class="painel hidden">
@@ -645,7 +642,6 @@
                         <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-5 rounded-2xl text-lg shadow-[0_15px_40px_rgba(255,71,87,0.4)] transition-transform active:scale-95 uppercase tracking-widest mt-4">
                             Salvar Motor Corporativo no Banco de Dados
                         </button>
-                    </form>
                     </form>
 
                     <!-- ============================================== -->
@@ -1143,11 +1139,7 @@
         </div>
     </div>
     
-    <!-- ============================================================== -->
-    <!-- MOTOR JAVASCRIPT GERAL DO SISTEMA ERP -->
-    <!-- ============================================================== -->
-    <script>
-        <!-- MODAL ASSISTENTE DE COMBOS VIP -->
+    <!-- MODAL ASSISTENTE DE COMBOS VIP -->
     <div id="modal-assistente-combo" class="fixed inset-0 bg-slate-900/90 z-50 hidden items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
         <div class="bg-white w-full max-w-2xl rounded-[2rem] p-8 shadow-2xl relative my-auto border border-amber-200 overflow-hidden">
             <div class="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><i class="ph-fill ph-lightning text-[150px] text-amber-500"></i></div>
@@ -1196,6 +1188,11 @@
             </form>
         </div>
     </div>
+    
+    <!-- ============================================================== -->
+    <!-- MOTOR JAVASCRIPT GERAL DO SISTEMA ERP -->
+    <!-- ============================================================== -->
+    <script>
         // Esta função substitui o "alert()" padrão do navegador
         function alertaPremium(mensagem, titulo = "Aviso do Sistema", tipo = "info") {
             document.getElementById('alerta-titulo').innerText = titulo;
@@ -1220,7 +1217,6 @@
         
         // Sobrescreve o alert nativo do JS temporariamente para aproveitar o código antigo
         window.alert = function(msg) { alertaPremium(msg); };
-
 
         const diasSemana = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
         const nomesDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -1342,6 +1338,7 @@
             if(idAba === 'aba-clientes') carregarClientesPainel(); 
             if(idAba === 'aba-fornecedores') { carregarFornecedores(); carregarCategoriasSelect('forn-cat', listaCatFornecedor, 'Geral'); } 
             if(idAba === 'aba-colaboradores') { carregarColaboradores(); carregarCargosParaRH(); carregarCaixaEntradaRH(); carregarCategoriasSelect('dos-plano', listaBeneficios, 'Nenhum'); } 
+            if(idAba === 'aba-cupons') carregarCupons(); 
         }
 
         function alternarAbaDossie(idAba, elBtn) {
@@ -1618,55 +1615,55 @@
         }
 
         async function carregarCupons() {
-    try {
-        const res = await fetch('/api/gestao/cupons');
-        const cupons = await res.json();
-        const tbody = document.getElementById('lista-cupons');
-        if(cupons.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">Nenhum cupom cadastrado.</td></tr>';
-            return;
+            try {
+                const res = await fetch('/api/gestao/cupons');
+                const cupons = await res.json();
+                const tbody = document.getElementById('lista-cupons');
+                if(cupons.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">Nenhum cupom cadastrado.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = cupons.map(c => `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="py-4 px-6 font-black text-slate-800 tracking-wider">${c.codigo}</td>
+                        <td class="py-4 px-6"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase">${c.tipo}</span></td>
+                        <td class="py-4 px-6 font-bold text-emerald-600">${c.tipo === 'PERCENTUAL' ? c.valor + '%' : 'R$ ' + c.valor.toFixed(2).replace('.', ',')}</td>
+                        <td class="py-4 px-6 text-center">
+                            <button onclick="excluirCupom(${c.id})" class="text-red-400 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) { console.log(e); }
         }
-        tbody.innerHTML = cupons.map(c => `
-            <tr class="border-b border-slate-100 hover:bg-slate-50">
-                <td class="py-4 px-6 font-black text-slate-800 tracking-wider">${c.codigo}</td>
-                <td class="py-4 px-6"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase">${c.tipo}</span></td>
-                <td class="py-4 px-6 font-bold text-emerald-600">${c.tipo === 'PERCENTUAL' ? c.valor + '%' : 'R$ ' + c.valor.toFixed(2).replace('.', ',')}</td>
-                <td class="py-4 px-6 text-center">
-                    <button onclick="excluirCupom(${c.id})" class="text-red-400 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
-                </td>
-            </tr>
-        `).join('');
-    } catch(e) { console.log(e); }
-}
 
-async function criarCupom(e) {
-    e.preventDefault();
-    const payload = {
-        codigo: document.getElementById('cupom-codigo').value,
-        tipo: document.getElementById('cupom-tipo').value,
-        valor: parseFloat(document.getElementById('cupom-valor').value)
-    };
-    const res = await fetch('/api/gestao/cupons', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-    });
-    if(res.ok) {
-        alertaPremium("Cupom criado com sucesso!", "Sucesso", "sucesso");
-        document.getElementById('form-cupom').reset();
-        carregarCupons();
-    } else {
-        const err = await res.json();
-        alertaPremium(err.detail, "Erro", "erro");
-    }
-}
+        async function criarCupom(e) {
+            e.preventDefault();
+            const payload = {
+                codigo: document.getElementById('cupom-codigo').value,
+                tipo: document.getElementById('cupom-tipo').value,
+                valor: parseFloat(document.getElementById('cupom-valor').value)
+            };
+            const res = await fetch('/api/gestao/cupons', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) {
+                alertaPremium("Cupom criado com sucesso!", "Sucesso", "sucesso");
+                document.getElementById('form-cupom').reset();
+                carregarCupons();
+            } else {
+                const err = await res.json();
+                alertaPremium(err.detail, "Erro", "erro");
+            }
+        }
 
-async function excluirCupom(id) {
-    if(confirm("Tem certeza que deseja excluir este cupom?")) {
-        await fetch(`/api/gestao/cupons/${id}`, {method: 'DELETE'});
-        carregarCupons();
-    }
-}
+        async function excluirCupom(id) {
+            if(confirm("Tem certeza que deseja excluir este cupom?")) {
+                await fetch(`/api/gestao/cupons/${id}`, {method: 'DELETE'});
+                carregarCupons();
+            }
+        }
         
         // ==========================================
         // RELATÓRIOS E DRE
