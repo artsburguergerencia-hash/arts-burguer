@@ -2385,6 +2385,107 @@ def criar_combo_fast_food(combo: NovoComboFastFood, db: Session = Depends(get_db
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==========================================
+# MÓDULO DE CAIXA (ABERTURA, SANGRIA E FECHAMENTO)
+# ==========================================
+
+class CaixaTurnoModel(Base):
+    __tablename__ = "caixa_turnos"
+    __table_args__ = {'extend_existing': True}
+    
+    id = Column(Integer, primary_key=True, index=True)
+    operador = Column(String, default="Admin")
+    data_abertura = Column(String) 
+    data_fechamento = Column(String, nullable=True)
+    saldo_inicial = Column(Float, default=0.0)
+    entradas_saidas = Column(Float, default=0.0) # Sangria (-) ou Suprimento (+)
+    total_vendas_dinheiro = Column(Float, default=0.0)
+    total_vendas_outros = Column(Float, default=0.0)
+    saldo_informado = Column(Float, default=0.0)
+    status = Column(String, default="ABERTO") # ABERTO ou FECHADO
+
+class AbrirCaixaSchema(BaseModel):
+    operador: str
+    saldo_inicial: float
+
+class MovimentacaoCaixaSchema(BaseModel):
+    valor: float
+    tipo: str
+    descricao: str
+
+class FecharCaixaSchema(BaseModel):
+    saldo_informado: float
+
+@app.get("/api/pdv/caixa/atual")
+def obter_caixa_atual(db: Session = Depends(get_db)):
+    caixa = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").order_by(CaixaTurnoModel.id.desc()).first()
+    if not caixa:
+        return {"status": "fechado"}
+        
+    # Puxa as vendas do dia para calcular o que entrou na gaveta
+    data_hoje = datetime.utcnow().date()
+    vendas_hoje = db.query(PedidoModel).filter(PedidoModel.data_pedido == data_hoje, PedidoModel.status != "CANCELADO").all()
+    
+    total_dinheiro = sum(p.total_pago for p in vendas_hoje if "dinheiro" in str(p.forma_pagamento).lower() and p.origem != "SITE (Online)")
+    total_outros = sum(p.total_pago for p in vendas_hoje if "dinheiro" not in str(p.forma_pagamento).lower() and p.origem != "SITE (Online)")
+    
+    caixa.total_vendas_dinheiro = total_dinheiro
+    caixa.total_vendas_outros = total_outros
+    db.commit()
+    
+    saldo_esperado = caixa.saldo_inicial + caixa.entradas_saidas + total_dinheiro
+    
+    return {
+        "status": "aberto",
+        "caixa_id": caixa.id,
+        "operador": caixa.operador,
+        "data_abertura": caixa.data_abertura,
+        "saldo_inicial": caixa.saldo_inicial,
+        "entradas_saidas": caixa.entradas_saidas,
+        "total_vendas_dinheiro": total_dinheiro,
+        "total_vendas_outros": total_outros,
+        "saldo_esperado_gaveta": saldo_esperado
+    }
+
+@app.post("/api/pdv/caixa/abrir")
+def abrir_caixa(dados: AbrirCaixaSchema, db: Session = Depends(get_db)):
+    caixa_aberto = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
+    if caixa_aberto:
+        raise HTTPException(status_code=400, detail="Já existe um caixa aberto.")
+        
+    novo_caixa = CaixaTurnoModel(
+        operador=dados.operador,
+        saldo_inicial=dados.saldo_inicial,
+        data_abertura=datetime.now().strftime("%d/%m/%Y %H:%M"),
+        status="ABERTO"
+    )
+    db.add(novo_caixa)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Caixa aberto com sucesso!"}
+
+@app.post("/api/pdv/caixa/movimentacao")
+def movimentar_caixa(dados: MovimentacaoCaixaSchema, db: Session = Depends(get_db)):
+    caixa = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
+    if not caixa:
+        raise HTTPException(status_code=400, detail="Nenhum caixa aberto no momento.")
+        
+    valor_real = dados.valor if dados.tipo == "SUPRIMENTO" else -dados.valor
+    caixa.entradas_saidas += valor_real
+    db.commit()
+    return {"status": "sucesso"}
+
+@app.post("/api/pdv/caixa/fechar")
+def fechar_caixa(dados: FecharCaixaSchema, db: Session = Depends(get_db)):
+    caixa = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
+    if not caixa:
+        raise HTTPException(status_code=400, detail="Nenhum caixa aberto no momento.")
+        
+    caixa.status = "FECHADO"
+    caixa.data_fechamento = datetime.now().strftime("%d/%m/%Y %H:%M")
+    caixa.saldo_informado = dados.saldo_informado
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Caixa fechado com sucesso!"}
+    
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
