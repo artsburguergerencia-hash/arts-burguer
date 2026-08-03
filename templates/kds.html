@@ -17,20 +17,24 @@
     <!-- CABEÇALHO KDS -->
     <header class="bg-black/50 border-b border-slate-800 h-16 flex items-center justify-between px-6 shrink-0 z-20">
         <div class="flex items-center space-x-3">
-            <i class="ph-fill ph-cooking-pot text-3xl text-brand-500 text-red-500 animate-pulse"></i>
+            <i class="ph-fill ph-cooking-pot text-3xl text-brand-500 animate-pulse"></i>
             <div>
                 <h1 class="font-black text-lg tracking-tight uppercase leading-none">Monitor KDS</h1>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Gestão de Cozinha</p>
+                <p class="text-[10px] text-brand-500 font-bold uppercase tracking-widest mt-0.5">Ao Vivo</p>
             </div>
         </div>
         <div class="flex items-center space-x-4">
+            <!-- BOTÃO DO ALARME INJETADO AQUI -->
+            <button onclick="ativarSomCozinha()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center">
+                <i class="ph-bold ph-speaker-high mr-2 text-lg"></i> Ligar Alarme
+            </button>
             <button onclick="buscarPedidosKDS()" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-lg text-sm font-bold flex items-center">
                 <i class="ph ph-arrows-clockwise mr-2 text-lg"></i> Atualizar
             </button>
         </div>
     </header>
 
-    <!-- ÁREA DE COLUNAS (CORRIGIDO PARA NÃO VAZAR DA TELA) -->
+    <!-- ÁREA DE COLUNAS -->
     <main class="flex-1 overflow-hidden p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6">
         
         <!-- COLUNA 1: NOVOS PEDIDOS (RECEBIDOS) -->
@@ -40,7 +44,6 @@
                 <span id="badge-recebidos" class="bg-amber-500 text-black font-black px-2 py-0.5 rounded text-xs">0</span>
             </header>
             <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-800/50">
-                <!-- GRID RESPONSIVO PARA OS CARDS (Quebra a linha automático) -->
                 <div id="lista-recebidos" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-max">
                     <p class="text-slate-500 col-span-full text-center py-10">Buscando comandas...</p>
                 </div>
@@ -54,7 +57,6 @@
                 <span id="badge-preparo" class="bg-red-500 text-white font-black px-2 py-0.5 rounded text-xs">0</span>
             </header>
             <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-800/50">
-                <!-- GRID RESPONSIVO PARA OS CARDS -->
                 <div id="lista-preparo" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-max">
                 </div>
             </div>
@@ -65,10 +67,32 @@
     <iframe id="iframe-impressao" style="display:none;"></iframe>
 
     <script>
+        // MÁQUINA DE SOM E ALARME
+        let ultimoPedidoId = 0; 
+        let somAtivo = false;
+
+        function ativarSomCozinha() {
+            somAtivo = true;
+            document.getElementById('som-novo-pedido').play().then(() => {
+                document.getElementById('som-novo-pedido').pause();
+                document.getElementById('som-novo-pedido').currentTime = 0;
+            }).catch(()=>{});
+            alert("✅ Campainha de novos pedidos ativada!");
+        }
+
         async function buscarPedidosKDS() {
             try {
                 const res = await fetch('/api/kds/pedidos');
                 const pedidos = await res.json();
+                
+                // VERIFICA SE TEM PEDIDO NOVO PARA TOCAR O SOM
+                if(pedidos.length > 0) {
+                    const maiorIdAtual = Math.max(...pedidos.map(p => p.id));
+                    if(ultimoPedidoId !== 0 && maiorIdAtual > ultimoPedidoId && somAtivo) {
+                        document.getElementById('som-novo-pedido').play().catch(()=>{}); // TOCA O SINO!
+                    }
+                    ultimoPedidoId = maiorIdAtual; // Atualiza a memória
+                }
                 
                 const recebidos = pedidos.filter(p => p.status === 'RECEBIDO');
                 const emPreparo = pedidos.filter(p => p.status === 'EM_PREPARO');
@@ -189,6 +213,7 @@
         setInterval(buscarPedidosKDS, 5000);
         document.addEventListener('DOMContentLoaded', buscarPedidosKDS);
     </script>
+    
     <!-- ÁUDIO DO IFOOD -->
     <audio id="som-novo-pedido" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=success-1-6297.mp3" preload="auto"></audio>
 </body>
