@@ -1243,7 +1243,7 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
 @app.put("/api/gestao/produto/{produto_id}")
 def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db)):
     try:
-        produto = db.query(Produto).filter(Produto.id == produto_id).first()
+        produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
         if not produto:
             raise HTTPException(status_code=404, detail="Produto não encontrado.")
         
@@ -1724,7 +1724,7 @@ def listar_clientes_gestao(db: Session = Depends(get_db)):
 @app.put("/api/gestao/clientes/{cliente_id}")
 def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
-        cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
+        cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
         if not cliente:
             raise HTTPException(status_code=404, detail="Cliente não encontrado na base.")
         
@@ -1746,7 +1746,7 @@ def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Sessi
 @app.get("/api/gestao/clientes/{cliente_id}/pedidos")
 def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
     try:
-        cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
+        cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
         if not cliente: return []
         
         # Busca os últimos 10 pedidos do cliente pelo telefone
@@ -1948,13 +1948,13 @@ def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
 def limpar_banco_dados(db: Session = Depends(get_db)):
     try:
         # Apaga os registros, mas mantém a estrutura das tabelas viva
-        db.query(ItemPedido).delete()
+        db.query(ItemPedidoModel).delete()
         db.query(PedidoModel).delete()
-        db.query(Produto).delete()
-        db.query(Insumo).delete()
-        db.query(Cliente).delete()
-        db.query(ContaPagar).delete()
-        db.query(Fornecedor).delete()
+        db.query(ProdutoModel).delete()
+        db.query(InsumoModel).delete()
+        db.query(ClienteModel).delete()
+        db.query(ContaPagarModel).delete()
+        db.query(FornecedorModel).delete()
         db.commit()
         return {"mensagem": "Dados de teste apagados! O sistema está limpo para produção."}
     except Exception as e:
@@ -2048,7 +2048,6 @@ def consertar_banco(db: Session = Depends(get_db)):
         "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
         "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
         "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"
-        "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
     ]
     
     logs = []
@@ -2252,7 +2251,6 @@ def atualizar_funcionario(func_id: int, dados: dict, db: Session = Depends(get_d
 
 from sqlalchemy import Column, Integer, String, Float, Boolean
 
-# Definição do Model para o Banco de Dados (caso queira colocar em models.py ou direto aqui)
 class CupomModel(Base):
     __tablename__ = "cupons_desconto"
     
@@ -2262,12 +2260,10 @@ class CupomModel(Base):
     valor = Column(Float, default=0.0)
     ativo = Column(Boolean, default=True)
 
-# 1. Listar Cupons no Gestão
 @app.get("/api/gestao/cupons")
 def listar_cupons(db: Session = Depends(get_db)):
     return db.query(CupomModel).all()
 
-# 2. Criar Novo Cupom
 @app.post("/api/gestao/cupons")
 def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     codigo = dados.get("codigo", "").upper().strip()
@@ -2287,60 +2283,6 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     db.add(novo)
     db.commit()
     return {"status": "sucesso", "mensagem": f"Cupom {codigo} criado com sucesso!"}
-
-# 3. Excluir Cupom
-@app.delete("/api/gestao/cupons/{cupom_id}")
-def excluir_cupom(cupom_id: int, db: Session = Depends(get_db)):
-    cupom = db.query(CupomModel).filter(CupomModel.id == cupom_id).first()
-    if not cupom:
-        raise HTTPException(status_code=404, detail="Cupom não encontrado.")
-    db.delete(cupom)
-    db.commit()
-    return {"status": "sucesso", "mensagem": "Cupom excluído!"}
-
-# 4. Validar Cupom no Carrinho (Cliente)
-@app.post("/api/carrinho/validar-cupom")
-def validar_cupom(dados: dict, db: Session = Depends(get_db)):
-    codigo = dados.get("codigo", "").upper().strip()
-    subtotal = float(dados.get("subtotal", 0.0))
-    
-    cupom = db.query(CupomModel).filter(CupomModel.codigo == codigo, CupomModel.ativo == True).first()
-    if not cupom:
-        raise HTTPException(status_code=404, detail="Cupom inválido ou expirado.")
-        
-    desconto = 0.0
-    if cupom.tipo == "PERCENTUAL":
-        desconto = subtotal * (cupom.valor / 100.0)
-    else:
-        desconto = cupom.valor
-        
-    if desconto > subtotal:
-        desconto = subtotal
-        
-    return {
-        "status": "sucesso",
-        "codigo": cupom.codigo,
-        "tipo": cupom.tipo,
-        "valor_desconto": round(desconto, 2),
-        "total_com_desconto": round(subtotal - desconto, 2)
-    }
-
-# ==========================================
-# MÁQUINA DE VENDAS: CUPONS E PROMOÇÕES
-# ==========================================
-
-class CupomModel(Base):
-    __tablename__ = "cupons_desconto"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    codigo = Column(String, unique=True, index=True)
-    tipo = Column(String, default="PERCENTUAL") # PERCENTUAL ou VALOR_FIXO
-    valor = Column(Float, default=0.0)
-    ativo = Column(Boolean, default=True)
-
-@app.get("/api/gestao/cupons")
-def listar_cupons(db: Session = Depends(get_db)):
-    return db.query(CupomModel).all()
 
 @app.delete("/api/gestao/cupons/{cupom_id}")
 def excluir_cupom(cupom_id: int, db: Session = Depends(get_db)):
