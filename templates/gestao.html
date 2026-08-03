@@ -432,14 +432,34 @@
             <!-- ============================================== -->
             <div id="aba-clientes" class="painel hidden">
                 <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
-                    <h3 class="text-xl font-black mb-6 flex items-center"><i class="ph-fill ph-users-three text-brand-500 mr-2 text-2xl"></i> Base de Clientes (CRM)</h3>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-100 pb-4">
+                        <h3 class="text-xl font-black flex items-center text-slate-800"><i class="ph-fill ph-users-three text-brand-500 mr-2 text-2xl"></i> Base de Clientes (CRM)</h3>
+                        <div class="flex items-center space-x-2 mt-4 md:mt-0">
+                            <select id="filtro-mes-niver" class="px-4 py-2 border border-slate-200 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:border-brand-500">
+                                <option value="">Todos os Clientes</option>
+                                <option value="01">🎂 Janeiro</option>
+                                <option value="02">🎂 Fevereiro</option>
+                                <option value="03">🎂 Março</option>
+                                <option value="04">🎂 Abril</option>
+                                <option value="05">🎂 Maio</option>
+                                <option value="06">🎂 Junho</option>
+                                <option value="07">🎂 Julho</option>
+                                <option value="08">🎂 Agosto</option>
+                                <option value="09">🎂 Setembro</option>
+                                <option value="10">🎂 Outubro</option>
+                                <option value="11">🎂 Novembro</option>
+                                <option value="12">🎂 Dezembro</option>
+                            </select>
+                            <button onclick="carregarClientesPainel()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-black hover:bg-slate-800 transition-colors shadow-sm">Filtrar</button>
+                        </div>
+                    </div>
                     <table class="w-full text-left text-sm">
                         <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-100">
                             <th class="py-4 px-6">Nome / Contato</th>
-                            <th class="py-4 px-6 text-center">Pontos Acum.</th>
-                            <th class="py-4 px-6 text-center">Carteira Cashback</th>
-                            <th class="py-4 px-6">Situação</th>
-                            <th class="py-4 px-6">Ações Preventivas</th>
+                            <th class="py-4 px-6 text-center">Nascimento</th>
+                            <th class="py-4 px-6 text-center">Pontos / Cashback</th>
+                            <th class="py-4 px-6 text-center">Situação</th>
+                            <th class="py-4 px-6 text-center">Ações (CRM)</th>
                         </thead>
                         <tbody id="lista-clientes-painel"></tbody>
                     </table>
@@ -2523,36 +2543,78 @@
                 const res = await fetch('/api/gestao/clientes'); 
                 const data = await res.json(); 
                 
-                // ESCUDO: Se o Python travar, ele cospe o erro real no console para nós!
                 if (!res.ok) {
-                    console.error("Erro vindo do Python:", data);
                     throw new Error(data.detail || "Falha crítica na rota de clientes.");
                 }
 
-                const clientes = data;
+                let clientes = data;
+                
+                // A MÁGICA DO FILTRO DE ANIVERSARIANTES
+                const mesFiltro = document.getElementById('filtro-mes-niver').value;
+                if(mesFiltro) {
+                    clientes = clientes.filter(c => {
+                        if(!c.data_nascimento) return false;
+                        let mesCli = "";
+                        // Verifica se a data está no padrão YYYY-MM-DD ou DD/MM/YYYY
+                        if(c.data_nascimento.includes('-')) {
+                            mesCli = c.data_nascimento.split('-')[1]; 
+                        } else if(c.data_nascimento.includes('/')) {
+                            mesCli = c.data_nascimento.split('/')[1]; 
+                        }
+                        return mesCli === mesFiltro;
+                    });
+                }
+
                 const tbody = document.getElementById('lista-clientes-painel');
 
                 if (clientes.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="ph-bold ph-ghost text-4xl mb-3 text-slate-300 block"></i><span class="font-black uppercase tracking-widest text-xs">Nenhum cliente cadastrado ainda.</span><br><span class="text-[10px] font-medium mt-1 block">Os clientes aparecerão aqui assim que a primeira venda for feita no PDV ou Cardápio.</span></td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="ph-bold ph-ghost text-4xl mb-3 text-slate-300 block"></i><span class="font-black uppercase tracking-widest text-xs">Nenhum cliente encontrado.</span></td></tr>';
                     return;
                 }
                 
-                tbody.innerHTML = clientes.map(x => `
-                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors ${x.bloqueado ? 'bg-red-50/30' : ''}">
-                    <td class="py-4 px-6 font-black text-slate-800">${x.nome}<br><span class="text-xs font-mono font-medium text-slate-400">${x.telefone}</span></td>
-                    <td class="py-4 px-6 text-center"><span class="bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600 font-black">${x.pontos} Pts</span></td>
-                    <td class="py-4 px-6 text-center font-black text-emerald-500 text-lg">R$ ${x.cashback.toFixed(2).replace('.',',')}</td>
-                    <td class="py-4 px-6">${x.bloqueado ? '<span class="bg-red-100 text-red-700 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-red-200">INADIMPLENTE</span>' : '<span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-100">CLIENTE OK</span>'}</td>
-                    <td class="py-4 px-6 flex space-x-2">
-                        <button onclick="abrirModalEditarCliente(${x.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
-                        <button onclick="if(confirm('Alterar bloqueio automático para este cliente?')){fetch('/api/gestao/clientes/${x.id}/bloqueio', {method:'PUT'}).then(carregarClientesPainel)}" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm active:scale-95">
-                            ${x.bloqueado ? 'Desbloquear' : 'Travar'}
-                        </button>
-                    </td>
-                </tr>`).join(''); 
+                tbody.innerHTML = clientes.map(x => {
+                    let niverFormatado = "-";
+                    if(x.data_nascimento) {
+                        if(x.data_nascimento.includes('-')) {
+                            niverFormatado = x.data_nascimento.split('-').reverse().join('/');
+                        } else {
+                            niverFormatado = x.data_nascimento;
+                        }
+                    }
+
+                    return `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors ${x.bloqueado ? 'bg-red-50/30' : ''}">
+                        <td class="py-4 px-6 font-black text-slate-800">${x.nome}<br><span class="text-xs font-mono font-medium text-slate-400">${x.telefone}</span></td>
+                        <td class="py-4 px-6 text-center font-bold text-slate-500">${niverFormatado !== '-' ? '🎂 ' + niverFormatado : '-'}</td>
+                        <td class="py-4 px-6 text-center">
+                            <span class="bg-slate-100 border border-slate-200 px-2 py-1 rounded text-slate-600 font-black text-xs mr-1">${x.pontos} Pts</span>
+                            <span class="text-emerald-500 font-black text-xs">R$ ${x.cashback.toFixed(2).replace('.',',')}</span>
+                        </td>
+                        <td class="py-4 px-6 text-center">${x.bloqueado ? '<span class="bg-red-100 text-red-700 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-red-200">INADIMPLENTE</span>' : '<span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-100">CLIENTE OK</span>'}</td>
+                        <td class="py-4 px-6 flex justify-center space-x-2">
+                            <button onclick="abrirModalEditarCliente(${x.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm" title="Editar Dossiê"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                            <button onclick="enviarPromoWhatsApp('${x.nome}', '${x.telefone}')" class="bg-green-50 hover:bg-green-500 text-green-600 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm active:scale-95" title="Enviar Promo de Aniversário"><i class="ph-bold ph-whatsapp text-sm"></i></button>
+                            <button onclick="if(confirm('Alterar bloqueio automático para este cliente?')){fetch('/api/gestao/clientes/${x.id}/bloqueio', {method:'PUT'}).then(carregarClientesPainel)}" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm active:scale-95" title="${x.bloqueado ? 'Desbloquear' : 'Travar'}">
+                                <i class="ph-bold ${x.bloqueado ? 'ph-lock-open' : 'ph-lock-key'} text-sm"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                }).join(''); 
             } catch(e) {
                 document.getElementById('lista-clientes-painel').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500 font-bold">Erro: ${e.message}</td></tr>`;
             }
+        }
+
+        // DISPARADOR DE MARKETING NO WHATSAPP
+        function enviarPromoWhatsApp(nome, telefone) {
+            let numero = telefone.replace(/\D/g, ''); 
+            if(numero.length === 10 || numero.length === 11) {
+                numero = "55" + numero; 
+            }
+            const primeiroNome = nome.split(' ')[0];
+            const mensagem = `Fala ${primeiroNome}! 🎉 Vimos que seu aniversário está chegando! Para comemorar, preparamos um presente especial pra você. Acesse nosso cardápio online e use o cupom NIVER15 para ganhar desconto no seu pedido de hoje! 🍔🍟`;
+            const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
         }
        // --- FUNÇÕES DE EDIÇÃO MANUAL DE CLIENTES (CRM) ---
         async function abrirModalEditarCliente(id) {
