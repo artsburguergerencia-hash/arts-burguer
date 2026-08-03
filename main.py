@@ -1713,7 +1713,8 @@ def listar_clientes_gestao(db: Session = Depends(get_db)):
                 # O .get() protege o sistema. Se a coluna não existir, ele envia em branco sem travar!
                 "cpf": c.get("cpf", ""),
                 "cep": c.get("cep", ""),
-                "endereco": c.get("endereco", "")
+                "endereco": c.get("endereco", ""),
+                "data_nascimento": c.get("data_nascimento", "") # <--- AGORA PUXANDO O ANIVERSÁRIO!
             })
             
         return lista_blindada
