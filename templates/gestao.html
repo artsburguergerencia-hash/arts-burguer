@@ -1147,6 +1147,55 @@
     <!-- MOTOR JAVASCRIPT GERAL DO SISTEMA ERP -->
     <!-- ============================================================== -->
     <script>
+        <!-- MODAL ASSISTENTE DE COMBOS VIP -->
+    <div id="modal-assistente-combo" class="fixed inset-0 bg-slate-900/90 z-50 hidden items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white w-full max-w-2xl rounded-[2rem] p-8 shadow-2xl relative my-auto border border-amber-200 overflow-hidden">
+            <div class="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><i class="ph-fill ph-lightning text-[150px] text-amber-500"></i></div>
+            <button onclick="fecharAssistenteCombo()" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 bg-slate-100 p-2 rounded-full transition-colors z-10"><i class="ph-bold ph-x"></i></button>
+            
+            <h2 class="font-black text-2xl mb-1 text-slate-800 flex items-center relative z-10"><i class="ph-fill ph-lightning text-amber-500 mr-3 text-3xl"></i> Montador de Combos</h2>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-100 pb-4 relative z-10">Crie pacotes completos e force a escolha do cliente.</p>
+
+            <form id="form-combo-maker" onsubmit="salvarComboFastFood(event)" class="space-y-6 relative z-10">
+                <!-- Informações Básicas -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Combo</label>
+                        <input type="text" id="combo-nome" required placeholder="Ex: Combo Família" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-black outline-none focus:border-amber-500">
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1">Preço Fixo do Pacote (R$)</label>
+                        <input type="text" id="combo-preco" oninput="mascaraMoeda(this)" required placeholder="R$ 0,00" class="w-full px-4 py-3 border border-amber-200 bg-amber-50 text-amber-700 rounded-xl font-black outline-none focus:border-amber-500">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Descrição</label>
+                        <input type="text" id="combo-desc" placeholder="Ex: Acompanha 2 Lanches, 2 Fritas e 1 Refri de 1L." class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-medium text-sm outline-none focus:border-amber-500">
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">URL da Imagem</label>
+                        <input type="text" id="combo-img" placeholder="Link da foto" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:border-amber-500">
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Categoria Automática</label>
+                        <input type="text" id="combo-categoria" value="Combos Promocionais" required class="w-full px-4 py-3 border border-slate-200 bg-slate-100 rounded-xl text-sm font-bold outline-none text-slate-500" readonly>
+                    </div>
+                </div>
+
+                <!-- Montador de Etapas -->
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-black text-slate-800 text-sm uppercase tracking-widest"><i class="ph-fill ph-list-numbers text-amber-500 mr-1"></i> Etapas Obrigatórias do Cliente</h4>
+                        <button type="button" onclick="adicionarEtapaCombo()" class="text-[10px] bg-slate-900 text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-sm">+ Adicionar Etapa</button>
+                    </div>
+                    <div id="lista-etapas-combo" class="space-y-3 max-h-48 overflow-y-auto pr-2 no-scrollbar"></div>
+                </div>
+
+                <button type="submit" id="btn-salvar-combo" class="w-full bg-amber-400 hover:bg-amber-500 text-amber-900 font-black py-4 rounded-xl transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">
+                    Lançar Combo Mestre na Vitrine
+                </button>
+            </form>
+        </div>
+    </div>
         // Esta função substitui o "alert()" padrão do navegador
         function alertaPremium(mensagem, titulo = "Aviso do Sistema", tipo = "info") {
             document.getElementById('alerta-titulo').innerText = titulo;
@@ -2613,6 +2662,112 @@ async function excluirCupom(id) {
                 alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
             }
             btn.innerHTML = "Gravar Dossiê Completo";
+            btn.disabled = false;
+        }
+
+        // ==============================================================
+        // MÁQUINA DE COMBOS FAST FOOD
+        // ==============================================================
+        let etapasCombo = [];
+
+        function abrirAssistenteCombo() {
+            etapasCombo = [];
+            document.getElementById('form-combo-maker').reset();
+            renderizarEtapasCombo();
+            document.getElementById('modal-assistente-combo').classList.replace('hidden', 'flex');
+        }
+
+        function fecharAssistenteCombo() {
+            document.getElementById('modal-assistente-combo').classList.replace('flex', 'hidden');
+        }
+
+        function adicionarEtapaCombo() {
+            const nome = prompt("Nome da Etapa (Ex: 'Escolha seu 1º Lanche' ou 'Escolha a Bebida'):");
+            if(nome) {
+                etapasCombo.push({ nome: nome, itens: [] });
+                renderizarEtapasCombo();
+            }
+        }
+
+        function adicionarItemEtapa(index) {
+            const nome = prompt("Nome da Opção (Ex: Bacon Smash ou Coca-Cola):");
+            if(nome) {
+                const precoStr = prompt("Essa opção tem custo extra? (Deixe 0 se já estiver inclusa no pacote do combo):", "0");
+                const preco = parseFloat(precoStr.replace(',','.')) || 0;
+                etapasCombo[index].itens.push({ nome: nome, preco_adicional: preco });
+                renderizarEtapasCombo();
+            }
+        }
+
+        function removerEtapa(index) {
+            etapasCombo.splice(index, 1);
+            renderizarEtapasCombo();
+        }
+
+        function renderizarEtapasCombo() {
+            const container = document.getElementById('lista-etapas-combo');
+            if(etapasCombo.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 font-bold text-center p-4 border border-dashed border-slate-300 rounded-xl bg-white">Nenhuma etapa configurada.<br>Ex: Clique acima e adicione "Escolha a Bebida".</p>';
+                return;
+            }
+
+            container.innerHTML = etapasCombo.map((etapa, idx) => `
+                <div class="bg-white border border-slate-200 p-4 rounded-xl relative shadow-sm">
+                    <button type="button" onclick="removerEtapa(${idx})" class="absolute top-3 right-3 text-red-400 hover:text-red-600 bg-slate-50 p-1 rounded-full"><i class="ph-bold ph-trash"></i></button>
+                    <h4 class="font-black text-slate-800 text-sm mb-3"><span class="bg-amber-400 text-amber-900 w-5 h-5 inline-flex items-center justify-center rounded-full text-[10px] mr-1">${idx+1}</span> ${etapa.nome}</h4>
+                    
+                    <div class="space-y-1 mb-3">
+                        ${etapa.itens.map(item => `
+                            <div class="flex justify-between items-center text-xs font-bold text-slate-600 bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg">
+                                <span><i class="ph-bold ph-arrow-elbow-down-right text-slate-400 mr-1"></i> ${item.nome}</span>
+                                <span class="${item.preco_adicional > 0 ? 'text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded' : 'text-slate-400'}">${item.preco_adicional > 0 ? '+ R$ '+item.preco_adicional.toFixed(2).replace('.',',') : 'Já Inclusa'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <button type="button" onclick="adicionarItemEtapa(${idx})" class="text-[10px] font-black uppercase tracking-widest text-brand-500 bg-brand-50 px-3 py-2 rounded-lg border border-brand-100 hover:bg-brand-500 hover:text-white transition-colors w-full">+ Adicionar Opção Nesta Etapa</button>
+                </div>
+            `).join('');
+        }
+
+        async function salvarComboFastFood(e) {
+            e.preventDefault();
+            
+            if(etapasCombo.length === 0) {
+                alertaPremium("Adicione pelo menos uma etapa (Ex: 'Escolha a Bebida') para fazer sentido ser um Combo!", "Atenção", "erro");
+                return;
+            }
+
+            const payload = {
+                nome: document.getElementById('combo-nome').value,
+                descricao: document.getElementById('combo-desc').value,
+                preco: parseMoeda(document.getElementById('combo-preco').value),
+                imagem_url: document.getElementById('combo-img').value,
+                categoria: document.getElementById('combo-categoria').value,
+                etapas: etapasCombo
+            };
+
+            const btn = document.getElementById('btn-salvar-combo');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Subindo Combo...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/gestao/combo-maker', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+
+                if(res.ok) {
+                    alertaPremium("Combo Mestre criado e enviado para o Cardápio Digital!", "Máquina de Vendas", "sucesso");
+                    fecharAssistenteCombo();
+                    carregarCardapio();
+                } else {
+                    alertaPremium("Erro ao criar combo no banco.", "Falha", "erro");
+                }
+            } catch(err) { alertaPremium("Erro de rede.", "Erro", "erro"); }
+            
+            btn.innerHTML = "Lançar Combo Mestre na Vitrine";
             btn.disabled = false;
         }
     </script>
