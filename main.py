@@ -2253,6 +2253,7 @@ from sqlalchemy import Column, Integer, String, Float, Boolean
 
 class CupomModel(Base):
     __tablename__ = "cupons_desconto"
+    __table_args__ = {'extend_existing': True} # <--- ESTA É A MÁGICA SALVADORA
     
     id = Column(Integer, primary_key=True, index=True)
     codigo = Column(String, unique=True, index=True)
