@@ -13,7 +13,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 🚨 CORREÇÃO: O MOTOR DE CORES DA MARCA VOLTOU! 🚨 -->
+    <!-- 🚨 MOTOR DE CORES DA MARCA 🚨 -->
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 400: '#ff6b81', 500: '#ff4757', 600: '#e04050' } } } } }
     </script>
@@ -63,6 +63,11 @@
             </div>
             
             <div class="flex items-center space-x-4">
+                <!-- 🚨 INJEÇÃO 1: BOTÃO DO CAIXA 🚨 -->
+                <button onclick="checarCaixaStatusModal()" id="btn-caixa-status" class="bg-slate-100 text-slate-400 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center transition-all hover:bg-slate-200 shadow-sm">
+                    <i class="ph-bold ph-spinner animate-spin mr-2 text-lg"></i> Caixa
+                </button>
+
                 <div class="relative group">
                     <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
                     <input type="text" id="busca-produto" onkeyup="filtrarProdutos()" placeholder="Pesquisar produto..." class="pl-11 pr-4 py-3 bg-slate-100/80 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500 focus:bg-white focus:shadow-md focus:shadow-brand-500/10 transition-all w-72">
@@ -140,8 +145,119 @@
         </div>
     </aside>
 
+    <!-- 🚨 INJEÇÃO 2: MODAIS DO CAIXA AQUI 🚨 -->
+
+    <!-- Modal: Abrir Caixa -->
+    <div id="modal-abrir-caixa" class="fixed inset-0 bg-slate-900/80 z-[150] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative border-t-8 border-emerald-500">
+            <button onclick="fecharModaisCaixa()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+            <h2 class="text-2xl font-black text-slate-800 mb-2 tracking-tight text-center"><i class="ph-fill ph-lock-open text-emerald-500 mr-2"></i> Abrir Caixa</h2>
+            <p class="text-xs text-slate-500 text-center mb-6 font-medium">Informe o troco inicial para iniciar as vendas.</p>
+            
+            <form onsubmit="abrirCaixa(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Troco Inicial (Gaveta)</label>
+                    <input type="text" id="caixa-ini-valor" required placeholder="R$ 0,00" oninput="formataMoeda(this)" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl font-black text-emerald-600 text-center text-lg outline-none focus:border-emerald-500">
+                </div>
+                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl transition-transform active:scale-95 uppercase tracking-widest text-sm shadow-[0_10px_20px_rgba(16,185,129,0.3)]">
+                    Iniciar Turno
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Gerenciar Caixa -->
+    <div id="modal-gerenciar-caixa" class="fixed inset-0 bg-slate-900/80 z-[150] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] p-8 shadow-2xl relative">
+            <button onclick="fecharModaisCaixa()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+            <h2 class="text-2xl font-black text-slate-800 mb-1 tracking-tight flex items-center"><i class="ph-fill ph-wallet text-brand-500 mr-2"></i> Controle de Gaveta</h2>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 pb-4">Operador: <span id="caixa-op" class="text-brand-500">Admin</span> | Aberto em: <span id="caixa-abertura" class="text-slate-600">--/--</span></p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Fundo (Troco)</p>
+                    <p class="text-lg font-black text-slate-700" id="caixa-saldo-ini">R$ 0,00</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-1">Vendas Dinheiro</p>
+                    <p class="text-lg font-black text-blue-700" id="caixa-vendas-din">R$ 0,00</p>
+                </div>
+                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                    <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Vendas Cartão/Pix</p>
+                    <p class="text-lg font-black text-emerald-700" id="caixa-vendas-outros">R$ 0,00</p>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                    <p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Sangrias/Supr.</p>
+                    <p class="text-lg font-black text-amber-700" id="caixa-mov">R$ 0,00</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 p-6 rounded-2xl text-center mb-6 relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1 relative z-10">Dinheiro Esperado na Gaveta</p>
+                <p class="text-4xl font-black text-white relative z-10" id="caixa-esperado">R$ 0,00</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="abrirModalSangria()" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-black py-4 rounded-xl transition-transform active:scale-95 uppercase tracking-widest text-xs flex items-center justify-center">
+                    <i class="ph-bold ph-arrows-down-up mr-2 text-base"></i> Movimentação
+                </button>
+                <button onclick="abrirModalFechamento()" class="bg-red-500 hover:bg-red-600 text-white font-black py-4 rounded-xl transition-transform active:scale-95 uppercase tracking-widest text-xs shadow-[0_10px_20px_rgba(239,68,68,0.3)] flex items-center justify-center">
+                    <i class="ph-bold ph-lock-key mr-2 text-base"></i> Fechar Caixa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Sangria / Suprimento -->
+    <div id="modal-sangria" class="fixed inset-0 bg-slate-900/80 z-[160] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative">
+            <button onclick="fecharModaisSecundarios()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+            <h2 class="text-xl font-black text-slate-800 mb-6 tracking-tight flex items-center"><i class="ph-bold ph-arrows-down-up text-amber-500 mr-2"></i> Retirada / Entrada</h2>
+            
+            <form onsubmit="fazerMovimentacao(event)" class="space-y-4">
+                <div class="flex space-x-2">
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="tipo_mov" value="SANGRIA" checked class="peer sr-only">
+                        <div class="text-center py-3 border border-slate-200 rounded-xl text-xs font-black uppercase tracking-widest text-slate-400 peer-checked:bg-amber-50 peer-checked:text-amber-600 peer-checked:border-amber-200 transition-colors">Sangria (-)</div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="tipo_mov" value="SUPRIMENTO" class="peer sr-only">
+                        <div class="text-center py-3 border border-slate-200 rounded-xl text-xs font-black uppercase tracking-widest text-slate-400 peer-checked:bg-emerald-50 peer-checked:text-emerald-600 peer-checked:border-emerald-200 transition-colors">Supr. (+)</div>
+                    </label>
+                </div>
+                <input type="text" id="mov-valor" required placeholder="Valor (R$)" oninput="formataMoeda(this)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-black text-slate-700 outline-none focus:border-brand-500 text-center">
+                <input type="text" id="mov-desc" required placeholder="Motivo (Ex: Comprar Gelo)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-sm outline-none focus:border-brand-500">
+                
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl transition-transform active:scale-95 uppercase tracking-widest text-sm mt-2">
+                    Confirmar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Fechar Caixa -->
+    <div id="modal-fechamento" class="fixed inset-0 bg-slate-900/80 z-[160] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative border-t-8 border-red-500">
+            <button onclick="fecharModaisSecundarios()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+            <h2 class="text-2xl font-black text-slate-800 mb-2 tracking-tight text-center"><i class="ph-fill ph-lock-key text-red-500 mr-2"></i> Fechamento Cego</h2>
+            <p class="text-xs text-slate-500 text-center mb-6 font-medium leading-relaxed">Conte o dinheiro físico que está na gaveta agora e informe abaixo.</p>
+            
+            <form onsubmit="fecharCaixaTurno(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 text-center">Valor Total em Gaveta (Dinheiro)</label>
+                    <input type="text" id="caixa-fechar-valor" required placeholder="R$ 0,00" oninput="formataMoeda(this)" class="w-full px-4 py-4 bg-red-50 border border-red-200 rounded-xl font-black text-red-600 text-center text-2xl outline-none focus:border-red-500">
+                </div>
+                <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-4 rounded-xl transition-transform active:scale-95 uppercase tracking-widest text-sm shadow-[0_10px_20px_rgba(239,68,68,0.3)]">
+                    Encerrar o Dia
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- 🚨 FIM DA INJEÇÃO DOS MODAIS 🚨 -->
+
     <!-- MODAL DE EXTRAS DO PRODUTO (DARK THEME) -->
-    <div id="modal-extras" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+    <div id="modal-extras" class="fixed inset-0 bg-slate-900/80 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-900 w-full max-w-md rounded-[2rem] p-8 shadow-2xl border border-slate-800 relative">
             <button onclick="fecharModalExtras()" class="absolute top-6 right-6 text-slate-400 hover:text-white bg-slate-800 p-2.5 rounded-full transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
             <div class="mb-6 border-b border-slate-800 pb-4 pr-10">
@@ -163,7 +279,7 @@
     </div>
 
     <!-- MODAL DE SUCESSO E IMPRESSÃO (DARK THEME) -->
-    <div id="modal-sucesso" class="fixed inset-0 bg-slate-900/90 z-[100] hidden flex-col items-center justify-center p-4 backdrop-blur-md">
+    <div id="modal-sucesso" class="fixed inset-0 bg-slate-900/90 z-[200] hidden flex-col items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2rem] p-8 shadow-2xl relative text-center">
             <div class="w-24 h-24 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(16,185,129,0.2)]">
                 <i class="ph-fill ph-check-circle text-6xl"></i>
@@ -225,14 +341,134 @@
         let configLoja = {};
         let clienteSelecionado = null;
         let produtoSendoAdicionado = null;
+        let caixaAtual = null; // 🚨 VARIÁVEL DO CAIXA INJETADA 🚨
 
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('nome-operador').innerText = localStorage.getItem('funcionario_nome') || "Caixa";
+            checarCaixaApi(); // 🚨 VERIFICAÇÃO INICIAL DO CAIXA INJETADA 🚨
             await carregarConfigLoja();
             await carregarCardapio();
         });
 
-       async function carregarConfigLoja() {
+        // ==========================
+        // UTILITÁRIOS DE MOEDA INJETADOS
+        // ==========================
+        function formataMoeda(input) {
+            let v = input.value.replace(/\D/g, '');
+            if (v === "") { input.value = ""; return; }
+            v = (v / 100).toFixed(2) + '';
+            v = v.replace('.', ',');
+            v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
+            v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
+            input.value = "R$ " + v;
+        }
+
+        function extrairMoeda(str) {
+            if(!str) return 0;
+            let v = str.replace('R$', '').trim().replace(/\./g, '').replace(',', '.');
+            return parseFloat(v) || 0;
+        }
+
+        // ==========================
+        // 🚨 SISTEMA DE CAIXA COMPLETO 🚨
+        // ==========================
+        async function checarCaixaApi() {
+            try {
+                const res = await fetch('/api/pdv/caixa/atual');
+                const data = await res.json();
+                const btn = document.getElementById('btn-caixa-status');
+                
+                if(data.status === 'aberto') {
+                    caixaAtual = data;
+                    btn.innerHTML = '<i class="ph-fill ph-lock-open mr-2 text-lg"></i> Caixa Aberto';
+                    btn.className = 'bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center shadow-sm transition-colors hover:bg-emerald-200 mr-2';
+                } else {
+                    caixaAtual = null;
+                    btn.innerHTML = '<i class="ph-fill ph-lock-key mr-2 text-lg"></i> Caixa Fechado';
+                    btn.className = 'bg-red-500 text-white px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center shadow-md transition-colors hover:bg-red-600 border border-red-600 mr-2';
+                }
+            } catch(e) { console.log(e); }
+        }
+
+        function checarCaixaStatusModal() {
+            if(caixaAtual) {
+                document.getElementById('caixa-op').innerText = caixaAtual.operador;
+                document.getElementById('caixa-abertura').innerText = caixaAtual.data_abertura;
+                document.getElementById('caixa-saldo-ini').innerText = 'R$ ' + caixaAtual.saldo_inicial.toFixed(2).replace('.',',');
+                document.getElementById('caixa-vendas-din').innerText = 'R$ ' + caixaAtual.total_vendas_dinheiro.toFixed(2).replace('.',',');
+                document.getElementById('caixa-vendas-outros').innerText = 'R$ ' + caixaAtual.total_vendas_outros.toFixed(2).replace('.',',');
+                document.getElementById('caixa-mov').innerText = 'R$ ' + caixaAtual.entradas_saidas.toFixed(2).replace('.',',');
+                document.getElementById('caixa-esperado').innerText = 'R$ ' + caixaAtual.saldo_esperado_gaveta.toFixed(2).replace('.',',');
+                document.getElementById('modal-gerenciar-caixa').classList.replace('hidden', 'flex');
+            } else {
+                document.getElementById('caixa-ini-valor').value = '';
+                document.getElementById('modal-abrir-caixa').classList.replace('hidden', 'flex');
+            }
+        }
+
+        function fecharModaisCaixa() {
+            document.getElementById('modal-abrir-caixa').classList.replace('flex', 'hidden');
+            document.getElementById('modal-gerenciar-caixa').classList.replace('flex', 'hidden');
+        }
+
+        function fecharModaisSecundarios() {
+            document.getElementById('modal-sangria').classList.replace('flex', 'hidden');
+            document.getElementById('modal-fechamento').classList.replace('flex', 'hidden');
+        }
+
+        async function abrirCaixa(e) {
+            e.preventDefault();
+            const val = extrairMoeda(document.getElementById('caixa-ini-valor').value);
+            const opName = document.getElementById('nome-operador').innerText;
+            try {
+                await fetch('/api/pdv/caixa/abrir', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ operador: opName, saldo_inicial: val })
+                });
+                fecharModaisCaixa();
+                checarCaixaApi();
+            } catch(e) { alert("Erro ao abrir caixa"); }
+        }
+
+        function abrirModalSangria() { document.getElementById('modal-sangria').classList.replace('hidden', 'flex'); }
+        
+        async function fazerMovimentacao(e) {
+            e.preventDefault();
+            const val = extrairMoeda(document.getElementById('mov-valor').value);
+            const tipo = document.querySelector('input[name="tipo_mov"]:checked').value;
+            const desc = document.getElementById('mov-desc').value;
+            
+            try {
+                await fetch('/api/pdv/caixa/movimentacao', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ valor: val, tipo: tipo, descricao: desc })
+                });
+                fecharModaisSecundarios();
+                fecharModaisCaixa();
+                checarCaixaApi();
+                setTimeout(() => checarCaixaStatusModal(), 500);
+            } catch(e) { alert("Erro ao registrar"); }
+        }
+
+        function abrirModalFechamento() { document.getElementById('modal-fechamento').classList.replace('hidden', 'flex'); }
+
+        async function fecharCaixaTurno(e) {
+            e.preventDefault();
+            const val = extrairMoeda(document.getElementById('caixa-fechar-valor').value);
+            try {
+                await fetch('/api/pdv/caixa/fechar', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ saldo_informado: val })
+                });
+                fecharModaisSecundarios();
+                fecharModaisCaixa();
+                checarCaixaApi();
+                alert("Caixa fechado com sucesso! Turno Encerrado.");
+            } catch(e) { alert("Erro ao fechar caixa"); }
+        }
+        // ============================================
+
+        async function carregarConfigLoja() {
             try {
                 const res = await fetch('/api/gestao/configuracoes');
                 configLoja = await res.json();
@@ -481,6 +717,13 @@
         }
 
         async function finalizarVenda() {
+            // 🚨 BLOQUEIO SE O CAIXA ESTIVER FECHADO 🚨
+            if(!caixaAtual) {
+                alert("⚠️ AÇÃO BLOQUEADA: Você precisa abrir o Caixa antes de realizar vendas.");
+                checarCaixaStatusModal();
+                return;
+            }
+
             if(carrinho.length === 0) { alert("Carrinho vazio! Adicione itens antes de fechar."); return; }
             const formaPgto = document.getElementById('pdv-pagamento').value;
             if(!formaPgto) { alert("Selecione a forma de pagamento na lista."); return; }
@@ -534,6 +777,9 @@
 
                     // ABRE O MODAL DE SUCESSO
                     document.getElementById('modal-sucesso').classList.replace('hidden', 'flex');
+                    
+                    // 🚨 ATUALIZA O SALDO DA GAVETA NO BACKGROUND 🚨
+                    checarCaixaApi(); 
                 } else {
                     alert("Atenção Caixa: " + data.detail);
                 }
