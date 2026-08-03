@@ -2,194 +2,517 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem Digital | Art's Burguer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Autoatendimento | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { 
-            theme: { 
-                extend: { 
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: { brand: { 600: '#e04050', 800: '#a32a35' } } 
-                } 
-            } 
-        }
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
     </script>
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #0f172a; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow: hidden; user-select: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Efeito de neon para as senhas prontas */
-        .neon-box {
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4), inset 0 0 10px rgba(16, 185, 129, 0.2);
-            animation: float 4s ease-in-out infinite;
-        }
-
-        /* Efeito de destaque rápido quando chega senha nova */
-        .flash-highlight { animation: flash-green 1.5s ease-out; }
+        /* Animações Premium */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-        }
-
-        @keyframes flash-green {
-            0%, 100% { background-color: transparent; }
-            50% { background-color: rgba(16, 185, 129, 0.3); }
-        }
-
-        /* Ocultar barra de rolagem para ficar tela de TV limpa */
-        ::-webkit-scrollbar { display: none; }
+        /* Efeito de Toque (Touch) */
+        .touch-effect:active { transform: scale(0.96); transition: transform 0.1s; }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col text-slate-100 selection:bg-transparent relative">
-    
-    <!-- Aviso para liberar o Áudio (Some ao clicar) -->
-    <div id="overlay-audio" class="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500">
-        <svg class="w-24 h-24 text-brand-600 mb-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M11 19l-7-7 7-7v14z"></path></svg>
-        <h2 class="text-4xl font-black tracking-wider text-white">CLIQUE NA TELA PARA INICIAR</h2>
-        <p class="text-slate-400 mt-2 text-xl">Isso habilita a voz e os sons do painel</p>
-    </div>
+<body class="h-screen w-screen flex flex-col relative text-slate-800">
 
-    <!-- CABEÇALHO MODERNO -->
-    <header class="bg-gradient-to-r from-slate-900 via-brand-800 to-slate-900 h-28 flex flex-col items-center justify-center shrink-0 border-b border-slate-700 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-20">
-        <h1 class="text-white text-5xl md:text-6xl font-black tracking-[0.2em] uppercase drop-shadow-lg">
-            ART'S BURGUER
-        </h1>
-        <p class="text-brand-200 tracking-widest text-sm md:text-base font-semibold mt-1 opacity-80 uppercase">Acompanhe seu pedido pelo painel</p>
-    </header>
+    <!-- ÁUDIOS DO SISTEMA -->
+    <audio id="som-toque" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7846aa5003.mp3?filename=click-button-140881.mp3" preload="auto"></audio>
+    <audio id="som-sucesso" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=success-1-6297.mp3" preload="auto"></audio>
 
-    <!-- CORPO: DIVISÃO DE TELAS -->
-    <div class="flex-1 flex relative z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 to-slate-950">
+    <!-- TELA 1: DESCANSO (SPLASH SCREEN) -->
+    <div id="tela-splash" class="absolute inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center cursor-pointer" onclick="iniciarAtendimento()">
+        <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=1080&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
         
-        <!-- LADO ESQUERDO: PREPARANDO -->
-        <div class="w-1/2 flex flex-col border-r border-slate-800 relative">
-            <div class="py-5 text-center bg-slate-900/50 backdrop-blur-sm border-b border-slate-800">
-                <h2 class="text-3xl md:text-4xl text-amber-500 tracking-[0.2em] font-black uppercase drop-shadow-md">Preparando</h2>
-            </div>
+        <div class="relative z-10 flex flex-col items-center">
+            <div class="w-40 h-40 bg-brand-500 rounded-full flex items-center justify-center text-white font-black text-6xl shadow-[0_0_50px_rgba(255,71,87,0.5)] mb-8 border-4 border-white animate-pulse">A</div>
+            <h1 class="text-6xl font-black text-white tracking-tighter mb-4 text-center">Fome de quê?</h1>
+            <p class="text-2xl font-bold text-brand-400 uppercase tracking-widest mb-16">Faça seu pedido aqui</p>
             
-            <div id="lista-preparando" class="flex-1 p-8 grid grid-cols-2 md:grid-cols-3 gap-6 content-start overflow-hidden">
-                <!-- Senhas Preparando entram aqui -->
-                <div class="col-span-full text-center text-slate-600 mt-10 text-2xl animate-pulse">Aguardando pedidos...</div>
-            </div>
+            <button class="bg-white text-slate-900 text-3xl font-black uppercase tracking-widest px-16 py-8 rounded-full shadow-2xl flex items-center animate-bounce">
+                Toque na tela <i class="ph-bold ph-hand-tap ml-4 text-4xl text-brand-500"></i>
+            </button>
         </div>
+    </div>
 
-        <!-- LADO DIREITO: PRONTOS -->
-        <div id="container-prontos" class="w-1/2 flex flex-col relative bg-emerald-950/20">
-            <div class="py-5 text-center bg-emerald-900/40 backdrop-blur-sm border-b border-emerald-800/50">
-                <h2 class="text-3xl md:text-4xl text-emerald-400 tracking-[0.2em] font-black uppercase drop-shadow-[0_0_15px_rgba(52,211,153,0.8)]">Retire Aqui</h2>
+    <!-- TELA 2: CARDÁPIO PRINCIPAL -->
+    <div id="tela-cardapio" class="hidden flex-1 h-full w-full flex bg-slate-50 relative slide-up">
+        
+        <!-- Menu Lateral (Categorias) -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 shrink-0">
+            <div class="p-6 bg-slate-950 flex flex-col items-center border-b border-slate-800">
+                <div class="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg mb-3">A</div>
+                <h2 class="font-black text-xl tracking-tight">Art's Burguer</h2>
+            </div>
+            <div class="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-2" id="nav-categorias">
+                <!-- Injetado via JS -->
+            </div>
+            <button onclick="cancelarAtendimento()" class="m-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-black py-4 rounded-2xl uppercase tracking-widest text-sm transition-colors touch-effect">
+                Cancelar Pedido
+            </button>
+        </aside>
+
+        <!-- Grade de Produtos -->
+        <main class="flex-1 flex flex-col h-full relative">
+            <header class="bg-white h-24 px-8 flex items-center justify-between shadow-sm shrink-0">
+                <h2 class="text-3xl font-black text-slate-800 tracking-tight" id="titulo-categoria">Nosso Cardápio</h2>
+                <div class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl font-black text-sm uppercase tracking-widest border border-emerald-100 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span> Autoatendimento
+                </div>
+            </header>
+            
+            <div class="flex-1 overflow-y-auto p-8 no-scrollbar pb-40">
+                <div id="grid-produtos" class="grid grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Produtos Injetados aqui -->
+                </div>
+            </div>
+
+            <!-- Resumo Carrinho Rodapé -->
+            <div class="absolute bottom-0 w-full bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] p-6 z-10 flex justify-between items-center">
+                <div>
+                    <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Total do Pedido</p>
+                    <p class="text-4xl font-black text-brand-500 tracking-tighter" id="totem-total-rodape">R$ 0,00</p>
+                </div>
+                <button onclick="abrirCarrinhoTotem()" id="btn-ver-sacola" class="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-xl uppercase tracking-widest flex items-center shadow-2xl opacity-50 pointer-events-none transition-all touch-effect">
+                    Ver Sacola <span class="bg-brand-500 w-8 h-8 flex items-center justify-center rounded-full ml-4 text-base" id="totem-qtd-rodape">0</span>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- TELA 3: MODAL PRODUTO / EXTRAS -->
+    <div id="modal-produto" class="fixed inset-0 bg-slate-900/90 z-[60] hidden flex-col justify-end fade-in">
+        <div class="bg-white w-full h-[85vh] rounded-t-[3rem] shadow-2xl flex flex-col relative slide-up overflow-hidden">
+            <button onclick="fecharModalProduto()" class="absolute top-6 right-6 w-14 h-14 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center z-20 text-2xl font-black touch-effect"><i class="ph-bold ph-x"></i></button>
+            
+            <div class="h-64 w-full bg-slate-100 relative shrink-0">
+                <img id="modal-prod-img" src="" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-white to-transparent"></div>
             </div>
             
-            <div id="lista-pronto" class="flex-1 p-8 grid grid-cols-2 md:grid-cols-3 gap-6 content-start overflow-hidden">
-                <!-- Senhas Prontas entram aqui -->
+            <div class="flex-1 overflow-y-auto px-10 pt-4 pb-40 no-scrollbar relative z-10 -mt-10">
+                <h2 id="modal-prod-nome" class="text-4xl font-black text-slate-800 tracking-tight mb-2">Nome</h2>
+                <p id="modal-prod-desc" class="text-lg text-slate-500 font-medium leading-relaxed mb-6">Descrição</p>
+                <div class="inline-block bg-emerald-50 border border-emerald-100 text-emerald-600 px-4 py-2 rounded-xl font-black text-2xl mb-8">R$ <span id="modal-prod-preco">0,00</span></div>
+
+                <div id="area-complementos" class="space-y-6"></div>
+            </div>
+
+            <div class="absolute bottom-0 w-full bg-white border-t border-slate-100 p-8 flex justify-between items-center shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-20">
+                <div class="flex items-center bg-slate-100 rounded-2xl p-2 border border-slate-200 h-20">
+                    <button onclick="alterarQtdModal(-1)" class="w-16 h-full flex items-center justify-center bg-white rounded-xl shadow-sm text-slate-400 font-black text-2xl touch-effect"><i class="ph-bold ph-minus"></i></button>
+                    <span class="w-16 text-center font-black text-2xl text-slate-800" id="modal-qtd">1</span>
+                    <button onclick="alterarQtdModal(1)" class="w-16 h-full flex items-center justify-center bg-brand-500 rounded-xl shadow-sm text-white font-black text-2xl touch-effect"><i class="ph-bold ph-plus"></i></button>
+                </div>
+                <button onclick="adicionarAoSacola()" class="bg-slate-900 text-white px-10 h-20 rounded-2xl font-black text-xl uppercase tracking-widest flex items-center justify-between w-[400px] shadow-2xl touch-effect">
+                    <span>Adicionar</span>
+                    <span class="text-brand-400">R$ <span id="modal-total-btn">0,00</span></span>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Áudio do plim inicial estilo iFood -->
-    <audio id="som-notificacao" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    <!-- TELA 4: CARRINHO E CHECKOUT -->
+    <div id="tela-carrinho" class="fixed inset-0 bg-slate-50 z-[70] hidden flex-col fade-in">
+        <header class="h-24 bg-white px-8 flex items-center justify-between shadow-sm shrink-0 border-b border-slate-200">
+            <h2 class="text-3xl font-black text-slate-800 tracking-tight flex items-center"><i class="ph-fill ph-shopping-bag text-brand-500 mr-4 text-4xl"></i> Sua Sacola</h2>
+            <button onclick="voltarParaCardapio()" class="bg-slate-100 text-slate-600 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-sm touch-effect">Voltar ao Cardápio</button>
+        </header>
+
+        <div class="flex-1 flex overflow-hidden">
+            <!-- Lista de Itens -->
+            <div class="flex-1 overflow-y-auto p-10 no-scrollbar bg-slate-50 border-r border-slate-200">
+                <div id="lista-carrinho-totem" class="space-y-4"></div>
+            </div>
+            
+            <!-- Resumo e Pagamento -->
+            <div class="w-[450px] bg-white p-8 flex flex-col shadow-2xl shrink-0 z-10">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 pb-4">Resumo do Pedido</h3>
+                
+                <div class="flex justify-between items-end mb-8">
+                    <span class="text-lg font-black text-slate-600 uppercase">Total:</span>
+                    <span class="text-5xl font-black text-brand-500 tracking-tighter" id="checkout-total">R$ 0,00</span>
+                </div>
+
+                <div class="space-y-4 mb-auto">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Como deseja Pagar?</h3>
+                    <button onclick="selecionarPagamento('Cartão de Débito')" class="btn-pag-totem w-full bg-slate-50 border-2 border-slate-200 text-slate-600 font-black py-6 rounded-2xl flex items-center justify-center transition-all uppercase tracking-widest text-lg touch-effect">
+                        <i class="ph-bold ph-credit-card mr-3 text-3xl text-blue-500"></i> Débito
+                    </button>
+                    <button onclick="selecionarPagamento('Cartão de Crédito')" class="btn-pag-totem w-full bg-slate-50 border-2 border-slate-200 text-slate-600 font-black py-6 rounded-2xl flex items-center justify-center transition-all uppercase tracking-widest text-lg touch-effect">
+                        <i class="ph-bold ph-credit-card mr-3 text-3xl text-indigo-500"></i> Crédito
+                    </button>
+                    <button onclick="selecionarPagamento('Pix')" class="btn-pag-totem w-full bg-slate-50 border-2 border-slate-200 text-slate-600 font-black py-6 rounded-2xl flex items-center justify-center transition-all uppercase tracking-widest text-lg touch-effect">
+                        <i class="ph-bold ph-qr-code mr-3 text-3xl text-teal-500"></i> Pix no Balcão
+                    </button>
+                </div>
+
+                <input type="hidden" id="totem-forma-pagamento">
+                
+                <button onclick="finalizarPedidoTotem()" id="btn-finalizar-totem" class="w-full bg-slate-300 text-slate-500 font-black py-6 rounded-2xl transition-all uppercase tracking-widest text-xl mt-8 pointer-events-none touch-effect">
+                    Escolha o Pagamento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA 5: SUCESSO -->
+    <div id="tela-sucesso" class="fixed inset-0 bg-brand-500 z-[100] hidden flex-col items-center justify-center p-8 fade-in">
+        <div class="w-40 h-40 bg-white rounded-full flex items-center justify-center mb-10 shadow-2xl animate-bounce">
+            <i class="ph-fill ph-check-circle text-7xl text-brand-500"></i>
+        </div>
+        <h2 class="text-6xl font-black text-white mb-4 tracking-tighter text-center">Pedido Recebido!</h2>
+        <p class="text-2xl font-bold text-white/80 uppercase tracking-widest mb-12 text-center">Dirija-se ao caixa/balcão para pagar e retirar.</p>
+        
+        <div class="bg-white p-10 rounded-[3rem] shadow-2xl text-center w-full max-w-lg transform scale-110">
+            <p class="text-slate-400 text-sm font-black uppercase tracking-widest mb-2">Sua Senha</p>
+            <p id="sucesso-senha" class="font-black text-9xl text-slate-900 tracking-tighter">000</p>
+        </div>
+        
+        <p class="text-white/60 font-bold mt-16 text-lg animate-pulse">Retornando ao início em <span id="contador-retorno">10</span>s...</p>
+    </div>
 
     <script>
-        let senhasProntasAnteriores = [];
-        let painelIniciado = false;
+        let cardapio = [];
+        let carrinho = [];
+        let produtoMontagem = null;
+        let qtdMontagem = 1;
 
-        // Desbloqueia o som ao primeiro clique na tela
-        document.getElementById('overlay-audio').addEventListener('click', function() {
-            painelIniciado = true;
-            this.classList.add('opacity-0');
-            
-            // Um toque silencioso apenas para o navegador liberar as travas de mídia
-            const plim = document.getElementById('som-notificacao');
-            plim.play().then(() => {
-                plim.pause();
-                plim.currentTime = 0;
-            }).catch(e => {});
-
-            // Ativa a síntese de voz vazia para liberar permissão
-            if ('speechSynthesis' in window) {
-                let msg = new SpeechSynthesisUtterance('');
-                window.speechSynthesis.speak(msg);
-            }
-
-            setTimeout(() => this.remove(), 500); // Remove o overlay do HTML
-            buscarTotem(); // Inicia a busca imediatamente
-            setInterval(buscarTotem, 4000); // Roda a cada 4 segundos
-        });
-
-        function chamarNoMicrofone(senha) {
-            if (!painelIniciado) return;
-
-            // 1. Toca o "Plim!"
-            const plim = document.getElementById('som-notificacao');
-            plim.play().catch(e => console.log("Áudio bloqueado"));
-            
-            // 2. Foca o fundo verde (efeito flash)
-            const containerProntos = document.getElementById('container-prontos');
-            containerProntos.classList.add('flash-highlight');
-            setTimeout(() => containerProntos.classList.remove('flash-highlight'), 1500);
-
-            // 3. A voz robótica fala "Arts! Pedido X pronto..."
-            setTimeout(() => {
-                if ('speechSynthesis' in window) {
-                    const mensagem = new SpeechSynthesisUtterance(`Arts! Pedido ${senha}, pronto para retirada.`);
-                    mensagem.lang = 'pt-BR'; // Sotaque Brasileiro
-                    mensagem.rate = 1.05;    // Velocidade levemente acelerada (dinâmica)
-                    mensagem.pitch = 1.1;    // Tom um pouco mais agudo para clareza
-                    window.speechSynthesis.speak(mensagem);
-                }
-            }, 900); // Espera o plim acabar para começar a falar
+        // Som de toque em botões principais
+        function tocarClick() {
+            const som = document.getElementById('som-toque');
+            som.currentTime = 0;
+            som.play().catch(()=>{});
         }
 
-        async function buscarTotem() {
-            if (!painelIniciado) return;
+        document.addEventListener('DOMContentLoaded', async () => {
+            await carregarCardapio();
+            setInterval(() => {
+                if(carrinho.length === 0 && document.getElementById('tela-cardapio').classList.contains('flex')) {
+                    cancelarAtendimento(); // Auto-reset se ficar muito tempo parado
+                }
+            }, 120000); // 2 minutos
+        });
+
+        function iniciarAtendimento() {
+            tocarClick();
+            document.getElementById('tela-splash').classList.add('hidden');
+            document.getElementById('tela-cardapio').classList.remove('hidden');
+            document.getElementById('tela-cardapio').classList.add('flex');
+            carrinho = [];
+            atualizarRodape();
+        }
+
+        function cancelarAtendimento() {
+            tocarClick();
+            carrinho = [];
+            atualizarRodape();
+            document.getElementById('tela-cardapio').classList.add('hidden');
+            document.getElementById('tela-cardapio').classList.remove('flex');
+            document.getElementById('tela-carrinho').classList.add('hidden');
+            document.getElementById('tela-carrinho').classList.remove('flex');
+            document.getElementById('tela-splash').classList.remove('hidden');
+        }
+
+        async function carregarCardapio() {
+            try {
+                const res = await fetch('/api/cardapio');
+                cardapio = await res.json();
+                
+                const categorias = [...new Set(cardapio.map(p => p.categoria).filter(c => c))];
+                document.getElementById('nav-categorias').innerHTML = categorias.map((c, i) => `
+                    <button onclick="renderizarGrade('${c}'); tocarClick();" class="w-full text-left px-5 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all btn-cat ${i===0 ? 'bg-brand-500 text-white' : 'text-slate-400 hover:bg-slate-800'}">
+                        ${c}
+                    </button>
+                `).join('');
+
+                if(categorias.length > 0) renderizarGrade(categorias[0]);
+            } catch(e) { console.log(e); }
+        }
+
+        function renderizarGrade(categoria) {
+            document.querySelectorAll('.btn-cat').forEach(b => {
+                if(b.innerText.trim() === categoria.toUpperCase()) { b.classList.add('bg-brand-500', 'text-white'); b.classList.remove('text-slate-400'); }
+                else { b.classList.remove('bg-brand-500', 'text-white'); b.classList.add('text-slate-400'); }
+            });
+
+            document.getElementById('titulo-categoria').innerText = categoria;
+            const produtosFiltrados = cardapio.filter(p => p.categoria === categoria);
+            
+            document.getElementById('grid-produtos').innerHTML = produtosFiltrados.map(p => {
+                const img = p.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop";
+                return `
+                <div onclick="abrirProduto(${p.id})" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col touch-effect cursor-pointer group pb-4">
+                    <div class="h-48 bg-slate-100 w-full relative overflow-hidden">
+                        <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6 flex flex-col flex-1 items-center text-center">
+                        <h3 class="font-black text-slate-800 text-xl leading-tight mb-2">${p.nome}</h3>
+                        <p class="font-black text-brand-500 text-2xl mt-auto">R$ ${p.preco_venda.toFixed(2).replace('.',',')}</p>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        async function abrirProduto(id) {
+            tocarClick();
+            const p = cardapio.find(x => x.id === id);
+            if(!p) return;
+            
+            produtoMontagem = { ...p, valor_base: p.preco_venda, grupos: [] };
+            qtdMontagem = 1;
+            
+            document.getElementById('modal-prod-nome').innerText = p.nome;
+            document.getElementById('modal-prod-desc').innerText = p.descricao || "A escolha perfeita!";
+            document.getElementById('modal-prod-preco').innerText = p.preco_venda.toFixed(2).replace('.',',');
+            document.getElementById('modal-prod-img').src = p.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
+            
+            const areaComp = document.getElementById('area-complementos');
+            areaComp.innerHTML = '<div class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-4xl text-brand-500"></i></div>';
+            
+            document.getElementById('modal-produto').classList.remove('hidden');
+            document.getElementById('modal-produto').classList.add('flex');
+            atualizarTotalModal();
 
             try {
-                const res = await fetch('/api/kds/pedidos');
-                const pedidos = await res.json();
+                const res = await fetch(`/api/produtos/${id}/complementos`);
+                const gruposExtras = await res.json();
+                produtoMontagem.grupos = gruposExtras;
                 
-                // Filtra os pedidos e pega os mais antigos primeiro
-                const preparando = pedidos.filter(p => p.status === 'EM_PREPARO' || p.status === 'RECEBIDO').slice(0, 15);
-                const prontos = pedidos.filter(p => p.status === 'PRONTO').slice(0, 12);
-
-                // RENDERIZAR PREPARANDO (Design Limpo e Elegante)
-                if(preparando.length > 0) {
-                    document.getElementById('lista-preparando').innerHTML = preparando.map(p => `
-                        <div class="bg-slate-800/80 rounded-xl py-6 text-5xl text-center text-slate-300 font-bold border border-slate-700 shadow-md transform transition-all duration-500">
-                            ${p.senha_diaria || p.id}
+                areaComp.innerHTML = gruposExtras.map(g => `
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <h4 class="font-black text-lg text-slate-800 mb-1 flex justify-between items-center">${g.nome} <span class="${g.obrigatorio ? 'bg-red-100 text-red-600' : 'bg-slate-200 text-slate-600'} px-3 py-1 rounded-lg text-xs tracking-widest uppercase">${g.obrigatorio ? 'Obrigatório' : 'Opcional'}</span></h4>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-200 pb-4">Escolha de ${g.min} até ${g.max} opções</p>
+                        <div class="space-y-3">
+                            ${g.itens.map(i => {
+                                const inputType = g.max === 1 ? 'radio' : 'checkbox';
+                                return `
+                                <label class="flex items-center justify-between text-lg cursor-pointer p-5 bg-white hover:border-brand-500 border-2 border-transparent rounded-xl shadow-sm transition-all group active:scale-95">
+                                    <div class="flex items-center font-black text-slate-700 group-hover:text-brand-500">
+                                        <input type="${inputType}" name="grupo_${g.id}" value="${i.nome}|${i.preco}" onchange="atualizarTotalModal()" class="mr-4 w-6 h-6 accent-brand-500">
+                                        ${i.nome}
+                                    </div>
+                                    ${i.preco > 0 ? `<span class="text-brand-500 font-black">+ R$ ${i.preco.toFixed(2).replace('.',',')}</span>` : `<span class="text-slate-400 text-sm font-black uppercase tracking-widest">Incluso</span>`}
+                                </label>`
+                            }).join('')}
                         </div>
-                    `).join('');
-                } else {
-                    document.getElementById('lista-preparando').innerHTML = `<div class="col-span-full text-center text-slate-600 mt-10 text-2xl font-semibold">Nenhum pedido na fila</div>`;
-                }
-                
-                // RENDERIZAR PRONTOS (Design Neon Chamativo)
-                if(prontos.length > 0) {
-                    document.getElementById('lista-pronto').innerHTML = prontos.map(p => `
-                        <div class="neon-box bg-emerald-600 rounded-xl py-8 text-6xl text-center text-white font-black border border-emerald-400">
-                            ${p.senha_diaria || p.id}
-                        </div>
-                    `).join('');
-                } else {
-                    document.getElementById('lista-pronto').innerHTML = '';
-                }
+                    </div>
+                `).join('');
+            } catch(e) { areaComp.innerHTML = ''; }
+        }
 
-                // LÓGICA DE DETECÇÃO PARA DISPARAR A VOZ
-                const senhasAtuais = prontos.map(p => p.senha_diaria || p.id);
-                // Procura quais senhas estão na tela agora que não estavam há 4 segundos atrás
-                const senhasNovas = senhasAtuais.filter(senha => !senhasProntasAnteriores.includes(senha));
-                
-                if (senhasNovas.length > 0) {
-                    // Pega a senha mais recente que piscou e manda a voz chamar
-                    chamarNoMicrofone(senhasNovas[0]);
-                }
-                
-                // Atualiza a memória
-                senhasProntasAnteriores = senhasAtuais;
+        function fecharModalProduto() { 
+            tocarClick();
+            document.getElementById('modal-produto').classList.replace('flex', 'hidden'); 
+        }
 
-            } catch (e) {
-                console.log("Aguardando conexão com servidor...");
+        function alterarQtdModal(delta) {
+            tocarClick();
+            qtdMontagem += delta;
+            if(qtdMontagem < 1) qtdMontagem = 1;
+            atualizarTotalModal();
+        }
+
+        function atualizarTotalModal() {
+            if(!produtoMontagem) return;
+            let totalAdicionais = 0;
+            const inputs = document.querySelectorAll('#area-complementos input:checked');
+            inputs.forEach(i => { totalAdicionais += parseFloat(i.value.split('|')[1]); });
+            
+            const total = (produtoMontagem.valor_base + totalAdicionais) * qtdMontagem;
+            document.getElementById('modal-qtd').innerText = qtdMontagem;
+            document.getElementById('modal-total-btn').innerText = total.toFixed(2).replace('.',',');
+        }
+
+        function adicionarAoSacola() {
+            tocarClick();
+            let totalAdicionais = 0;
+            let observacoes = [];
+            
+            for (const g of produtoMontagem.grupos) {
+                const selecionados = Array.from(document.querySelectorAll(`input[name="grupo_${g.id}"]:checked`));
+                if (g.obrigatorio && selecionados.length < g.min) { alert(`Por favor, escolha pelo menos ${g.min} opção em "${g.nome}".`); return; }
+                if (selecionados.length > g.max) { alert(`Você escolheu itens demais em "${g.nome}".`); return; }
+                selecionados.forEach(sel => { 
+                    const partes = sel.value.split('|'); 
+                    observacoes.push(`+ ${partes[0]}`); 
+                    totalAdicionais += parseFloat(partes[1]); 
+                });
             }
+            
+            const precoUnitario = produtoMontagem.valor_base + totalAdicionais;
+            const obsStr = observacoes.join(' | ');
+            
+            // Tenta juntar itens idênticos
+            const indice = carrinho.findIndex(i => i.produto_id === produtoMontagem.id && i.observacao === obsStr);
+            if(indice >= 0) carrinho[indice].quantidade += qtdMontagem;
+            else carrinho.push({ produto_id: produtoMontagem.id, nome: produtoMontagem.nome, preco: precoUnitario, quantidade: qtdMontagem, observacao: obsStr, img: produtoMontagem.imagem_url });
+            
+            fecharModalProduto();
+            atualizarRodape();
+        }
+
+        function atualizarRodape() {
+            const btn = document.getElementById('btn-ver-sacola');
+            const totalEl = document.getElementById('totem-total-rodape');
+            
+            if(carrinho.length === 0) {
+                btn.classList.add('opacity-50', 'pointer-events-none');
+                btn.classList.remove('bg-brand-500', 'shadow-[0_10px_30px_rgba(255,71,87,0.4)]');
+                btn.classList.add('bg-slate-900');
+                totalEl.innerText = "R$ 0,00";
+                document.getElementById('totem-qtd-rodape').innerText = "0";
+            } else {
+                btn.classList.remove('opacity-50', 'pointer-events-none', 'bg-slate-900');
+                btn.classList.add('bg-brand-500', 'shadow-[0_10px_30px_rgba(255,71,87,0.4)]');
+                let total = 0; let qtd = 0;
+                carrinho.forEach(i => { total += (i.preco * i.quantidade); qtd += i.quantidade; });
+                totalEl.innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
+                document.getElementById('totem-qtd-rodape').innerText = qtd;
+                
+                // Animação de pulsar no botão
+                btn.classList.add('scale-105');
+                setTimeout(() => btn.classList.remove('scale-105'), 200);
+            }
+        }
+
+        function abrirCarrinhoTotem() {
+            tocarClick();
+            document.getElementById('tela-carrinho').classList.remove('hidden');
+            document.getElementById('tela-carrinho').classList.add('flex');
+            renderizarListaCarrinho();
+        }
+
+        function voltarParaCardapio() {
+            tocarClick();
+            document.getElementById('tela-carrinho').classList.add('hidden');
+            document.getElementById('tela-carrinho').classList.remove('flex');
+            
+            // Reseta botão de pagamento
+            document.querySelectorAll('.btn-pag-totem').forEach(b => {
+                b.classList.remove('border-brand-500', 'bg-brand-50');
+                b.classList.add('border-slate-200', 'bg-slate-50');
+            });
+            document.getElementById('totem-forma-pagamento').value = "";
+            const btnF = document.getElementById('btn-finalizar-totem');
+            btnF.className = "w-full bg-slate-300 text-slate-500 font-black py-6 rounded-2xl transition-all uppercase tracking-widest text-xl mt-8 pointer-events-none touch-effect";
+            btnF.innerText = "Escolha o Pagamento";
+        }
+
+        function renderizarListaCarrinho() {
+            const container = document.getElementById('lista-carrinho-totem');
+            let total = 0;
+            
+            if(carrinho.length === 0) { voltarParaCardapio(); return; }
+
+            container.innerHTML = carrinho.map((item, index) => {
+                total += (item.preco * item.quantidade);
+                const img = item.img || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=200&auto=format&fit=crop";
+                return `
+                <div class="bg-white border border-slate-200 p-6 rounded-3xl flex items-center justify-between shadow-sm">
+                    <img src="${img}" class="w-24 h-24 rounded-2xl object-cover mr-6 shadow-sm border border-slate-100">
+                    <div class="flex-1 pr-4">
+                        <h4 class="font-black text-slate-800 text-2xl leading-tight mb-2">${item.nome}</h4>
+                        ${item.observacao ? `<p class="text-xs text-slate-500 font-bold mb-2 leading-snug uppercase tracking-widest">${item.observacao}</p>` : ''}
+                        <p class="font-black text-brand-500 text-xl">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.',',')}</p>
+                    </div>
+                    <div class="flex flex-col items-center bg-slate-50 rounded-2xl border border-slate-200 p-2 shadow-inner">
+                        <button onclick="alterarQtdCarrinho(${index}, 1)" class="w-14 h-12 flex items-center justify-center bg-white rounded-xl shadow-sm text-brand-500 font-black text-2xl touch-effect mb-2"><i class="ph-bold ph-plus"></i></button>
+                        <span class="font-black text-2xl text-slate-800 my-1">${item.quantidade}</span>
+                        <button onclick="alterarQtdCarrinho(${index}, -1)" class="w-14 h-12 flex items-center justify-center bg-white rounded-xl shadow-sm text-slate-400 font-black text-2xl touch-effect mt-2"><i class="ph-bold ph-minus"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('checkout-total').innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
+        }
+
+        function alterarQtdCarrinho(index, delta) {
+            tocarClick();
+            carrinho[index].quantidade += delta;
+            if(carrinho[index].quantidade <= 0) carrinho.splice(index, 1);
+            atualizarRodape();
+            renderizarListaCarrinho();
+        }
+
+        function selecionarPagamento(forma) {
+            tocarClick();
+            document.querySelectorAll('.btn-pag-totem').forEach(b => {
+                if(b.innerText.trim().includes(forma.split(' ')[1])) {
+                    b.classList.add('border-brand-500', 'bg-brand-50');
+                    b.classList.remove('border-slate-200', 'bg-slate-50');
+                } else {
+                    b.classList.remove('border-brand-500', 'bg-brand-50');
+                    b.classList.add('border-slate-200', 'bg-slate-50');
+                }
+            });
+            document.getElementById('totem-forma-pagamento').value = forma;
+            
+            const btn = document.getElementById('btn-finalizar-totem');
+            btn.className = "w-full bg-brand-500 text-white font-black py-6 rounded-2xl shadow-[0_15px_40px_rgba(255,71,87,0.4)] transition-transform uppercase tracking-widest text-xl mt-8 touch-effect active:scale-95";
+            btn.innerText = "Finalizar Pedido";
+        }
+
+        async function finalizarPedidoTotem() {
+            tocarClick();
+            const formaPgto = document.getElementById('totem-forma-pagamento').value;
+            if(!formaPgto || carrinho.length === 0) return;
+
+            const btn = document.getElementById('btn-finalizar-totem');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-4xl"></i>';
+            btn.disabled = true;
+
+            const payload = {
+                nome_cliente: "Cliente Totem",
+                telefone_cliente: "TOTEM",
+                forma_pagamento: formaPgto,
+                usar_saldo_cashback: 0.0,
+                usar_pontos: false,
+                itens: carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao }))
+            };
+
+            try {
+                const res = await fetch('/api/pedidos/pdv', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    // SUCESSO ABSOLUTO! TOCA O ALARME
+                    document.getElementById('som-sucesso').play().catch(()=>{});
+                    
+                    document.getElementById('sucesso-senha').innerText = data.senha_diaria;
+                    document.getElementById('tela-sucesso').classList.remove('hidden');
+                    document.getElementById('tela-sucesso').classList.add('flex');
+                    
+                    let cont = 10;
+                    document.getElementById('contador-retorno').innerText = cont;
+                    const timer = setInterval(() => {
+                        cont--;
+                        document.getElementById('contador-retorno').innerText = cont;
+                        if(cont <= 0) {
+                            clearInterval(timer);
+                            document.getElementById('tela-sucesso').classList.add('hidden');
+                            document.getElementById('tela-sucesso').classList.remove('flex');
+                            cancelarAtendimento(); // Reseta tudo pro próximo
+                        }
+                    }, 1000);
+
+                } else { alert("Aviso: " + data.detail); }
+            } catch(e) { alert("Falha na Rede."); }
+            
+            btn.innerHTML = "Finalizar Pedido";
+            btn.disabled = false;
         }
     </script>
 </body>
