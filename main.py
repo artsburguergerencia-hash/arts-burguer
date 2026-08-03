@@ -2320,6 +2320,70 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
         "total_com_desconto": round(subtotal - desconto, 2)
     }
 
+# ==========================================
+# MOTOR DE COMBOS (ASSISTENTE FAST FOOD)
+# ==========================================
+
+class ItemComboSchema(BaseModel):
+    nome: str
+    preco_adicional: float = 0.0
+
+class EtapaComboSchema(BaseModel):
+    nome: str
+    obrigatorio: bool = True
+    minimo_opcoes: int = 1
+    maximo_opcoes: int = 1
+    itens: List[ItemComboSchema]
+
+class NovoComboFastFood(BaseModel):
+    nome: str
+    descricao: str = ""
+    preco: float
+    imagem_url: str = ""
+    categoria: str = "Combos Promocionais"
+    etapas: List[EtapaComboSchema]
+
+@app.post("/api/gestao/combo-maker")
+def criar_combo_fast_food(combo: NovoComboFastFood, db: Session = Depends(get_db)):
+    try:
+        # 1. Cria o Produto Base (A capa do Combo na vitrine)
+        novo_produto = ProdutoModel(
+            nome=combo.nome, 
+            descricao=combo.descricao,
+            preco_venda=combo.preco, 
+            categoria=combo.categoria,
+            imagem_url=combo.imagem_url,
+            ativo=True
+        )
+        db.add(novo_produto)
+        db.flush()
+        
+        # 2. Cria as Etapas Automáticas (Ex: "Escolha sua Bebida")
+        for etapa in combo.etapas:
+            novo_grupo = GrupoComplementoModel(
+                produto_id=novo_produto.id, 
+                nome=etapa.nome,
+                obrigatorio=etapa.obrigatorio, 
+                minimo_opcoes=etapa.minimo_opcoes, 
+                maximo_opcoes=etapa.maximo_opcoes
+            )
+            db.add(novo_grupo)
+            db.flush() 
+            
+            # 3. Adiciona as opções de cada etapa
+            for item in etapa.itens:
+                db.add(ItemComplementoModel(
+                    grupo_id=novo_grupo.id, 
+                    nome=item.nome, 
+                    preco_adicional=item.preco_adicional
+                ))
+                
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Combo criado com sucesso!"}
+    except Exception as e: 
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
