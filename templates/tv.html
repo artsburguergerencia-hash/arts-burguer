@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Senhas | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; overflow: hidden; }
+        .blink { animation: blinker 1s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes blinker { 50% { opacity: 0.3; transform: scale(1.05); } }
+        .slide-in { animation: slideIn 0.5s ease-out forwards; }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col text-slate-100">
+
+    <!-- Áudio de Chamada (Campainha) -->
+    <audio id="som-chamada" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_22dcd5dbda.mp3?filename=airport-chime-1-105102.mp3" preload="auto"></audio>
+
+    <header class="h-24 bg-slate-950 flex items-center justify-between px-10 shadow-2xl border-b border-slate-800 z-10 shrink-0">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-[0_0_20px_rgba(255,71,87,0.4)] mr-4">A</div>
+            <h1 class="text-3xl font-black tracking-tight text-white uppercase">Art's Burguer</h1>
+        </div>
+        <div class="flex items-center">
+            <button onclick="iniciarTV()" id="btn-iniciar" class="bg-emerald-500 text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-emerald-400 transition-colors flex items-center">
+                <i class="ph-bold ph-speaker-high mr-2 text-xl"></i> Ligar Som da TV
+            </button>
+            <div id="relogio" class="hidden text-4xl font-black tracking-tighter text-slate-400 bg-slate-900 px-6 py-2 rounded-xl border border-slate-800">00:00</div>
+        </div>
+    </header>
+
+    <main class="flex-1 flex">
+        <!-- COLUNA: PREPARANDO -->
+        <div class="flex-1 flex flex-col border-r border-slate-800 bg-slate-900/50">
+            <div class="bg-amber-500 text-slate-900 text-center py-6 shadow-lg shrink-0">
+                <h2 class="font-black text-5xl uppercase tracking-widest">Preparando</h2>
+                <p class="text-sm font-bold uppercase tracking-widest opacity-80 mt-1">Aguarde ser chamado</p>
+            </div>
+            <div class="flex-1 p-10 grid grid-cols-2 gap-6 content-start" id="lista-preparo">
+                <!-- Senhas Em Preparo (Injetadas pelo JS) -->
+                <div class="col-span-full text-center text-slate-600 font-bold mt-10">Sincronizando...</div>
+            </div>
+        </div>
+
+        <!-- COLUNA: PRONTO -->
+        <div class="flex-1 flex flex-col bg-slate-900">
+            <div class="bg-emerald-500 text-white text-center py-6 shadow-lg shrink-0">
+                <h2 class="font-black text-5xl uppercase tracking-widest">Retire seu Pedido</h2>
+                <p class="text-sm font-bold uppercase tracking-widest opacity-80 mt-1">Dirija-se ao balcão</p>
+            </div>
+            <div class="flex-1 p-10 grid grid-cols-2 gap-6 content-start" id="lista-pronto">
+                <!-- Senhas Prontas (Injetadas pelo JS) -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let ultimoPedidoProntoId = 0;
+        let somAtivado = false;
+
+        // Atualiza Relógio
+        setInterval(() => {
+            const agora = new Date();
+            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
+
+        // O navegador bloqueia sons automáticos, então alguém precisa dar o primeiro clique no botão verde para "Ligar a TV"
+        function iniciarTV() {
+            somAtivado = true;
+            document.getElementById('btn-iniciar').classList.add('hidden');
+            document.getElementById('relogio').classList.remove('hidden');
+            document.getElementById('som-chamada').play().then(() => {
+                document.getElementById('som-chamada').pause();
+                document.getElementById('som-chamada').currentTime = 0;
+            }).catch(()=>{});
+        }
+
+        async function atualizarTV() {
+            try {
+                const res = await fetch('/api/kds/pedidos');
+                const pedidos = await res.json();
+                
+                // Separa os pedidos que são de Balcão/Retirada (Ignora Delivery na TV)
+                const pedidosSalao = pedidos.filter(p => p.tipo !== 'DELIVERY');
+                
+                const emPreparo = pedidosSalao.filter(p => p.status === 'EM_PREPARO' || p.status === 'RECEBIDO');
+                const prontos = pedidosSalao.filter(p => p.status === 'PRONTO');
+
+                // Lógica de Chamada (Som) quando um pedido novo entra na coluna PRONTO
+                if (prontos.length > 0) {
+                    const maiorIdPronto = Math.max(...prontos.map(p => p.id));
+                    if (ultimoPedidoProntoId !== 0 && maiorIdPronto > ultimoPedidoProntoId && somAtivado) {
+                        document.getElementById('som-chamada').play().catch(()=>{});
+                    }
+                    ultimoPedidoProntoId = maiorIdPronto;
+                }
+
+                // Renderiza Em Preparo
+                const gridPreparo = document.getElementById('lista-preparo');
+                if (emPreparo.length === 0) {
+                    gridPreparo.innerHTML = '<div class="col-span-full text-center text-slate-700 font-bold mt-10">Nenhum pedido na chapa.</div>';
+                } else {
+                    gridPreparo.innerHTML = emPreparo.map(p => `
+                        <div class="bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center py-8 shadow-inner slide-in">
+                            <span class="text-6xl font-black text-slate-300 tracking-tighter">${p.senha_diaria}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // Renderiza Prontos (O mais recente pisca verde)
+                const gridPronto = document.getElementById('lista-pronto');
+                if (prontos.length === 0) {
+                    gridPronto.innerHTML = '<div class="col-span-full text-center text-slate-700 font-bold mt-10">Nenhum pedido aguardando retirada.</div>';
+                } else {
+                    gridPronto.innerHTML = prontos.sort((a,b) => b.id - a.id).map((p, index) => {
+                        const piscar = index === 0 ? 'blink border-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.3)]' : 'border-slate-700';
+                        const corTexto = index === 0 ? 'text-emerald-400' : 'text-white';
+                        return `
+                        <div class="bg-slate-800 border ${piscar} rounded-2xl flex flex-col items-center justify-center py-6 slide-in">
+                            <span class="text-7xl font-black ${corTexto} tracking-tighter leading-none">${p.senha_diaria}</span>
+                        </div>
+                        `;
+                    }).join('');
+                }
+
+            } catch(e) { console.log("Aguardando conexão com o servidor..."); }
+        }
+
+        setInterval(atualizarTV, 3000); // Atualiza a TV a cada 3 segundos
+        atualizarTV();
+    </script>
+</body>
+</html>
