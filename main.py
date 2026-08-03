@@ -1849,6 +1849,12 @@ def abrir_logistica():
         return Path("templates/logistica.html").read_text(encoding="utf-8")
     return "Erro: Arquivo logistica.html não encontrado."
 
+@app.get("/tv", response_class=HTMLResponse)
+def abrir_tv_senhas(): 
+    if Path("templates/tv.html").exists():
+        return Path("templates/tv.html").read_text(encoding="utf-8")
+    return "Erro: Arquivo tv.html não encontrado."
+    
 @app.get("/kds", response_class=HTMLResponse)
 def abrir_kds(): 
     if Path("templates/kds.html").exists():
