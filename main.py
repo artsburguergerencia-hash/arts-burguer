@@ -2656,7 +2656,10 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
             cliente = ClienteModel(
                 nome=f"🔴 iFOOD: {dados.customerName}",
                 telefone=telefone_formatado,
-                endereco=dados.deliveryAddress if dados.deliveryAddress else ""
+                endereco=dados.deliveryAddress if dados.deliveryAddress else "",
+                pontos=0,
+                cashback=0.0,
+                bloqueado=0 # Usando 0 em vez de False (Proteção PostgreSQL)
             )
             db.add(cliente)
             db.commit()
@@ -2669,13 +2672,15 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
                 nome="Item iFood",
                 descricao="Integrador Externo",
                 preco_venda=0.0,
-                categoria="Integrações"
+                categoria="Integrações",
+                ativo=1, # 1 = Ativo (Proteção PostgreSQL)
+                participa_fidelidade=0 # 0 = Não participa (Proteção PostgreSQL)
             )
             db.add(produto_ifood)
             db.commit()
             db.refresh(produto_ifood)
 
-        # 3. Monta o Carrinho Padrão (Colocando o nome real do lanche na observação da Cozinha)
+        # 3. Monta o Carrinho Padrão (Colocando o nome real do lanche na observação)
         itens_carrinho = []
         for item in dados.items:
             obs_final = f"🔥 {item.name}"
@@ -2691,7 +2696,7 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
                 "observacao": obs_final
             })
 
-        # 4. Registra usando o motor blindado do próprio sistema (O mesmo do PDV)
+        # 4. Registra usando o motor blindado do próprio sistema
         tipo_enum = TipoPedido.DELIVERY if dados.type.upper() == "DELIVERY" else TipoPedido.BALCAO
 
         novo_pedido = registrar_venda_pdv(
@@ -2710,7 +2715,6 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
         novo_pedido_real.data_pedido = datetime.utcnow().date()
         novo_pedido_real.forma_pagamento = f"{dados.paymentMethod} (iFood)"
         
-        # Sobrescrevemos o total para ficar exato com o do aplicativo
         if hasattr(novo_pedido_real, 'total_pago'):
             novo_pedido_real.total_pago = dados.totalPrice
         if hasattr(novo_pedido_real, 'valor_total'):
