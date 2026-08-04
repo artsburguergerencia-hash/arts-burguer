@@ -37,7 +37,6 @@
             </div>
             
             <div id="area-auth" class="flex items-center space-x-2">
-                <!-- BOTÃO DE RASTREIO MANTIDO -->
                 <button onclick="abrirModalRastreio()" class="text-sm bg-white/10 hover:bg-white/20 px-3 py-2 rounded-full font-bold transition-colors flex items-center text-brand-400 border border-white/5">
                     <i class="ph-bold ph-crosshair mr-1 text-lg"></i>
                 </button>
@@ -183,7 +182,7 @@
                 </div>
                 <div id="status-cupom" class="text-xs font-bold mb-4 hidden"></div>
                 
-                <!-- 🚨 MÓDULO EXCLUSIVO DE LOGÍSTICA (FRETE E BAIRRO) 🚨 -->
+                <!-- MÓDULO EXCLUSIVO DE LOGÍSTICA (FRETE E BAIRRO) -->
                 <div class="space-y-4 pt-4 border-t border-slate-800">
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center"><i class="ph-fill ph-moped mr-2 text-brand-500 text-lg"></i> Logística</h3>
                     
@@ -263,13 +262,18 @@
                             <option value="1">1x sem juros</option>
                         </select>
                     </div>
+                    
+                    <div class="bg-slate-900 p-4 rounded-xl flex justify-between items-center text-white mt-6 border border-slate-700">
+                        <span class="text-xs font-bold uppercase tracking-widest">Pagar Hoje:</span>
+                        <span class="text-2xl font-black text-brand-400" id="final-total">R$ 0,00</span>
+                    </div>
                 </div>
             </div>
 
             <div class="absolute bottom-0 w-full bg-slate-900 border-t border-slate-800 p-4">
                 <button onclick="finalizarPedidoOnline()" id="btn-finalizar-online" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl flex justify-between px-6 items-center shadow-[0_10px_30px_rgba(16,185,129,0.2)] active:scale-95 transition-transform uppercase tracking-widest text-xs">
                     <span>Confirmar Pedido</span>
-                    <span id="final-total" class="text-sm">R$ 0,00</span>
+                    <span id="carrinho-total-final" class="text-sm">R$ 0,00</span>
                 </button>
             </div>
         </div>
@@ -319,7 +323,7 @@
 
     <div id="modal-perfil" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[95] hidden flex-col justify-end">
         <div class="bg-slate-900 w-full max-w-md mx-auto rounded-t-3xl h-[85vh] flex flex-col relative modal-enter border-t border-slate-800">
-            <button onclick="fecharModalPerfil()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="ph-bold ph-x text-xl"></i></button>
+            <button onclick="document.getElementById('modal-perfil').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="ph-bold ph-x text-xl"></i></button>
             <div class="p-6 border-b border-slate-800">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center">
@@ -365,7 +369,7 @@
         let cupomAplicado = null;
         let valorDescontoCupom = 0;
         
-        // 🚨 MÓDULO LOGÍSTICA INJETADO 🚨
+        // MÓDULO LOGÍSTICA
         let taxasEntrega = [];
         let valorFreteAtual = 0;
 
@@ -373,7 +377,7 @@
             carregarConfiguracoes(); 
             verificarSessao();
             carregarCardapioDigital();
-            carregarTaxasEntrega(); // 🚨 Busca as taxas cadastradas no Gestão
+            carregarTaxasEntrega(); // Busca as taxas cadastradas no Gestão
         });
 
         // ==========================
@@ -417,12 +421,18 @@
             atualizarContadoresCheckout(); 
         }
 
+        // 🚨 AQUI O ERRO FOI CORRIGIDO (Proteção do ID) 🚨
         function atualizarContadoresCheckout() {
             const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
             let final = subtotal - valorDescontoCupom + valorFreteAtual;
             if(final < 0) final = 0;
-            const ft = document.getElementById('final-total');
-            if(ft) ft.innerText = `R$ ${final.toFixed(2).replace('.',',')}`;
+            
+            // Atualiza os dois botões e paineis que podem existir sem dar erro
+            const btnFinal1 = document.getElementById('final-total');
+            if(btnFinal1) btnFinal1.innerText = `R$ ${final.toFixed(2).replace('.',',')}`;
+            
+            const btnFinal2 = document.getElementById('carrinho-total-final');
+            if(btnFinal2) btnFinal2.innerText = `R$ ${final.toFixed(2).replace('.',',')}`;
         }
 
         // ==========================
@@ -893,9 +903,12 @@
 
             const itemExistente = carrinho.find(i => i.produto_id === produtoSendoMontado.id && i.observacao === obsFinal);
             if (itemExistente) { itemExistente.quantidade++; } 
-            else { carrinho.push({ produto_id: produtoSendoMontado.id, nome: produtoSendoMontado.nome, preco: precoFinal, quantidade: 1, observacao: obsFinal }); }
+            else { carrinho.push({ produto_id: produtoSendoMontado.id, nome: produtoSendoMontado.nome, preco: precoFinal, quantidade: 1, observacao: obsFinal, img: produtoSendoMontado.imagem_url }); }
             
-            fecharModalProduto(); atualizarContadores();
+            fecharModalProduto(); 
+            
+            // 🚨 AQUI ESTAVA O PROBLEMA! AGORA É CHAMADA A FUNÇÃO CORRIGIDA 🚨
+            atualizarContadores();
         }
 
         // ==========================
@@ -935,24 +948,38 @@
             } catch(e) { alert("Erro ao validar cupom."); }
         }
 
+        // 🚨 O CÁLCULO SEGURO DO CARRINHO 🚨
         function atualizarContadores() {
             const subtotalLocal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
-            document.getElementById('check-subtotal').innerText = `R$ ${subtotalLocal.toFixed(2).replace('.',',')}`;
+            
+            // Tenta atualizar se o painel do checkout existir
+            const chkSub = document.getElementById('check-subtotal');
+            if(chkSub) chkSub.innerText = `R$ ${subtotalLocal.toFixed(2).replace('.',',')}`;
             
             if(cupomAplicado) {
-                document.getElementById('check-desconto').innerText = `- R$ ${valorDescontoCupom.toFixed(2).replace('.',',')}`;
-                document.getElementById('div-desconto').classList.remove('hidden');
-            } else { document.getElementById('div-desconto').classList.add('hidden'); }
+                const chkDesc = document.getElementById('check-desconto');
+                if(chkDesc) chkDesc.innerText = `- R$ ${valorDescontoCupom.toFixed(2).replace('.',',')}`;
+                
+                const divDesc = document.getElementById('div-desconto');
+                if(divDesc) divDesc.classList.remove('hidden');
+            } else { 
+                const divDesc = document.getElementById('div-desconto');
+                if(divDesc) divDesc.classList.add('hidden'); 
+            }
 
             let final = subtotalLocal - valorDescontoCupom;
             if(final < 0) final = 0;
             const form = `R$ ${final.toFixed(2).replace('.', ',')}`;
             
-            document.getElementById('check-total').innerText = form;
-            document.getElementById('carrinho-total-flutuante').innerText = form;
+            const chkTotal = document.getElementById('check-total');
+            if(chkTotal) chkTotal.innerText = form;
+            
+            const carTotalFlu = document.getElementById('carrinho-total-flutuante');
+            if(carTotalFlu) carTotalFlu.innerText = form;
             
             const qtd = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
-            document.getElementById('carrinho-qtd').innerText = qtd;
+            const carQtd = document.getElementById('carrinho-qtd');
+            if(carQtd) carQtd.innerText = qtd;
             
             const barra = document.getElementById('barra-carrinho');
             if (qtd > 0) {
@@ -992,7 +1019,7 @@
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.replace('flex', 'hidden'); }
 
         // ==========================
-        // FINALIZAR PEDIDO (MERCADO PAGO E FRETE)
+        // FINALIZAR PEDIDO E INTEGRAÇÃO DO MERCADO PAGO
         // ==========================
         function iniciarFluxoPagamento() {
             if(carrinho.length === 0) return;
@@ -1057,8 +1084,7 @@
                 itensFinais[0].observacao += ` | 🎫 Cupom Usado: ${cupomAplicado} (-R$ ${valorDescontoCupom.toFixed(2)})`;
             }
 
-            // Mágica Matemática: O Backend vai diminuir esse valor do subtotal dos produtos.
-            // Mandamos o "Frete" disfarçado como um desconto negativo, assim o backend soma no total em vez de subtrair!
+            // Mágica Matemática do Frete e Cashback
             const descontoFinalEnviado = valorDescontoCupom - valorFreteAtual;
 
             const payload = {
