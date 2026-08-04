@@ -3,60 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Senhas | Art's Burguer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Painel de Senhas Premium | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' }, dark: { 900: '#0B0F19', 800: '#151A27', 700: '#1F2639' } } } } }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; overflow: hidden; }
-        .blink { animation: blinker 1s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes blinker { 50% { opacity: 0.3; transform: scale(1.05); } }
-        .slide-in { animation: slideIn 0.5s ease-out forwards; }
-        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        body { font-family: 'Inter', sans-serif; background-color: #0B0F19; overflow: hidden; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Animação para o pedido mais recente */
+        .destaque-pulse { animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 0 60px rgba(16, 185, 129, 0.4); border-color: rgba(16, 185, 129, 0.8); }
+        }
+        
+        /* Animação de entrada suave */
+        .fade-slide-up { animation: fadeSlideUp 0.6s ease-out forwards; }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col text-slate-100">
 
-    <!-- Áudio de Chamada (Campainha) -->
+    <!-- Áudio de Chamada (Campainha Premium) -->
     <audio id="som-chamada" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_22dcd5dbda.mp3?filename=airport-chime-1-105102.mp3" preload="auto"></audio>
 
-    <header class="h-24 bg-slate-950 flex items-center justify-between px-10 shadow-2xl border-b border-slate-800 z-10 shrink-0">
+    <!-- TELA DE ATIVAÇÃO INICIAL (Fica invisível depois que liga a TV) -->
+    <div id="tela-ativacao" class="fixed inset-0 z-50 bg-dark-900/90 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer" onclick="iniciarTV()">
+        <div class="w-32 h-32 bg-brand-500 rounded-3xl flex items-center justify-center text-white font-black text-6xl shadow-[0_0_50px_rgba(255,71,87,0.5)] mb-8 animate-bounce">A</div>
+        <h1 class="text-5xl font-black text-white tracking-tight mb-4">TV de Senhas Pronta</h1>
+        <p class="text-xl font-bold text-slate-400 uppercase tracking-widest mb-10">Toque em qualquer lugar para ligar a tela e o som</p>
+        <button class="bg-white text-dark-900 px-10 py-5 rounded-full font-black uppercase tracking-widest text-lg shadow-2xl flex items-center">
+            <i class="ph-bold ph-power mr-3 text-2xl text-brand-500"></i> Iniciar Sistema
+        </button>
+    </div>
+
+    <!-- HEADER PREMIUM E LIMPO -->
+    <header class="h-24 px-8 flex items-center justify-between shrink-0 relative z-10 border-b border-white/5">
         <div class="flex items-center">
             <div class="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-[0_0_20px_rgba(255,71,87,0.4)] mr-4">A</div>
-            <h1 class="text-3xl font-black tracking-tight text-white uppercase">Art's Burguer</h1>
+            <div>
+                <h1 class="text-2xl font-black tracking-tight text-white leading-none">Art's Burguer</h1>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Acompanhe seu pedido</p>
+            </div>
         </div>
-        <div class="flex items-center">
-            <button onclick="iniciarTV()" id="btn-iniciar" class="bg-emerald-500 text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-emerald-400 transition-colors flex items-center">
-                <i class="ph-bold ph-speaker-high mr-2 text-xl"></i> Ligar Som da TV
-            </button>
-            <div id="relogio" class="hidden text-4xl font-black tracking-tighter text-slate-400 bg-slate-900 px-6 py-2 rounded-xl border border-slate-800">00:00</div>
-        </div>
+        <div id="relogio" class="text-4xl font-black tracking-tighter text-slate-300">00:00</div>
     </header>
 
-    <main class="flex-1 flex">
-        <!-- COLUNA: PREPARANDO -->
-        <div class="flex-1 flex flex-col border-r border-slate-800 bg-slate-900/50">
-            <div class="bg-amber-500 text-slate-900 text-center py-6 shadow-lg shrink-0">
-                <h2 class="font-black text-5xl uppercase tracking-widest">Preparando</h2>
-                <p class="text-sm font-bold uppercase tracking-widest opacity-80 mt-1">Aguarde ser chamado</p>
+    <main class="flex-1 flex overflow-hidden p-6 gap-6 relative">
+        <!-- Luz de fundo ambiente -->
+        <div class="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <!-- COLUNA 1: PREPARANDO (30% DA TELA) -->
+        <div class="w-[30%] bg-dark-800 rounded-[2rem] border border-white/5 flex flex-col shadow-2xl relative z-10 overflow-hidden">
+            <div class="p-8 pb-4 shrink-0 text-center border-b border-white/5">
+                <i class="ph-fill ph-cooking-pot text-amber-500 text-5xl mb-2"></i>
+                <h2 class="font-black text-2xl uppercase tracking-widest text-amber-400">Preparando</h2>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Na chapa</p>
             </div>
-            <div class="flex-1 p-10 grid grid-cols-2 gap-6 content-start" id="lista-preparo">
-                <!-- Senhas Em Preparo (Injetadas pelo JS) -->
-                <div class="col-span-full text-center text-slate-600 font-bold mt-10">Sincronizando...</div>
+            
+            <div class="flex-1 p-6 overflow-y-auto no-scrollbar">
+                <div id="lista-preparo" class="grid grid-cols-2 gap-4 auto-rows-max">
+                    <div class="col-span-2 text-center text-slate-600 font-bold mt-10">Aguardando...</div>
+                </div>
             </div>
         </div>
 
-        <!-- COLUNA: PRONTO -->
-        <div class="flex-1 flex flex-col bg-slate-900">
-            <div class="bg-emerald-500 text-white text-center py-6 shadow-lg shrink-0">
-                <h2 class="font-black text-5xl uppercase tracking-widest">Retire seu Pedido</h2>
-                <p class="text-sm font-bold uppercase tracking-widest opacity-80 mt-1">Dirija-se ao balcão</p>
+        <!-- COLUNA 2: PRONTO (70% DA TELA) -->
+        <div class="flex-1 bg-dark-800 rounded-[2rem] border border-emerald-900/30 flex flex-col shadow-2xl relative z-10 overflow-hidden">
+            <div class="p-8 pb-4 shrink-0 text-center border-b border-white/5">
+                <h2 class="font-black text-4xl uppercase tracking-widest text-emerald-400 tracking-tight">Retire seu Pedido</h2>
+                <p class="text-xs font-bold text-emerald-600/70 uppercase tracking-widest mt-2">Venha ao balcão com sua senha</p>
             </div>
-            <div class="flex-1 p-10 grid grid-cols-2 gap-6 content-start" id="lista-pronto">
-                <!-- Senhas Prontas (Injetadas pelo JS) -->
+            
+            <div class="flex-1 flex flex-col p-8">
+                <!-- DESTAQUE (ÚLTIMO PEDIDO) -->
+                <div id="destaque-pronto" class="flex-[3] flex items-center justify-center mb-8">
+                    <div class="w-full h-full bg-dark-900/50 border-2 border-slate-800 rounded-[3rem] flex flex-col items-center justify-center">
+                        <span class="text-slate-600 text-2xl font-black uppercase tracking-widest">Aguardando Chamada</span>
+                    </div>
+                </div>
+
+                <!-- FILA DE PRONTOS (PEDIDOS ANTERIORES) -->
+                <div class="flex-1 border-t border-white/5 pt-8">
+                    <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Também aguardando retirada:</p>
+                    <div id="lista-pronto-fila" class="grid grid-cols-4 gap-4">
+                        <!-- Itens injetados via JS -->
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -71,70 +112,103 @@
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
         }, 1000);
 
-        // O navegador bloqueia sons automáticos, então alguém precisa dar o primeiro clique no botão verde para "Ligar a TV"
+        // Tela de clique inicial elegante para liberar o som
         function iniciarTV() {
             somAtivado = true;
-            document.getElementById('btn-iniciar').classList.add('hidden');
-            document.getElementById('relogio').classList.remove('hidden');
-            document.getElementById('som-chamada').play().then(() => {
-                document.getElementById('som-chamada').pause();
-                document.getElementById('som-chamada').currentTime = 0;
+            document.getElementById('tela-ativacao').classList.add('hidden');
+            
+            const som = document.getElementById('som-chamada');
+            som.volume = 0; // Toca mudo a primeira vez só pro navegador liberar a tag
+            som.play().then(() => {
+                som.pause();
+                som.currentTime = 0;
+                som.volume = 1; // Volta pro máximo pros próximos toques
             }).catch(()=>{});
+            
+            atualizarTV();
         }
 
         async function atualizarTV() {
+            if(!somAtivado) return; // Só busca se a TV foi iniciada
+            
             try {
                 const res = await fetch('/api/kds/pedidos');
                 const pedidos = await res.json();
                 
-                // Separa os pedidos que são de Balcão/Retirada (Ignora Delivery na TV)
+                // Separa os pedidos (Ignora Delivery na TV de salão)
                 const pedidosSalao = pedidos.filter(p => p.tipo !== 'DELIVERY');
                 
                 const emPreparo = pedidosSalao.filter(p => p.status === 'EM_PREPARO' || p.status === 'RECEBIDO');
-                const prontos = pedidosSalao.filter(p => p.status === 'PRONTO');
+                let prontos = pedidosSalao.filter(p => p.status === 'PRONTO');
+                
+                // Ordena os prontos do mais recente (maior ID) para o mais antigo
+                prontos = prontos.sort((a,b) => b.id - a.id);
 
-                // Lógica de Chamada (Som) quando um pedido novo entra na coluna PRONTO
+                // Lógica de Chamada (Som) quando o pedido mais novo entra
                 if (prontos.length > 0) {
-                    const maiorIdPronto = Math.max(...prontos.map(p => p.id));
-                    if (ultimoPedidoProntoId !== 0 && maiorIdPronto > ultimoPedidoProntoId && somAtivado) {
-                        document.getElementById('som-chamada').play().catch(()=>{});
+                    const maisRecente = prontos[0];
+                    if (ultimoPedidoProntoId !== 0 && maisRecente.id > ultimoPedidoProntoId && somAtivado) {
+                        const som = document.getElementById('som-chamada');
+                        som.currentTime = 0;
+                        som.play().catch(()=>{});
                     }
-                    ultimoPedidoProntoId = maiorIdPronto;
+                    ultimoPedidoProntoId = Math.max(ultimoPedidoProntoId, maisRecente.id);
                 }
 
-                // Renderiza Em Preparo
+                // Renderiza PREPARANDO (Lateral Esquerda)
                 const gridPreparo = document.getElementById('lista-preparo');
                 if (emPreparo.length === 0) {
-                    gridPreparo.innerHTML = '<div class="col-span-full text-center text-slate-700 font-bold mt-10">Nenhum pedido na chapa.</div>';
+                    gridPreparo.innerHTML = '<div class="col-span-2 text-center text-slate-600 font-bold mt-10">Fila Limpa</div>';
                 } else {
                     gridPreparo.innerHTML = emPreparo.map(p => `
-                        <div class="bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center py-8 shadow-inner slide-in">
-                            <span class="text-6xl font-black text-slate-300 tracking-tighter">${p.senha_diaria}</span>
+                        <div class="bg-dark-900 border border-white/5 rounded-2xl flex items-center justify-center py-6 shadow-sm fade-slide-up">
+                            <span class="text-4xl font-black text-slate-300 tracking-tighter">${p.senha_diaria}</span>
                         </div>
                     `).join('');
                 }
 
-                // Renderiza Prontos (O mais recente pisca verde)
-                const gridPronto = document.getElementById('lista-pronto');
+                // Renderiza PRONTOS (Área Principal)
+                const destaque = document.getElementById('destaque-pronto');
+                const filaProntos = document.getElementById('lista-pronto-fila');
+                
                 if (prontos.length === 0) {
-                    gridPronto.innerHTML = '<div class="col-span-full text-center text-slate-700 font-bold mt-10">Nenhum pedido aguardando retirada.</div>';
-                } else {
-                    gridPronto.innerHTML = prontos.sort((a,b) => b.id - a.id).map((p, index) => {
-                        const piscar = index === 0 ? 'blink border-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.3)]' : 'border-slate-700';
-                        const corTexto = index === 0 ? 'text-emerald-400' : 'text-white';
-                        return `
-                        <div class="bg-slate-800 border ${piscar} rounded-2xl flex flex-col items-center justify-center py-6 slide-in">
-                            <span class="text-7xl font-black ${corTexto} tracking-tighter leading-none">${p.senha_diaria}</span>
+                    destaque.innerHTML = `
+                        <div class="w-full h-full bg-dark-900/50 border border-white/5 rounded-[3rem] flex flex-col items-center justify-center">
+                            <i class="ph-fill ph-check-circle text-6xl text-slate-700 mb-4"></i>
+                            <span class="text-slate-500 text-lg font-black uppercase tracking-widest">Balcão Livre</span>
                         </div>
-                        `;
-                    }).join('');
+                    `;
+                    filaProntos.innerHTML = '';
+                } else {
+                    // O Mais Recente vai pro Centro Gigante
+                    const pDestaque = prontos[0];
+                    destaque.innerHTML = `
+                        <div class="w-full h-full bg-emerald-500/10 border-4 border-emerald-500/50 rounded-[3rem] flex flex-col items-center justify-center destaque-pulse fade-slide-up">
+                            <span class="text-[150px] font-black text-emerald-400 tracking-tighter leading-none">${pDestaque.senha_diaria}</span>
+                            <span class="text-emerald-500 text-2xl font-black uppercase tracking-widest mt-2 bg-emerald-500/20 px-6 py-2 rounded-full border border-emerald-500/30">
+                                ${pDestaque.cliente_nome || 'Aguardando Retirada'}
+                            </span>
+                        </div>
+                    `;
+
+                    // Os outros prontos (se houverem) ficam nas caixinhas embaixo
+                    const outrosProntos = prontos.slice(1, 9); // Pega do segundo até o 9º
+                    if (outrosProntos.length > 0) {
+                        filaProntos.innerHTML = outrosProntos.map(p => `
+                            <div class="bg-emerald-900/20 border border-emerald-500/30 rounded-2xl flex items-center justify-center py-4 fade-slide-up">
+                                <span class="text-3xl font-black text-emerald-300 tracking-tighter">${p.senha_diaria}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        filaProntos.innerHTML = '<div class="col-span-4 text-slate-600 font-bold text-sm">Nenhum outro pedido na fila.</div>';
+                    }
                 }
 
             } catch(e) { console.log("Aguardando conexão com o servidor..."); }
         }
 
-        setInterval(atualizarTV, 3000); // Atualiza a TV a cada 3 segundos
-        atualizarTV();
+        // Loop de atualização
+        setInterval(atualizarTV, 3000); 
     </script>
 </body>
 </html>
