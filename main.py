@@ -2600,6 +2600,68 @@ def deletar_taxa(id: int, db: Session = Depends(get_db)):
         db.delete(tx)
         db.commit()
     return {"status": "sucesso"}
+
+# ==========================================
+# MÓDULO DE INTEGRAÇÕES (WEBHOOK IFOOD / 99FOOD)
+# ==========================================
+from pydantic import BaseModel
+from typing import List, Optional
+
+# Estrutura padrão que os aplicativos mandam os dados
+class ExtItemSchema(BaseModel):
+    name: str
+    quantity: int
+    price: float
+    options: Optional[str] = ""
+
+class ExtWebhookSchema(BaseModel):
+    displayId: str # A senha curta do iFood (Ex: 8521)
+    type: str # DELIVERY ou RETIRADA
+    customerName: str
+    customerPhone: str
+    deliveryAddress: Optional[str] = "Não informado"
+    paymentMethod: str
+    totalPrice: float
+    items: List[ExtItemSchema]
+
+@app.post("/api/webhook/ifood")
+def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db)):
+    # 1. Traduzir os itens do iFood para o formato que a nossa Cozinha (KDS) entende
+    lista_itens_kds = []
+    resumo_str_list = []
+    
+    for item in dados.items:
+        lista_itens_kds.append({
+            "produto_id": 0, # Zero porque é produto de fora
+            "nome_produto": item.name,
+            "quantidade": item.quantity,
+            "observacao": item.options
+        })
+        resumo_str_list.append(f"{item.quantity}x {item.name}")
+        
+    resumo_str = " | ".join(resumo_str_list)
+    
+    # 2. Criar o pedido oficial no seu banco de dados
+    senha_ext = int(dados.displayId) if dados.displayId.isdigit() else 999
+    
+    novo_pedido = PedidoModel(
+        cliente_nome=f"{dados.customerName} (App iFood)",
+        telefone_cliente=dados.customerPhone,
+        endereco_entrega=dados.deliveryAddress,
+        forma_pagamento=f"{dados.paymentMethod} (Pago via iFood)",
+        total_pago=dados.totalPrice,
+        itens_resumo=resumo_str,
+        itens=lista_itens_kds, # Injeta na tela do KDS
+        status="RECEBIDO",
+        tipo="DELIVERY" if dados.type.upper() == "DELIVERY" else "RETIRADA",
+        origem="iFood", # A cor e a tag na cozinha mudarão para identificar
+        senha_diaria=senha_ext
+    )
+    
+    db.add(novo_pedido)
+    db.commit()
+    
+    return {"status": "sucesso", "mensagem": "Pedido injetado com sucesso na Cozinha!"}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
