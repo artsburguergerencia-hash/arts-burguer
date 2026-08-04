@@ -2491,6 +2491,78 @@ def fechar_caixa(dados: FecharCaixaSchema, db: Session = Depends(get_db)):
     caixa.saldo_informado = dados.saldo_informado
     db.commit()
     return {"status": "sucesso", "mensagem": "Caixa fechado com sucesso!"}
+
+# ==========================================
+# APP DO CLIENTE: RASTREIO E PERFIL
+# ==========================================
+class AtualizarPerfilCliente(BaseModel):
+    nome: str
+    cep: str = ""
+    endereco: str = ""
+    numero: str = ""
+    bairro: str = ""
+    complemento: str = ""
+
+@app.get("/api/rastreio/{busca}")
+def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
+    hoje = datetime.utcnow().date()
+    pedido = None
+    
+    # Se digitar um número pequeno (ex: 12), busca pela senha diária da comanda.
+    # Se for grande, busca pelo telefone do cliente.
+    if busca.isdigit() and len(busca) <= 4:
+        pedido = db.query(PedidoModel).filter(PedidoModel.data_pedido == hoje, PedidoModel.senha_diaria == int(busca)).first()
+    else:
+        telefone = busca.replace("-", "").replace(" ", "").replace("(", "").replace(")", "")
+        pedido = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == telefone).order_by(desc(PedidoModel.id)).first()
+        
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido não encontrado.")
+        
+    status_atual = str(pedido.status).split('.')[-1].upper()
+    
+    progresso = 20 # Recebido
+    if status_atual == "EM_PREPARO": progresso = 50
+    elif status_atual in ["PRONTO", "SAIU_PARA_ENTREGA"]: progresso = 80
+    elif status_atual == "ENTREGUE": progresso = 100
+    elif status_atual == "CANCELADO": progresso = 0
+    
+    return {
+        "id": pedido.id,
+        "senha": getattr(pedido, 'senha_diaria', pedido.id),
+        "status": status_atual,
+        "progresso": progresso,
+        "tipo": str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', ''))).split('.')[-1].upper(),
+        "total": pedido.total_pago
+    }
+
+@app.get("/api/cliente/{cliente_id}/perfil")
+def obter_perfil_cliente(cliente_id: int, db: Session = Depends(get_db)):
+    c = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    if not c: raise HTTPException(status_code=404)
+    return {
+        "nome": c.nome, 
+        "cep": getattr(c, 'cep', ''), 
+        "endereco": getattr(c, 'endereco', ''),
+        "numero": getattr(c, 'numero', ''), 
+        "bairro": getattr(c, 'bairro', ''), 
+        "complemento": getattr(c, 'complemento', '')
+    }
+
+@app.put("/api/cliente/{cliente_id}/perfil")
+def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db: Session = Depends(get_db)):
+    c = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    if not c: raise HTTPException(status_code=404)
+        
+    c.nome = dados.nome
+    if hasattr(c, 'cep'): c.cep = dados.cep
+    c.endereco = dados.endereco
+    if hasattr(c, 'numero'): c.numero = dados.numero
+    if hasattr(c, 'bairro'): c.bairro = dados.bairro
+    if hasattr(c, 'complemento'): c.complemento = dados.complemento
+    
+    db.commit()
+    return {"status": "sucesso"}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
