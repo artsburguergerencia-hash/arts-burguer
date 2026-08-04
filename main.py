@@ -2606,30 +2606,7 @@ def deletar_taxa(id: int, db: Session = Depends(get_db)):
 # ==========================================
 from pydantic import BaseModel
 from typing import List, Optional
-
-# Estrutura padrão que os aplicativos mandam os dados
-class ExtItemSchema(BaseModel):
-    name: str
-    quantity: int
-    price: float
-    options: Optional[str] = ""
-
-class ExtWebhookSchema(BaseModel):
-    displayId: str # A senha curta do iFood (Ex: 8521)
-    type: str # DELIVERY ou RETIRADA
-    customerName: str
-    customerPhone: str
-    deliveryAddress: Optional[str] = "Não informado"
-    paymentMethod: str
-    totalPrice: float
-    items: List[ExtItemSchema]
-
-# ==========================================
-# MÓDULO DE INTEGRAÇÕES (WEBHOOK IFOOD / 99FOOD)
-# ==========================================
-from pydantic import BaseModel
-from typing import List, Optional
-from sqlalchemy import text # Importação da Força Bruta
+from sqlalchemy import text
 
 class ExtItemSchema(BaseModel):
     name: str
@@ -2663,12 +2640,13 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
             db.commit()
             db.refresh(cliente)
 
-        # 2. Cria um Produto "Coringa" via SQL Puro (Passando por cima do Python)
+        # 2. Cria um Produto "Coringa" via SQL Puro 
+        # A Mágica: "ativo" exige número (1), e "participa_fidelidade" exige lógico (false)
         produto_ifood = db.query(ProdutoModel).filter(ProdutoModel.nome == "Item iFood").first()
         if not produto_ifood:
             db.execute(text("""
                 INSERT INTO produtos (nome, descricao, preco_venda, categoria, imagem_url, ativo, participa_fidelidade) 
-                VALUES ('Item iFood', 'Integrador Externo', 0.0, 'Integrações', '', 1, 0)
+                VALUES ('Item iFood', 'Integrador Externo', 0.0, 'Integrações', '', 1, false)
             """))
             db.commit()
             produto_ifood = db.query(ProdutoModel).filter(ProdutoModel.nome == "Item iFood").first()
