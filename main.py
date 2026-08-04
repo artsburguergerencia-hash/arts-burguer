@@ -2629,6 +2629,7 @@ class ExtWebhookSchema(BaseModel):
 # ==========================================
 from pydantic import BaseModel
 from typing import List, Optional
+from sqlalchemy import text # Importação da Força Bruta
 
 class ExtItemSchema(BaseModel):
     name: str
@@ -2656,29 +2657,21 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
             cliente = ClienteModel(
                 nome=f"🔴 iFOOD: {dados.customerName}",
                 telefone=telefone_formatado,
-                endereco=dados.deliveryAddress if dados.deliveryAddress else "",
-                pontos=0,
-                cashback=0.0,
-                bloqueado=0 # Usando 0 em vez de False (Proteção PostgreSQL)
+                endereco=dados.deliveryAddress if dados.deliveryAddress else ""
             )
             db.add(cliente)
             db.commit()
             db.refresh(cliente)
 
-        # 2. Cria um Produto "Coringa" no cardápio para não quebrar os relatórios
+        # 2. Cria um Produto "Coringa" via SQL Puro (Passando por cima do Python)
         produto_ifood = db.query(ProdutoModel).filter(ProdutoModel.nome == "Item iFood").first()
         if not produto_ifood:
-            produto_ifood = ProdutoModel(
-                nome="Item iFood",
-                descricao="Integrador Externo",
-                preco_venda=0.0,
-                categoria="Integrações",
-                ativo=1, # 1 = Ativo (Proteção PostgreSQL)
-                participa_fidelidade=0 # 0 = Não participa (Proteção PostgreSQL)
-            )
-            db.add(produto_ifood)
+            db.execute(text("""
+                INSERT INTO produtos (nome, descricao, preco_venda, categoria, imagem_url, ativo, participa_fidelidade) 
+                VALUES ('Item iFood', 'Integrador Externo', 0.0, 'Integrações', '', 1, 0)
+            """))
             db.commit()
-            db.refresh(produto_ifood)
+            produto_ifood = db.query(ProdutoModel).filter(ProdutoModel.nome == "Item iFood").first()
 
         # 3. Monta o Carrinho Padrão (Colocando o nome real do lanche na observação)
         itens_carrinho = []
@@ -2706,7 +2699,7 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
             cliente_id=cliente.id
         )
 
-        # 5. Ajustes finais da capa do pedido (Senha e Valor do App)
+        # 5. Ajustes finais da capa do pedido
         novo_pedido_real = db.query(PedidoModel).filter(PedidoModel.id == novo_pedido.id).first()
         
         senha_ext = int(dados.displayId) if dados.displayId.isdigit() else gerar_senha_diaria(db)
