@@ -2649,43 +2649,49 @@ class ExtWebhookSchema(BaseModel):
 @app.post("/api/webhook/ifood")
 def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db)):
     try:
-        lista_itens_kds = []
         resumo_str_list = []
         
         for item in dados.items:
-            lista_itens_kds.append({
-                "produto_id": 0, 
-                "nome_produto": item.name,
-                "quantidade": item.quantity,
-                "observacao": item.options
-            })
             resumo_str_list.append(f"{item.quantity}x {item.name}")
             
         resumo_str = " | ".join(resumo_str_list)
-        
         senha_ext = int(dados.displayId) if dados.displayId.isdigit() else 999
         
+        # 1. Salva a "Capa" do pedido primeiro
         novo_pedido = PedidoModel(
             cliente_nome=f"🔴 iFOOD: {dados.customerName}",
             telefone_cliente=dados.customerPhone,
             endereco_entrega=dados.deliveryAddress,
-            forma_pagamento=f"{dados.paymentMethod} (Pago no App)",
+            forma_pagamento=f"{dados.paymentMethod} (App)",
             total_pago=dados.totalPrice,
             itens_resumo=resumo_str,
-            itens=lista_itens_kds, 
             status="RECEBIDO",
             tipo="DELIVERY",
             senha_diaria=senha_ext
-            # A coluna "origem" foi removida para não travar o banco!
         )
         
         db.add(novo_pedido)
-        db.commit()
+        db.flush() # O flush gera o ID do pedido no banco sem fechar a transação
+        
+        # 2. Agora sim, salva os Itens vinculados ao ID do pedido gerado acima
+        for item in dados.items:
+            novo_item = PedidoItemModel(
+                pedido_id=novo_pedido.id,
+                produto_id=0, # 0 porque o produto veio de fora
+                nome_produto=item.name,
+                quantidade=item.quantity,
+                preco=item.price,
+                observacao=item.options
+            )
+            db.add(novo_item)
+            
+        db.commit() # Confirma e salva tudo no banco com segurança
         
         return {"status": "sucesso", "mensagem": "Pedido injetado com sucesso na Cozinha!"}
     except Exception as e:
+        db.rollback() # Em caso de erro, desfaz a transação para não travar o banco
         print(f"Erro no Webhook: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno ao salvar pedido do iFood.")
+        raise HTTPException(status_code=500, detail=str(e))
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
