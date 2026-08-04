@@ -2649,44 +2649,76 @@ class ExtWebhookSchema(BaseModel):
 @app.post("/api/webhook/ifood")
 def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db)):
     try:
-        resumo_str_list = []
-        
-        for item in dados.items:
-            resumo_str_list.append(f"{item.quantity}x {item.name}")
-            
-        resumo_str = " | ".join(resumo_str_list)
-        senha_ext = int(dados.displayId) if dados.displayId.isdigit() else 999
-        
-        # 1. Salva a "Capa" do pedido (COM OS NOMES DAS COLUNAS CORRIGIDOS)
-        novo_pedido = PedidoModel(
-            nome_cliente=f"🔴 iFOOD: {dados.customerName}",  # CORRIGIDO AQUI
-            telefone_cliente=dados.customerPhone,
-            endereco_cliente=dados.deliveryAddress,          # CORRIGIDO AQUI
-            forma_pagamento=f"{dados.paymentMethod} (App)",
-            total=dados.totalPrice,                          # CORRIGIDO AQUI
-            itens_resumo=resumo_str,
-            status="RECEBIDO",
-            tipo="DELIVERY",
-            senha_diaria=senha_ext
-        )
-        
-        db.add(novo_pedido)
-        db.flush() # Gera o ID do pedido no banco de dados
-        
-        # 2. Salva os Itens vinculados ao Pedido
-        for item in dados.items:
-            novo_item = PedidoItemModel(
-                pedido_id=novo_pedido.id,
-                produto_id=0,
-                nome_produto=item.name,
-                quantidade=item.quantity,
-                preco=item.price,
-                observacao=item.options
+        # 1. Trata e cadastra o Cliente do iFood no seu CRM
+        telefone_formatado = dados.customerPhone if dados.customerPhone else "00000000000"
+        cliente = db.query(ClienteModel).filter(ClienteModel.telefone == telefone_formatado).first()
+        if not cliente:
+            cliente = ClienteModel(
+                nome=f"🔴 iFOOD: {dados.customerName}",
+                telefone=telefone_formatado,
+                endereco=dados.deliveryAddress if dados.deliveryAddress else ""
             )
-            db.add(novo_item)
-            
-        db.commit() # Confirma tudo!
+            db.add(cliente)
+            db.commit()
+            db.refresh(cliente)
+
+        # 2. Cria um Produto "Coringa" no cardápio para não quebrar os relatórios
+        produto_ifood = db.query(ProdutoModel).filter(ProdutoModel.nome == "Item iFood").first()
+        if not produto_ifood:
+            produto_ifood = ProdutoModel(
+                nome="Item iFood",
+                descricao="Integrador Externo",
+                preco_venda=0.0,
+                categoria="Integrações"
+            )
+            db.add(produto_ifood)
+            db.commit()
+            db.refresh(produto_ifood)
+
+        # 3. Monta o Carrinho Padrão (Colocando o nome real do lanche na observação da Cozinha)
+        itens_carrinho = []
+        for item in dados.items:
+            obs_final = f"🔥 {item.name}"
+            if item.options:
+                obs_final += f" | ➕ {item.options}"
+                
+            if len(itens_carrinho) == 0 and dados.type.upper() == "DELIVERY" and dados.deliveryAddress:
+                obs_final = f"📍 Endereço: {dados.deliveryAddress} | {obs_final}"
+                
+            itens_carrinho.append({
+                "produto_id": produto_ifood.id,
+                "quantidade": item.quantity,
+                "observacao": obs_final
+            })
+
+        # 4. Registra usando o motor blindado do próprio sistema (O mesmo do PDV)
+        tipo_enum = TipoPedido.DELIVERY if dados.type.upper() == "DELIVERY" else TipoPedido.BALCAO
+
+        novo_pedido = registrar_venda_pdv(
+            db=db,
+            tipo=tipo_enum,
+            itens_carrinho=itens_carrinho,
+            cliente_id=cliente.id
+        )
+
+        # 5. Ajustes finais da capa do pedido (Senha e Valor do App)
+        novo_pedido_real = db.query(PedidoModel).filter(PedidoModel.id == novo_pedido.id).first()
         
+        senha_ext = int(dados.displayId) if dados.displayId.isdigit() else gerar_senha_diaria(db)
+        novo_pedido_real.senha_diaria = senha_ext
+        novo_pedido_real.origem = "iFood"
+        novo_pedido_real.data_pedido = datetime.utcnow().date()
+        novo_pedido_real.forma_pagamento = f"{dados.paymentMethod} (iFood)"
+        
+        # Sobrescrevemos o total para ficar exato com o do aplicativo
+        if hasattr(novo_pedido_real, 'total_pago'):
+            novo_pedido_real.total_pago = dados.totalPrice
+        if hasattr(novo_pedido_real, 'valor_total'):
+            novo_pedido_real.valor_total = dados.totalPrice
+            
+        novo_pedido_real.status = "RECEBIDO"
+        
+        db.commit()
         return {"status": "sucesso", "mensagem": "Pedido injetado com sucesso na Cozinha!"}
     except Exception as e:
         db.rollback() 
