@@ -2563,6 +2563,43 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
     
     db.commit()
     return {"status": "sucesso"}
+
+# ==========================================
+# MÓDULO DE LOGÍSTICA (TAXAS DE ENTREGA)
+# ==========================================
+class TaxaEntregaModel(Base):
+    __tablename__ = "taxas_entrega"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    bairro = Column(String, unique=True, index=True)
+    taxa = Column(Float, default=0.0)
+
+class TaxaEntregaSchema(BaseModel):
+    bairro: str
+    taxa: float
+
+@app.get("/api/gestao/taxas")
+def listar_taxas(db: Session = Depends(get_db)):
+    return db.query(TaxaEntregaModel).all()
+
+@app.post("/api/gestao/taxas")
+def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
+    tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.bairro == dados.bairro).first()
+    if tx:
+        tx.taxa = dados.taxa
+    else:
+        novo = TaxaEntregaModel(bairro=dados.bairro, taxa=dados.taxa)
+        db.add(novo)
+    db.commit()
+    return {"status": "sucesso"}
+
+@app.delete("/api/gestao/taxas/{id}")
+def deletar_taxa(id: int, db: Session = Depends(get_db)):
+    tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.id == id).first()
+    if tx:
+        db.delete(tx)
+        db.commit()
+    return {"status": "sucesso"}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
