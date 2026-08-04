@@ -36,7 +36,11 @@
                 </div>
             </div>
             
-            <div id="area-auth" class="flex items-center space-x-4">
+            <div id="area-auth" class="flex items-center space-x-2">
+                <!-- BOTÃO DE RASTREIO INJETADO AQUI -->
+                <button onclick="abrirModalRastreio()" class="text-sm bg-white/10 hover:bg-white/20 px-3 py-2 rounded-full font-bold transition-colors flex items-center text-brand-400 border border-white/5">
+                    <i class="ph-bold ph-crosshair mr-1 text-lg"></i>
+                </button>
                 <button onclick="abrirModalAuth()" class="text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full font-bold transition-colors flex items-center text-white">
                     <i class="ph-bold ph-user mr-2"></i> Entrar
                 </button>
@@ -149,7 +153,8 @@
                     <input type="text" id="cad-nasc" placeholder="Nasc (DD/MM)" class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
                 </div>
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-2">Endereço de Entrega</h3>
-                <input type="text" id="cad-cep" placeholder="CEP (Auto-busca)" class="w-full px-4 py-3 bg-slate-800 text-brand-400 font-bold border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
+                <!-- INJEÇÃO DA BUSCA DO CEP AQUI -->
+                <input type="text" id="cad-cep" placeholder="CEP (Auto-busca)" onblur="buscarCep(this.value, 'reg')" class="w-full px-4 py-3 bg-slate-800 text-brand-400 font-bold border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
                 <div class="grid grid-cols-3 gap-3">
                     <input type="text" id="cad-rua" placeholder="Rua" class="col-span-2 w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
                     <input type="text" id="cad-num" placeholder="Nº" class="w-full px-4 py-3 bg-slate-800 text-white border border-slate-700 rounded-xl outline-none focus:border-brand-500 text-sm">
@@ -162,18 +167,73 @@
         </div>
     </div>
 
+    <!-- 🚨 MODAL: RASTREIO DE PEDIDOS INJETADO 🚨 -->
+    <div id="modal-rastreio" class="fixed inset-0 bg-slate-900/90 z-[90] hidden items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative text-center">
+            <button onclick="document.getElementById('modal-rastreio').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
+            <div class="w-16 h-16 bg-blue-500/10 border border-blue-500/20 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-crosshair text-4xl"></i></div>
+            <h2 class="text-2xl font-black text-white tracking-tight">Rastrear Pedido</h2>
+            <p class="text-xs text-slate-400 font-medium mb-6">Digite seu WhatsApp ou a Senha do Pedido.</p>
+            
+            <div class="flex space-x-2 mb-6">
+                <input type="text" id="input-rastreio" placeholder="Telefone ou Senha" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl text-center font-black outline-none focus:border-blue-500 tracking-widest">
+                <button onclick="buscarRastreio()" id="btn-rastreio" class="bg-blue-600 text-white px-5 rounded-xl font-black hover:bg-blue-500 transition-colors shadow-sm"><i class="ph-bold ph-magnifying-glass text-lg"></i></button>
+            </div>
+
+            <!-- Placar do Rastreio -->
+            <div id="resultado-rastreio" class="hidden bg-slate-900 border border-slate-700 rounded-2xl p-5 text-left relative overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Comanda</span>
+                    <span class="text-2xl font-black text-white tracking-tighter">#<span id="rastreio-senha">000</span></span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-3 mb-2 overflow-hidden border border-slate-700">
+                    <div id="rastreio-progresso" class="bg-blue-500 h-full rounded-full transition-all duration-1000 w-0"></div>
+                </div>
+                <h3 class="text-center font-black text-blue-400 uppercase tracking-widest text-sm mt-3" id="rastreio-status">BUSCANDO...</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🚨 MODAL: EDITAR PERFIL INJETADO 🚨 -->
+    <div id="modal-editar-perfil" class="fixed inset-0 bg-slate-900/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-[2rem] p-8 shadow-2xl relative">
+            <button onclick="document.getElementById('modal-editar-perfil').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
+            <h2 class="text-xl font-black text-white mb-1"><i class="ph-fill ph-user-circle-gear text-brand-500 mr-2 text-2xl align-middle"></i> Meus Dados</h2>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-700 pb-4">Mantenha seu endereço atualizado</p>
+            
+            <form onsubmit="salvarEdicaoPerfil(event)" class="space-y-3">
+                <input type="text" id="edit-perf-nome" placeholder="Nome Completo" required class="w-full px-4 py-3 bg-slate-900 text-white border border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+                <div class="flex space-x-3 pt-2 border-t border-slate-700">
+                    <input type="text" id="edit-perf-cep" placeholder="CEP" onblur="buscarCep(this.value, 'edit')" class="w-1/3 px-4 py-3 bg-slate-900 text-brand-400 border border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500 text-center">
+                    <input type="text" id="edit-perf-end" placeholder="Rua e Bairro" required class="flex-1 px-4 py-3 bg-slate-900 text-white border border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="edit-perf-num" placeholder="Número" required class="w-full px-4 py-3 bg-slate-900 text-white border border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+                    <input type="text" id="edit-perf-comp" placeholder="Complemento" class="w-full px-4 py-3 bg-slate-900 text-white border border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+                </div>
+                <button type="submit" id="btn-salvar-perfil" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-xl transition-transform active:scale-95 uppercase tracking-widest text-sm mt-4 shadow-lg shadow-brand-500/20">Atualizar Perfil</button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL DO PERFIL VIP (LOGADO) -->
     <div id="modal-perfil" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-end">
         <div class="bg-slate-900 w-full max-w-md mx-auto rounded-t-3xl h-[85vh] flex flex-col relative modal-enter border-t border-slate-800">
             <button onclick="fecharModalPerfil()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="ph-bold ph-x text-xl"></i></button>
             
             <div class="p-6 border-b border-slate-800">
-                <div class="flex items-center mb-6">
-                    <img id="vip-foto" src="" class="w-16 h-16 rounded-full border-2 border-brand-500 mr-4 shadow-lg shadow-brand-500/20">
-                    <div>
-                        <h2 id="vip-nome" class="text-xl font-black text-white tracking-tight">Nome</h2>
-                        <p id="vip-tel" class="text-sm text-slate-400">Telefone</p>
+                <!-- 🚨 INJEÇÃO DO BOTÃO DE EDITAR PERFIL AQUI 🚨 -->
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <img id="vip-foto" src="" class="w-16 h-16 rounded-full border-2 border-brand-500 mr-4 shadow-lg shadow-brand-500/20">
+                        <div>
+                            <h2 id="vip-nome" class="text-xl font-black text-white tracking-tight">Nome</h2>
+                            <p id="vip-tel" class="text-sm text-slate-400">Telefone</p>
+                        </div>
                     </div>
+                    <button onclick="carregarModalPerfil()" class="bg-slate-800 hover:bg-slate-700 text-brand-400 p-3 rounded-xl border border-slate-700 transition-colors shadow-inner" title="Editar Meus Dados">
+                        <i class="ph-bold ph-pencil-simple text-xl"></i>
+                    </button>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
@@ -321,7 +381,7 @@
         }
 
         // ==========================
-        // CARREGAR SETUP DO GESTÃO
+        // CARREGAR SETUP DO GESTÃO E CEP
         // ==========================
         async function carregarConfiguracoes() {
             try {
@@ -370,31 +430,82 @@
             }
         }
 
-        // ==========================
-        // VIACEP E CEP
-        // ==========================
-        document.getElementById('cad-cep').addEventListener('blur', async (e) => {
-            let cep = e.target.value.replace(/\D/g, ''); 
-            if (cep.length === 8) {
+        // 🚨 INJEÇÃO DO BUSCADOR INTELIGENTE DE CEP 🚨
+        async function buscarCep(cep, modo='reg') {
+            const c = cep.replace(/\D/g, '');
+            if(c.length === 8) {
+                if(modo === 'reg') document.getElementById('cad-rua').value = "Buscando...";
+                else document.getElementById('edit-perf-end').value = "Buscando...";
+                
                 try {
-                    document.getElementById('cad-rua').value = "Buscando...";
-                    let res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                    let data = await res.json();
-                    if (!data.erro) {
-                        document.getElementById('cad-rua').value = data.logradouro;
-                        document.getElementById('cad-bairro').value = data.bairro;
-                        document.getElementById('cad-num').focus(); 
+                    const res = await fetch(`https://viacep.com.br/ws/${c}/json/`);
+                    const data = await res.json();
+                    if(!data.erro) {
+                        const endStr = `${data.logradouro}, Bairro: ${data.bairro}, ${data.localidade} - ${data.uf}`;
+                        if(modo === 'reg') {
+                            document.getElementById('cad-rua').value = data.logradouro;
+                            document.getElementById('cad-bairro').value = data.bairro;
+                            document.getElementById('cad-num').focus(); 
+                        }
+                        else { document.getElementById('edit-perf-end').value = endStr; }
                     } else {
-                        document.getElementById('cad-rua').value = "";
+                        if(modo === 'reg') document.getElementById('cad-rua').value = "";
+                        else document.getElementById('edit-perf-end').value = "";
                         alert("CEP não encontrado.");
                     }
-                } catch (err) { document.getElementById('cad-rua').value = ""; }
+                } catch(e) { 
+                    if(modo === 'reg') document.getElementById('cad-rua').value = ""; 
+                    else document.getElementById('edit-perf-end').value = "";
+                }
             }
-        });
+        }
 
-        // ==========================
-        // AUTH E PERFIL VIP
-        // ==========================
+        // ==========================================
+        // 🚨 MÓDULO RASTREIO DE PEDIDOS INJETADO 🚨
+        // ==========================================
+        function abrirModalRastreio() { 
+            document.getElementById('resultado-rastreio').classList.add('hidden');
+            document.getElementById('input-rastreio').value = '';
+            document.getElementById('modal-rastreio').classList.remove('hidden'); 
+            document.getElementById('modal-rastreio').classList.add('flex'); 
+        }
+
+        async function buscarRastreio() {
+            const busca = document.getElementById('input-rastreio').value.trim();
+            if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
+            
+            const btn = document.getElementById('btn-rastreio');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch(`/api/rastreio/${busca}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    document.getElementById('rastreio-senha').innerText = data.senha;
+                    document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
+                    
+                    const bar = document.getElementById('rastreio-progresso');
+                    bar.style.width = data.progresso + '%';
+                    
+                    if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
+                    else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
+                    else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
+                    
+                    document.getElementById('resultado-rastreio').classList.remove('hidden');
+                } else {
+                    alert("Ops! Nenhum pedido ativo encontrado com esse número hoje.");
+                    document.getElementById('resultado-rastreio').classList.add('hidden');
+                }
+            } catch(e) { alert("Erro de conexão."); }
+            
+            btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>';
+            btn.disabled = false;
+        }
+
+        // ==========================================
+        // AUTH E PERFIL VIP (COM EDIÇÃO)
+        // ==========================================
         function verificarSessao() {
             const dados = localStorage.getItem('arts_cliente');
             const areaGuest = document.getElementById('area-guest');
@@ -403,12 +514,17 @@
             if (dados) {
                 clienteLogado = JSON.parse(dados);
                 document.getElementById('area-auth').innerHTML = `
-                    <div class="flex items-center cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 py-1.5 px-2 rounded-full transition-colors" onclick="abrirModalPerfil()">
-                        <div class="text-right mr-3 hidden sm:block pl-2">
-                            <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">Cliente VIP</p>
-                            <p class="text-xs font-black leading-none text-white">${clienteLogado.nome.split(' ')[0]}</p>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="abrirModalRastreio()" class="text-sm bg-white/10 hover:bg-white/20 px-3 py-2 rounded-full font-bold transition-colors flex items-center text-brand-400 border border-white/5">
+                            <i class="ph-bold ph-crosshair mr-1 text-lg"></i>
+                        </button>
+                        <div class="flex items-center cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 py-1.5 px-2 rounded-full transition-colors" onclick="abrirModalPerfil()">
+                            <div class="text-right mr-3 hidden sm:block pl-2">
+                                <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">Cliente VIP</p>
+                                <p class="text-xs font-black leading-none text-white">${clienteLogado.nome.split(' ')[0]}</p>
+                            </div>
+                            <img src="https://ui-avatars.com/api/?name=${clienteLogado.nome}&background=ff4757&color=fff" class="w-8 h-8 rounded-full border border-slate-600">
                         </div>
-                        <img src="https://ui-avatars.com/api/?name=${clienteLogado.nome}&background=ff4757&color=fff" class="w-8 h-8 rounded-full border border-slate-600">
                     </div>
                 `;
                 document.getElementById('barra-fidelidade').classList.remove('hidden');
@@ -475,6 +591,55 @@
                 }).join('');
             } catch(e) { listaHistorico.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Erro ao carregar histórico.</p>'; }
         }
+
+        // 🚨 INJEÇÃO: CARREGAR E SALVAR A EDIÇÃO DO PERFIL 🚨
+        async function carregarModalPerfil() {
+            if(!clienteLogado) return;
+            try {
+                const res = await fetch(`/api/cliente/${clienteLogado.id}/perfil`);
+                if(res.ok) {
+                    const d = await res.json();
+                    document.getElementById('edit-perf-nome').value = d.nome || "";
+                    document.getElementById('edit-perf-cep').value = d.cep || "";
+                    document.getElementById('edit-perf-end').value = d.endereco || "";
+                    document.getElementById('edit-perf-num').value = d.numero || "";
+                    document.getElementById('edit-perf-comp').value = d.complemento || "";
+                    
+                    document.getElementById('modal-perfil').classList.replace('flex', 'hidden'); // Esconde o painel normal
+                    document.getElementById('modal-editar-perfil').classList.remove('hidden');
+                    document.getElementById('modal-editar-perfil').classList.add('flex');
+                }
+            } catch(e) { alert("Erro ao puxar seus dados."); }
+        }
+
+        async function salvarEdicaoPerfil(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-salvar-perfil');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>';
+            
+            const payload = {
+                nome: document.getElementById('edit-perf-nome').value,
+                cep: document.getElementById('edit-perf-cep').value,
+                endereco: document.getElementById('edit-perf-end').value,
+                numero: document.getElementById('edit-perf-num').value,
+                complemento: document.getElementById('edit-perf-comp').value
+            };
+            
+            try {
+                const res = await fetch(`/api/cliente/${clienteLogado.id}/perfil`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                if(res.ok) {
+                    alert("Seu endereço e dados foram atualizados com sucesso!");
+                    clienteLogado.nome = payload.nome;
+                    clienteLogado.endereco_completo = `${payload.endereco}, ${payload.numero} (${payload.complemento})`;
+                    localStorage.setItem('arts_cliente', JSON.stringify(clienteLogado));
+                    
+                    document.getElementById('modal-editar-perfil').classList.replace('flex', 'hidden');
+                    verificarSessao(); // Atualiza o header lá fora
+                }
+            } catch(e) { alert("Erro de conexão com o banco."); }
+            btn.innerHTML = "Atualizar Perfil";
+        }
+
 
         function fecharModalPerfil() { document.getElementById('modal-perfil').classList.add('hidden'); document.getElementById('modal-perfil').classList.remove('flex'); }
         function fazerLogout() { localStorage.removeItem('arts_cliente'); window.location.reload(); }
@@ -674,7 +839,7 @@
         // SISTEMA DE CUPONS E CARRINHO
         // ==========================
         async function aplicarCupom() {
-            const codigo = document.getElementById('input-cupom').value.trim();
+            const codigo = document.getElementById('input-cupom').value.trim().toUpperCase();
             const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
             const statusDiv = document.getElementById('status-cupom');
 
@@ -750,23 +915,45 @@
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.add('hidden'); document.getElementById('modal-carrinho').classList.remove('flex'); }
 
         // ==========================
-        // FINALIZAR PEDIDO (MERCADO PAGO)
+        // FINALIZAR PEDIDO (MERCADO PAGO) E CHECKOUT
         // ==========================
-        async function finalizarPedidoOnline() {
-            let nome, tel, end, cliente_id, cpf;
+        function iniciarFluxoPagamento() {
+            if(carrinho.length === 0) return;
+            document.getElementById('modal-carrinho').classList.replace('flex', 'hidden');
+            
+            // Se logado, preenche endereço. Se não, deixa em branco (cliente avulso precisa pôr endereço se for delivery)
+            if(clienteLogado) {
+                document.getElementById('ped-endereco').value = clienteLogado.endereco_completo || "";
+            }
+            document.getElementById('modal-pagamento').classList.replace('hidden', 'flex');
+        }
 
+        function toggleEndereco(mostrar) {
+            if(mostrar) document.getElementById('box-endereco').classList.remove('hidden');
+            else document.getElementById('box-endereco').classList.add('hidden');
+        }
+
+        async function enviarPedidoNuvem(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-enviar-pedido');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i>';
+            btn.disabled = true;
+
+            let nome, tel, end, cliente_id, cpf;
+            const isDelivery = document.querySelector('input[name="tipo_entrega"]:checked').value === 'entrega';
+            
             if (clienteLogado) {
                 nome = clienteLogado.nome; tel = clienteLogado.telefone;
-                end = clienteLogado.endereco_completo || "Retirada/Não informado";
+                end = isDelivery ? (document.getElementById('ped-endereco').value || clienteLogado.endereco_completo) : "Retirada Balcão";
                 cliente_id = clienteLogado.id; 
                 cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
             } else {
                 nome = document.getElementById('guest-nome').value.trim();
                 tel = document.getElementById('guest-tel').value.trim();
-                end = document.getElementById('guest-end').value.trim();
+                end = isDelivery ? document.getElementById('guest-end').value.trim() : "Retirada Balcão";
                 cpf = document.getElementById('guest-cpf').value.replace(/\D/g, ''); 
                 cliente_id = null;
-                if (!nome || !tel || !end) { alert("⚠️ Preencha Nome, WhatsApp e Endereço de entrega."); return; }
+                if (!nome || !tel || (isDelivery && !end)) { alert("⚠️ Preencha Nome, WhatsApp e Endereço."); btn.innerHTML="Concluir e Pedir"; btn.disabled=false; return; }
             }
 
             const tipoPgto = document.getElementById('forma-pag-online').value;
@@ -774,18 +961,22 @@
                 alert("⚠️ O CPF é obrigatório para gerar a cobrança online segura.");
                 if(clienteLogado) document.getElementById('logado-cpf').focus();
                 else document.getElementById('guest-cpf').focus();
+                btn.innerHTML="Concluir e Pedir"; btn.disabled=false;
                 return;
+            }
+
+            // Prepara itens e insere aviso do cupom
+            let itensFinais = carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao }));
+            if(cupomAplicado) {
+                itensFinais[0].observacao += ` | 🎫 Cupom Usado: ${cupomAplicado} (-R$ ${valorDescontoCupom.toFixed(2)})`;
             }
 
             const payload = {
                 cliente_id: cliente_id, nome_cliente: nome, telefone_cliente: tel, endereco_cliente: end, cpf: cpf,
-                itens: carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao }))
+                itens: itensFinais
             };
 
-            const btn = document.getElementById('btn-finalizar-online');
             const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl mr-2"></i> Processando...';
-            btn.disabled = true;
 
             // TOKENIZAÇÃO DO CARTÃO - MERCADO PAGO 
             if (tipoPgto === 'credito') {
