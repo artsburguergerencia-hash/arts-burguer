@@ -1551,7 +1551,8 @@ def listar_pedidos_logistica(db: Session = Depends(get_db)):
             "id": p.id,  
             "senha_diaria": getattr(p, 'senha_diaria', p.id),
             "origem": getattr(p, 'origem', 'SITE'),
-            "cliente": p.cliente.nome if p.cliente else "Cliente",  
+            "cliente": p.cliente.nome if p.cliente else "Cliente", 
+            "telefone": p.telefone_cliente, # <--- ESSA É A LINHA MÁGICA QUE FALTAVA
             "status": status_atual,  
             "endereco": endereco_completo,
             "tipo": tipo_atual
