@@ -2699,7 +2699,56 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
         db.rollback() 
         print(f"Erro no Webhook: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-    
+from fastapi.responses import JSONResponse, Response
+
+# ==========================================
+# MOTOR PWA (APLICATIVO INSTALÁVEL)
+# ==========================================
+
+@app.get("/manifest.json")
+def get_manifest():
+    manifest = {
+        "name": "Art's Burguer",
+        "short_name": "Art's Burguer",
+        "description": "O melhor burger da cidade no seu celular!",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#0f172a",
+        "theme_color": "#ff4757",
+        "icons": [
+            {
+                "src": "https://ui-avatars.com/api/?name=A+B&background=ff4757&color=fff&size=192",
+                "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": "https://ui-avatars.com/api/?name=A+B&background=ff4757&color=fff&size=512",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }
+    return JSONResponse(content=manifest)
+
+@app.get("/sw.js")
+def get_service_worker():
+    sw_content = """
+    const CACHE_NAME = "arts-burguer-v1";
+    self.addEventListener("install", (event) => {
+        console.log("[PWA] Service Worker Instalado.");
+        self.skipWaiting();
+    });
+    self.addEventListener("fetch", (event) => {
+        // Motor simples que permite o app funcionar rápido
+        event.respondWith(
+            fetch(event.request).catch(() => {
+                return new Response("Você está offline. Conecte-se à internet para fazer seu pedido.");
+            })
+        );
+    });
+    """
+    return Response(content=sw_content, media_type="application/javascript")
+
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
