@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cardápio Digital | Art's Burguer</title>
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=A+B&background=ff4757&color=fff&size=192">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -37,6 +41,10 @@
             </div>
             
             <div id="area-auth" class="flex items-center space-x-2">
+                <!-- BOTÃO DE INSTALAR (Escondido por padrão) -->
+                <button id="btn-instalar-app" onclick="instalarApp()" class="hidden text-sm bg-brand-500 hover:bg-brand-600 px-4 py-2 rounded-full font-black transition-all flex items-center text-white shadow-lg shadow-brand-500/40 animate-pulse">
+                    <i class="ph-bold ph-download-simple mr-2 text-lg"></i> Instalar
+                </button>
                 <button onclick="abrirModalRastreio()" class="text-sm bg-white/10 hover:bg-white/20 px-3 py-2 rounded-full font-bold transition-colors flex items-center text-brand-400 border border-white/5">
                     <i class="ph-bold ph-crosshair mr-1 text-lg"></i>
                 </button>
