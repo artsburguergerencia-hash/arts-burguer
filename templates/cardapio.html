@@ -381,6 +381,40 @@
         });
 
         // ==========================
+        // MOTOR DO APP (PWA)
+        // ==========================
+        let eventoInstalacao;
+
+        // Registra o Motor Invisível
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    console.log('App Registrado com Sucesso!', reg.scope);
+                }).catch(err => console.log('Erro no App', err));
+            });
+        }
+
+        // O celular avisa que o App está pronto para instalar
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            eventoInstalacao = e;
+            // Mostra o botão vermelho lindo pro cliente
+            document.getElementById('btn-instalar-app').classList.remove('hidden');
+        });
+
+        function instalarApp() {
+            if (eventoInstalacao) {
+                eventoInstalacao.prompt();
+                eventoInstalacao.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        console.log('Cliente instalou o Art\'s Burguer!');
+                        document.getElementById('btn-instalar-app').classList.add('hidden');
+                    }
+                });
+            }
+        }
+        
+        // ==========================
         // SISTEMA LOGÍSTICA (FRETE E BAIRRO)
         // ==========================
         async function carregarTaxasEntrega() {
