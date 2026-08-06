@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar do Entregador | Art's Burguer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .radar-pulse {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            animation: pulse-blue 2s infinite;
+        }
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 30px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white flex flex-col items-center justify-center h-screen p-6">
+
+    <div class="bg-slate-800 p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-slate-700">
+        <i class="ph-fill ph-navigation-arrow text-6xl text-blue-500 mb-4 inline-block"></i>
+        <h1 class="text-2xl font-black mb-2 tracking-tight">Transmissão GPS</h1>
+        <p class="text-slate-400 text-sm mb-8 font-medium">Insira a Senha do Pedido para compartilhar sua localização ao vivo com o cliente.</p>
+
+        <div id="painel-setup">
+            <input type="number" id="pedido-id" placeholder="Ex: 42" class="w-full bg-slate-900 border border-slate-700 text-white text-center font-black text-3xl py-4 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
+            
+            <button onclick="iniciarTransmissao()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl text-lg uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-blue-500/30">
+                🚀 Iniciar Rota
+            </button>
+        </div>
+
+        <div id="painel-ativo" class="hidden flex-col items-center">
+            <div class="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center radar-pulse mb-6 mt-4">
+                <i class="ph-bold ph-broadcast text-4xl text-white"></i>
+            </div>
+            <h2 class="text-xl font-black text-blue-400 mb-1">Transmitindo...</h2>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6" id="status-txt">Deixe a tela ligada!</p>
+            
+            <button onclick="pararTransmissao()" class="w-full bg-red-500/20 text-red-500 border border-red-500/30 font-black py-4 rounded-xl uppercase tracking-widest transition-all hover:bg-red-500 hover:text-white">
+                🛑 Finalizar Entrega
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let watchId = null;
+        let wakeLock = null;
+
+        // O Feitiço para a tela não apagar!
+        async function ativarWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Tela blindada! Não vai apagar.');
+                }
+            } catch (err) {
+                console.error(`Erro WakeLock: ${err.name}, ${err.message}`);
+            }
+        }
+
+        async function iniciarTransmissao() {
+            const pedidoId = document.getElementById('pedido-id').value;
+            if (!pedidoId) return alert("Digite o número do pedido!");
+
+            document.getElementById('painel-setup').classList.add('hidden');
+            document.getElementById('painel-ativo').classList.remove('hidden');
+            document.getElementById('painel-ativo').classList.add('flex');
+
+            await ativarWakeLock();
+
+            // Pede permissão e começa a ler o GPS do celular
+            if (navigator.geolocation) {
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => enviarParaServidor(pedidoId, position.coords.latitude, position.coords.longitude),
+                    (error) => alert("Erro no GPS. Verifique a permissão!"),
+                    { enableHighAccuracy: true, maximumAge: 0 }
+                );
+            } else {
+                alert("Seu navegador não suporta GPS.");
+            }
+        }
+
+        async function enviarParaServidor(pedido, lat, lng) {
+            try {
+                await fetch('/api/logistica/gps', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pedido_id: parseInt(pedido), lat: lat, lng: lng })
+                });
+                document.getElementById('status-txt').innerText = `Sinal Enviado: ${new Date().toLocaleTimeString()}`;
+            } catch (e) {
+                console.log("Erro ao enviar coordenadas.");
+            }
+        }
+
+        function pararTransmissao() {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            if (wakeLock) wakeLock.release();
+            
+            document.getElementById('painel-ativo').classList.add('hidden');
+            document.getElementById('painel-ativo').classList.remove('flex');
+            document.getElementById('painel-setup').classList.remove('hidden');
+            document.getElementById('pedido-id').value = '';
+        }
+    </script>
+</body>
+</html>
