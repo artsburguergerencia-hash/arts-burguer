@@ -1690,6 +1690,48 @@ def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, db: Session = 
         
     return {"mensagem": "Status atualizado"}
 
+        # ==========================================
+# MÓDULO DE RASTREIO GPS AO VIVO (ESTILO UBER)
+# ==========================================
+# Dicionário em memória: Rápido, não trava o servidor e zera o custo de banco de dados!
+rastreio_ao_vivo = {}
+
+class CoordenadasGPS(BaseModel):
+    pedido_id: int
+    lat: float
+    lng: float
+
+@app.post("/api/logistica/gps")
+def atualizar_gps_motoboy(dados: CoordenadasGPS):
+    # O celular do motoboy "grita" as coordenadas a cada 5 segundos
+    rastreio_ao_vivo[dados.pedido_id] = {
+        "lat": dados.lat, 
+        "lng": dados.lng, 
+        "atualizado_em": datetime.now().isoformat()
+    }
+    return {"status": "ok"}
+
+@app.get("/api/logistica/gps/{pedido_id}")
+def obter_gps_motoboy(pedido_id: int):
+    # O mapa do cliente pergunta onde o motoboy está
+    if pedido_id in rastreio_ao_vivo:
+        return {"status": "online", "posicao": rastreio_ao_vivo[pedido_id]}
+    return {"status": "offline"}
+
+# ------------------------------------------
+# ROTAS VISUAIS DO RASTREIO
+# ------------------------------------------
+@app.get("/motoboy", response_class=HTMLResponse)
+def abrir_tela_motoboy(): 
+    if Path("templates/motoboy.html").exists():
+        return Path("templates/motoboy.html").read_text(encoding="utf-8")
+    return "Erro: Arquivo motoboy.html não encontrado."
+
+@app.get("/mapa", response_class=HTMLResponse)
+def abrir_mapa_cliente(): 
+    if Path("templates/mapa.html").exists():
+        return Path("templates/mapa.html").read_text(encoding="utf-8")
+    return "Erro: Arquivo mapa.html não encontrado."
 
 # ==========================================
 # ROTAS DE CONFIGURAÇÃO DA LOJA (SETUP CENTRAL)
