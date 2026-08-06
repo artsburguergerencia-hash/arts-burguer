@@ -98,7 +98,7 @@
 
     </main>
 
-    <!-- SCRIPT DE EXPEDIÇÃO COM ROBÔ DO WHATSAPP -->
+    <!-- SCRIPT DE EXPEDIÇÃO (MÁGICA INVISÍVEL NO BACKEND) -->
     <script>
         setInterval(buscarPedidosLogistica, 5000);
         document.addEventListener('DOMContentLoaded', buscarPedidosLogistica);
@@ -133,8 +133,6 @@
             container.innerHTML = pedidos.map(p => {
                 const isRetirada = p.tipo === 'RETIRADA';
                 const endLimpo = p.endereco.replace(/'/g, "\\'");
-                const cliLimpo = p.cliente.replace(/'/g, "\\'");
-                const tel = p.telefone || '';
 
                 return `
                     <div class="card-enter bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
@@ -157,21 +155,21 @@
                         
                         <div class="pl-2">
                             ${isRetirada ? `
-                                <button onclick="concluirRetirada(${p.id}, '${tel}', '${cliLimpo}', ${p.senha_diaria || p.id})" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-xs uppercase tracking-widest shadow-md">
+                                <button onclick="concluirRetirada(${p.id})" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-xs uppercase tracking-widest shadow-md">
                                     <i class="ph-fill ph-check-circle mr-2 text-lg"></i> Cliente Retirou
                                 </button>
                             ` : `
                                 <div class="space-y-2">
                                     <div class="flex space-x-2">
-                                        <button onclick="copilotoDespacho(${p.id}, 'Uber', '${endLimpo}', '${tel}', '${cliLimpo}', ${p.senha_diaria || p.id})" id="btn-uber-${p.id}" class="flex-1 bg-black hover:bg-slate-800 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
+                                        <button onclick="copilotoDespacho(${p.id}, 'Uber', '${endLimpo}')" id="btn-uber-${p.id}" class="flex-1 bg-black hover:bg-slate-800 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
                                             <i class="ph-fill ph-car-profile mr-1 text-base"></i> Uber
                                         </button>
                                         
-                                        <button onclick="copilotoDespacho(${p.id}, '99', '${endLimpo}', '${tel}', '${cliLimpo}', ${p.senha_diaria || p.id})" id="btn-99-${p.id}" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
+                                        <button onclick="copilotoDespacho(${p.id}, '99', '${endLimpo}')" id="btn-99-${p.id}" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
                                             <i class="ph-fill ph-car-profile mr-1 text-base"></i> 99
                                         </button>
                                     </div>
-                                    <button onclick="despacharMotoboyProprio(${p.id}, '${tel}', '${cliLimpo}', ${p.senha_diaria || p.id})" id="btn-proprio-${p.id}" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
+                                    <button onclick="despacharMotoboyProprio(${p.id})" id="btn-proprio-${p.id}" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
                                         <i class="ph-fill ph-moped mr-2 text-lg"></i> Motoboy da Casa
                                     </button>
                                 </div>
@@ -195,8 +193,6 @@
 
             container.innerHTML = pedidos.map(p => {
                 const endLimpo = p.endereco.replace(/'/g, "\\'");
-                const cliLimpo = p.cliente.replace(/'/g, "\\'");
-                const tel = p.telefone || '';
                 return `
                 <div class="card-enter bg-slate-900 text-white border border-slate-800 p-5 rounded-2xl shadow-lg relative overflow-hidden">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
@@ -221,30 +217,13 @@
                             <i class="ph-fill ph-navigation-arrow text-blue-400 text-lg"></i>
                         </button>
                         
-                        <button onclick="marcarComoEntregue(${p.id}, '${tel}', '${cliLimpo}', ${p.senha_diaria || p.id})" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-xs uppercase tracking-widest shadow-md border border-blue-500">
+                        <button onclick="marcarComoEntregue(${p.id})" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-xs uppercase tracking-widest shadow-md border border-blue-500">
                             <i class="ph-bold ph-check-circle mr-2 text-lg"></i> Entregue
                         </button>
                     </div>
                 </div>
             `;
             }).join('');
-        }
-
-        // ==========================
-        // O ROBÔ DO WHATSAPP
-        // ==========================
-        function dispararWhatsApp(telefone, mensagem) {
-            if (!telefone || telefone === '00000000000' || telefone.toUpperCase().includes('BALCAO')) return;
-            
-            let telLimpo = telefone.replace(/\D/g, ''); 
-            if (telLimpo.length < 10) return; 
-            
-            if (telLimpo.length === 10 || telLimpo.length === 11) {
-                telLimpo = '55' + telLimpo; 
-            }
-            
-            const url = `https://api.whatsapp.com/send?phone=${telLimpo}&text=${encodeURIComponent(mensagem)}`;
-            window.open(url, '_blank'); 
         }
 
         // ==========================
@@ -258,9 +237,9 @@
         }
 
         // ==========================
-        // DEEP LINKS DO UBER / 99 E WHATSAPP
+        // DEEP LINKS DO UBER / 99
         // ==========================
-        async function copilotoDespacho(pedidoId, plataforma, enderecoFormatado, telefone, cliente, senha) {
+        async function copilotoDespacho(pedidoId, plataforma, enderecoFormatado) {
             const isUber = plataforma === 'Uber';
             const enderecoLimpo = enderecoFormatado.replace('Endereço: ', '').trim();
             
@@ -277,7 +256,7 @@
             }
 
             setTimeout(async () => {
-                const confirmacao = confirm(`Já pediu a corrida no app da ${plataforma} para este cliente?\nSe sim, clique em OK para mover para 'Em Rota'.`);
+                const confirmacao = confirm(`Já pediu a corrida no app da ${plataforma} para este cliente?\nSe sim, clique em OK para mover para 'Em Rota'. O sistema avisará o cliente!`);
                 if(!confirmacao) return;
 
                 const btn = document.getElementById(isUber ? `btn-uber-${pedidoId}` : `btn-99-${pedidoId}`);
@@ -290,16 +269,13 @@
                         body: JSON.stringify({ nome_motoboy: `App Pessoal (${plataforma})` })
                     });
 
-                    if(res.ok) { 
-                        buscarPedidosLogistica(); 
-                        dispararWhatsApp(telefone, `🍔 Olá, ${cliente}! O seu pedido #${senha} acabou de sair para entrega via ${plataforma}! 🛵💨\n\nFique de olho, já está a caminho!`);
-                    } 
+                    if(res.ok) { buscarPedidosLogistica(); } 
                     else { alert("Erro ao registrar despacho."); }
                 } catch(e) { alert("Falha de conexão."); }
             }, 4000);
         }
 
-        async function despacharMotoboyProprio(pedidoId, telefone, cliente, senha) {
+        async function despacharMotoboyProprio(pedidoId) {
             const nomeMotoboy = prompt("Nome do Motoboy da Casa:", "Motoboy Próprio");
             if (nomeMotoboy === null) return;
 
@@ -312,7 +288,6 @@
 
                 if(res.ok) {
                     buscarPedidosLogistica();
-                    dispararWhatsApp(telefone, `🍔 Olá, ${cliente}! O seu pedido #${senha} acabou de sair para entrega com nosso motoboy! 🛵💨\n\nPrepare a fome!`);
                 } else {
                     alert("Erro ao despachar com motoboy próprio.");
                 }
@@ -321,28 +296,26 @@
             }
         }
 
-        async function concluirRetirada(pedidoId, telefone, cliente, senha) {
-            if(!confirm("Confirmar que o cliente retirou o pedido no balcão?")) return;
+        async function concluirRetirada(pedidoId) {
+            if(!confirm("Confirmar que o cliente retirou o pedido no balcão? O cliente será notificado!")) return;
 
             try {
                 const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' });
                 if(res.ok) {
                     buscarPedidosLogistica();
-                    dispararWhatsApp(telefone, `🍔 Olá, ${cliente}! Agradecemos por retirar o seu pedido #${senha} conosco! 🥰\n\nEsperamos que você tenha uma experiência deliciosa!`);
                 } else {
                     alert("Erro ao concluir retirada.");
                 }
             } catch(e) { alert("Falha de conexão."); }
         }
 
-        async function marcarComoEntregue(pedidoId, telefone, cliente, senha) {
+        async function marcarComoEntregue(pedidoId) {
             if(!confirm("Confirmar que este pedido foi entregue ao cliente?")) return;
 
             try {
                 const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' });
                 if(res.ok) {
                     buscarPedidosLogistica();
-                    dispararWhatsApp(telefone, `🍔 Olá, ${cliente}! O seu pedido #${senha} consta como entregue! Obrigado por pedir no Art's Burguer! 🚀`);
                 } else {
                     alert("Erro ao atualizar status para entregue.");
                 }
