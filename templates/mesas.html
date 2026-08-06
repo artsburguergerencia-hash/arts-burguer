@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Salão | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        .mesa-livre { background-color: #10b981; border-color: #059669; color: white; }
+        .mesa-ocupada { background-color: #ef4444; border-color: #b91c1c; color: white; animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen text-slate-100 overflow-hidden">
+
+    <!-- HEADER -->
+    <header class="bg-slate-900 border-b border-slate-800 h-24 flex items-center justify-between px-8 shadow-2xl shrink-0 z-10 relative">
+        <div class="flex items-center">
+            <div class="w-14 h-14 bg-indigo-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-indigo-500/30">
+                <i class="ph-bold ph-armchair text-3xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black tracking-tight text-white">Mapa do Salão</h1>
+                <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mt-0.5">Gestão Visual de Mesas</p>
+            </div>
+        </div>
+        <div class="flex space-x-4">
+            <button onclick="carregarMesas()" class="bg-slate-800 hover:bg-slate-700 text-white p-3.5 rounded-xl transition-colors shadow-sm">
+                <i class="ph-bold ph-arrows-clockwise text-xl"></i>
+            </button>
+            <a href="/gestao" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 p-3.5 rounded-xl transition-colors border border-red-500/20 flex items-center">
+                <i class="ph-bold ph-sign-out text-xl"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- GRID DE MESAS -->
+    <main class="flex-1 overflow-y-auto p-8">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6" id="grid-mesas">
+            <!-- As mesas serão injetadas aqui via JavaScript -->
+        </div>
+    </main>
+
+    <script>
+        const TOTAL_MESAS = 12; // Você pode aumentar esse número a qualquer momento
+
+        document.addEventListener('DOMContentLoaded', carregarMesas);
+        setInterval(carregarMesas, 5000); // Atualiza o radar a cada 5 segundos
+
+        async function carregarMesas() {
+            try {
+                const response = await fetch('/api/gestao/mesas');
+                const mesasOcupadas = await response.json();
+                
+                const grid = document.getElementById('grid-mesas');
+                grid.innerHTML = '';
+
+                for (let i = 1; i <= TOTAL_MESAS; i++) {
+                    const numeroStr = i.toString().padStart(2, '0'); // Ex: 01, 02, 10
+                    
+                    // Verifica se o radar detectou essa mesa como ocupada
+                    const mesaOcupada = mesasOcupadas.find(m => m.numero_mesa === numeroStr);
+                    
+                    const btnHtml = mesaOcupada 
+                        ? renderizarMesaOcupada(numeroStr, mesaOcupada) 
+                        : renderizarMesaLivre(numeroStr);
+                        
+                    grid.innerHTML += btnHtml;
+                }
+            } catch (error) {
+                console.error("Erro ao rastrear mesas:", error);
+            }
+        }
+
+        function renderizarMesaLivre(numero) {
+            return `
+                <button onclick="abrirPDV('${numero}')" class="mesa-livre flex flex-col items-center justify-center p-6 rounded-3xl border-b-4 hover:-translate-y-1 hover:brightness-110 transition-all shadow-xl">
+                    <i class="ph-fill ph-armchair text-5xl mb-2 opacity-90"></i>
+                    <h2 class="text-3xl font-black mb-1">${numero}</h2>
+                    <span class="text-xs font-bold uppercase tracking-widest bg-black/20 px-3 py-1 rounded-full">Livre</span>
+                </button>
+            `;
+        }
+
+        function renderizarMesaOcupada(numero, dados) {
+            return `
+                <button onclick="alert('MESA ${numero} OCUPADA\\nStatus: ${dados.status}\\nTotal Parcial: R$ ${dados.total.toFixed(2)}')" class="mesa-ocupada flex flex-col items-center justify-center p-6 rounded-3xl border-b-4 hover:-translate-y-1 transition-all shadow-xl">
+                    <i class="ph-fill ph-users text-5xl mb-2 opacity-90"></i>
+                    <h2 class="text-3xl font-black mb-1">${numero}</h2>
+                    <span class="text-[10px] font-bold uppercase tracking-widest bg-black/20 px-3 py-1 rounded-full mb-1">${dados.status.replace(/_/g, ' ')}</span>
+                    <span class="text-xs font-black bg-white/20 px-3 py-1 rounded-full">R$ ${dados.total.toFixed(2)}</span>
+                </button>
+            `;
+        }
+
+        // Função "Hacker": Abre o PDV e já injeta o nome "MESA XX" automaticamente no cliente
+        function abrirPDV(numero) {
+            alert(`Você será redirecionado para o PDV para abrir a Mesa ${numero}.\\nLance os itens e, em "Nome do Cliente", digite: MESA ${numero}`);
+            window.location.href = '/pdv';
+        }
+    </script>
+</body>
+</html>
