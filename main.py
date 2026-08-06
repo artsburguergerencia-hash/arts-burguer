@@ -281,7 +281,36 @@ def gerar_senha_diaria(db: Session):
     
     return 1 
 
+# ==========================================
+# GESTÃO DE MESAS (SALÃO)
+# ==========================================
+@app.get("/api/gestao/mesas")
+def listar_mesas_ocupadas(db: Session = Depends(get_db)):
+    # Busca pedidos em andamento que tenham a tag "MESA" no nome do cliente
+    pedidos_ativos = db.query(PedidoModel).filter(
+        PedidoModel.status.notin_(["ENTREGUE", "CANCELADO"])
+    ).all()
+    
+    mesas_ocupadas = []
+    for p in pedidos_ativos:
+        nome_cli = str(p.nome_cliente).upper()
+        if "MESA" in nome_cli:
+            # Extrai apenas o número da mesa (ex: "MESA 04" -> "04")
+            numero = nome_cli.replace("MESA", "").replace("-", "").strip()
+            mesas_ocupadas.append({
+                "pedido_id": p.id,
+                "numero_mesa": numero,
+                "status": p.status,
+                "total": p.total_pago
+            })
+    return mesas_ocupadas
 
+@app.get("/mesas", response_class=HTMLResponse)
+def abrir_tela_mesas(): 
+    if Path("templates/mesas.html").exists():
+        return Path("templates/mesas.html").read_text(encoding="utf-8")
+    return "Erro: Arquivo mesas.html não encontrado."
+    
 # ==========================================
 # ROTAS DE FORNECEDORES
 # ==========================================
