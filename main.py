@@ -286,24 +286,35 @@ def gerar_senha_diaria(db: Session):
 # ==========================================
 @app.get("/api/gestao/mesas")
 def listar_mesas_ocupadas(db: Session = Depends(get_db)):
-    # Busca pedidos em andamento que tenham a tag "MESA" no nome do cliente
-    pedidos_ativos = db.query(PedidoModel).filter(
-        PedidoModel.status.notin_(["ENTREGUE", "CANCELADO"])
-    ).all()
-    
-    mesas_ocupadas = []
-    for p in pedidos_ativos:
-        nome_cli = str(p.nome_cliente).upper()
-        if "MESA" in nome_cli:
-            # Extrai apenas o número da mesa (ex: "MESA 04" -> "04")
-            numero = nome_cli.replace("MESA", "").replace("-", "").strip()
-            mesas_ocupadas.append({
-                "pedido_id": p.id,
-                "numero_mesa": numero,
-                "status": p.status,
-                "total": p.total_pago
-            })
-    return mesas_ocupadas
+    try:
+        pedidos_ativos = db.query(PedidoModel).order_by(desc(PedidoModel.id)).all()
+        
+        mesas_ocupadas = []
+        for p in pedidos_ativos:
+            # 1. Checa o status de forma segura
+            status_atual = str(p.status).split('.')[-1].upper()
+            if status_atual in ["ENTREGUE", "CANCELADO", "CONCLUIDO"]:
+                continue # Pula os pedidos que já foram finalizados
+                
+            # 2. Puxa o nome do cofre correto (p.cliente.nome)
+            nome_cli = p.cliente.nome.upper() if p.cliente else "CLIENTE AVULSO"
+            
+            # 3. O Radar: Se a palavra MESA estiver no nome
+            if "MESA" in nome_cli:
+                numero = nome_cli.replace("MESA", "").replace("-", "").strip()
+                total = getattr(p, 'total_pago', getattr(p, 'valor_total', 0.0))
+                
+                mesas_ocupadas.append({
+                    "pedido_id": p.id,
+                    "numero_mesa": numero,
+                    "status": status_atual,
+                    "total": float(total)
+                })
+                
+        return mesas_ocupadas
+    except Exception as e:
+        print(f"Erro no radar de mesas: {e}")
+        return [] # Se der erro, retorna vazio para não quebrar a tela visual
 
 @app.get("/mesas", response_class=HTMLResponse)
 def abrir_tela_mesas(): 
