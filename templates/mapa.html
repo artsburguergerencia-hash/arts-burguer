@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreio ao Vivo | Art's Burguer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- MÁGICA DO MAPA GRATUITO (Leaflet.js) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-100 flex flex-col h-screen overflow-hidden font-sans">
+
+    <!-- Header do Rastreio -->
+    <header class="bg-brand-600 text-white p-4 shadow-md z-10 flex items-center justify-between">
+        <div>
+            <h1 class="text-lg font-black tracking-tight">Art's Rastreamento</h1>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-brand-200" id="pedido-texto">Buscando Pedido...</p>
+        </div>
+        <div class="bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold animate-pulse flex items-center">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div> Ao Vivo
+        </div>
+    </header>
+
+    <!-- O Mapa -->
+    <div id="map" class="flex-1 z-0 w-full h-full relative">
+        <div id="loading" class="absolute inset-0 bg-slate-100/80 backdrop-blur-sm z-[999] flex flex-col items-center justify-center">
+            <i class="ph-bold ph-spinner animate-spin text-5xl text-brand-500 mb-2"></i>
+            <p class="font-bold text-slate-600 animate-pulse">Conectando ao satélite do motoboy...</p>
+        </div>
+    </div>
+
+    <!-- Info de Rodapé -->
+    <div class="bg-white p-6 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] z-10">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mr-4">
+                <i class="ph-fill ph-motorcycle text-2xl text-slate-700"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-slate-800 text-lg">Seu pedido está a caminho!</h3>
+                <p class="text-sm text-slate-500 font-medium">O motoboy já está com a sua rota traçada.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pega o número do pedido pela URL (ex: seu-site.com/mapa?pedido=42)
+        const urlParams = new URLSearchParams(window.location.search);
+        const pedidoId = urlParams.get('pedido');
+        
+        if (!pedidoId) {
+            alert("Número de pedido inválido no link!");
+            window.location.href = "/";
+        } else {
+            document.getElementById('pedido-texto').innerText = `PEDIDO #${pedidoId}`;
+        }
+
+        // Configuração do Mapa (OpenStreetMap Gratuito!)
+        let map = L.map('map').setView([-23.5505, -46.6333], 15); // SP padrão
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Ícone da Motinha Personalizada
+        let motoboyIcon = L.divIcon({
+            html: '<div style="background-color: #ef4444; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 3px solid white;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M224,112H214.3a48,48,0,0,0-92.6,0H104V72a16,16,0,0,0-16-16H24A16,16,0,0,0,8,72v88a48,48,0,0,0,91.8,13.7l68.4-11.4A48,48,0,0,0,256,128,16,16,0,0,0,240,112ZM72,184a32,32,0,1,1,32-32A32,32,0,0,1,72,184ZM88,136H24V72H88v64Zm120,48a32,32,0,1,1,32-32A32,32,0,0,1,208,184Z"></path></svg></div>',
+            className: '',
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
+        });
+
+        let motoboyMarker = null;
+
+        // O Radar do Cliente (Pergunta pro servidor a cada 5 segundos)
+        async function buscarCoordenadas() {
+            try {
+                const res = await fetch(`/api/logistica/gps/${pedidoId}`);
+                const dados = await res.json();
+
+                if (dados.status === 'online') {
+                    document.getElementById('loading').style.display = 'none';
+                    const lat = dados.posicao.lat;
+                    const lng = dados.posicao.lng;
+
+                    if (!motoboyMarker) {
+                        motoboyMarker = L.marker([lat, lng], {icon: motoboyIcon}).addTo(map);
+                        map.setView([lat, lng], 17); // Zoom de aproximação
+                    } else {
+                        motoboyMarker.setLatLng([lat, lng]); // Move a motinha na tela!
+                        map.panTo([lat, lng]); // A câmera segue a motinha
+                    }
+                }
+            } catch (e) {
+                console.log("Aguardando sinal do motoboy...");
+            }
+        }
+
+        // Liga o Radar
+        setInterval(buscarCoordenadas, 5000);
+        buscarCoordenadas();
+    </script>
+</body>
+</html>
