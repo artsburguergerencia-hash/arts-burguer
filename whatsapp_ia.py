@@ -51,6 +51,7 @@ def notificar_status_pedido(telefone: str, nome: str, pedido_id: int, status: st
         "SAIU_PARA_ENTREGA": f"Lanche na pista, {nome}! 🏍️💨 O nosso motoboy acabou de sair com o seu pedido #{pedido_id}. Fique atento ao portão!",
         "ENTREGUE": f"Pedido entregue! 🎉 Muito obrigado por escolher o Art's Burguer, {nome}. Bom apetite e até a próxima! ⭐",
         "CANCELADO": f"Poxa, {nome}... O seu pedido #{pedido_id} foi cancelado. Se houve algum problema, mande uma mensagem pra gente tentar ajudar!"
+        mensagem = f"🍔 Olá, {nome_cliente}! Seu pedido #{senha_pedido} acabou de sair para entrega!\n\n🗺️ Acompanhe o motoboy ao vivo pelo mapa:\nhttps://SEU-LINK-AQUI.onrender.com/mapa?pedido={senha_pedido}"
     }
     
     msg = mensagens.get(status.upper())
