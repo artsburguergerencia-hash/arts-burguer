@@ -1238,7 +1238,8 @@ def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
 
 @app.get("/api/cardapio")
 def listar_cardapio_digital(db: Session = Depends(get_db)): 
-    produtos = db.query(ProdutoModel).all()
+    # Filtro Mágico: Traz tudo, MENOS a categoria "Integrações"
+    produtos = db.query(ProdutoModel).filter(ProdutoModel.categoria != "Integrações").all()
     lista_formatada = []
     
     for p in produtos:
@@ -2036,13 +2037,16 @@ def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
 
 @app.delete("/api/sistema/zerar-dados")
 def limpar_banco_dados(db: Session = Depends(get_db)):
+    from sqlalchemy import text
     try:
-        # Apaga os registros, mas mantém a estrutura das tabelas viva
+        # A Ordem de Exclusão é a lei sagrada dos Bancos de Dados!
+        db.execute(text("DELETE FROM itens_complemento"))
+        db.execute(text("DELETE FROM grupos_complemento"))
+        db.execute(text("DELETE FROM fichas_tecnicas"))
         db.query(ItemPedidoModel).delete()
         db.query(PedidoModel).delete()
         db.query(ProdutoModel).delete()
         db.query(InsumoModel).delete()
-        db.query(ClienteModel).delete()
         db.query(ContaPagarModel).delete()
         db.query(FornecedorModel).delete()
         db.commit()
@@ -2275,14 +2279,17 @@ def atualizar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
     
-    # Injetando os novos dados no banco
     if 'nome' in dados: cliente.nome = dados['nome']
     if 'telefone' in dados: cliente.telefone = dados['telefone']
-    if 'cpf' in dados: cliente.cpf = dados['cpf']
+    
+    # Blindagem de CPF Vazio
+    if 'cpf' in dados: 
+        novo_cpf = dados['cpf'].strip()
+        if novo_cpf != "": 
+            cliente.cpf = novo_cpf
+            
     if 'cep' in dados: cliente.cep = dados['cep']
     if 'endereco' in dados: cliente.endereco = dados['endereco']
-    
-    # Nossas preciosas colunas de fidelidade
     if 'pontos' in dados: cliente.pontos = dados['pontos']
     if 'cashback' in dados: cliente.cashback = dados['cashback']
     if 'bloqueado' in dados: cliente.bloqueado = dados['bloqueado']
@@ -2710,14 +2717,13 @@ class ExtWebhookSchema(BaseModel):
 @app.post("/api/webhook/ifood")
 def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db)):
     try:
-        # 1. Trata e cadastra o Cliente do iFood no seu CRM
-        telefone_formatado = dados.customerPhone if dados.customerPhone else "00000000000"
-        cliente = db.query(ClienteModel).filter(ClienteModel.telefone == telefone_formatado).first()
+        # 1. Cliente Genérico do iFood (Não polui o CRM)
+        cliente = db.query(ClienteModel).filter(ClienteModel.nome == "🔴 Cliente iFood (Padrão)").first()
         if not cliente:
             cliente = ClienteModel(
-                nome=f"🔴 iFOOD: {dados.customerName}",
-                telefone=telefone_formatado,
-                endereco=dados.deliveryAddress if dados.deliveryAddress else ""
+                nome="🔴 Cliente iFood (Padrão)",
+                telefone="00000000000",
+                endereco="Integração iFood"
             )
             db.add(cliente)
             db.commit()
