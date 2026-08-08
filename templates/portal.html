@@ -3,144 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Central | Art's Burguer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>HUB Central | Art's Burguer ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CONFIGURAÇÃO DO TAILWIND PARA MODO ESCURO -->
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#e04050', 600: '#a32a35' } } } } }
+        tailwind.config = {
+            darkMode: 'class', // Habilita a troca manual de tema
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                }
+            }
+        }
     </script>
+
+    <!-- SCRIPT DE SINCRONIZAÇÃO GLOBAL (Vai em todas as páginas) -->
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark'); // Padrão é Escuro
+        }
+    </script>
+
     <style>
-        body { background-color: #0f172a; font-family: 'Inter', sans-serif; }
         .card-link { transition: all 0.3s ease; }
-        .card-link:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+        .card-link:hover { transform: translateY(-5px); }
     </style>
 </head>
-<body class="min-h-screen text-slate-200 p-6 md:p-12 selection:bg-brand-500 selection:text-white flex flex-col">
+<body class="bg-slate-50 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- CABEÇALHO -->
-    <header class="max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center justify-between mb-16 border-b border-slate-800 pb-8">
-        <div class="flex items-center space-x-4 mb-6 md:mb-0">
-            <div class="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30">
-                <i class="ph-fill ph-rocket-launch text-4xl text-white"></i>
+    <!-- HEADER / NAVBAR -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50 transition-colors duration-300">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-rose-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-rose-500/30">
+                <i class="ph-bold ph-rocket text-2xl text-white"></i>
             </div>
             <div>
-                <h1 class="text-3xl font-black text-white tracking-tight uppercase">Hub Central</h1>
-                <p class="text-sm font-bold text-slate-500 tracking-widest uppercase mt-1">artsburguer.com.br</p>
+                <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">HUB CENTRAL</h1>
+                <p class="text-[10px] font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase mt-1">ArtsBurguer.com.br</p>
             </div>
         </div>
-        <div class="bg-slate-800/50 px-6 py-3 rounded-full border border-slate-700 flex items-center space-x-3">
-            <span class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sistema Operacional Online</span>
+        
+        <div class="flex items-center space-x-6">
+            <div class="hidden md:flex items-center space-x-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-3 py-1.5 rounded-full">
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">SISTEMA ONLINE</span>
+            </div>
+
+            <!-- BOTÃO MÁGICO CLARO/ESCURO -->
+            <button onclick="toggleTheme()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-inner border border-slate-200 dark:border-slate-700">
+                <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
+            </button>
         </div>
     </header>
 
-    <!-- CORPO DE LINKS -->
-    <main class="max-w-6xl mx-auto w-full flex-1">
-        
-        <!-- SEÇÃO 1: CORPORATIVO E GESTÃO -->
-        <div class="mb-12">
-            <h2 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center"><i class="ph-bold ph-buildings mr-2 text-lg"></i> Corporativo & Backoffice</h2>
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-8 space-y-12">
+
+        <!-- SESSÃO 1: CORPORATIVO -->
+        <section>
+            <h2 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center">
+                <i class="ph-bold ph-buildings mr-2 text-lg"></i> Corporativo & Backoffice
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                <a href="/gestao" onclick="window.open(this.href, '_blank'); return false;" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
-    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><i class="ph-fill ph-chart-line-up text-7xl text-white"></i></div>
-                    <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-brand-500 transition-colors">
-                        <i class="ph-bold ph-lock-key text-xl text-white"></i>
+                <!-- GESTÃO -->
+                <a href="/gestao" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-blue-500 dark:hover:border-blue-500 group shadow-sm hover:shadow-xl">
+                    <div class="w-12 h-12 bg-blue-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition-colors">
+                        <i class="ph-bold ph-lock-key text-xl text-blue-600 dark:text-white"></i>
                     </div>
-                    <h3 class="text-xl font-black text-white mb-2">Painel de Gestão</h3>
-                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Relatórios, Financeiro, CRM, Estoque e Setup de Franquia.</p>
-                    <span class="text-[10px] font-mono font-bold text-brand-400 bg-brand-500/10 px-2 py-1 rounded">/gestao</span>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Painel de Gestão</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Relatórios, Financeiro, CRM, Estoque e Setup de Franquia.</p>
+                    <span class="text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded">/gestao</span>
                 </a>
 
-
-                <a href="/portal_colaborador" onclick="window.open(this.href, '_blank'); return false;" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
-    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><i class="ph-fill ph-users text-7xl text-white"></i></div>
-                    <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition-colors">
-                        <i class="ph-bold ph-identification-badge text-xl text-white"></i>
+                <!-- RH -->
+                <a href="/portal_colaborador" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-purple-500 dark:hover:border-purple-500 group shadow-sm hover:shadow-xl">
+                    <div class="w-12 h-12 bg-purple-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-500 transition-colors">
+                        <i class="ph-bold ph-identification-badge text-xl text-purple-600 dark:text-white"></i>
                     </div>
-                    <h3 class="text-xl font-black text-white mb-2">Portal do RH</h3>
-                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Holerites, Atestados e Solicitações de Férias/Folgas.</p>
-                    <span class="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded">/portal_colaborador</span>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Portal do RH</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Holerites, Atestados e Solicitações de Férias/Folgas.</p>
+                    <span class="text-[10px] font-mono font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-2 py-1 rounded">/portal_colaborador</span>
                 </a>
 
-                <a href="/admin" onclick="window.open(this.href, '_blank'); return false;" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
-    <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-20 transition-opacity"><i class="ph-fill ph-cpu text-7xl text-white"></i></div>
-                    <div class="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-500 transition-colors">
-                        <i class="ph-bold ph-terminal-window text-xl text-white"></i>
+                <!-- ADMIN -->
+                <a href="/admin" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-fuchsia-500 dark:hover:border-fuchsia-500 group shadow-sm hover:shadow-xl relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 text-fuchsia-500/5 dark:text-fuchsia-500/10"><i class="ph-fill ph-cpu text-9xl"></i></div>
+                    <div class="w-12 h-12 bg-fuchsia-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-fuchsia-500 transition-colors relative z-10">
+                        <i class="ph-bold ph-terminal-window text-xl text-fuchsia-600 dark:text-white"></i>
                     </div>
-                    <h3 class="text-xl font-black text-white mb-2">Admin SaaS Master</h3>
-                    <p class="text-sm font-medium text-slate-500 leading-relaxed mb-4">Acesso exclusivo do CEO para licenciar novas empresas.</p>
-                    <span class="text-[10px] font-mono font-bold text-purple-400 bg-purple-500/10 px-2 py-1 rounded">/admin</span>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2 relative z-10">Admin SaaS Master</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 relative z-10">Acesso exclusivo do CEO para licenciar novas empresas.</p>
+                    <span class="text-[10px] font-mono font-bold text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10 px-2 py-1 rounded relative z-10">/admin</span>
                 </a>
             </div>
-        </div>
+        </section>
 
-        <!-- SEÇÃO 2: OPERAÇÃO INTERNA -->
-        <div class="mb-12">
-            <h2 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center"><i class="ph-bold ph-cooking-pot mr-2 text-lg"></i> Operação de Loja (Ao Vivo)</h2>
+        <!-- SESSÃO 2: OPERAÇÃO -->
+        <section>
+            <h2 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center">
+                <i class="ph-bold ph-storefront mr-2 text-lg"></i> Operação de Loja (Ao Vivo)
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <a href="/pdv" target="_blank" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
-                       <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors">
-                        <i class="ph-bold ph-monitor text-xl text-white"></i>
+                <!-- PDV -->
+                <a href="/pdv" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-emerald-500 dark:hover:border-emerald-500 group shadow-sm hover:shadow-xl">
+                    <div class="w-12 h-12 bg-emerald-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors">
+                        <i class="ph-bold ph-monitor text-xl text-emerald-600 dark:text-white"></i>
                     </div>
-                    <h3 class="text-xl font-black text-white mb-2">Frente de Caixa (PDV)</h3>
-                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Lançamento de pedidos no balcão e recebimento rápido.</p>
-                    <span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">/pdv</span>
-                </a>
-                
-                <a href="/kds" onclick="window.open(this.href, '_blank'); return false;" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
-    <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-colors">
-                        <i class="ph-bold ph-fire text-xl text-white"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-white mb-2">Monitor Cozinha (KDS)</h3>
-                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Tela de produção de lanches para chapeiros e montadores.</p>
-                    <span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-1 rounded">/kds</span>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Frente de Caixa (PDV)</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Lançamento de pedidos no balcão e recebimento rápido.</p>
+                    <span class="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded">/pdv</span>
                 </a>
 
-                <a href="/logistica" onclick="window.open(this.href, '_blank'); return false;" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
-    <div class="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-sky-500 transition-colors">
-                        <i class="ph-bold ph-moped text-xl text-white"></i>
+                <!-- KDS -->
+                <a href="/kds" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-amber-500 dark:hover:border-amber-500 group shadow-sm hover:shadow-xl">
+                    <div class="w-12 h-12 bg-amber-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-colors">
+                        <i class="ph-bold ph-fire text-xl text-amber-600 dark:text-white"></i>
                     </div>
-                    <h3 class="text-xl font-black text-white mb-2">Logística e Despacho</h3>
-                    <p class="text-sm font-medium text-slate-400 leading-relaxed mb-4">Roteirização e atribuição de pedidos para motoboys.</p>
-                    <span class="text-[10px] font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-1 rounded">/logistica</span>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Monitor Cozinha (KDS)</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Tela de produção de lanches para chapeiros e montadores.</p>
+                    <span class="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded">/kds</span>
+                </a>
+
+                <!-- LOGÍSTICA -->
+                <a href="/logistica" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-cyan-500 dark:hover:border-cyan-500 group shadow-sm hover:shadow-xl">
+                    <div class="w-12 h-12 bg-cyan-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 transition-colors">
+                        <i class="ph-bold ph-moped text-xl text-cyan-600 dark:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Logística e Despacho</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Roteirização e atribuição de pedidos para motoboys.</p>
+                    <span class="text-[10px] font-mono font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 px-2 py-1 rounded">/logistica</span>
                 </a>
             </div>
-        </div>
+        </section>
 
-        <!-- SEÇÃO 3: FRENTE DE LOJA (PÚBLICO) -->
-        <div>
-            <h2 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center"><i class="ph-bold ph-storefront mr-2 text-lg"></i> Vitrine e Salão (Público)</h2>
+        <!-- SESSÃO 3: PÚBLICO E SALÃO -->
+        <section>
+            <h2 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center">
+                <i class="ph-bold ph-users mr-2 text-lg"></i> Vitrine e Salão (Público)
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <a href="/" onclick="window.open(this.href, '_blank'); return false;" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
-    <div class="absolute top-0 right-0 p-6 opacity-20"><i class="ph-fill ph-device-mobile text-7xl text-white"></i></div>
-                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6">
+                <!-- CARDÁPIO ONLINE (VERMELHO VIBRANTE - MANTÉM A COR INDEPENDENTE DO TEMA) -->
+                <a href="/" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-rose-500 hover:bg-rose-600 dark:bg-[#ef4444] dark:hover:bg-[#dc2626] border-2 border-rose-400/50 p-8 rounded-[2rem] shadow-lg shadow-rose-500/30 group relative overflow-hidden transition-colors text-white">
+                    <div class="absolute -right-4 -top-4 text-white/10"><i class="ph-fill ph-device-mobile text-[150px]"></i></div>
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6 backdrop-blur-sm relative z-10">
                         <i class="ph-bold ph-hamburger text-xl text-white"></i>
                     </div>
-                    <h3 class="text-2xl font-black text-white mb-2">Cardápio Online (Delivery)</h3>
-                    <p class="text-sm font-medium text-brand-100 leading-relaxed mb-4">A vitrine do cliente. Onde eles fazem login, escolhem os lanches e ganham cashback.</p>
-                    <span class="text-[10px] font-mono font-bold text-white bg-black/20 px-3 py-1.5 rounded">Menu Principal ( / )</span>
+                    <h3 class="text-2xl font-black mb-2 relative z-10">Cardápio Online (Delivery)</h3>
+                    <p class="text-sm font-medium text-rose-100 mb-6 relative z-10">A vitrine do cliente. Onde eles fazem login, escolhem os lanches e ganham cashback.</p>
+                    <span class="text-[10px] font-mono font-black text-rose-600 bg-white px-3 py-1.5 rounded relative z-10 shadow-sm">Menu Principal ( / )</span>
                 </a>
 
-                <a href="/totem" onclick="window.open(this.href, '_blank'); return false;" class="card-link block bg-slate-800/50 border border-slate-700 rounded-3xl p-8 hover:border-emerald-500 group relative overflow-hidden">
-    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><i class="ph-fill ph-screencast text-7xl text-white"></i></div>
-                    <div class="w-12 h-12 bg-emerald-800 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors">
+                <!-- TOTEM (VERDE VIBRANTE - MANTÉM A COR INDEPENDENTE DO TEMA) -->
+                <a href="/totem" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-emerald-600 hover:bg-emerald-700 dark:bg-[#059669] dark:hover:bg-[#047857] border-2 border-emerald-400/50 p-8 rounded-[2rem] shadow-lg shadow-emerald-600/30 group relative overflow-hidden transition-colors text-white">
+                    <div class="absolute -right-4 -top-4 text-white/10"><i class="ph-fill ph-screencast text-[150px]"></i></div>
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6 backdrop-blur-sm relative z-10">
                         <i class="ph-bold ph-monitor-play text-xl text-white"></i>
                     </div>
-                    <h3 class="text-2xl font-black text-white mb-2">Totem de Autoatendimento</h3>
-                    <p class="text-sm font-medium text-emerald-100/70 leading-relaxed mb-4">A tela da TV do salão que chama a voz "Arts!" e mostra as senhas prontas.</p>
-                    <span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded">/totem</span>
+                    <h3 class="text-2xl font-black mb-2 relative z-10">Totem de Autoatendimento</h3>
+                    <p class="text-sm font-medium text-emerald-100 mb-6 relative z-10">A tela da TV do salão que chama a voz "Arts!" e mostra as senhas prontas.</p>
+                    <span class="text-[10px] font-mono font-black text-emerald-700 bg-white px-3 py-1.5 rounded relative z-10 shadow-sm">/totem</span>
                 </a>
             </div>
-        </div>
-        
+        </section>
+
     </main>
 
-    <footer class="max-w-6xl mx-auto w-full mt-16 pt-8 border-t border-slate-800 text-center text-slate-600 text-xs font-bold tracking-widest uppercase">
-        © Art's Burguer Sistema SaaS - Todos os direitos reservados.
+    <!-- RODAPÉ -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 py-6 text-center mt-12 bg-white dark:bg-[#0b1120] transition-colors duration-300">
+        <p class="text-[10px] font-black tracking-[0.2em] text-slate-400 dark:text-slate-500 uppercase">
+            © Art's Burguer Sistema SaaS - Todos os direitos reservados.
+        </p>
     </footer>
 
+    <!-- MOTOR DE TROCA DE TEMA (CLARO/ESCURO) -->
+    <script>
+        const htmlElement = document.documentElement;
+        const themeIcon = document.getElementById('theme-icon');
+
+        // Sincroniza o ícone ao carregar
+        if (htmlElement.classList.contains('dark')) {
+            themeIcon.classList.replace('ph-moon', 'ph-sun');
+        }
+
+        function toggleTheme() {
+            if (htmlElement.classList.contains('dark')) {
+                // Mudar para CLARO
+                htmlElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                // Mudar para ESCURO
+                htmlElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.replace('ph-moon', 'ph-sun');
+            }
+        }
+    </script>
 </body>
 </html>
