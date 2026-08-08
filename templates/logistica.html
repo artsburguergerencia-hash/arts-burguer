@@ -172,6 +172,9 @@
                                     <button onclick="despacharMotoboyProprio(${p.id})" id="btn-proprio-${p.id}" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
                                         <i class="ph-fill ph-moped mr-2 text-lg"></i> Motoboy da Casa
                                     </button>
+                                    <button onclick="window.open('/motoboy?pedido=${p.senha_diaria || p.id}', '_blank')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 mt-2 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-inner">
+    <i class="ph-bold ph-qr-code mr-1"></i> Link do Entregador
+</button>
                                 </div>
                             `}
                         </div>
