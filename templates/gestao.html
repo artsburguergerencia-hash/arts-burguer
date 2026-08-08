@@ -1,10 +1,23 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
-    
+    <script>
+        const cargoAtual = localStorage.getItem('funcionario_cargo');
+        if (!cargoAtual || cargoAtual !== '1') {
+            alert("⛔ Acesso Negado! Área restrita para Administradores.");
+            window.location.replace('/login');
+        }
+        tailwind.config = { darkMode: 'class' };
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+        </script>
     <script>
     <!-- CONFIGURAÇÃO DO TEMA CLARO/ESCURO -->
-   
         tailwind.config = { darkMode: 'class' };
         if (localStorage.getItem('theme') === 'light') {
             document.documentElement.classList.remove('dark');
@@ -20,7 +33,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+    <script>
+        tailwind.config = { 
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
+                    colors: { brand: { 500: '#ff4757', 600: '#e04050' } } 
+                } 
+            } 
+        }
+    </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .painel { display: none; animation: fadeIn 0.3s ease-in-out; }
@@ -32,8 +54,8 @@
         .aba-dossie.active { display: block; }
     </style>
 </head>
-<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
 
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
     <!-- MENU LATERAL -->
     <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-10 shrink-0">
         <div class="h-20 flex items-center px-8 border-b border-slate-800">
@@ -43,10 +65,8 @@
                 <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">ERP Cloud V5</p>
             </div>
         </div>
-        
         <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto no-scrollbar">
             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-4">Configurações & ERP</p>
-            
             <button onclick="abrirAba('aba-relatorios', this)" class="menu-item active w-full flex items-center bg-brand-500 text-white p-3 rounded-xl transition-all">
                 <i class="ph ph-chart-line-up text-xl mr-3"></i> Relatórios & Painel
             </button>
@@ -74,9 +94,7 @@
             <button onclick="abrirAba('aba-cupons', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-ticket text-xl mr-3"></i> Promoções & Cupons
             </button>
-
             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-800 pt-4">Operação (Ao Vivo)</p>
-            
             <a href="/pdv" target="_blank" class="w-full flex items-center text-emerald-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-monitor text-xl mr-3"></i> PDV (Caixa) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
@@ -93,7 +111,6 @@
                 <i class="ph-fill ph-storefront text-xl mr-3"></i> Cardápio Online <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
         </nav>
-        
         <div class="p-6 border-t border-slate-800 shrink-0">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
@@ -107,7 +124,6 @@
             </div>
         </div>
     </aside>
-
     <main class="flex-1 overflow-y-auto bg-slate-50 relative">
         <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-slate-200 shadow-sm sticky top-0 z-10">
             <h2 id="titulo-painel" class="text-xl font-black text-slate-800 tracking-tight">Painel de Gestão Corporativa</h2>
