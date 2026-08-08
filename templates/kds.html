@@ -3,218 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KDS - Cozinha | Art's Burguer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <title>Monitor KDS | Art's Burguer</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CONFIGURAÇÃO DO TEMA CLARO/ESCURO -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+    <!-- SINCRONIZAÇÃO GLOBAL DE TEMA -->
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .card-enter { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-white h-screen w-screen flex flex-col overflow-hidden font-sans">
+<body class="bg-slate-100 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
 
-    <!-- CABEÇALHO KDS -->
-    <header class="bg-black/50 border-b border-slate-800 h-16 flex items-center justify-between px-6 shrink-0 z-20">
-        <div class="flex items-center space-x-3">
-            <i class="ph-fill ph-cooking-pot text-3xl text-brand-500 animate-pulse"></i>
+    <!-- HEADER DO KDS -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm shrink-0 transition-colors duration-300">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-amber-500/30">
+                <i class="ph-bold ph-fire text-2xl text-white"></i>
+            </div>
             <div>
-                <h1 class="font-black text-lg tracking-tight uppercase leading-none">Monitor KDS</h1>
-                <p class="text-[10px] text-brand-500 font-bold uppercase tracking-widest mt-0.5">Ao Vivo</p>
+                <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">MONITOR KDS</h1>
+                <p class="text-[10px] font-bold tracking-widest text-amber-500 uppercase mt-1 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2"></span> Produção ao Vivo
+                </p>
             </div>
         </div>
+        
         <div class="flex items-center space-x-4">
-            <!-- BOTÃO DO ALARME INJETADO AQUI -->
-            <button onclick="ativarSomCozinha()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center">
-                <i class="ph-bold ph-speaker-high mr-2 text-lg"></i> Ligar Alarme
+            <button onclick="carregarKDS()" class="flex items-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 py-3 rounded-xl transition-colors shadow-sm font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                <i class="ph-bold ph-arrows-clockwise text-lg mr-2"></i> Atualizar
             </button>
-            <button onclick="buscarPedidosKDS()" class="text-slate-400 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-lg text-sm font-bold flex items-center">
-                <i class="ph ph-arrows-clockwise mr-2 text-lg"></i> Atualizar
+            <button onclick="toggleTheme()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-inner border border-slate-200 dark:border-slate-700">
+                <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
             </button>
+            <a href="/gestao" class="bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500 p-3 rounded-xl transition-colors border border-red-200 dark:border-red-500/20">
+                <i class="ph-bold ph-sign-out text-xl"></i>
+            </a>
         </div>
     </header>
 
-    <!-- ÁREA DE COLUNAS -->
-    <main class="flex-1 overflow-hidden p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6">
+    <!-- ÁREA DAS COMANDAS -->
+    <main class="flex-1 flex overflow-hidden p-6 space-x-6">
         
-        <!-- COLUNA 1: NOVOS PEDIDOS (RECEBIDOS) -->
-        <section class="flex-1 flex flex-col bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
-            <header class="p-3 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
-                <h2 class="font-black text-white flex items-center text-lg"><i class="ph-fill ph-bell-ringing mr-2 text-amber-500"></i> Fila de Preparo</h2>
-                <span id="badge-recebidos" class="bg-amber-500 text-black font-black px-2 py-0.5 rounded text-xs">0</span>
-            </header>
-            <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-800/50">
-                <div id="lista-recebidos" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-max">
-                    <p class="text-slate-500 col-span-full text-center py-10">Buscando comandas...</p>
+        <!-- COLUNA 1: FILA DE PREPARO -->
+        <section class="flex-1 flex flex-col bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-200 dark:border-slate-700 overflow-hidden shadow-inner">
+            <div class="p-4 bg-slate-200/50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+                <h2 class="font-black text-lg text-slate-700 dark:text-slate-300 flex items-center">
+                    <i class="ph-bold ph-receipt text-slate-500 mr-2 text-xl"></i> Fila de Preparo
+                </h2>
+                <span class="bg-slate-700 dark:bg-slate-600 text-white px-3 py-1 rounded-lg text-xs font-black shadow-sm" id="badge-fila">0</span>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="lista-fila">
+                <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-50">
+                    <i class="ph-bold ph-spinner animate-spin text-5xl mb-4"></i>
+                    <p class="font-bold text-sm uppercase tracking-widest">Buscando...</p>
                 </div>
             </div>
         </section>
 
-        <!-- COLUNA 2: EM PREPARO (CHAPA) -->
-        <section class="flex-1 flex flex-col bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
-            <header class="p-3 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
-                <h2 class="font-black text-white flex items-center text-lg"><i class="ph-fill ph-fire mr-2 text-red-500"></i> Na Chapa</h2>
-                <span id="badge-preparo" class="bg-red-500 text-white font-black px-2 py-0.5 rounded text-xs">0</span>
-            </header>
-            <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-800/50">
-                <div id="lista-preparo" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-max">
-                </div>
+        <!-- COLUNA 2: NA CHAPA -->
+        <section class="flex-1 flex flex-col bg-amber-50/50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-200 dark:border-amber-700/50 overflow-hidden shadow-inner relative">
+            <!-- Fundo decorativo -->
+            <div class="absolute inset-0 opacity-5 dark:opacity-[0.02] pointer-events-none flex items-center justify-center overflow-hidden">
+                <i class="ph-fill ph-fire text-[300px] text-amber-500"></i>
+            </div>
+            
+            <div class="relative z-10 p-4 bg-amber-100 dark:bg-amber-900/40 border-b border-amber-200 dark:border-amber-700/50 flex justify-between items-center shrink-0">
+                <h2 class="font-black text-lg text-amber-800 dark:text-amber-500 flex items-center">
+                    <i class="ph-fill ph-fire text-amber-500 mr-2 text-xl animate-pulse"></i> Na Chapa
+                </h2>
+                <span class="bg-amber-500 text-white px-3 py-1 rounded-lg text-xs font-black shadow-sm" id="badge-chapa">0</span>
+            </div>
+            <div class="relative z-10 flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="lista-chapa">
+                <!-- Injetado via JS -->
             </div>
         </section>
+
     </main>
 
-    <!-- IFRAME INVISÍVEL PARA IMPRESSÃO TÉRMICA 80MM -->
-    <iframe id="iframe-impressao" style="display:none;"></iframe>
-
     <script>
-        // MÁQUINA DE SOM E ALARME
-        let ultimoPedidoId = 0; 
-        let somAtivo = false;
+        // MOTOR DE TEMA
+        const htmlElement = document.documentElement;
+        const themeIcon = document.getElementById('theme-icon');
+        if (htmlElement.classList.contains('dark')) themeIcon.classList.replace('ph-moon', 'ph-sun');
 
-        function ativarSomCozinha() {
-            somAtivo = true;
-            document.getElementById('som-novo-pedido').play().then(() => {
-                document.getElementById('som-novo-pedido').pause();
-                document.getElementById('som-novo-pedido').currentTime = 0;
-            }).catch(()=>{});
-            alert("✅ Campainha de novos pedidos ativada!");
+        function toggleTheme() {
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                htmlElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.replace('ph-moon', 'ph-sun');
+            }
         }
 
-        async function buscarPedidosKDS() {
+        // MOTOR DO KDS
+        document.addEventListener('DOMContentLoaded', carregarKDS);
+        setInterval(carregarKDS, 5000); // Auto-Refresh a cada 5s
+
+        async function carregarKDS() {
             try {
-                const res = await fetch('/api/kds/pedidos');
-                const pedidos = await res.json();
+                // Supondo que sua rota de KDS retorna os pedidos
+                const response = await fetch('/api/kds/pedidos'); 
+                const dados = await response.json();
                 
-                // VERIFICA SE TEM PEDIDO NOVO PARA TOCAR O SOM
-                if(pedidos.length > 0) {
-                    const maiorIdAtual = Math.max(...pedidos.map(p => p.id));
-                    if(ultimoPedidoId !== 0 && maiorIdAtual > ultimoPedidoId && somAtivo) {
-                        document.getElementById('som-novo-pedido').play().catch(()=>{}); // TOCA O SINO!
-                    }
-                    ultimoPedidoId = maiorIdAtual; // Atualiza a memória
-                }
+                renderFila(dados.recebidos || []);
+                renderChapa(dados.preparando || []);
                 
-                const recebidos = pedidos.filter(p => p.status === 'RECEBIDO');
-                const emPreparo = pedidos.filter(p => p.status === 'EM_PREPARO');
-                
-                document.getElementById('badge-recebidos').innerText = recebidos.length;
-                document.getElementById('badge-preparo').innerText = emPreparo.length;
-
-                renderizarColuna('lista-recebidos', recebidos, 'EM_PREPARO', 'Jogar na Chapa', 'bg-red-600 hover:bg-red-500');
-                renderizarColuna('lista-preparo', emPreparo, 'PRONTO', 'Pedido Pronto!', 'bg-green-600 hover:bg-green-500');
-            } catch(e) { console.log(e); }
+                document.getElementById('badge-fila').innerText = (dados.recebidos || []).length;
+                document.getElementById('badge-chapa').innerText = (dados.preparando || []).length;
+            } catch (error) {
+                console.error("Erro no KDS:", error);
+            }
         }
 
-        function renderizarColuna(idElemento, lista, proximoStatus, textoBotao, corBotao) {
-            const div = document.getElementById(idElemento);
-            if(lista.length === 0) {
-                div.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-10 text-slate-600"><i class="ph-fill ph-check-circle text-5xl mb-2"></i><p>Fila limpa!</p></div>`;
+        // FUNÇÃO DE MUDAR STATUS
+        async function mudarStatus(id, novoStatus, botao) {
+            const textoOriginal = botao.innerHTML;
+            botao.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>';
+            botao.disabled = true;
+
+            try {
+                const res = await fetch(`/api/kds/pedidos/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: novoStatus })
+                });
+
+                if(res.ok) {
+                    carregarKDS(); // Recarrega a tela instantaneamente
+                } else {
+                    alert("Falha ao atualizar o pedido no banco de dados.");
+                    botao.innerHTML = textoOriginal;
+                    botao.disabled = false;
+                }
+            } catch(e) {
+                alert("Erro de conexão.");
+                botao.innerHTML = textoOriginal;
+                botao.disabled = false;
+            }
+        }
+
+        function gerarHTMLComanda(p, isChapa) {
+            const senha = p.senha_diaria || p.id;
+            const origem = p.origem || 'BALCAO';
+            const itensHTML = (p.itens || []).map(item => `
+                <div class="py-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+                    <div class="flex items-start">
+                        <span class="font-black text-amber-500 mr-2">${item.quantidade}x</span>
+                        <div class="flex-1">
+                            <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">${item.nome}</p>
+                            ${item.observacao ? `<p class="text-xs font-semibold text-red-500 mt-1 bg-red-50 dark:bg-red-500/10 inline-block px-2 py-0.5 rounded">⚠️ ${item.observacao}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            if (!isChapa) {
+                // CARD DA FILA DE PREPARO
+                return `
+                <div class="card-enter bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-300 dark:bg-slate-600"></div>
+                    <div class="flex justify-between items-center mb-3 border-b border-slate-100 dark:border-slate-700 pb-2">
+                        <h3 class="font-black text-xl text-slate-800 dark:text-white tracking-tighter">#${senha}</h3>
+                        <span class="text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-1 rounded">${origem}</span>
+                    </div>
+                    <div class="mb-4 space-y-1">
+                        ${itensHTML}
+                    </div>
+                    <button onclick="mudarStatus(${p.id}, 'PREPARANDO', this)" class="w-full bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-black py-3 rounded-xl uppercase tracking-widest text-xs transition-colors shadow-md">
+                        🔥 Jogar na Chapa
+                    </button>
+                </div>`;
+            } else {
+                // CARD DA CHAPA
+                return `
+                <div class="card-enter bg-white dark:bg-slate-800 border-2 border-amber-400 dark:border-amber-500 rounded-2xl p-4 shadow-lg shadow-amber-500/10 relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-3 border-b border-amber-100 dark:border-slate-700 pb-2">
+                        <h3 class="font-black text-2xl text-amber-600 dark:text-amber-400 tracking-tighter">#${senha}</h3>
+                        <span class="text-[10px] font-black uppercase tracking-widest bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-2 py-1 rounded animate-pulse">${origem}</span>
+                    </div>
+                    <div class="mb-4 space-y-1">
+                        ${itensHTML}
+                    </div>
+                    <button onclick="mudarStatus(${p.id}, 'PRONTO', this)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl uppercase tracking-widest text-sm transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center">
+                        <i class="ph-bold ph-check-circle mr-2 text-lg"></i> Pedido Pronto!
+                    </button>
+                </div>`;
+            }
+        }
+
+        function renderFila(pedidos) {
+            const cont = document.getElementById('lista-fila');
+            if(pedidos.length === 0) {
+                cont.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600"><i class="ph-fill ph-check-circle text-5xl mb-2"></i><p class="font-bold text-xs uppercase tracking-widest">Fila Limpa</p></div>`;
                 return;
             }
-
-            div.innerHTML = lista.map(p => {
-                const itensHtml = p.itens.map(i => `
-                    <div class="border-b border-slate-700 pb-2 mb-2 last:border-0 last:mb-0 last:pb-0">
-                        <p class="font-bold text-sm leading-tight text-white"><span class="text-amber-500 mr-1">${i.quantidade}x</span> ${i.nome_produto}</p>
-                        ${i.observacao ? `<p class="text-[11px] text-amber-200 bg-amber-900/30 p-1.5 rounded mt-1 border border-amber-700/50 uppercase tracking-wider font-bold">⚠️ ${i.observacao}</p>` : ''}
-                    </div>
-                `).join('');
-
-                return `
-                    <div class="bg-slate-700 rounded-xl p-3 shadow-lg border-l-4 ${p.tipo === 'DELIVERY' ? 'border-blue-500' : 'border-purple-500'} flex flex-col h-full">
-                        <div class="flex justify-between items-start mb-3 shrink-0">
-                            <div>
-                                <h3 class="font-black text-xl leading-none tracking-tight">#${p.id}</h3>
-                                <p class="text-[10px] font-bold uppercase tracking-widest ${p.tipo === 'DELIVERY' ? 'text-blue-400' : 'text-purple-400'} mt-1">${p.tipo}</p>
-                            </div>
-                            <button onclick="imprimirComanda(${p.id})" class="bg-slate-800 hover:bg-slate-600 text-slate-300 p-2 rounded-lg transition-colors" title="Imprimir Comanda">
-                                <i class="ph ph-printer text-lg"></i>
-                            </button>
-                        </div>
-                        <div class="bg-slate-900/50 p-3 rounded-lg mb-3 flex-1">
-                            ${itensHtml}
-                        </div>
-                        <button onclick="mudarStatus(${p.id}, '${proximoStatus}')" class="w-full ${corBotao} text-white font-black uppercase tracking-wider text-xs py-3 rounded-lg transition-all active:scale-95 shadow-md shrink-0">
-                            ${textoBotao}
-                        </button>
-                    </div>
-                `;
-            }).join('');
+            cont.innerHTML = pedidos.map(p => gerarHTMLComanda(p, false)).join('');
         }
 
-        async function mudarStatus(id, novoStatus) {
-            try {
-                await fetch(`/api/kds/pedidos/${id}/status`, {
-                    method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: novoStatus})
-                });
-                buscarPedidosKDS();
-            } catch(e) {}
-        }
-
-        // MOTOR DE IMPRESSÃO 80MM TÉRMICA CORRIGIDO
-        async function imprimirComanda(pedido_id) {
-            try {
-                const res = await fetch(`/api/pedidos/${pedido_id}/recibo`);
-                const dados = await res.json();
-                
-                const frame = document.getElementById('iframe-impressao');
-                const doc = frame.contentWindow.document;
-                
-                // CSS específico para bobinas de 80mm
-                const conteudoHtml = `
-                    <html>
-                    <head>
-                        <style>
-                            @page { margin: 0; size: 80mm auto; }
-                            body { font-family: 'Courier New', Courier, monospace; width: 72mm; margin: 0 auto; padding: 5mm 0; color: #000; font-size: 12px; }
-                            h1 { font-size: 18px; text-align: center; margin: 0 0 5px 0; text-transform: uppercase; }
-                            .center { text-align: center; }
-                            .divider { border-top: 1px dashed #000; margin: 8px 0; }
-                            .item { margin-bottom: 6px; }
-                            .item-nome { font-weight: bold; font-size: 14px; }
-                            .obs { font-size: 11px; font-weight: bold; margin-left: 10px; text-transform: uppercase; }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>ART'S BURGUER</h1>
-                        <div class="center">PEDIDO #${dados.id} - ${dados.tipo}</div>
-                        <div class="center" style="font-size:10px;">${dados.data_hora}</div>
-                        <div class="divider"></div>
-                        <div style="font-weight:bold;">Cliente: ${dados.cliente_nome}</div>
-                        ${dados.tipo === 'DELIVERY' ? `<div>Endereço: ${dados.endereco}</div>` : ''}
-                        <div class="divider"></div>
-                        ${dados.itens.map(i => `
-                            <div class="item">
-                                <span class="item-nome">${i.quantidade}x ${i.nome}</span>
-                                ${i.observacao ? `<div class="obs">⚠️ ${i.observacao}</div>` : ''}
-                            </div>
-                        `).join('')}
-                        <div class="divider"></div>
-                        <div class="center" style="margin-top:15px; font-size:10px;">Cozinha KDS</div>
-                    </body>
-                    </html>
-                `;
-                
-                doc.open();
-                doc.write(conteudoHtml);
-                doc.close();
-                
-                // Aguarda o Iframe carregar e chama a impressão nativa
-                setTimeout(() => {
-                    frame.contentWindow.focus();
-                    frame.contentWindow.print();
-                }, 500);
-
-            } catch (e) {
-                alert("Erro ao buscar dados para impressão.");
+        function renderChapa(pedidos) {
+            const cont = document.getElementById('lista-chapa');
+            if(pedidos.length === 0) {
+                cont.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-amber-200 dark:text-slate-600"><i class="ph-fill ph-fire text-5xl mb-2 opacity-50"></i><p class="font-bold text-xs uppercase tracking-widest opacity-50">Chapa Fria</p></div>`;
+                return;
             }
+            cont.innerHTML = pedidos.map(p => gerarHTMLComanda(p, true)).join('');
         }
-
-        setInterval(buscarPedidosKDS, 5000);
-        document.addEventListener('DOMContentLoaded', buscarPedidosKDS);
     </script>
-    
-    <!-- ÁUDIO DO IFOOD -->
-    <audio id="som-novo-pedido" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=success-1-6297.mp3" preload="auto"></audio>
 </body>
 </html>
