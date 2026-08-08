@@ -106,6 +106,14 @@
             document.getElementById('painel-setup').classList.remove('hidden');
             document.getElementById('pedido-id').value = '';
         }
+        // Puxa o número automaticamente da URL!
+window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pedID = urlParams.get('pedido');
+    if(pedID) {
+        document.getElementById('pedido-id').value = pedID;
+    }
+}
     </script>
 </body>
 </html>
