@@ -15,6 +15,15 @@
             document.documentElement.classList.add('dark');
         }
     </script>
+    <!-- CONFIGURAÇÃO DO TEMA CLARO/ESCURO -->
+    <script>
+        tailwind.config = { darkMode: 'class' };
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Art's Burguer | ERP Corporativo V5</title>
