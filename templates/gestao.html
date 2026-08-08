@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    
     <script>
         const cargoAtual = localStorage.getItem('funcionario_cargo');
         if (!cargoAtual || cargoAtual !== '1') {
             alert("⛔ Acesso Negado! Área restrita para Administradores.");
             window.location.replace('/login');
+        }
+        tailwind.config = { darkMode: 'class' };
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
         }
     </script>
     <meta charset="UTF-8">
