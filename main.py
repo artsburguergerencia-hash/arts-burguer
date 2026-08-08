@@ -1805,6 +1805,68 @@ def listar_clientes_gestao(db: Session = Depends(get_db)):
     except Exception as e:
         print("Erro Crítico no GET Clientes:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+        # ==========================================
+# MOTOR UNIVERSAL DE GESTÃO (CRUD FASE 4)
+# ==========================================
+def pegar_modelo_banco(tabela: str):
+    # Traduz o nome da URL para a tabela real do banco
+    if tabela == "insumos": return InsumoModel
+    if tabela == "fornecedores": return FornecedorModel
+    if tabela == "financeiro": return ContaPagarModel
+    if tabela == "funcionarios": return FuncionarioModel
+    if tabela == "cupons": return CupomModel 
+    return None
+
+# ROTA PARA EDITAR (QUALQUER COISA)
+@app.put("/api/gestao/{tabela}/{item_id}")
+def atualizar_item_generico(tabela: str, item_id: int, dados: dict, db: Session = Depends(get_db)):
+    try:
+        modelo = pegar_modelo_banco(tabela)
+        if not modelo: raise HTTPException(status_code=404, detail="Tabela não encontrada no Motor.")
+        
+        item = db.query(modelo).filter(modelo.id == item_id).first()
+        if not item: raise HTTPException(status_code=404, detail="Item não encontrado no banco.")
+        
+        # O Mágico: Atualiza apenas as colunas que vieram do painel!
+        for chave, valor in dados.items():
+            if hasattr(item, chave) and chave != "id":
+                setattr(item, chave, valor)
+                
+        db.commit()
+        return {"status": "ok", "mensagem": "Atualizado com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ROTA PARA CRIAR (QUALQUER COISA)
+@app.post("/api/gestao/{tabela}")
+def criar_item_generico(tabela: str, dados: dict, db: Session = Depends(get_db)):
+    try:
+        modelo = pegar_modelo_banco(tabela)
+        if not modelo: raise HTTPException(status_code=404)
+        
+        novo_item = modelo(**dados)
+        db.add(novo_item)
+        db.commit()
+        return {"status": "ok", "mensagem": "Criado com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ROTA PARA DELETAR SEM ERRO (QUALQUER COISA)
+@app.delete("/api/gestao/{tabela}/{item_id}")
+def deletar_item_generico(tabela: str, item_id: int, db: Session = Depends(get_db)):
+    try:
+        modelo = pegar_modelo_banco(tabela)
+        if not modelo: raise HTTPException(status_code=404)
+        
+        db.query(modelo).filter(modelo.id == item_id).delete()
+        db.commit()
+        return {"status": "ok", "mensagem": "Apagado com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
         
 @app.put("/api/gestao/clientes/{cliente_id}")
 def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
