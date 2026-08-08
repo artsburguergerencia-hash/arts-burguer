@@ -14,7 +14,8 @@
         } else {
             document.documentElement.classList.add('dark');
         }
-    
+        </script>
+    <script>
     <!-- CONFIGURAÇÃO DO TEMA CLARO/ESCURO -->
    
         tailwind.config = { darkMode: 'class' };
@@ -2922,5 +2923,22 @@
             }
         }
     </script>
+    <script>
+    const htmlElement = document.documentElement;
+    const themeIcon = document.getElementById('theme-icon');
+    if (htmlElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+
+    function toggleTheme() {
+        if (htmlElement.classList.contains('dark')) {
+            htmlElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            themeIcon.classList.replace('ph-sun', 'ph-moon');
+        } else {
+            htmlElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            themeIcon.classList.replace('ph-moon', 'ph-sun');
+        }
+    }
+</script>
 </body>
 </html>
