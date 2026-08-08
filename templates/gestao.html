@@ -53,71 +53,73 @@
 <body class="bg-slate-50 dark:bg-[#0b1120] flex h-screen overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-300">
 
     <!-- MENU LATERAL (Já era escuro, mantemos como está) -->
-    <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-10 shrink-0">
-        <div class="h-20 flex items-center px-8 border-b border-slate-800">
+    <!-- MENU LATERAL -->
+    <aside class="w-72 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 flex flex-col shadow-2xl z-20 shrink-0 border-r border-slate-200 dark:border-slate-800 transition-colors duration-300">
+        
+        <div class="h-20 flex items-center px-8 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
             <i class="ph-fill ph-hamburger text-3xl text-brand-500 mr-3"></i>
             <div>
-                <h1 class="text-white font-black text-xl tracking-tight" id="sidebar-nome-loja">Art's Burguer</h1>
-                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">ERP Cloud V5</p>
+                <h1 class="text-slate-900 dark:text-white font-black text-xl tracking-tight" id="sidebar-nome-loja">Art's Burguer</h1>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">ERP Cloud V5</p>
             </div>
         </div>
         
         <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto no-scrollbar">
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-4">Configurações & ERP</p>
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 mb-2 mt-4">Configurações & ERP</p>
             
-            <button onclick="abrirAba('aba-relatorios', this)" class="menu-item active w-full flex items-center bg-brand-500 text-white p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-relatorios', this)" class="menu-item active w-full flex items-center bg-brand-500 text-white p-3 rounded-xl transition-all shadow-md">
                 <i class="ph ph-chart-line-up text-xl mr-3"></i> Relatórios & Painel
             </button>
-            <button onclick="abrirAba('aba-cardapio', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-cardapio', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-list-magnifying-glass text-xl mr-3"></i> Produtos & Ficha
             </button>
-            <button onclick="abrirAba('aba-estoque', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-estoque', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-package text-xl mr-3"></i> Estoque Mínimo
             </button>
-            <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-invoice text-xl mr-3"></i> Financeiro
             </button>
-            <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-colaboradores', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-users text-xl mr-3"></i> Equipe & DP
             </button>
-            <button onclick="abrirAba('aba-clientes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-clientes', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-users-three text-xl mr-3"></i> Base de Clientes
             </button>
-            <button onclick="abrirAba('aba-fornecedores', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-fornecedores', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-truck text-xl mr-3"></i> Fornecedores
             </button>
-            <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-configuracoes', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-gear text-xl mr-3"></i> Setup da Loja
             </button>
-            <button onclick="abrirAba('aba-cupons', this)" class="menu-item w-full flex items-center text-slate-300 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-cupons', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-ticket text-xl mr-3"></i> Promoções & Cupons
             </button>
 
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-800 pt-4">Operação (Ao Vivo)</p>
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-200 dark:border-slate-800 pt-4">Operação (Ao Vivo)</p>
             
-            <a href="/pdv" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-emerald-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+            <a href="/pdv" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-white hover:bg-emerald-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-monitor text-xl mr-3"></i> PDV (Caixa) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            <a href="/kds" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-red-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+            <a href="/kds" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-white hover:bg-red-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-cooking-pot text-xl mr-3"></i> Monitor Cozinha <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            <a href="/logistica" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-purple-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+            <a href="/logistica" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-moped text-xl mr-3"></i> Despacho <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            <a href="/portal_colaborador" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-blue-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+            <a href="/portal_colaborador" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-identification-badge text-xl mr-3"></i> Portal RH <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            <a href="/" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-brand-400 hover:text-white hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8">
+            <a href="/" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-white hover:bg-red-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8">
                 <i class="ph-fill ph-storefront text-xl mr-3"></i> Cardápio Online <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
         </nav>
         
-        <div class="p-6 border-t border-slate-800 shrink-0">
+        <div class="p-6 border-t border-slate-200 dark:border-slate-800 shrink-0 transition-colors duration-300">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=ff4757&color=fff" alt="Admin" class="h-10 w-10 rounded-full border-2 border-slate-700">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=ff4757&color=fff" alt="Admin" class="h-10 w-10 rounded-full border-2 border-slate-200 dark:border-slate-700">
                     <div class="ml-3">
-                        <p class="text-sm font-bold text-white" id="nome-admin-lateral">Administrador</p>
+                        <p class="text-sm font-bold text-slate-800 dark:text-white" id="nome-admin-lateral">Administrador</p>
                         <p class="text-[10px] text-brand-500 font-bold uppercase tracking-wider">Acesso Total</p>
                     </div>
                 </div>
