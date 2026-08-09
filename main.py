@@ -2647,6 +2647,9 @@ def fechar_caixa(dados: FecharCaixaSchema, db: Session = Depends(get_db)):
 # ==========================================
 # APP DO CLIENTE: RASTREIO E PERFIL
 # ==========================================
+# ==========================================
+# APP DO CLIENTE: RASTREIO E PERFIL
+# ==========================================
 class AtualizarPerfilCliente(BaseModel):
     nome: str
     cep: str = ""
@@ -2654,6 +2657,54 @@ class AtualizarPerfilCliente(BaseModel):
     numero: str = ""
     bairro: str = ""
     complemento: str = ""
+    senha: str = ""  # <--- Nova Linha (Senha)
+    foto: str = ""   # <--- Nova Linha (Foto em Base64)
+
+@app.get("/api/cliente/{cliente_id}/perfil")
+def obter_perfil_cliente(cliente_id: int, db: Session = Depends(get_db)):
+    c = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    if not c: raise HTTPException(status_code=404)
+    return {
+        "nome": c.nome, 
+        "cep": getattr(c, 'cep', ''), 
+        "endereco": getattr(c, 'endereco', ''),
+        "numero": getattr(c, 'numero', ''), 
+        "bairro": getattr(c, 'bairro', ''), 
+        "complemento": getattr(c, 'complemento', '')
+    }
+
+@app.put("/api/cliente/{cliente_id}/perfil")
+def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db: Session = Depends(get_db)):
+    c = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+    if not c: raise HTTPException(status_code=404)
+        
+    c.nome = dados.nome
+    if hasattr(c, 'cep'): c.cep = dados.cep
+    c.endereco = dados.endereco
+    if hasattr(c, 'numero'): c.numero = dados.numero
+    if hasattr(c, 'bairro'): c.bairro = dados.bairro
+    if hasattr(c, 'complemento'): c.complemento = dados.complemento
+    
+    # 🚨 ATUALIZA A SENHA SE ELE DIGITOU UMA NOVA
+    if dados.senha and dados.senha.strip() != "":
+        c.senha = dados.senha.strip()
+        
+    # 🚨 VERIFICA SE A COLUNA FOTO EXISTE E ATUALIZA
+    if dados.foto and dados.foto.strip() != "":
+        if hasattr(c, 'foto'): 
+            c.foto = dados.foto
+        else:
+            # Se não existir, a gente tenta injetar a coluna pelo SQLAlchemy rapidinho!
+            try:
+                from sqlalchemy import text
+                db.execute(text("ALTER TABLE clientes ADD COLUMN foto VARCHAR DEFAULT ''"))
+                db.commit()
+                c.foto = dados.foto
+            except:
+                pass
+    
+    db.commit()
+    return {"status": "sucesso"}
 
 @app.get("/api/rastreio/{busca}")
 def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
@@ -2687,34 +2738,6 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
         "tipo": str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', ''))).split('.')[-1].upper(),
         "total": pedido.total_pago
     }
-
-@app.get("/api/cliente/{cliente_id}/perfil")
-def obter_perfil_cliente(cliente_id: int, db: Session = Depends(get_db)):
-    c = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
-    if not c: raise HTTPException(status_code=404)
-    return {
-        "nome": c.nome, 
-        "cep": getattr(c, 'cep', ''), 
-        "endereco": getattr(c, 'endereco', ''),
-        "numero": getattr(c, 'numero', ''), 
-        "bairro": getattr(c, 'bairro', ''), 
-        "complemento": getattr(c, 'complemento', '')
-    }
-
-@app.put("/api/cliente/{cliente_id}/perfil")
-def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db: Session = Depends(get_db)):
-    c = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
-    if not c: raise HTTPException(status_code=404)
-        
-    c.nome = dados.nome
-    if hasattr(c, 'cep'): c.cep = dados.cep
-    c.endereco = dados.endereco
-    if hasattr(c, 'numero'): c.numero = dados.numero
-    if hasattr(c, 'bairro'): c.bairro = dados.bairro
-    if hasattr(c, 'complemento'): c.complemento = dados.complemento
-    
-    db.commit()
-    return {"status": "sucesso"}
 
 # ==========================================
 # MÓDULO DE LOGÍSTICA (TAXAS DE ENTREGA)
