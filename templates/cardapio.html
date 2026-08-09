@@ -404,25 +404,25 @@
     <!-- ============================================== -->
     <!-- MOTOR JAVASCRIPT PRINCIPAL -->
     <!-- ============================================== -->
+    <!-- ============================================== -->
+    <!-- MOTOR JAVASCRIPT PRINCIPAL -->
+    <!-- ============================================== -->
     <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
+        // SCRIPT DE MODO ESCURO RESTAURADO E BLINDADO
+        function toggleTheme() {
+            const icon = document.getElementById('theme-icon');
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if(icon) icon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if(icon) icon.classList.replace('ph-moon', 'ph-sun');
+            }
+        }
 
         let produtosServer = [];
-        let carrinho = [];
-        let clienteLogado = null;
-        let produtoSendoMontado = null;
-        let complementosAtuais = [];
-        let cupomAplicado = null;
-        let valorDescontoCupom = 0;
-        let taxasEntrega = [];
-        let valorFreteAtual = 0;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            carregarConfiguracoes(); 
-            verificarSessao();
-            carregarCardapioDigital();
-            carregarTaxasEntrega(); 
-        });
 
         // ==========================
         // SISTEMA DE EDIÇÃO DE PERFIL E FOTO
