@@ -31,9 +31,14 @@
     <header class="glass fixed top-0 w-full z-30 transition-all duration-300">
         <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-brand-500 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-500/40 border-2 border-slate-800">A</div>
+                <!-- 🚨 INJEÇÃO 1: CONTAINER DA LOGO DINÂMICA 🚨 -->
+                <div id="header-logo-container" class="w-10 h-10 bg-brand-500 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-500/40 border-2 border-slate-800 overflow-hidden shrink-0 transition-colors duration-300">
+                    <span id="header-logo-letra">A</span>
+                    <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
+                </div>
                 <div>
-                    <h1 class="font-black text-lg tracking-tight text-white leading-none">Art's Burguer</h1>
+                    <!-- NOME DA LOJA DINÂMICO -->
+                    <h1 id="nome-loja-header" class="font-black text-lg tracking-tight text-white leading-none">Art's Burguer</h1>
                     <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-400 mt-1 flex items-center">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Aberto agora
                     </p>
@@ -279,7 +284,7 @@
             </div>
 
             <div class="absolute bottom-0 w-full bg-slate-900 border-t border-slate-800 p-4">
-                <button onclick="finalizarPedidoOnline()" id="btn-finalizar-online" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl flex justify-between px-6 items-center shadow-[0_10px_30px_rgba(16,185,129,0.2)] active:scale-95 transition-transform uppercase tracking-widest text-xs">
+                <button onclick="enviarPedidoNuvem(event)" id="btn-enviar-pedido" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl flex justify-between px-6 items-center shadow-[0_10px_30px_rgba(16,185,129,0.2)] active:scale-95 transition-transform uppercase tracking-widest text-xs">
                     <span>Confirmar Pedido</span>
                     <span id="carrinho-total-final" class="text-sm">R$ 0,00</span>
                 </button>
@@ -385,7 +390,7 @@
             carregarConfiguracoes(); 
             verificarSessao();
             carregarCardapioDigital();
-            carregarTaxasEntrega(); // Busca as taxas cadastradas no Gestão
+            carregarTaxasEntrega(); 
         });
 
         // ==========================
@@ -393,7 +398,6 @@
         // ==========================
         let eventoInstalacao;
 
-        // Registra o Motor Invisível
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then(reg => {
@@ -402,11 +406,9 @@
             });
         }
 
-        // O celular avisa que o App está pronto para instalar
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             eventoInstalacao = e;
-            // Mostra o botão vermelho lindo pro cliente
             document.getElementById('btn-instalar-app').classList.remove('hidden');
         });
 
@@ -443,7 +445,7 @@
         function toggleEndereco(mostrar) {
             if(mostrar) document.getElementById('box-endereco').classList.remove('hidden');
             else document.getElementById('box-endereco').classList.add('hidden');
-            calcularFrete(); // Atualiza na hora que ele muda de Delivery pra Retirada
+            calcularFrete(); 
         }
 
         function calcularFrete() {
@@ -463,13 +465,11 @@
             atualizarContadoresCheckout(); 
         }
 
-        // 🚨 AQUI O ERRO FOI CORRIGIDO (Proteção do ID) 🚨
         function atualizarContadoresCheckout() {
             const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
             let final = subtotal - valorDescontoCupom + valorFreteAtual;
             if(final < 0) final = 0;
             
-            // Atualiza os dois botões e paineis que podem existir sem dar erro
             const btnFinal1 = document.getElementById('final-total');
             if(btnFinal1) btnFinal1.innerText = `R$ ${final.toFixed(2).replace('.',',')}`;
             
@@ -507,6 +507,26 @@
                 const res = await fetch('/api/gestao/configuracoes');
                 const configLoja = await res.json();
                 
+                // 🚨 MOTOR DA LOGO DINÂMICA E NOME DA LOJA 🚨
+                if(configLoja.nome_empresa) {
+                    const nomeEl = document.getElementById('nome-loja-header');
+                    if(nomeEl) nomeEl.innerText = configLoja.nome_empresa;
+                }
+
+                if(configLoja.logo_url && configLoja.logo_url.trim() !== '') {
+                    const letra = document.getElementById('header-logo-letra');
+                    const img = document.getElementById('header-logo-img');
+                    const container = document.getElementById('header-logo-container');
+
+                    if(letra && img && container) {
+                        letra.classList.add('hidden');
+                        img.src = configLoja.logo_url;
+                        img.classList.remove('hidden');
+                        container.classList.remove('bg-brand-500', 'border-slate-800');
+                        container.classList.add('bg-white', 'border-slate-700');
+                    }
+                }
+
                 const pgs = configLoja.formas_pagamento ? configLoja.formas_pagamento.split(',') : ['Dinheiro Físico', 'Pix', 'Cartão'];
                 const selectPg = document.getElementById('forma-pag-online');
                 
@@ -721,7 +741,7 @@
                     document.getElementById('edit-perf-num').value = d.numero || "";
                     document.getElementById('edit-perf-comp').value = d.complemento || "";
                     
-                    document.getElementById('modal-perfil').classList.replace('flex', 'hidden'); // Esconde o painel normal
+                    document.getElementById('modal-perfil').classList.replace('flex', 'hidden'); 
                     document.getElementById('modal-editar-perfil').classList.remove('hidden');
                     document.getElementById('modal-editar-perfil').classList.add('flex');
                 }
@@ -750,7 +770,7 @@
                     localStorage.setItem('arts_cliente', JSON.stringify(clienteLogado));
                     
                     document.getElementById('modal-editar-perfil').classList.replace('flex', 'hidden');
-                    verificarSessao(); // Atualiza o header lá fora
+                    verificarSessao(); 
                 }
             } catch(e) { alert("Erro de conexão com o banco."); }
             btn.innerHTML = "Atualizar Perfil";
@@ -949,7 +969,6 @@
             
             fecharModalProduto(); 
             
-            // 🚨 AQUI ESTAVA O PROBLEMA! AGORA É CHAMADA A FUNÇÃO CORRIGIDA 🚨
             atualizarContadores();
         }
 
@@ -990,11 +1009,9 @@
             } catch(e) { alert("Erro ao validar cupom."); }
         }
 
-        // 🚨 O CÁLCULO SEGURO DO CARRINHO 🚨
         function atualizarContadores() {
             const subtotalLocal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
             
-            // Tenta atualizar se o painel do checkout existir
             const chkSub = document.getElementById('check-subtotal');
             if(chkSub) chkSub.innerText = `R$ ${subtotalLocal.toFixed(2).replace('.',',')}`;
             
@@ -1034,7 +1051,6 @@
                 if(sc) { sc.classList.add('hidden'); document.getElementById('input-cupom').value = ''; }
                 fecharCarrinho();
             }
-            // Chama também a atualização da logística se o checkout estiver aberto
             atualizarContadoresCheckout();
         }
 
@@ -1067,7 +1083,6 @@
             if(carrinho.length === 0) return;
             document.getElementById('modal-carrinho').classList.replace('flex', 'hidden');
             
-            // Se logado, preenche endereço base
             if(clienteLogado && !document.getElementById('ped-endereco').value) {
                 document.getElementById('ped-endereco').value = clienteLogado.endereco_completo || "";
             }
@@ -1102,7 +1117,6 @@
                 if (!nome || !tel || (isDelivery && !end)) { alert("⚠️ Preencha Nome, WhatsApp e Endereço."); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
             }
 
-            // Valida Bairro de Entrega
             if (isDelivery && taxasEntrega.length > 0 && (!selBairro || selBairro.value === "0")) {
                 alert("⚠️ Por favor, selecione o seu bairro para calcular a taxa de entrega.");
                 btn.innerHTML=txtOriginal; btn.disabled=false; return;
@@ -1120,13 +1134,11 @@
                 btn.innerHTML=txtOriginal; btn.disabled=false; return;
             }
 
-            // Prepara itens e insere aviso do cupom
             let itensFinais = carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao }));
             if(cupomAplicado) {
                 itensFinais[0].observacao += ` | 🎫 Cupom Usado: ${cupomAplicado} (-R$ ${valorDescontoCupom.toFixed(2)})`;
             }
 
-            // Mágica Matemática do Frete e Cashback
             const descontoFinalEnviado = valorDescontoCupom - valorFreteAtual;
 
             const payload = {
@@ -1135,7 +1147,6 @@
                 usar_saldo_cashback: descontoFinalEnviado
             };
 
-            // TOKENIZAÇÃO DO CARTÃO - MERCADO PAGO 
             if (tipoPgto === 'credito') {
                 const numCartao = document.getElementById('cc-num').value.replace(/\D/g, '');
                 const nomeCartao = document.getElementById('cc-nome').value;
