@@ -416,34 +416,39 @@ def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db
 def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
     
-    # 1. Verifica se o cliente existe e tem a coluna 'senha' (NOME CORRETO)
-    if not cliente or not cliente.senha:
+    # Blindagem 1: Puxa a senha de forma segura
+    senha_salva = getattr(cliente, 'senha', None)
+    if not cliente or not senha_salva:
         raise HTTPException(status_code=401, detail="Telefone ou senha incorretos.")
         
-    # 2. Blindagem Dupla de Senha (aceita hash ou texto puro)
+    # Blindagem 2: Verifica a senha com ou sem hash
     senha_valida = False
     try:
-        if pwd_context.verify(dados.senha, cliente.senha):
+        if pwd_context.verify(dados.senha, senha_salva):
             senha_valida = True
     except:
         pass
         
-    if dados.senha == cliente.senha: # Caso a senha tenha sido salva sem hash
+    if dados.senha == senha_salva: 
         senha_valida = True
         
     if not senha_valida:
         raise HTTPException(status_code=401, detail="Telefone ou senha incorretos.")
     
-    # 3. Retorna os dados usando os NOMES CORRETOS do banco de dados
+    # Blindagem 3: Puxa os dados com getattr para o banco de dados nunca dar erro 500!
+    endereco_formatado = f"{getattr(cliente, 'endereco', '')}, {getattr(cliente, 'numero', '')} - {getattr(cliente, 'bairro', '')} ({getattr(cliente, 'complemento', '')})"
+    
     return {
         "status": "sucesso",
         "cliente": {
-            "id": cliente.id,
-            "nome": cliente.nome,
-            "telefone": cliente.telefone,
-            "endereco_completo": f"{cliente.endereco}, {cliente.numero} - {cliente.bairro} ({cliente.complemento})",
-            "pontos": cliente.pontos,
-            "cashback": cliente.cashback
+            "id": getattr(cliente, 'id', 0),
+            "nome": getattr(cliente, 'nome', 'Visitante'),
+            "telefone": getattr(cliente, 'telefone', ''),
+            "cpf": getattr(cliente, 'cpf', ''),
+            "foto": getattr(cliente, 'foto', ''),
+            "endereco_completo": endereco_formatado,
+            "pontos": getattr(cliente, 'pontos', 0),
+            "cashback": getattr(cliente, 'cashback', 0.0)
         }
     }
 
