@@ -13,8 +13,14 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- 🚨 MOTOR DE TEMA CLARO/ESCURO 🚨 -->
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } };
+        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
+    </script>
+
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .card-enter { animation: slideIn 0.3s ease-out forwards; }
@@ -24,10 +30,10 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 flex flex-col h-screen text-slate-800 overflow-hidden">
+<body class="bg-slate-100 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 flex flex-col h-screen overflow-hidden transition-colors duration-300">
 
-    <!-- HEADER LOGÍSTICA (NOVO VISUAL) -->
-    <header class="bg-slate-900 text-white h-24 flex items-center justify-between px-8 shadow-xl shrink-0 z-10 relative">
+    <!-- HEADER LOGÍSTICA (NOVO VISUAL COM DARK MODE) -->
+    <header class="bg-slate-900 dark:bg-slate-950 text-white h-24 flex items-center justify-between px-8 shadow-xl shrink-0 z-10 relative border-b border-transparent dark:border-slate-800 transition-colors">
         <div class="absolute inset-0 opacity-10 overflow-hidden pointer-events-none">
             <i class="ph-fill ph-map-pin text-[150px] absolute -right-10 -top-10"></i>
         </div>
@@ -50,6 +56,12 @@
                 <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></div>
                 <span class="text-xs font-bold text-slate-300 tracking-wider">Auto-Refresh Ativo</span>
             </div>
+            
+            <!-- 🚨 BOTÃO MODO ESCURO 🚨 -->
+            <button onclick="toggleTheme()" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-3.5 rounded-xl transition-colors active:scale-95 shadow-sm" title="Mudar Tema">
+                <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
+            </button>
+
             <button onclick="buscarPedidosLogistica()" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-3.5 rounded-xl transition-colors active:scale-95 shadow-sm" title="Atualizar Agora">
                 <i class="ph-bold ph-arrows-clockwise text-xl"></i>
             </button>
@@ -63,16 +75,15 @@
     <main class="flex-1 flex overflow-hidden p-4 md:p-8 space-x-4 md:space-x-8">
         
         <!-- COLUNA 1: PRONTOS PARA DESPACHO -->
-        <section class="flex-1 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-            <div class="p-6 bg-amber-50 border-b border-amber-100 flex justify-between items-center shrink-0">
-                <h2 class="font-black text-lg text-amber-900 flex items-center tracking-tight">
+        <section class="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+            <div class="p-6 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-100 dark:border-amber-500/20 flex justify-between items-center shrink-0 transition-colors">
+                <h2 class="font-black text-lg text-amber-900 dark:text-amber-400 flex items-center tracking-tight">
                     <i class="ph-fill ph-package text-amber-500 mr-2 text-2xl"></i> Aguardando Saída
                 </h2>
                 <span class="bg-amber-500 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="badge-prontos">0</span>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 no-scrollbar relative" id="lista-prontos">
-                <!-- CARDS INJETADOS AQUI -->
-                <div class="flex flex-col items-center justify-center h-full text-slate-300 opacity-50">
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/50 no-scrollbar relative transition-colors" id="lista-prontos">
+                <div class="flex flex-col items-center justify-center h-full text-slate-300 dark:text-slate-600 opacity-50">
                     <i class="ph-bold ph-spinner animate-spin text-5xl mb-4"></i>
                     <p class="font-bold text-sm uppercase tracking-widest">Buscando Pedidos...</p>
                 </div>
@@ -80,16 +91,15 @@
         </section>
 
         <!-- COLUNA 2: EM ROTA (Com o Cliente) -->
-        <section class="flex-1 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-            <div class="p-6 bg-blue-50 border-b border-blue-100 flex justify-between items-center shrink-0">
-                <h2 class="font-black text-lg text-blue-900 flex items-center tracking-tight">
+        <section class="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+            <div class="p-6 bg-blue-50 dark:bg-blue-500/10 border-b border-blue-100 dark:border-blue-500/20 flex justify-between items-center shrink-0 transition-colors">
+                <h2 class="font-black text-lg text-blue-900 dark:text-blue-400 flex items-center tracking-tight">
                     <i class="ph-fill ph-map-pin-line text-blue-500 mr-2 text-2xl"></i> Em Rota de Entrega
                 </h2>
                 <span class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="badge-rota">0</span>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 no-scrollbar relative" id="lista-rota">
-                <!-- CARDS INJETADOS AQUI -->
-                <div class="flex flex-col items-center justify-center h-full text-slate-300 opacity-50">
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/50 no-scrollbar relative transition-colors" id="lista-rota">
+                <div class="flex flex-col items-center justify-center h-full text-slate-300 dark:text-slate-600 opacity-50">
                     <i class="ph-fill ph-motorcycle text-6xl mb-4"></i>
                     <p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p>
                 </div>
@@ -100,6 +110,22 @@
 
     <!-- SCRIPT DE EXPEDIÇÃO (MÁGICA INVISÍVEL NO BACKEND) -->
     <script>
+        // SCRIPT DE TEMA
+        const themeIcon = document.getElementById('theme-icon');
+        if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if(themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if(themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+            }
+        }
+
         setInterval(buscarPedidosLogistica, 5000);
         document.addEventListener('DOMContentLoaded', buscarPedidosLogistica);
 
@@ -123,7 +149,7 @@
             const container = document.getElementById('lista-prontos');
             if (pedidos.length === 0) {
                 container.innerHTML = `
-                    <div class="h-full flex flex-col items-center justify-center text-slate-300 opacity-50">
+                    <div class="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 opacity-50 transition-colors">
                         <i class="ph-fill ph-check-circle text-6xl mb-4"></i>
                         <p class="font-bold text-sm uppercase tracking-widest">Expedição Limpa</p>
                     </div>`;
@@ -135,19 +161,19 @@
                 const endLimpo = p.endereco.replace(/'/g, "\\'");
 
                 return `
-                    <div class="card-enter bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="card-enter bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all relative overflow-hidden">
                         <div class="absolute left-0 top-0 bottom-0 w-1 ${isRetirada ? 'bg-purple-500' : 'bg-amber-400'}"></div>
                         
                         <div class="flex justify-between items-start mb-3 pl-2">
                             <div>
-                                <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-200 shadow-inner">#${p.senha_diaria || p.id}</span>
-                                <span class="${isRetirada ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-orange-50 text-orange-700 border-orange-200'} px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest border shadow-sm">${isRetirada ? 'Retirada' : 'Delivery'}</span>
+                                <span class="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-200 dark:border-slate-700 shadow-inner">#${p.senha_diaria || p.id}</span>
+                                <span class="${isRetirada ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'} px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest border shadow-sm">${isRetirada ? 'Retirada' : 'Delivery'}</span>
                             </div>
                         </div>
                         
                         <div class="pl-2 mb-4">
-                            <h3 class="font-black text-slate-800 text-lg mb-1 tracking-tight">${p.cliente}</h3>
-                            <p class="text-xs font-bold text-slate-500 flex items-start leading-snug">
+                            <h3 class="font-black text-slate-800 dark:text-white text-lg mb-1 tracking-tight">${p.cliente}</h3>
+                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-start leading-snug">
                                 <i class="ph-fill ph-map-pin text-brand-500 mr-1.5 mt-0.5 text-base"></i> 
                                 ${p.endereco}
                             </p>
@@ -172,9 +198,11 @@
                                     <button onclick="despacharMotoboyProprio(${p.id})" id="btn-proprio-${p.id}" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md">
                                         <i class="ph-fill ph-moped mr-2 text-lg"></i> Motoboy da Casa
                                     </button>
-                                    <button onclick="window.open('/motoboy?pedido=${p.senha_diaria || p.id}', '_blank')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 mt-2 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-inner">
-    <i class="ph-bold ph-qr-code mr-1"></i> Link do Entregador
-</button>
+                                    
+                                    <!-- 🚨 BOTÃO DE RASTREIO AO VIVO INJETADO 🚨 -->
+                                    <button onclick="window.open('/motoboy?pedido=${p.senha_diaria || p.id}', '_blank')" class="w-full bg-slate-800 dark:bg-slate-900 hover:bg-slate-700 dark:hover:bg-slate-800 text-slate-300 dark:text-slate-400 font-bold py-2 mt-2 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-inner border border-transparent dark:border-slate-700">
+                                        <i class="ph-bold ph-qr-code mr-1"></i> Enviar Link do GPS (Motoboy)
+                                    </button>
                                 </div>
                             `}
                         </div>
@@ -187,7 +215,7 @@
             const container = document.getElementById('lista-rota');
             if (pedidos.length === 0) {
                 container.innerHTML = `
-                    <div class="h-full flex flex-col items-center justify-center text-slate-300 opacity-50">
+                    <div class="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 opacity-50 transition-colors">
                         <i class="ph-fill ph-motorcycle text-6xl mb-4"></i>
                         <p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p>
                     </div>`;
@@ -197,12 +225,12 @@
             container.innerHTML = pedidos.map(p => {
                 const endLimpo = p.endereco.replace(/'/g, "\\'");
                 return `
-                <div class="card-enter bg-slate-900 text-white border border-slate-800 p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                <div class="card-enter bg-slate-900 dark:bg-slate-800 text-white border border-slate-800 dark:border-slate-700 p-5 rounded-2xl shadow-lg relative overflow-hidden transition-colors">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
                     
                     <div class="flex justify-between items-start mb-3 pl-2">
                         <div>
-                            <span class="bg-slate-800 text-slate-300 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-700 shadow-inner">#${p.senha_diaria || p.id}</span>
+                            <span class="bg-slate-800 dark:bg-slate-900 text-slate-300 dark:text-slate-400 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-700 dark:border-slate-600 shadow-inner">#${p.senha_diaria || p.id}</span>
                             <span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="ph-fill ph-motorcycle mr-1"></i> A Caminho</span>
                         </div>
                     </div>
@@ -216,7 +244,7 @@
                     </div>
                     
                     <div class="flex space-x-2 pl-2">
-                        <button onclick="abrirGPS('${endLimpo}')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 px-4 rounded-xl flex items-center justify-center transition-colors text-xs shadow-md" title="Abrir GPS">
+                        <button onclick="abrirGPS('${endLimpo}')" class="bg-slate-700 dark:bg-slate-900 hover:bg-slate-600 dark:hover:bg-slate-700 text-white dark:text-blue-400 font-black py-3 px-4 rounded-xl flex items-center justify-center transition-colors text-xs shadow-md border border-transparent dark:border-slate-700" title="Abrir no Waze/Google Maps">
                             <i class="ph-fill ph-navigation-arrow text-blue-400 text-lg"></i>
                         </button>
                         
@@ -269,7 +297,7 @@
                     const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nome_motoboy: `App Pessoal (${plataforma})` })
+                        body: JSON.stringify({ nome_motoboy: `App Parceiro (${plataforma})` })
                     });
 
                     if(res.ok) { buscarPedidosLogistica(); } 
