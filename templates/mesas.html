@@ -7,8 +7,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 🚨 MOTOR DE TEMA CLARO/ESCURO 🚨 -->
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
+        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
+    </script>
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         .mesa-livre { background-color: #10b981; border-color: #059669; color: white; }
         .mesa-ocupada { background-color: #ef4444; border-color: #b91c1c; color: white; animation: pulse 2s infinite; }
         @keyframes pulse {
@@ -18,37 +25,57 @@
         }
     </style>
 </head>
-<body class="flex flex-col h-screen text-slate-100 overflow-hidden">
+<body class="bg-slate-100 dark:bg-slate-900 flex flex-col h-screen text-slate-800 dark:text-slate-100 overflow-hidden transition-colors duration-300">
 
     <!-- HEADER -->
-    <header class="bg-slate-900 border-b border-slate-800 h-24 flex items-center justify-between px-8 shadow-2xl shrink-0 z-10 relative">
+    <header class="bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 h-24 flex items-center justify-between px-8 shadow-xl shrink-0 z-10 relative transition-colors">
         <div class="flex items-center">
             <div class="w-14 h-14 bg-indigo-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-indigo-500/30">
                 <i class="ph-bold ph-armchair text-3xl text-white"></i>
             </div>
             <div>
-                <h1 class="text-2xl font-black tracking-tight text-white">Mapa do Salão</h1>
-                <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mt-0.5">Gestão Visual de Mesas</p>
+                <h1 class="text-2xl font-black tracking-tight text-slate-800 dark:text-white">Mapa do Salão</h1>
+                <p class="text-[10px] text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest mt-0.5">Gestão Visual de Mesas</p>
             </div>
         </div>
-        <div class="flex space-x-4">
-            <button onclick="carregarMesas()" class="bg-slate-800 hover:bg-slate-700 text-white p-3.5 rounded-xl transition-colors shadow-sm">
+        <div class="flex items-center space-x-4">
+            
+            <button onclick="toggleTheme()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-brand-400 p-3.5 rounded-xl transition-colors shadow-inner border border-slate-200 dark:border-transparent">
+                <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
+            </button>
+
+            <button onclick="carregarMesas()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white p-3.5 rounded-xl transition-colors shadow-sm border border-slate-200 dark:border-transparent">
                 <i class="ph-bold ph-arrows-clockwise text-xl"></i>
             </button>
-            <a href="/gestao" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 p-3.5 rounded-xl transition-colors border border-red-500/20 flex items-center">
+            <a href="/gestao" class="bg-red-50 dark:bg-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/40 text-red-500 dark:text-red-400 p-3.5 rounded-xl transition-colors border border-red-200 dark:border-red-500/20 flex items-center shadow-sm">
                 <i class="ph-bold ph-sign-out text-xl"></i>
             </a>
         </div>
     </header>
 
     <!-- GRID DE MESAS -->
-    <main class="flex-1 overflow-y-auto p-8">
+    <main class="flex-1 overflow-y-auto p-8 bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6" id="grid-mesas">
             <!-- As mesas serão injetadas aqui via JavaScript -->
         </div>
     </main>
 
     <script>
+        const themeIcon = document.getElementById('theme-icon');
+        if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if(themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if(themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+            }
+        }
+
         const TOTAL_MESAS = 12; // Você pode aumentar esse número a qualquer momento
 
         document.addEventListener('DOMContentLoaded', carregarMesas);
