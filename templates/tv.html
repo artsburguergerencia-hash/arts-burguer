@@ -7,11 +7,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 🚨 MOTOR DE TEMA CLARO/ESCURO 🚨 -->
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' }, dark: { 900: '#0B0F19', 800: '#151A27', 700: '#1F2639' } } } } }
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' }, dark: { 900: '#0B0F19', 800: '#151A27', 700: '#1F2639' } } } } }
+        if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); } 
+        else { document.documentElement.classList.add('dark'); } // Padrão da TV é o Escuro
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0B0F19; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
         /* Animação para o pedido mais recente */
@@ -29,71 +33,77 @@
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col text-slate-100">
+<body class="bg-slate-50 dark:bg-dark-900 text-slate-800 dark:text-slate-100 h-screen w-screen flex flex-col transition-colors duration-300">
 
     <!-- Áudio de Chamada (Campainha Premium) -->
     <audio id="som-chamada" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_22dcd5dbda.mp3?filename=airport-chime-1-105102.mp3" preload="auto"></audio>
 
     <!-- TELA DE ATIVAÇÃO INICIAL (Fica invisível depois que liga a TV) -->
-    <div id="tela-ativacao" class="fixed inset-0 z-50 bg-dark-900/90 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer" onclick="iniciarTV()">
+    <div id="tela-ativacao" class="fixed inset-0 z-50 bg-white/95 dark:bg-dark-900/90 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-colors" onclick="iniciarTV()">
         <div class="w-32 h-32 bg-brand-500 rounded-3xl flex items-center justify-center text-white font-black text-6xl shadow-[0_0_50px_rgba(255,71,87,0.5)] mb-8 animate-bounce">A</div>
-        <h1 class="text-5xl font-black text-white tracking-tight mb-4">TV de Senhas Pronta</h1>
-        <p class="text-xl font-bold text-slate-400 uppercase tracking-widest mb-10">Toque em qualquer lugar para ligar a tela e o som</p>
-        <button class="bg-white text-dark-900 px-10 py-5 rounded-full font-black uppercase tracking-widest text-lg shadow-2xl flex items-center">
+        <h1 class="text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">TV de Senhas Pronta</h1>
+        <p class="text-xl font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-10">Toque em qualquer lugar para ligar a tela e o som</p>
+        <button class="bg-slate-900 dark:bg-white text-white dark:text-dark-900 px-10 py-5 rounded-full font-black uppercase tracking-widest text-lg shadow-2xl flex items-center hover:scale-105 transition-transform">
             <i class="ph-bold ph-power mr-3 text-2xl text-brand-500"></i> Iniciar Sistema
         </button>
     </div>
 
     <!-- HEADER PREMIUM E LIMPO -->
-    <header class="h-24 px-8 flex items-center justify-between shrink-0 relative z-10 border-b border-white/5">
+    <header class="h-24 px-8 flex items-center justify-between shrink-0 relative z-10 border-b border-slate-200 dark:border-white/5 transition-colors bg-white/50 dark:bg-transparent backdrop-blur-sm">
         <div class="flex items-center">
             <div class="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-[0_0_20px_rgba(255,71,87,0.4)] mr-4">A</div>
             <div>
-                <h1 class="text-2xl font-black tracking-tight text-white leading-none">Art's Burguer</h1>
+                <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Art's Burguer</h1>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Acompanhe seu pedido</p>
             </div>
         </div>
-        <div id="relogio" class="text-4xl font-black tracking-tighter text-slate-300">00:00</div>
+        
+        <div class="flex items-center space-x-6">
+            <button onclick="toggleTheme()" class="w-12 h-12 rounded-full flex items-center justify-center bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-brand-400 hover:bg-slate-300 dark:hover:bg-white/10 transition-colors shadow-inner">
+                <i id="theme-icon" class="ph-bold ph-moon text-2xl"></i>
+            </button>
+            <div id="relogio" class="text-4xl font-black tracking-tighter text-slate-800 dark:text-slate-300">00:00</div>
+        </div>
     </header>
 
     <main class="flex-1 flex overflow-hidden p-6 gap-6 relative">
-        <!-- Luz de fundo ambiente -->
-        <div class="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+        <!-- Luz de fundo ambiente (Visível apenas no dark mode) -->
+        <div class="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none hidden dark:block"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none hidden dark:block"></div>
 
         <!-- COLUNA 1: PREPARANDO (30% DA TELA) -->
-        <div class="w-[30%] bg-dark-800 rounded-[2rem] border border-white/5 flex flex-col shadow-2xl relative z-10 overflow-hidden">
-            <div class="p-8 pb-4 shrink-0 text-center border-b border-white/5">
+        <div class="w-[30%] bg-white dark:bg-dark-800 rounded-[2rem] border border-slate-200 dark:border-white/5 flex flex-col shadow-2xl relative z-10 overflow-hidden transition-colors">
+            <div class="p-8 pb-4 shrink-0 text-center border-b border-slate-100 dark:border-white/5 transition-colors">
                 <i class="ph-fill ph-cooking-pot text-amber-500 text-5xl mb-2"></i>
-                <h2 class="font-black text-2xl uppercase tracking-widest text-amber-400">Preparando</h2>
+                <h2 class="font-black text-2xl uppercase tracking-widest text-amber-500 dark:text-amber-400">Preparando</h2>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Na chapa</p>
             </div>
             
             <div class="flex-1 p-6 overflow-y-auto no-scrollbar">
                 <div id="lista-preparo" class="grid grid-cols-2 gap-4 auto-rows-max">
-                    <div class="col-span-2 text-center text-slate-600 font-bold mt-10">Aguardando...</div>
+                    <div class="col-span-2 text-center text-slate-400 dark:text-slate-600 font-bold mt-10">Aguardando...</div>
                 </div>
             </div>
         </div>
 
         <!-- COLUNA 2: PRONTO (70% DA TELA) -->
-        <div class="flex-1 bg-dark-800 rounded-[2rem] border border-emerald-900/30 flex flex-col shadow-2xl relative z-10 overflow-hidden">
-            <div class="p-8 pb-4 shrink-0 text-center border-b border-white/5">
-                <h2 class="font-black text-4xl uppercase tracking-widest text-emerald-400 tracking-tight">Retire seu Pedido</h2>
+        <div class="flex-1 bg-white dark:bg-dark-800 rounded-[2rem] border border-emerald-200 dark:border-emerald-900/30 flex flex-col shadow-2xl relative z-10 overflow-hidden transition-colors">
+            <div class="p-8 pb-4 shrink-0 text-center border-b border-slate-100 dark:border-white/5 transition-colors">
+                <h2 class="font-black text-4xl uppercase tracking-widest text-emerald-500 dark:text-emerald-400 tracking-tight">Retire seu Pedido</h2>
                 <p class="text-xs font-bold text-emerald-600/70 uppercase tracking-widest mt-2">Venha ao balcão com sua senha</p>
             </div>
             
             <div class="flex-1 flex flex-col p-8">
                 <!-- DESTAQUE (ÚLTIMO PEDIDO) -->
                 <div id="destaque-pronto" class="flex-[3] flex items-center justify-center mb-8">
-                    <div class="w-full h-full bg-dark-900/50 border-2 border-slate-800 rounded-[3rem] flex flex-col items-center justify-center">
-                        <span class="text-slate-600 text-2xl font-black uppercase tracking-widest">Aguardando Chamada</span>
+                    <div class="w-full h-full bg-slate-50 dark:bg-dark-900/50 border-2 border-slate-200 dark:border-slate-800 rounded-[3rem] flex flex-col items-center justify-center transition-colors">
+                        <span class="text-slate-400 dark:text-slate-600 text-2xl font-black uppercase tracking-widest">Aguardando Chamada</span>
                     </div>
                 </div>
 
                 <!-- FILA DE PRONTOS (PEDIDOS ANTERIORES) -->
-                <div class="flex-1 border-t border-white/5 pt-8">
-                    <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Também aguardando retirada:</p>
+                <div class="flex-1 border-t border-slate-100 dark:border-white/5 pt-8 transition-colors">
+                    <p class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Também aguardando retirada:</p>
                     <div id="lista-pronto-fila" class="grid grid-cols-4 gap-4">
                         <!-- Itens injetados via JS -->
                     </div>
@@ -103,6 +113,21 @@
     </main>
 
     <script>
+        const themeIcon = document.getElementById('theme-icon');
+        if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if(themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if(themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+            }
+        }
+
         let ultimoPedidoProntoId = 0;
         let somAtivado = false;
 
@@ -112,24 +137,23 @@
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
         }, 1000);
 
-        // Tela de clique inicial elegante para liberar o som
         function iniciarTV() {
             somAtivado = true;
             document.getElementById('tela-ativacao').classList.add('hidden');
             
             const som = document.getElementById('som-chamada');
-            som.volume = 0; // Toca mudo a primeira vez só pro navegador liberar a tag
+            som.volume = 0; 
             som.play().then(() => {
                 som.pause();
                 som.currentTime = 0;
-                som.volume = 1; // Volta pro máximo pros próximos toques
+                som.volume = 1; 
             }).catch(()=>{});
             
             atualizarTV();
         }
 
         async function atualizarTV() {
-            if(!somAtivado) return; // Só busca se a TV foi iniciada
+            if(!somAtivado) return; 
             
             try {
                 const res = await fetch('/api/kds/pedidos');
@@ -155,59 +179,56 @@
                     ultimoPedidoProntoId = Math.max(ultimoPedidoProntoId, maisRecente.id);
                 }
 
-                // Renderiza PREPARANDO (Lateral Esquerda)
+                // Renderiza PREPARANDO
                 const gridPreparo = document.getElementById('lista-preparo');
                 if (emPreparo.length === 0) {
-                    gridPreparo.innerHTML = '<div class="col-span-2 text-center text-slate-600 font-bold mt-10">Fila Limpa</div>';
+                    gridPreparo.innerHTML = '<div class="col-span-2 text-center text-slate-400 dark:text-slate-600 font-bold mt-10">Fila Limpa</div>';
                 } else {
                     gridPreparo.innerHTML = emPreparo.map(p => `
-                        <div class="bg-dark-900 border border-white/5 rounded-2xl flex items-center justify-center py-6 shadow-sm fade-slide-up">
-                            <span class="text-4xl font-black text-slate-300 tracking-tighter">${p.senha_diaria}</span>
+                        <div class="bg-slate-100 dark:bg-dark-900 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center justify-center py-6 shadow-sm fade-slide-up transition-colors">
+                            <span class="text-4xl font-black text-slate-600 dark:text-slate-300 tracking-tighter">${p.senha_diaria}</span>
                         </div>
                     `).join('');
                 }
 
-                // Renderiza PRONTOS (Área Principal)
+                // Renderiza PRONTOS
                 const destaque = document.getElementById('destaque-pronto');
                 const filaProntos = document.getElementById('lista-pronto-fila');
                 
                 if (prontos.length === 0) {
                     destaque.innerHTML = `
-                        <div class="w-full h-full bg-dark-900/50 border border-white/5 rounded-[3rem] flex flex-col items-center justify-center">
-                            <i class="ph-fill ph-check-circle text-6xl text-slate-700 mb-4"></i>
-                            <span class="text-slate-500 text-lg font-black uppercase tracking-widest">Balcão Livre</span>
+                        <div class="w-full h-full bg-slate-50 dark:bg-dark-900/50 border border-slate-200 dark:border-white/5 rounded-[3rem] flex flex-col items-center justify-center transition-colors">
+                            <i class="ph-fill ph-check-circle text-6xl text-slate-300 dark:text-slate-700 mb-4"></i>
+                            <span class="text-slate-400 dark:text-slate-500 text-lg font-black uppercase tracking-widest">Balcão Livre</span>
                         </div>
                     `;
                     filaProntos.innerHTML = '';
                 } else {
-                    // O Mais Recente vai pro Centro Gigante
                     const pDestaque = prontos[0];
                     destaque.innerHTML = `
-                        <div class="w-full h-full bg-emerald-500/10 border-4 border-emerald-500/50 rounded-[3rem] flex flex-col items-center justify-center destaque-pulse fade-slide-up">
-                            <span class="text-[150px] font-black text-emerald-400 tracking-tighter leading-none">${pDestaque.senha_diaria}</span>
-                            <span class="text-emerald-500 text-2xl font-black uppercase tracking-widest mt-2 bg-emerald-500/20 px-6 py-2 rounded-full border border-emerald-500/30">
+                        <div class="w-full h-full bg-emerald-50 dark:bg-emerald-500/10 border-4 border-emerald-400 dark:border-emerald-500/50 rounded-[3rem] flex flex-col items-center justify-center destaque-pulse fade-slide-up transition-colors">
+                            <span class="text-[150px] font-black text-emerald-500 dark:text-emerald-400 tracking-tighter leading-none">${pDestaque.senha_diaria}</span>
+                            <span class="text-emerald-600 dark:text-emerald-500 text-2xl font-black uppercase tracking-widest mt-2 bg-emerald-100 dark:bg-emerald-500/20 px-6 py-2 rounded-full border border-emerald-200 dark:border-emerald-500/30">
                                 ${pDestaque.cliente_nome || 'Aguardando Retirada'}
                             </span>
                         </div>
                     `;
 
-                    // Os outros prontos (se houverem) ficam nas caixinhas embaixo
-                    const outrosProntos = prontos.slice(1, 9); // Pega do segundo até o 9º
+                    const outrosProntos = prontos.slice(1, 9); 
                     if (outrosProntos.length > 0) {
                         filaProntos.innerHTML = outrosProntos.map(p => `
-                            <div class="bg-emerald-900/20 border border-emerald-500/30 rounded-2xl flex items-center justify-center py-4 fade-slide-up">
-                                <span class="text-3xl font-black text-emerald-300 tracking-tighter">${p.senha_diaria}</span>
+                            <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl flex items-center justify-center py-4 fade-slide-up transition-colors">
+                                <span class="text-3xl font-black text-emerald-500 dark:text-emerald-300 tracking-tighter">${p.senha_diaria}</span>
                             </div>
                         `).join('');
                     } else {
-                        filaProntos.innerHTML = '<div class="col-span-4 text-slate-600 font-bold text-sm">Nenhum outro pedido na fila.</div>';
+                        filaProntos.innerHTML = '<div class="col-span-4 text-slate-400 dark:text-slate-600 font-bold text-sm">Nenhum outro pedido na fila.</div>';
                     }
                 }
 
             } catch(e) { console.log("Aguardando conexão com o servidor..."); }
         }
 
-        // Loop de atualização
         setInterval(atualizarTV, 3000); 
     </script>
 </body>
