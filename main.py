@@ -435,14 +435,14 @@ def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db
     if not senha_valida:
         raise HTTPException(status_code=401, detail="Telefone ou senha incorretos.")
     
-    # Blindagem 3: Puxa os dados com getattr para o banco de dados nunca dar erro 500!
+    # Blindagem 3: Puxa os dados com getattr e fallback para nunca enviar nulo (evitando quebrar o JS!)
     endereco_formatado = f"{getattr(cliente, 'endereco', '')}, {getattr(cliente, 'numero', '')} - {getattr(cliente, 'bairro', '')} ({getattr(cliente, 'complemento', '')})"
     
     return {
         "status": "sucesso",
         "cliente": {
             "id": getattr(cliente, 'id', 0),
-            "nome": getattr(cliente, 'nome', 'Visitante'),
+            "nome": getattr(cliente, 'nome', 'Visitante') or 'Visitante',
             "telefone": getattr(cliente, 'telefone', ''),
             "cpf": getattr(cliente, 'cpf', ''),
             "foto": getattr(cliente, 'foto', ''),
