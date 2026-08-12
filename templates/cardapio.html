@@ -705,15 +705,33 @@
 
         async function carregarConfiguracoes() {
             try {
-                const res = await fetch('/api/gestao/configuracoes'); const configLoja = await res.json();
-                if(configLoja.nome_empresa) { const nomeEl = document.getElementById('nome-loja-header'); if(nomeEl) nomeEl.innerText = configLoja.nome_empresa; }
-                if(configLoja.logo_url && configLoja.logo_url.trim() !== '') {
-                    const letra = document.getElementById('header-logo-letra'); const img = document.getElementById('header-logo-img'); const container = document.getElementById('header-logo-container');
+                const res = await fetch('/api/gestao/configuracoes'); 
+                const configLoja = await res.json();
+                
+                // Nome da Loja
+                if(configLoja.nome_empresa) { 
+                    const nomeEl = document.getElementById('nome-loja-header'); 
+                    if(nomeEl) nomeEl.innerText = configLoja.nome_empresa; 
+                }
+                
+                // 🚨 BLINDAGEM DA LOGO (Evita que o JS quebre se o campo for null) 🚨
+                if(configLoja.logo_url && String(configLoja.logo_url).trim() !== '' && configLoja.logo_url !== 'None') {
+                    const letra = document.getElementById('header-logo-letra'); 
+                    const img = document.getElementById('header-logo-img'); 
+                    const container = document.getElementById('header-logo-container');
+                    
                     if(letra && img && container) {
-                        letra.classList.add('hidden'); img.src = configLoja.logo_url; img.classList.remove('hidden');
-                        container.classList.remove('bg-brand-500', 'border-slate-800'); container.classList.add('bg-white', 'border-slate-200');
+                        img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
+                        img.src = configLoja.logo_url; 
+                        img.classList.remove('hidden');
+                        letra.classList.add('hidden'); 
+                        
+                        container.classList.remove('bg-brand-500', 'border-slate-800', 'dark:border-slate-800'); 
+                        container.classList.add('bg-white', 'border-slate-200', 'dark:border-slate-700');
                     }
                 }
+
+                // Opções de Pagamento
                 const pgs = configLoja.formas_pagamento ? configLoja.formas_pagamento.split(',') : ['Dinheiro Físico', 'Pix', 'Cartão'];
                 const selectPg = document.getElementById('forma-pag-online');
                 if(selectPg) {
@@ -726,7 +744,7 @@
                         return `<option value="${valorParaOBanco}">${icone} ${pg.trim()}</option>`;
                     }).join('');
                 }
-            } catch(e) {}
+            } catch(e) { console.error("Aviso: Configurações não puderam ser carregadas.", e); }
         }
 
         function toggleAreaCartao() {
