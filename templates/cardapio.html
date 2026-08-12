@@ -165,7 +165,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE EDIÇÃO DE DADOS DO CLIENTE COM FOTO E SENHA -->
+    <!-- 🚨 MODAL DE EDIÇÃO DE DADOS DO CLIENTE (COM TELEFONE INJETADO) 🚨 -->
     <div id="modal-editar-perfil" class="fixed inset-0 bg-slate-900/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-[2rem] p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto no-scrollbar">
             <button onclick="fecharModalEditarPerfil()" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
@@ -185,6 +185,9 @@
 
                 <input type="text" id="edit-perf-nome" placeholder="Nome Completo" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
                 
+                <!-- 🚨 A CAIXINHA DO TELEFONE ADICIONADA AQUI 🚨 -->
+                <input type="tel" id="edit-perf-tel" placeholder="WhatsApp (Apenas números)" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+
                 <input type="password" id="edit-perf-senha" placeholder="Nova Senha (Opcional)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
 
                 <div class="flex space-x-3 pt-2">
@@ -460,6 +463,7 @@
                 if(res.ok) {
                     const d = await res.json();
                     document.getElementById('edit-perf-nome').value = d.nome || "";
+                    document.getElementById('edit-perf-tel').value = d.telefone || "";
                     document.getElementById('edit-perf-cep').value = d.cep || "";
                     document.getElementById('edit-perf-end').value = d.endereco || "";
                     document.getElementById('edit-perf-num').value = d.numero || "";
@@ -494,6 +498,7 @@
             
             const payload = {
                 nome: document.getElementById('edit-perf-nome').value,
+                telefone: document.getElementById('edit-perf-tel').value.replace(/\D/g, ''),
                 cep: document.getElementById('edit-perf-cep').value,
                 endereco: document.getElementById('edit-perf-end').value,
                 numero: document.getElementById('edit-perf-num').value,
@@ -507,6 +512,7 @@
                 if(res.ok) {
                     alert("Seus dados foram atualizados com sucesso!");
                     clienteLogado.nome = payload.nome;
+                    clienteLogado.telefone = payload.telefone;
                     clienteLogado.endereco_completo = `${payload.endereco}, ${payload.numero} (${payload.complemento})`;
                     if(payload.foto) clienteLogado.foto = payload.foto;
                     localStorage.setItem('arts_cliente', JSON.stringify(clienteLogado));
@@ -553,7 +559,9 @@
             const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked');
             const isDelivery = radioEntrega && radioEntrega.value === 'entrega';
             const selBairro = document.getElementById('ped-bairro');
+            
             valorFreteAtual = (isDelivery && selBairro && selBairro.value !== "0") ? parseFloat(selBairro.value) : 0;
+            
             const boxFrete = document.getElementById('box-frete');
             if (isDelivery && valorFreteAtual > 0) {
                 boxFrete.classList.remove('hidden');
@@ -998,17 +1006,17 @@
         function abrirCarrinho() {
             const lista = document.getElementById('lista-carrinho-modal');
             lista.innerHTML = carrinho.map((item, index) => `
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center shadow-sm transition-colors">
-                    <img src="${item.img || ''}" class="w-16 h-16 rounded-xl object-cover mr-4 border border-slate-100 dark:border-slate-700">
-                    <div class="flex-1 pr-2">
-                        <h4 class="font-black text-slate-800 dark:text-white text-sm mb-1">${item.nome}</h4>
-                        ${item.observacao ? `<p class="text-[10px] text-brand-500 dark:text-brand-400 font-medium leading-snug mb-2 bg-brand-50 dark:bg-brand-500/10 p-1.5 rounded-lg border border-brand-100 dark:border-brand-500/20">⚠️ ${item.observacao}</p>` : ''}
-                        <p class="font-black text-brand-500 text-sm mt-1">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</p>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-6 rounded-3xl flex items-center justify-between shadow-sm transition-colors">
+                    <img src="${item.img || ''}" class="w-24 h-24 rounded-2xl object-cover mr-6 shadow-sm border border-slate-100 dark:border-slate-800" onerror="this.src='https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=200&auto=format&fit=crop';">
+                    <div class="flex-1 pr-4">
+                        <h4 class="font-black text-slate-800 dark:text-white text-2xl leading-tight mb-2">${item.nome}</h4>
+                        ${item.observacao ? `<p class="text-xs text-slate-500 dark:text-slate-400 font-bold mb-2 leading-snug uppercase tracking-widest">${item.observacao}</p>` : ''}
+                        <p class="font-black text-brand-500 text-xl">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.',',')}</p>
                     </div>
-                    <div class="flex flex-col items-center bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-1">
-                        <button onclick="carrinho[${index}].quantidade++; atualizarContadores(); abrirCarrinho();" class="w-8 h-8 flex items-center justify-center text-brand-500 font-black"><i class="ph-bold ph-plus"></i></button>
-                        <span class="font-black text-sm text-slate-800 dark:text-white my-1">${item.quantidade}</span>
-                        <button onclick="carrinho[${index}].quantidade--; if(carrinho[${index}].quantidade<=0) carrinho.splice(${index},1); atualizarContadores(); abrirCarrinho();" class="w-8 h-8 flex items-center justify-center text-slate-400 dark:text-slate-500 font-black"><i class="ph-bold ph-minus"></i></button>
+                    <div class="flex flex-col items-center bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-2 shadow-inner">
+                        <button onclick="carrinho[${index}].quantidade++; atualizarContadores(); abrirCarrinho();" class="w-14 h-12 flex items-center justify-center bg-white dark:bg-slate-900 rounded-xl shadow-sm text-brand-500 font-black text-2xl touch-effect mb-2"><i class="ph-bold ph-plus"></i></button>
+                        <span class="font-black text-2xl text-slate-800 dark:text-white my-1">${item.quantidade}</span>
+                        <button onclick="carrinho[${index}].quantidade--; if(carrinho[${index}].quantidade<=0) carrinho.splice(${index},1); atualizarContadores(); abrirCarrinho();" class="w-14 h-12 flex items-center justify-center bg-white dark:bg-slate-900 rounded-xl shadow-sm text-slate-400 dark:text-slate-500 font-black text-2xl touch-effect mt-2"><i class="ph-bold ph-minus"></i></button>
                     </div>
                 </div>
             `).join('');
