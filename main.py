@@ -2652,18 +2652,16 @@ def fechar_caixa(dados: FecharCaixaSchema, db: Session = Depends(get_db)):
 # ==========================================
 # APP DO CLIENTE: RASTREIO E PERFIL
 # ==========================================
-# ==========================================
-# APP DO CLIENTE: RASTREIO E PERFIL
-# ==========================================
 class AtualizarPerfilCliente(BaseModel):
     nome: str
+    telefone: str = "" # <--- Liberamos a passagem do Telefone!
     cep: str = ""
     endereco: str = ""
     numero: str = ""
     bairro: str = ""
     complemento: str = ""
-    senha: str = ""  # <--- Nova Linha (Senha)
-    foto: str = ""   # <--- Nova Linha (Foto em Base64)
+    senha: str = ""  
+    foto: str = ""   
 
 @app.get("/api/cliente/{cliente_id}/perfil")
 def obter_perfil_cliente(cliente_id: int, db: Session = Depends(get_db)):
@@ -2671,6 +2669,7 @@ def obter_perfil_cliente(cliente_id: int, db: Session = Depends(get_db)):
     if not c: raise HTTPException(status_code=404)
     return {
         "nome": c.nome, 
+        "telefone": c.telefone, # <--- Enviando o Telefone pro Frontend
         "cep": getattr(c, 'cep', ''), 
         "endereco": getattr(c, 'endereco', ''),
         "numero": getattr(c, 'numero', ''), 
@@ -2684,6 +2683,11 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
     if not c: raise HTTPException(status_code=404)
         
     c.nome = dados.nome
+    
+    # 🚨 SALVA O TELEFONE NOVO NO BANCO
+    if dados.telefone and dados.telefone.strip() != "":
+        c.telefone = dados.telefone.strip()
+        
     if hasattr(c, 'cep'): c.cep = dados.cep
     c.endereco = dados.endereco
     if hasattr(c, 'numero'): c.numero = dados.numero
@@ -2699,7 +2703,6 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
         if hasattr(c, 'foto'): 
             c.foto = dados.foto
         else:
-            # Se não existir, a gente tenta injetar a coluna pelo SQLAlchemy rapidinho!
             try:
                 from sqlalchemy import text
                 db.execute(text("ALTER TABLE clientes ADD COLUMN foto VARCHAR DEFAULT ''"))
