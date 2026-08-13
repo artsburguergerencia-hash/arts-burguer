@@ -11,7 +11,7 @@
     <!-- CONFIGURAÇÃO DO TAILWIND PARA MODO ESCURO -->
     <script>
         tailwind.config = {
-            darkMode: 'class', // Habilita a troca manual de tema
+            darkMode: 'class', 
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
@@ -20,7 +20,7 @@
         }
     </script>
 
-    <!-- SCRIPT DE SINCRONIZAÇÃO GLOBAL (Vai em todas as páginas) -->
+    <!-- SCRIPT DE SINCRONIZAÇÃO GLOBAL -->
     <script>
         if (localStorage.getItem('theme') === 'light') {
             document.documentElement.classList.remove('dark');
@@ -48,14 +48,14 @@
 
             <div>
                 <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none" id="nome-loja-header">HUB CENTRAL</h1>
-                <p class="text-[10px] font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase mt-1">ArtsBurguer.com.br</p>
+                <p class="text-[10px] font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase mt-1">SISTEMA ERP INTEGRADO</p>
             </div>
         </div>
         
         <div class="flex items-center space-x-6">
             <div class="hidden md:flex items-center space-x-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-3 py-1.5 rounded-full">
                 <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">SISTEMA ONLINE</span>
+                <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">ONLINE</span>
             </div>
 
             <!-- BOTÃO MÁGICO CLARO/ESCURO -->
@@ -68,55 +68,69 @@
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-8 space-y-12">
 
-        <!-- SESSÃO 1: CORPORATIVO -->
+        <!-- ============================================== -->
+        <!-- SESSÃO 1: CORPORATIVO E BACKOFFICE             -->
+        <!-- ============================================== -->
         <section>
             <h2 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center">
                 <i class="ph-bold ph-buildings mr-2 text-lg"></i> Corporativo & Backoffice
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- GESTÃO -->
                 <a href="/gestao" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-blue-500 dark:hover:border-blue-500 group shadow-sm hover:shadow-xl">
                     <div class="w-12 h-12 bg-blue-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition-colors">
-                        <i class="ph-bold ph-lock-key text-xl text-blue-600 dark:text-white"></i>
+                        <i class="ph-bold ph-chart-pie-slice text-xl text-blue-600 dark:text-white"></i>
                     </div>
                     <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Painel de Gestão</h3>
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Relatórios, Financeiro, CRM, Estoque e Setup de Franquia.</p>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Relatórios, Financeiro, CRM, Estoque e Setup da Loja.</p>
                     <span class="text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded">/gestao</span>
                 </a>
 
-                <!-- RH -->
+                <!-- PORTAL RH -->
                 <a href="/portal_colaborador" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-purple-500 dark:hover:border-purple-500 group shadow-sm hover:shadow-xl">
                     <div class="w-12 h-12 bg-purple-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-500 transition-colors">
                         <i class="ph-bold ph-identification-badge text-xl text-purple-600 dark:text-white"></i>
                     </div>
                     <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Portal do RH</h3>
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Holerites, Atestados e Solicitações de Férias/Folgas.</p>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Holerites, Atestados e Solicitações de Folgas da equipe.</p>
                     <span class="text-[10px] font-mono font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-2 py-1 rounded">/portal_colaborador</span>
                 </a>
 
-                <!-- ADMIN -->
+                <!-- ADMISSÃO -->
+                <a href="/admissao" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-indigo-500 dark:hover:border-indigo-500 group shadow-sm hover:shadow-xl">
+                    <div class="w-12 h-12 bg-indigo-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-500 transition-colors">
+                        <i class="ph-bold ph-user-plus text-xl text-indigo-600 dark:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Admissão LGPD</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Formulário de entrada para novos funcionários (Docs e Banco).</p>
+                    <span class="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded">/admissao</span>
+                </a>
+
+                <!-- ADMIN SAAS -->
                 <a href="/admin" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-fuchsia-500 dark:hover:border-fuchsia-500 group shadow-sm hover:shadow-xl relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 text-fuchsia-500/5 dark:text-fuchsia-500/10"><i class="ph-fill ph-cpu text-9xl"></i></div>
                     <div class="w-12 h-12 bg-fuchsia-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-fuchsia-500 transition-colors relative z-10">
                         <i class="ph-bold ph-terminal-window text-xl text-fuchsia-600 dark:text-white"></i>
                     </div>
-                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2 relative z-10">Admin SaaS Master</h3>
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 relative z-10">Acesso exclusivo do CEO para licenciar novas empresas.</p>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2 relative z-10">Admin SaaS</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 relative z-10">Acesso exclusivo do CEO para licenciar novas franquias.</p>
                     <span class="text-[10px] font-mono font-bold text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10 px-2 py-1 rounded relative z-10">/admin</span>
                 </a>
             </div>
         </section>
 
-        <!-- SESSÃO 2: OPERAÇÃO -->
+        <!-- ============================================== -->
+        <!-- SESSÃO 2: OPERAÇÃO DA LOJA                     -->
+        <!-- ============================================== -->
         <section>
             <h2 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center">
                 <i class="ph-bold ph-storefront mr-2 text-lg"></i> Operação de Loja (Ao Vivo)
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- PDV -->
                 <a href="/pdv" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-emerald-500 dark:hover:border-emerald-500 group shadow-sm hover:shadow-xl">
                     <div class="w-12 h-12 bg-emerald-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors">
-                        <i class="ph-bold ph-monitor text-xl text-emerald-600 dark:text-white"></i>
+                        <i class="ph-bold ph-desktop text-xl text-emerald-600 dark:text-white"></i>
                     </div>
                     <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Frente de Caixa (PDV)</h3>
                     <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Lançamento de pedidos no balcão e recebimento rápido.</p>
@@ -138,20 +152,43 @@
                     <div class="w-12 h-12 bg-cyan-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 transition-colors">
                         <i class="ph-bold ph-moped text-xl text-cyan-600 dark:text-white"></i>
                     </div>
-                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Logística e Despacho</h3>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Logística (Expedição)</h3>
                     <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Roteirização e atribuição de pedidos para motoboys.</p>
                     <span class="text-[10px] font-mono font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 px-2 py-1 rounded">/logistica</span>
+                </a>
+
+                <!-- MAPA DE MESAS -->
+                <a href="/mesas" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-orange-500 dark:hover:border-orange-500 group shadow-sm hover:shadow-xl">
+                    <div class="w-12 h-12 bg-orange-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-500 transition-colors">
+                        <i class="ph-bold ph-armchair text-xl text-orange-600 dark:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Mapa do Salão</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Gestão visual de mesas ocupadas, abertas e valores.</p>
+                    <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2 py-1 rounded">/mesas</span>
+                </a>
+
+                <!-- APP DO MOTOBOY -->
+                <a href="/motoboy" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-slate-900 dark:bg-slate-800 border border-slate-800 dark:border-slate-700 p-8 rounded-[2rem] hover:border-blue-500 dark:hover:border-blue-500 group shadow-sm hover:shadow-xl relative overflow-hidden">
+                    <div class="absolute -right-2 -bottom-2 text-white/5"><i class="ph-fill ph-navigation-arrow text-9xl"></i></div>
+                    <div class="w-12 h-12 bg-slate-800 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition-colors relative z-10">
+                        <i class="ph-bold ph-navigation-arrow text-xl text-blue-400 dark:text-white group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white mb-2 relative z-10">App do Entregador</h3>
+                    <p class="text-sm font-medium text-slate-400 mb-6 relative z-10">Radar de transmissão de localização GPS (Enviar para motoboy).</p>
+                    <span class="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/20 border border-blue-500/30 px-2 py-1 rounded relative z-10">/motoboy</span>
                 </a>
             </div>
         </section>
 
-        <!-- SESSÃO 3: PÚBLICO E SALÃO -->
+        <!-- ============================================== -->
+        <!-- SESSÃO 3: PÚBLICO E SALÃO                      -->
+        <!-- ============================================== -->
         <section>
             <h2 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6 flex items-center">
-                <i class="ph-bold ph-users mr-2 text-lg"></i> Vitrine e Salão (Público)
+                <i class="ph-bold ph-users mr-2 text-lg"></i> Vitrine e Telas (Público)
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- CARDÁPIO ONLINE (VERMELHO VIBRANTE - MANTÉM A COR INDEPENDENTE DO TEMA) -->
+                <!-- CARDÁPIO ONLINE -->
                 <a href="/" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-rose-500 hover:bg-rose-600 dark:bg-[#ef4444] dark:hover:bg-[#dc2626] border-2 border-rose-400/50 p-8 rounded-[2rem] shadow-lg shadow-rose-500/30 group relative overflow-hidden transition-colors text-white">
                     <div class="absolute -right-4 -top-4 text-white/10"><i class="ph-fill ph-device-mobile text-[150px]"></i></div>
                     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6 backdrop-blur-sm relative z-10">
@@ -162,15 +199,35 @@
                     <span class="text-[10px] font-mono font-black text-rose-600 bg-white px-3 py-1.5 rounded relative z-10 shadow-sm">Menu Principal ( / )</span>
                 </a>
 
-                <!-- TOTEM (VERDE VIBRANTE - MANTÉM A COR INDEPENDENTE DO TEMA) -->
+                <!-- TOTEM -->
                 <a href="/totem" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-emerald-600 hover:bg-emerald-700 dark:bg-[#059669] dark:hover:bg-[#047857] border-2 border-emerald-400/50 p-8 rounded-[2rem] shadow-lg shadow-emerald-600/30 group relative overflow-hidden transition-colors text-white">
                     <div class="absolute -right-4 -top-4 text-white/10"><i class="ph-fill ph-screencast text-[150px]"></i></div>
                     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6 backdrop-blur-sm relative z-10">
                         <i class="ph-bold ph-monitor-play text-xl text-white"></i>
                     </div>
                     <h3 class="text-2xl font-black mb-2 relative z-10">Totem de Autoatendimento</h3>
-                    <p class="text-sm font-medium text-emerald-100 mb-6 relative z-10">A tela da TV do salão que chama a voz "Arts!" e mostra as senhas prontas.</p>
+                    <p class="text-sm font-medium text-emerald-100 mb-6 relative z-10">Interface para tablets/totens onde o cliente faz o pedido sozinho no salão.</p>
                     <span class="text-[10px] font-mono font-black text-emerald-700 bg-white px-3 py-1.5 rounded relative z-10 shadow-sm">/totem</span>
+                </a>
+
+                <!-- TV DE SENHAS -->
+                <a href="/tv" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-violet-500 dark:hover:border-violet-500 group shadow-sm hover:shadow-xl">
+                    <div class="w-12 h-12 bg-violet-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-violet-500 transition-colors">
+                        <i class="ph-bold ph-television text-xl text-violet-600 dark:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">TV de Senhas</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Painel com aviso sonoro para exibir pedidos prontos no salão.</p>
+                    <span class="text-[10px] font-mono font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 px-2 py-1 rounded">/tv</span>
+                </a>
+
+                <!-- MAPA DO CLIENTE -->
+                <a href="/mapa" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-sky-500 dark:hover:border-sky-500 group shadow-sm hover:shadow-xl">
+                    <div class="w-12 h-12 bg-sky-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-sky-500 transition-colors">
+                        <i class="ph-bold ph-map-pin-line text-xl text-sky-600 dark:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Radar do Cliente (Mapa)</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Mapa com a posição do motoboy se movendo ao vivo na tela.</p>
+                    <span class="text-[10px] font-mono font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 px-2 py-1 rounded">/mapa</span>
                 </a>
             </div>
         </section>
