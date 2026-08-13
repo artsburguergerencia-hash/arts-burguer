@@ -2104,29 +2104,25 @@ def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
 
 @app.delete("/api/sistema/zerar-dados")
 def limpar_banco_dados(db: Session = Depends(get_db)):
+    from sqlalchemy import text
     try:
-        # 1. Apaga itens que dependem de outros (Filhos)
+        db.execute(text("DELETE FROM itens_complemento"))
+        db.execute(text("DELETE FROM grupos_complemento"))
+        db.execute(text("DELETE FROM fichas_tecnicas"))
         db.query(ItemPedidoModel).delete()
         db.query(PedidoModel).delete()
-        
-        # 2. Apaga o RH e Ponto
-        db.query(OcorrenciaRHModel).delete()
-        db.query(SolicitacaoFeriasModel).delete()
-        db.query(PontoModel).delete()
-        db.query(InfoRHModel).delete()
-        
-        # Apaga os funcionários, MENOS o dono (ID 1)
-        db.query(FuncionarioModel).filter(FuncionarioModel.id > 1).delete()
-        
-        # 3. Apaga Clientes, Fornecedores e Cardápio
-        db.query(ClienteModel).delete()
         db.query(ProdutoModel).delete()
         db.query(InsumoModel).delete()
         db.query(ContaPagarModel).delete()
         db.query(FornecedorModel).delete()
-        
+        db.query(ClienteModel).delete() # 🚨 APAGA CLIENTES
+        db.query(PontoModel).delete()
+        db.query(OcorrenciaRHModel).delete()
+        db.query(SolicitacaoFeriasModel).delete()
+        db.query(InfoRHModel).delete()
+        db.query(FuncionarioModel).filter(FuncionarioModel.id > 1).delete() # 🚨 APAGA EQUIPE
         db.commit()
-        return {"mensagem": "Sistema Limpo! Todos os Clientes e RH foram apagados."}
+        return {"mensagem": "Sistema Limpo! Vendas, Clientes e RH zerados."}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
