@@ -2116,11 +2116,44 @@ def limpar_banco_dados(db: Session = Depends(get_db)):
         db.query(InsumoModel).delete()
         db.query(ContaPagarModel).delete()
         db.query(FornecedorModel).delete()
+        
+        # 🚨 AGORA APAGA OS CLIENTES E O RH (Menos o Admin) 🚨
+        db.query(ClienteModel).delete()
+        db.query(PontoModel).delete()
+        db.query(OcorrenciaRHModel).delete()
+        db.query(SolicitacaoFeriasModel).delete()
+        db.query(InfoRHModel).delete()
+        
+        # Apaga todos os funcionários, EXCETO o de ID 1 (Você / Admin)
+        db.query(FuncionarioModel).filter(FuncionarioModel.id > 1).delete()
+        
         db.commit()
-        return {"mensagem": "Dados de teste apagados! O sistema está limpo para produção."}
+        return {"mensagem": "Sistema 100% Limpo! Vendas, Clientes e RH zerados."}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/cura-final")
+def forcar_colunas_fidelidade(db: Session = Depends(get_db)):
+    from sqlalchemy import text
+    comandos = [
+        "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
+        "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
+        "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE cupons_desconto ADD COLUMN tipo VARCHAR DEFAULT 'PERCENTUAL';",
+        "ALTER TABLE cupons_desconto ADD COLUMN valor FLOAT DEFAULT 0.0;"
+    ]
+    logs = []
+    for cmd in comandos:
+        try:
+            db.execute(text(cmd))
+            db.commit()
+            logs.append(f"SUCESSO: {cmd}")
+        except Exception as e:
+            db.rollback()
+            logs.append(f"Ignorado (Já existe): {str(e)}")
+            
+    return {"status": "Colunas injetadas e corrigidas!", "resultado": logs}
 
 @app.get("/api/consertar-banco")
 def consertar_banco(db: Session = Depends(get_db)):
@@ -2222,26 +2255,6 @@ def consertar_banco(db: Session = Depends(get_db)):
             logs.append(f"Ignorado: {str(e)}")
             
     return {"status": "Sincronização Mestra Concluída!", "logs": logs}
-
-@app.get("/api/cura-final")
-def forcar_colunas_fidelidade(db: Session = Depends(get_db)):
-    from sqlalchemy import text
-    comandos = [
-        "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
-        "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
-        "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"
-    ]
-    logs = []
-    for cmd in comandos:
-        try:
-            db.execute(text(cmd))
-            db.commit()
-            logs.append(f"SUCESSO ABSOLUTO: {cmd}")
-        except Exception as e:
-            db.rollback()
-            logs.append(f"Ignorado: {str(e)}")
-            
-    return {"status": "As 3 colunas foram injetadas!", "resultado": logs}
 
 # ==========================================
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 1)
