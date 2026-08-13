@@ -15,29 +15,39 @@
 
     <div class="bg-slate-800 p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-slate-700">
         
-        <!-- 🚨 LOGO DINÂMICA INJETADA AQUI 🚨 -->
         <div id="header-logo-container" class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border-2 border-transparent overflow-hidden shrink-0 transition-colors">
             <i id="header-logo-letra" class="ph-fill ph-navigation-arrow text-4xl text-blue-500"></i>
             <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
         </div>
 
         <h1 class="text-2xl font-black mb-2 tracking-tight" id="nome-loja-header">Transmissão GPS</h1>
-        <p class="text-slate-400 text-sm mb-8 font-medium">Insira a Senha do Pedido para compartilhar sua localização ao vivo com o cliente.</p>
+        <p class="text-slate-400 text-sm mb-6 font-medium">Insira a Senha do Pedido para compartilhar sua localização ao vivo com o cliente.</p>
 
         <div id="painel-setup">
-            <input type="number" id="pedido-id" placeholder="Ex: 42" class="w-full bg-slate-900 border border-slate-700 text-white text-center font-black text-3xl py-4 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
+            <input type="number" id="pedido-id" placeholder="Nº do Pedido (Ex: 42)" class="w-full bg-slate-900 border border-slate-700 text-white text-center font-black text-3xl py-4 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
             <button onclick="iniciarTransmissao()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl text-lg uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-blue-500/30">
                 🚀 Iniciar Rota
             </button>
         </div>
 
-        <div id="painel-ativo" class="hidden flex-col items-center">
-            <div class="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center radar-pulse mb-6 mt-4">
-                <i class="ph-bold ph-broadcast text-4xl text-white"></i>
+        <div id="painel-ativo" class="hidden flex-col items-center w-full">
+            
+            <!-- 🚨 CAIXA NOVA: NAVEGAÇÃO WAZE/MAPS 🚨 -->
+            <div id="box-endereco" class="hidden w-full bg-slate-900 border border-slate-700 p-4 rounded-xl mb-6 text-left shadow-inner">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1 flex items-center"><i class="ph-fill ph-map-pin mr-1 text-blue-500"></i> Destino da Entrega:</p>
+                <p id="txt-endereco" class="text-sm font-medium text-slate-300 mb-4 leading-snug">...</p>
+                <button onclick="abrirWazeMaps()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl uppercase tracking-widest text-[11px] transition-colors shadow-md flex justify-center items-center active:scale-95">
+                    <i class="ph-bold ph-navigation-arrow mr-2 text-lg"></i> Abrir GPS (Waze/Maps)
+                </button>
             </div>
-            <h2 class="text-xl font-black text-blue-400 mb-1">Transmitindo...</h2>
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6" id="status-txt">Deixe a tela ligada!</p>
-            <button onclick="pararTransmissao()" class="w-full bg-red-500/20 text-red-500 border border-red-500/30 font-black py-4 rounded-xl uppercase tracking-widest transition-all hover:bg-red-500 hover:text-white">
+
+            <div class="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center radar-pulse mb-4 mt-2">
+                <i class="ph-bold ph-broadcast text-3xl text-white"></i>
+            </div>
+            <h2 class="text-lg font-black text-blue-400 mb-1">Transmitindo...</h2>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6" id="status-txt">Sinal conectado</p>
+            
+            <button onclick="pararTransmissao()" class="w-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/30 font-black py-4 rounded-xl uppercase tracking-widest transition-all text-xs active:scale-95">
                 🛑 Finalizar Entrega
             </button>
         </div>
@@ -47,7 +57,6 @@
         let watchId = null;
         let wakeLock = null;
 
-        // 🚨 SCRIPT QUE BUSCA A LOGO NO BANCO 🚨
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const res = await fetch('/api/gestao/configuracoes'); 
@@ -88,7 +97,7 @@
             if (navigator.geolocation) {
                 watchId = navigator.geolocation.watchPosition(
                     (position) => enviarParaServidor(pedidoId, position.coords.latitude, position.coords.longitude),
-                    (error) => alert("Erro no GPS. Verifique a permissão!"),
+                    (error) => alert("Erro no GPS. O Cliente não poderá acompanhar a moto. Verifique a permissão do navegador!"),
                     { enableHighAccuracy: true, maximumAge: 0 }
                 );
             } else {
@@ -118,10 +127,26 @@
             document.getElementById('pedido-id').value = '';
         }
 
+        // 🚨 FUNÇÃO QUE ABRE O MAPA NATIVO DO CELULAR 🚨
+        function abrirWazeMaps() {
+            const endereco = document.getElementById('txt-endereco').innerText;
+            if(!endereco || endereco === '...') return alert('Endereço não informado no link.');
+            const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
+            window.open(url, '_blank');
+        }
+
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const pedID = urlParams.get('pedido');
+            const end = urlParams.get('end'); // Captura o endereço da URL
+            
             if(pedID) document.getElementById('pedido-id').value = pedID;
+            
+            // Se tiver o endereço no link, mostra a caixinha pro motoboy!
+            if(end) {
+                document.getElementById('box-endereco').classList.remove('hidden');
+                document.getElementById('txt-endereco').innerText = end;
+            }
         }
     </script>
 </body>
