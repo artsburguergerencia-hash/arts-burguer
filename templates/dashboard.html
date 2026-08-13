@@ -19,9 +19,16 @@
     <!-- MENU LATERAL (SIDEBAR) -->
     <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 shadow-2xl z-20 transition-colors">
         <div class="p-6 border-b border-slate-800 flex items-center justify-center">
-            <h1 class="text-2xl font-black text-white tracking-tight flex items-center">
-                <i class="ph-fill ph-hamburger text-brand-500 mr-2"></i> Art's Admin
-            </h1>
+            
+            <!-- 🚨 LOGO DINÂMICA INJETADA AQUI 🚨 -->
+            <div class="flex items-center space-x-3 w-full justify-center">
+                <div id="header-logo-container" class="w-10 h-10 bg-brand-500 rounded-lg flex items-center justify-center text-white shadow-lg overflow-hidden shrink-0 transition-colors">
+                    <i id="header-logo-letra" class="ph-fill ph-hamburger text-2xl"></i>
+                    <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
+                </div>
+                <h1 class="text-xl font-black text-white tracking-tight leading-none" id="sidebar-nome-loja">Art's Admin</h1>
+            </div>
+
         </div>
         <nav class="flex-1 p-4 space-y-2">
             <button onclick="mudarAba('visao-geral')" id="btn-visao-geral" class="w-full flex items-center px-4 py-3 bg-brand-500 text-white rounded-xl font-bold transition-colors shadow-sm">
@@ -48,7 +55,6 @@
                     <i class="ph ph-storefront mr-1 text-lg"></i> Ver Loja
                 </a>
                 
-                <!-- 🚨 BOTÃO DE LUZ INJETADO 🚨 -->
                 <button onclick="toggleTheme()" class="text-slate-400 hover:text-brand-500 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-8 h-8 flex items-center justify-center rounded-full shadow-sm transition-colors">
                     <i id="theme-icon" class="ph-bold ph-moon"></i>
                 </button>
@@ -149,7 +155,7 @@
     </main>
 
     <script>
-        // SCRIPT DE MODO ESCURO
+        // SCRIPT DE MODO ESCURO E LOGO DINÂMICA
         const themeIcon = document.getElementById('theme-icon');
         if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
 
@@ -165,31 +171,48 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             carregarDadosVisaoGeral();
+            
+            // 🚨 PUXA A LOGO E O NOME DO BANCO DE DADOS 🚨
+            try {
+                const res = await fetch('/api/gestao/configuracoes'); 
+                const configLoja = await res.json();
+                
+                if(configLoja.nome_empresa) document.getElementById('sidebar-nome-loja').innerText = `${configLoja.nome_empresa} Admin`;
+
+                if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
+                    const letra = document.getElementById('header-logo-letra'); 
+                    const img = document.getElementById('header-logo-img'); 
+                    const container = document.getElementById('header-logo-container');
+                    if(letra && img && container) {
+                        img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
+                        img.src = configLoja.logo_url; 
+                        img.classList.remove('hidden');
+                        letra.classList.add('hidden'); 
+                        container.classList.remove('bg-brand-500'); 
+                        container.classList.add('bg-slate-800', 'border-slate-700');
+                    }
+                }
+            } catch(e) {}
         });
 
         // Controle de Abas
         function mudarAba(abaId) {
-            // Esconde todas
             ['visao-geral', 'cardapio-admin', 'financeiro'].forEach(id => {
                 document.getElementById(`aba-${id}`).classList.add('hidden');
                 document.getElementById(`aba-${id}`).classList.remove('block');
                 
-                // Reseta estilo dos botões
                 let btn = document.getElementById(`btn-${id}`);
                 btn.className = "w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-bold transition-colors text-slate-300";
             });
 
-            // Mostra a selecionada
             document.getElementById(`aba-${abaId}`).classList.remove('hidden');
             document.getElementById(`aba-${abaId}`).classList.add('block');
             
-            // Estilo ativo no botão
             let btnAtivo = document.getElementById(`btn-${abaId}`);
             btnAtivo.className = "w-full flex items-center px-4 py-3 bg-brand-500 text-white rounded-xl font-bold transition-colors shadow-sm";
 
-            // Atualiza Título
             const titulos = {
                 'visao-geral': 'Visão Geral',
                 'cardapio-admin': 'Cardápio',
@@ -197,7 +220,6 @@
             };
             document.getElementById('titulo-pagina').innerText = titulos[abaId];
 
-            // Carrega os dados específicos da aba
             if(abaId === 'visao-geral') carregarDadosVisaoGeral();
             if(abaId === 'cardapio-admin') carregarProdutosAdmin();
             if(abaId === 'financeiro') carregarContasFinanceiro();
@@ -283,7 +305,7 @@
             try {
                 const res = await fetch(`/api/gestao/produto/${id}`, { method: 'DELETE' });
                 if(res.ok) {
-                    carregarProdutosAdmin(); // Atualiza a tabela na hora
+                    carregarProdutosAdmin(); 
                 } else {
                     alert("Erro ao excluir produto.");
                 }
@@ -292,7 +314,6 @@
             }
         }
         
-        // Função Injetada para Criação Rápida de Produtos
         async function adicionarProdutoRapido() {
             const nome = prompt("Nome do Produto:");
             if(!nome) return;
