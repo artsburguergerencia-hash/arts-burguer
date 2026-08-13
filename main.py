@@ -1,11 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException, Query, Request, Body
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
 from pathlib import Path
 from datetime import datetime, date
-from sqlalchemy import desc
+from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text
 import uvicorn
 from passlib.context import CryptContext
 
@@ -348,9 +348,9 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
     try:
         novo_fornecedor = FornecedorModel(
             nome_fantasia=dados.nome_fantasia, 
-            categoria=dados.categoria, 
-            contato=dados.contato, 
-            cnpj=dados.cnpj
+            categoria=dados.categoria or "Geral", 
+            contato=dados.contato or "", 
+            cnpj=dados.cnpj or ""
         )
         db.add(novo_fornecedor)
         db.commit()
@@ -363,7 +363,8 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
         }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        # Tratamento de erro detalhado para devolver ao frontend
+        raise HTTPException(status_code=400, detail=f"Erro ao salvar fornecedor (Possível duplicação de dados). Detalhe: {str(e)}")
 
 
 # ==========================================
@@ -382,7 +383,7 @@ def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db
         if cliente_existente:
             raise HTTPException(status_code=400, detail="Este telefone já está cadastrado. Faça o login.")
 
-        # Cria o novo cliente capturando todos os campos novos do Cardápio
+        # Cria o novo cliente capturando todos os campos novos do Cardápio (incluindo número e foto)
         novo_cliente = Cliente(
             nome=dados.get("nome", "Cliente Visitante"),
             telefone=telefone_cliente,
@@ -398,6 +399,10 @@ def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db
             cashback=0.0,
             bloqueado=False
         )
+        
+        # Garante a vinculação da foto caso enviada
+        if "foto" in dados and hasattr(novo_cliente, "foto"):
+            novo_cliente.foto = dados["foto"]
         
         db.add(novo_cliente)
         db.commit()
@@ -2430,6 +2435,7 @@ class CupomModel(Base):
     codigo = Column(String, unique=True, index=True)
     tipo = Column(String, default="PERCENTUAL") # PERCENTUAL ou VALOR_FIXO
     valor = Column(Float, default=0.0)
+    data_validade = Column(String, nullable=True) # 🚨 CAMPO DE DATA ADICIONADO PARA CORRIGIR O BUG
     ativo = Column(Boolean, default=True)
 
 @app.get("/api/gestao/cupons")
@@ -2445,11 +2451,17 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
     if existe:
         raise HTTPException(status_code=400, detail="Este código de cupom já existe.")
+
+    # 🚨 PROTEÇÃO CONTRA O "NOT NULL VIOLATION" DO POSTGRES
+    validade = dados.get("data_validade")
+    if not validade:
+        validade = ""
         
     novo = CupomModel(
         codigo=codigo,
         tipo=dados.get("tipo", "PERCENTUAL"),
         valor=float(dados.get("valor", 0.0)),
+        data_validade=validade, 
         ativo=True
     )
     db.add(novo)
@@ -2661,7 +2673,7 @@ def fechar_caixa(dados: FecharCaixaSchema, db: Session = Depends(get_db)):
 # ==========================================
 class AtualizarPerfilCliente(BaseModel):
     nome: str
-    telefone: str = "" # <--- Liberamos a passagem do Telefone!
+    telefone: str = ""
     cep: str = ""
     endereco: str = ""
     numero: str = ""
@@ -2676,7 +2688,7 @@ def obter_perfil_cliente(cliente_id: int, db: Session = Depends(get_db)):
     if not c: raise HTTPException(status_code=404)
     return {
         "nome": c.nome, 
-        "telefone": c.telefone, # <--- Enviando o Telefone pro Frontend
+        "telefone": c.telefone,
         "cep": getattr(c, 'cep', ''), 
         "endereco": getattr(c, 'endereco', ''),
         "numero": getattr(c, 'numero', ''), 
@@ -2691,7 +2703,6 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
         
     c.nome = dados.nome
     
-    # 🚨 SALVA O TELEFONE NOVO NO BANCO
     if dados.telefone and dados.telefone.strip() != "":
         c.telefone = dados.telefone.strip()
         
@@ -2701,11 +2712,9 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
     if hasattr(c, 'bairro'): c.bairro = dados.bairro
     if hasattr(c, 'complemento'): c.complemento = dados.complemento
     
-    # 🚨 ATUALIZA A SENHA SE ELE DIGITOU UMA NOVA
     if dados.senha and dados.senha.strip() != "":
         c.senha = dados.senha.strip()
         
-    # 🚨 VERIFICA SE A COLUNA FOTO EXISTE E ATUALIZA
     if dados.foto and dados.foto.strip() != "":
         if hasattr(c, 'foto'): 
             c.foto = dados.foto
@@ -2726,8 +2735,6 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
     hoje = datetime.utcnow().date()
     pedido = None
     
-    # Se digitar um número pequeno (ex: 12), busca pela senha diária da comanda.
-    # Se for grande, busca pelo telefone do cliente.
     if busca.isdigit() and len(busca) <= 4:
         pedido = db.query(PedidoModel).filter(PedidoModel.data_pedido == hoje, PedidoModel.senha_diaria == int(busca)).first()
     else:
@@ -2794,9 +2801,6 @@ def deletar_taxa(id: int, db: Session = Depends(get_db)):
 # ==========================================
 # MÓDULO DE INTEGRAÇÕES (WEBHOOK IFOOD / 99FOOD)
 # ==========================================
-from pydantic import BaseModel
-from typing import List, Optional
-from sqlalchemy import text
 
 class ExtItemSchema(BaseModel):
     name: str
@@ -2830,7 +2834,6 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
             db.refresh(cliente)
 
         # 2. Cria um Produto "Coringa" via SQL Puro 
-        # A Mágica: "ativo" exige número (1), e "participa_fidelidade" exige lógico (false)
         produto_ifood = db.query(ProdutoModel).filter(ProdutoModel.nome == "Item iFood").first()
         if not produto_ifood:
             db.execute(text("""
@@ -2888,7 +2891,6 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
         db.rollback() 
         print(f"Erro no Webhook: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-from fastapi.responses import JSONResponse, Response
 
 # ==========================================
 # MOTOR PWA (APLICATIVO INSTALÁVEL)
@@ -2928,7 +2930,6 @@ def get_service_worker():
         self.skipWaiting();
     });
     self.addEventListener("fetch", (event) => {
-        // Motor simples que permite o app funcionar rápido
         event.respondWith(
             fetch(event.request).catch(() => {
                 return new Response("Você está offline. Conecte-se à internet para fazer seu pedido.");
