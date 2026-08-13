@@ -2298,5 +2298,31 @@
             }
         }
     </script>
+    <script>
+        function toggleTheme() {
+            const htmlEl = document.documentElement;
+            const tIcon = document.getElementById('theme-icon');
+            
+            if (htmlEl.classList.contains('dark')) {
+                // Vai pro Claro
+                htmlEl.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if(tIcon) tIcon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                // Vai pro Escuro
+                htmlEl.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if(tIcon) tIcon.classList.replace('ph-moon', 'ph-sun');
+            }
+        }
+
+        // Garante que o ícone fique correto logo que a página abrir
+        document.addEventListener("DOMContentLoaded", () => {
+            const tIcon = document.getElementById('theme-icon');
+            if (document.documentElement.classList.contains('dark') && tIcon) {
+                tIcon.classList.replace('ph-moon', 'ph-sun');
+            }
+        });
+    </script>
 </body>
 </html>
