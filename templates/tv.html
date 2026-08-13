@@ -40,7 +40,13 @@
 
     <!-- TELA DE ATIVAÇÃO INICIAL (Fica invisível depois que liga a TV) -->
     <div id="tela-ativacao" class="fixed inset-0 z-50 bg-white/95 dark:bg-dark-900/90 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-colors" onclick="iniciarTV()">
-        <div class="w-32 h-32 bg-brand-500 rounded-3xl flex items-center justify-center text-white font-black text-6xl shadow-[0_0_50px_rgba(255,71,87,0.5)] mb-8 animate-bounce">A</div>
+        
+        <!-- 🚨 LOGO DINÂMICA DA TELA INICIAL 🚨 -->
+        <div id="start-logo-container" class="w-32 h-32 bg-brand-500 rounded-3xl flex items-center justify-center text-white font-black text-6xl shadow-[0_0_50px_rgba(255,71,87,0.5)] mb-8 animate-bounce overflow-hidden border-4 border-transparent transition-colors">
+            <span id="start-logo-letra">A</span>
+            <img id="start-logo-img" src="" class="w-full h-full object-cover hidden">
+        </div>
+        
         <h1 class="text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">TV de Senhas Pronta</h1>
         <p class="text-xl font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-10">Toque em qualquer lugar para ligar a tela e o som</p>
         <button class="bg-slate-900 dark:bg-white text-white dark:text-dark-900 px-10 py-5 rounded-full font-black uppercase tracking-widest text-lg shadow-2xl flex items-center hover:scale-105 transition-transform">
@@ -51,9 +57,15 @@
     <!-- HEADER PREMIUM E LIMPO -->
     <header class="h-24 px-8 flex items-center justify-between shrink-0 relative z-10 border-b border-slate-200 dark:border-white/5 transition-colors bg-white/50 dark:bg-transparent backdrop-blur-sm">
         <div class="flex items-center">
-            <div class="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-[0_0_20px_rgba(255,71,87,0.4)] mr-4">A</div>
+            
+            <!-- 🚨 LOGO DINÂMICA DO CABEÇALHO 🚨 -->
+            <div id="header-logo-container" class="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-[0_0_20px_rgba(255,71,87,0.4)] mr-4 overflow-hidden shrink-0 transition-colors">
+                <span id="header-logo-letra">A</span>
+                <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
+            </div>
+
             <div>
-                <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Art's Burguer</h1>
+                <h1 id="tv-nome-loja" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Art's Burguer</h1>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Acompanhe seu pedido</p>
             </div>
         </div>
@@ -113,6 +125,51 @@
     </main>
 
     <script>
+        // 🚨 SCRIPT QUE BUSCA A LOGO NO BANCO E INJETA NA TELA 🚨
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/gestao/configuracoes'); 
+                const configLoja = await res.json();
+                
+                // Atualiza o nome da loja
+                if(configLoja.nome_empresa) {
+                    document.getElementById('tv-nome-loja').innerText = configLoja.nome_empresa;
+                }
+
+                if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
+                    
+                    // 1. Injeta Logo no Cabeçalho
+                    const letra = document.getElementById('header-logo-letra'); 
+                    const img = document.getElementById('header-logo-img'); 
+                    const container = document.getElementById('header-logo-container');
+                    
+                    if(letra && img && container) {
+                        img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
+                        img.src = configLoja.logo_url; 
+                        img.classList.remove('hidden');
+                        letra.classList.add('hidden'); 
+                        container.classList.remove('bg-brand-500'); 
+                        container.classList.add('bg-white', 'dark:bg-slate-800', 'border', 'border-slate-200', 'dark:border-slate-700');
+                    }
+
+                    // 2. Injeta Logo na Tela Inicial (Ativação)
+                    const letraStart = document.getElementById('start-logo-letra'); 
+                    const imgStart = document.getElementById('start-logo-img'); 
+                    const containerStart = document.getElementById('start-logo-container');
+                    
+                    if(letraStart && imgStart && containerStart) {
+                        imgStart.onerror = function() { this.classList.add('hidden'); letraStart.classList.remove('hidden'); };
+                        imgStart.src = configLoja.logo_url; 
+                        imgStart.classList.remove('hidden');
+                        letraStart.classList.add('hidden'); 
+                        containerStart.classList.remove('bg-brand-500', 'border-transparent'); 
+                        containerStart.classList.add('bg-white', 'dark:bg-slate-800', 'border-slate-200', 'dark:border-slate-700');
+                    }
+                }
+            } catch(e) { console.error("Erro ao carregar logo na TV", e); }
+        });
+
+
         const themeIcon = document.getElementById('theme-icon');
         if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
 
