@@ -20,19 +20,20 @@
 <body class="bg-slate-100 relative">
 
     <div id="loading" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[999] flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="w-20 h-20 bg-brand-500 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(255,71,87,0.6)] mb-6 animate-pulse border-4 border-slate-800">
-            <i class="ph-bold ph-satellite text-4xl text-white"></i>
+        
+        <div id="loading-logo-container" class="w-24 h-24 bg-brand-500 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(255,71,87,0.6)] mb-6 animate-pulse border-4 border-slate-800 overflow-hidden transition-colors">
+            <i id="loading-logo-letra" class="ph-bold ph-satellite text-4xl text-white"></i>
+            <img id="loading-logo-img" src="" class="w-full h-full object-cover hidden">
         </div>
+
         <h2 class="text-2xl font-black text-white tracking-tight mb-2">Conectando...</h2>
-        <p class="font-bold text-brand-400 text-sm uppercase tracking-widest animate-pulse text-center px-4">Buscando sinal do motoboy no satélite</p>
+        <p class="font-bold text-brand-400 text-sm uppercase tracking-widest animate-pulse text-center px-4">Buscando sinal no satélite</p>
     </div>
 
-    <!-- CABEÇALHO FLUTUANTE COM LOGO -->
     <div class="fixed top-0 left-0 w-full z-50 p-4 pointer-events-none">
         <div class="glass max-w-md mx-auto rounded-2xl shadow-lg border border-slate-200 p-4 flex items-center justify-between pointer-events-auto">
             <div class="flex items-center">
                 
-                <!-- 🚨 LOGO DINÂMICA INJETADA AQUI 🚨 -->
                 <div id="header-logo-container" class="w-10 h-10 bg-brand-500 rounded-full flex items-center justify-center text-white font-black mr-3 shadow-md shadow-brand-500/40 border-2 border-transparent overflow-hidden shrink-0">
                     <i id="header-logo-letra" class="ph-bold ph-moped text-xl"></i>
                     <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
@@ -52,7 +53,7 @@
     <div class="fixed bottom-0 left-0 w-full z-50 p-4 pointer-events-none">
         <div class="glass max-w-md mx-auto rounded-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)] border border-slate-200 p-5 pointer-events-auto">
             <h2 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-1 flex items-center">
-                <i class="ph-fill ph-info mr-1.5 text-brand-500"></i> Status do Motoboy
+                <i class="ph-fill ph-info mr-1.5 text-brand-500"></i> Status do Pedido
             </h2>
             <p id="txt-status" class="font-bold text-slate-800 leading-snug">Aguardando o entregador iniciar a rota...</p>
         </div>
@@ -70,7 +71,10 @@
             document.getElementById('txt-status').innerText = "Erro: Número do pedido ausente no link.";
         }
 
-        // 🚨 SCRIPT QUE BUSCA A LOGO NO BANCO 🚨
+        // Variável Global para armazenar a Logo que o pino do mapa vai usar
+        let logoGlobalUrl = null;
+
+        // 🚨 SCRIPT QUE BUSCA A LOGO NO BANCO DE DADOS 🚨
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const res = await fetch('/api/gestao/configuracoes'); 
@@ -79,16 +83,38 @@
                 if(configLoja.nome_empresa) document.getElementById('nome-loja-header').innerText = `${configLoja.nome_empresa} GPS`;
 
                 if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
-                    const letra = document.getElementById('header-logo-letra'); 
-                    const img = document.getElementById('header-logo-img'); 
-                    const container = document.getElementById('header-logo-container');
-                    if(letra && img && container) {
-                        img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
-                        img.src = configLoja.logo_url; 
-                        img.classList.remove('hidden');
-                        letra.classList.add('hidden'); 
-                        container.classList.remove('bg-brand-500'); 
-                        container.classList.add('bg-white', 'border-slate-200');
+                    
+                    logoGlobalUrl = configLoja.logo_url; // Salva a url para o mapa usar
+
+                    // 1. Injeta Logo no Cabeçalho
+                    const letraHead = document.getElementById('header-logo-letra'); 
+                    const imgHead = document.getElementById('header-logo-img'); 
+                    const containerHead = document.getElementById('header-logo-container');
+                    if(letraHead && imgHead && containerHead) {
+                        imgHead.onerror = function() { this.classList.add('hidden'); letraHead.classList.remove('hidden'); };
+                        imgHead.src = logoGlobalUrl; 
+                        imgHead.classList.remove('hidden');
+                        letraHead.classList.add('hidden'); 
+                        containerHead.classList.remove('bg-brand-500'); 
+                        containerHead.classList.add('bg-white', 'border-slate-200');
+                    }
+
+                    // 2. Injeta Logo na Tela de Carregamento (Piscando)
+                    const letraLoad = document.getElementById('loading-logo-letra'); 
+                    const imgLoad = document.getElementById('loading-logo-img'); 
+                    const containerLoad = document.getElementById('loading-logo-container');
+                    if(letraLoad && imgLoad && containerLoad) {
+                        imgLoad.onerror = function() { this.classList.add('hidden'); letraLoad.classList.remove('hidden'); };
+                        imgLoad.src = logoGlobalUrl; 
+                        imgLoad.classList.remove('hidden');
+                        letraLoad.classList.add('hidden'); 
+                        containerLoad.classList.remove('bg-brand-500', 'border-slate-800'); 
+                        containerLoad.classList.add('bg-white', 'border-slate-200');
+                    }
+
+                    // 3. Atualiza o ícone do motoboy no mapa se ele já estiver renderizado
+                    if (markerMotoboy) {
+                        markerMotoboy.setIcon(getMarkerIcon());
                     }
                 }
             } catch(e) {}
@@ -97,16 +123,28 @@
         const map = L.map('mapa', { zoomControl: false }).setView([-15.7801, -47.9292], 4);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap | Rastreamento',
+            attribution: '© OpenStreetMap | Rastreamento VIP',
             maxZoom: 19
         }).addTo(map);
 
-        const motoIcon = L.divIcon({
-            html: `<div style="background-color: #ff4757; color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 3px solid white;"><i class="ph-fill ph-motorcycle" style="font-size: 26px;"></i></div>`,
-            className: '',
-            iconSize: [44, 44],
-            iconAnchor: [22, 22]
-        });
+        // Função mágica que cria o pino do mapa. Se tiver logo, mostra ela. Se não, mostra a motinho.
+        function getMarkerIcon() {
+            if (logoGlobalUrl) {
+                return L.divIcon({
+                    html: `<div style="background-color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 3px solid #ff4757; overflow: hidden;"><img src="${logoGlobalUrl}" style="width: 100%; height: 100%; object-fit: cover;"></div>`,
+                    className: '',
+                    iconSize: [50, 50],
+                    iconAnchor: [25, 25]
+                });
+            } else {
+                return L.divIcon({
+                    html: `<div style="background-color: #ff4757; color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 3px solid white;"><i class="ph-fill ph-motorcycle" style="font-size: 26px;"></i></div>`,
+                    className: '',
+                    iconSize: [44, 44],
+                    iconAnchor: [22, 22]
+                });
+            }
+        }
 
         let markerMotoboy = null;
         let primeiroFoco = true;
@@ -129,7 +167,7 @@
                     document.getElementById('txt-status').innerText = "O entregador está se aproximando do seu endereço com o pedido!";
 
                     if (!markerMotoboy) {
-                        markerMotoboy = L.marker([lat, lng], { icon: motoIcon }).addTo(map);
+                        markerMotoboy = L.marker([lat, lng], { icon: getMarkerIcon() }).addTo(map);
                     } else {
                         markerMotoboy.setLatLng([lat, lng]);
                     }
