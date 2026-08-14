@@ -346,11 +346,15 @@ def listar_fornecedores(db: Session = Depends(get_db)):
 @app.post("/api/gestao/fornecedores")
 def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
     try:
+        # Limpa o CNPJ vazio para inserir como NULL e não violar restrições do banco
+        cnpj_limpo = dados.cnpj.strip() if dados.cnpj and dados.cnpj.strip() != "" else None
+        
         novo_fornecedor = FornecedorModel(
             nome_fantasia=dados.nome_fantasia, 
-            categoria=dados.categoria or "Geral", 
-            contato=dados.contato or "", 
-            cnpj=dados.cnpj or ""
+            categoria=dados.categoria, 
+            contato=dados.contato,
+            telefone=dados.contato, # Salvamos em ambas as colunas por segurança
+            cnpj=cnpj_limpo
         )
         db.add(novo_fornecedor)
         db.commit()
@@ -363,8 +367,7 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
         }
     except Exception as e:
         db.rollback()
-        # Tratamento de erro detalhado para devolver ao frontend
-        raise HTTPException(status_code=400, detail=f"Erro ao salvar fornecedor (Possível duplicação de dados). Detalhe: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ==========================================
