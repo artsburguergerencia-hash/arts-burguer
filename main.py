@@ -346,14 +346,14 @@ def listar_fornecedores(db: Session = Depends(get_db)):
 @app.post("/api/gestao/fornecedores")
 def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
     try:
-        # Limpa o CNPJ vazio para inserir como NULL e não violar restrições do banco
+        # Tratamento do CNPJ: Se vier vazio, salva como nulo no banco
         cnpj_limpo = dados.cnpj.strip() if dados.cnpj and dados.cnpj.strip() != "" else None
         
         novo_fornecedor = FornecedorModel(
             nome_fantasia=dados.nome_fantasia, 
             categoria=dados.categoria, 
             contato=dados.contato,
-            telefone=dados.contato, # Salvamos em ambas as colunas por segurança
+            telefone=dados.contato, # Salva nos dois para garantir retrocompatibilidade
             cnpj=cnpj_limpo
         )
         db.add(novo_fornecedor)
