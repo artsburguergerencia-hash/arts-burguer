@@ -39,12 +39,13 @@ class CupomModel(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     codigo = Column(String, unique=True, nullable=False, index=True)
+    desconto_percentual = Column(Float, default=0.0) 
+    desconto_fixo = Column(Float, default=0.0)       
     tipo = Column(String, default="PERCENTUAL")
     valor = Column(Float, default=0.0)
-    desconto_percentual = Column(Float, default=0.0)
-    desconto_fixo = Column(Float, default=0.0)
     ativo = Column(Boolean, default=True)
-    data_validade = Column(DateTime, nullable=True) # <- O SEGREDO ESTÁ AQUI (nullable=True)
+    # 🔥 O SEGREDO ESTÁ AQUI: nullable=True diz ao sistema que está tudo bem se a data faltar
+    data_validade = Column(DateTime, nullable=True)
 
 # ==============================================================================
 # 2. INTEGRAÇÃO DE PAGAMENTO (Mock Gateway PagSeguro/MercadoPago)
