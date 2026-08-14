@@ -24,12 +24,13 @@ class StatusCaixa(str, enum.Enum):
 # ==============================================================================
 
 class FornecedorModel(Base):
+    """Cadastro de Fornecedores de insumos do Art's Burguer."""
     __tablename__ = "fornecedores"
     __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     nome_fantasia = Column(String, nullable=False)
-    cnpj = Column(String, nullable=True) # Retirado o unique=True que estava quebrando
+    cnpj = Column(String, nullable=True) # <- Retirado o unique=True para não travar
     telefone = Column(String, nullable=True, default="")
     contato = Column(String, nullable=True, default="")
     categoria = Column(String, default="Geral") 
