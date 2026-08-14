@@ -214,6 +214,11 @@ def inicializar_banco():
     try:
         with engine.connect() as conn:
             colunas_novas = [
+                # --- COLE ESTAS 3 LINHAS AQUI ---
+                "ALTER TABLE cupons_desconto ADD COLUMN tipo VARCHAR DEFAULT 'PERCENTUAL';",
+                "ALTER TABLE cupons_desconto ADD COLUMN valor FLOAT DEFAULT 0.0;",
+                "ALTER TABLE cupons_desconto ALTER COLUMN data_validade DROP NOT NULL;",
+                # --------------------------------
                 # Configurações da Loja
                 "ALTER TABLE configuracoes_loja ADD COLUMN nome_empresa VARCHAR DEFAULT 'Art''s Burguer';",
                 "ALTER TABLE configuracoes_loja ADD COLUMN cnpj VARCHAR DEFAULT '';",
