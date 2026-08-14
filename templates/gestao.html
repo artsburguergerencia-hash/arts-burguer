@@ -20,7 +20,7 @@
 
         // 2. CONFIGURAÇÃO UNIFICADA DO TAILWIND (O CÉREBRO)
         tailwind.config = { 
-            darkMode: 'class', 
+            darkMode: 'class', // <--- Isso obriga o Tailwind a aceitar o modo escuro
             theme: { 
                 extend: { 
                     fontFamily: { sans: ['Inter', 'sans-serif'] }, 
@@ -49,20 +49,18 @@
     </style>
 </head>
 
+<!-- AS CLASSES "dark:bg-..." SÃO A TINTA QUE PINTA A TELA QUANDO O BOTÃO É APERTADO -->
 <body class="bg-slate-50 dark:bg-[#0b1120] flex h-screen overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-300">
 
+    <!-- MENU LATERAL (Já era escuro, mantemos como está) -->
     <!-- MENU LATERAL -->
     <aside class="w-72 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 flex flex-col shadow-2xl z-20 shrink-0 border-r border-slate-200 dark:border-slate-800 transition-colors duration-300">
         
         <div class="h-20 flex items-center px-8 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
-            <!-- 🚨 LOGO DINÂMICA INJETADA AQUI 🚨 -->
-            <div id="header-logo-container" class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center text-white shadow-lg border-2 border-transparent overflow-hidden shrink-0 mr-3 transition-colors">
-                <i id="header-logo-letra" class="ph-fill ph-hamburger text-2xl"></i>
-                <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
-            </div>
+            <i class="ph-fill ph-hamburger text-3xl text-brand-500 mr-3"></i>
             <div>
-                <h1 class="text-slate-900 dark:text-white font-black text-xl tracking-tight leading-none" id="sidebar-nome-loja">Art's Burguer</h1>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold mt-1">ERP Cloud V5</p>
+                <h1 class="text-slate-900 dark:text-white font-black text-xl tracking-tight" id="sidebar-nome-loja">Art's Burguer</h1>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">ERP Cloud V5</p>
             </div>
         </div>
         
@@ -97,7 +95,6 @@
                 <i class="ph ph-ticket text-xl mr-3"></i> Promoções & Cupons
             </button>
 
-            <!-- 🚨 TODOS OS LINKS DO PORTAL INSERIDOS AQUI 🚨 -->
             <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-200 dark:border-slate-800 pt-4">Operação (Ao Vivo)</p>
             
             <a href="/pdv" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-white hover:bg-emerald-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
@@ -109,26 +106,11 @@
             <a href="/logistica" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-moped text-xl mr-3"></i> Despacho <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            <a href="/mesas" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-white hover:bg-orange-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
-                <i class="ph-fill ph-armchair text-xl mr-3"></i> Mapa de Mesas <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
-            </a>
             <a href="/portal_colaborador" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-identification-badge text-xl mr-3"></i> Portal RH <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            
-            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-200 dark:border-slate-800 pt-4">Telas do Cliente</p>
-            
-            <a href="/" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-white hover:bg-red-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+            <a href="/" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-white hover:bg-red-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8">
                 <i class="ph-fill ph-storefront text-xl mr-3"></i> Cardápio Online <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
-            </a>
-            <a href="/totem" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-white hover:bg-emerald-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
-                <i class="ph-fill ph-screencast text-xl mr-3"></i> Totem (Salão) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
-            </a>
-            <a href="/tv" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-white hover:bg-violet-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
-                <i class="ph-fill ph-television text-xl mr-3"></i> TV de Senhas <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
-            </a>
-            <a href="/mapa" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-white hover:bg-sky-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8">
-                <i class="ph-fill ph-map-pin-line text-xl mr-3"></i> Mapa (GPS) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
         </nav>
         
@@ -154,7 +136,7 @@
             <h2 id="titulo-painel" class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Painel de Gestão Corporativa</h2>
             
             <!-- BOTÃO CLARO/ESCURO -->
-            <button onclick="toggleTheme()" class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-inner border border-slate-200 dark:border-slate-700">
+            <button onclick="toggleTheme()" class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-colors mr-4 shadow-inner border border-slate-200 dark:border-slate-700">
                 <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
             </button>
         </header>
@@ -336,7 +318,7 @@
                             <label class="font-bold text-sm text-slate-500 uppercase tracking-widest mb-2 block">Ficha Técnica (Ingredientes)</label>
                             <div class="flex space-x-2">
                                 <select id="select-insumo" class="flex-1 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></select>
-                                <input type="text" id="input-qtd-insumo" placeholder="Quantidade" class="w-24 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                                <input type="number" id="input-qtd-insumo" step="0.01" placeholder="Quantidade" class="w-24 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
                                 <button type="button" onclick="adicionarIngredienteNaLista()" class="bg-slate-900 text-white px-5 rounded-xl font-black transition-colors hover:bg-slate-800">+</button>
                             </div>
                             <ul id="lista-ingredientes-produto" class="mt-4 space-y-2"></ul>
@@ -475,13 +457,7 @@
                 <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-100 pb-4">
                         <h3 class="text-xl font-black flex items-center text-slate-800"><i class="ph-fill ph-users-three text-brand-500 mr-2 text-2xl"></i> Base de Clientes (CRM)</h3>
-                        
                         <div class="flex items-center space-x-2 mt-4 md:mt-0">
-                            <!-- 🚨 BOTÃO DE NOVO CLIENTE 🚨 -->
-                            <button onclick="document.getElementById('modal-novo-cliente').classList.replace('hidden', 'flex')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-black transition-colors shadow-sm flex items-center">
-                                <i class="ph-bold ph-plus mr-1"></i> Novo
-                            </button>
-                            
                             <select id="filtro-mes-niver" class="px-4 py-2 border border-slate-200 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:border-brand-500">
                                 <option value="">Todos os Clientes</option>
                                 <option value="01">🎂 Janeiro</option>
@@ -497,7 +473,7 @@
                                 <option value="11">🎂 Novembro</option>
                                 <option value="12">🎂 Dezembro</option>
                             </select>
-                            <button onclick="excluirCliente(${x.id})" class="bg-white border border-slate-200 text-red-400 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm active:scale-95" title="Excluir Cliente Permanentemente"><i class="ph-bold ph-trash text-sm"></i></button>
+                            <button onclick="carregarClientesPainel()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-black hover:bg-slate-800 transition-colors shadow-sm">Filtrar</button>
                         </div>
                     </div>
                     <table class="w-full text-left text-sm">
@@ -741,7 +717,7 @@
                     <!-- ============================================== -->
                     <div class="mt-16 pt-8 border-t border-red-200/50">
                         <h4 class="text-sm font-black text-red-600 mb-2 uppercase tracking-widest flex items-center"><i class="ph-fill ph-warning-octagon mr-2 text-2xl"></i> Zona de Perigo (Reset de Sistema)</h4>
-                        <p class="text-xs text-slate-500 mb-6 font-medium leading-relaxed">Esta ação limpa todos os dados de teste (vendas, clientes, financeiro, fornecedores, funcionários e produtos), mantendo apenas as configurações da loja e a conta do Administrador atual viva.</p>
+                        <p class="text-xs text-slate-500 mb-6 font-medium leading-relaxed">Esta ação limpa todos os dados de teste (vendas, clientes, financeiro, fornecedores e produtos), mantendo apenas as configurações da loja. Utilize isso antes de colocar o sistema em produção oficial ou vender para um novo cliente (White Label).</p>
                         
                         <button type="button" onclick="zerarBancoDeDados()" class="w-full md:w-auto bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 font-black py-4 px-8 rounded-xl transition-all shadow-sm active:scale-95 uppercase tracking-widest text-xs flex items-center justify-center">
                             <i class="ph-bold ph-trash text-lg mr-2"></i> Limpar Banco de Dados (Irreversível)
@@ -1043,99 +1019,6 @@
         </div>
     </div>
 
-    <!-- 🚨 MEGA MODAL: CADASTRAR NOVO CLIENTE MANUAL (CRM) 🚨 -->
-    <div id="modal-novo-cliente" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-        <div class="bg-white w-full max-w-3xl rounded-[2rem] p-8 shadow-2xl relative my-auto border border-slate-200">
-            <button onclick="document.getElementById('modal-novo-cliente').classList.replace('flex','hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 bg-slate-100 p-2 rounded-full transition-colors"><i class="ph-bold ph-x"></i></button>
-            <h2 class="font-black text-2xl mb-6 text-slate-800 flex items-center"><i class="ph-fill ph-user-plus text-brand-500 mr-3 text-3xl"></i> Cadastrar Novo Cliente</h2>
-            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-6 border-b border-slate-100 pb-4">A senha inicial do cliente será o próprio número de WhatsApp.</p>
-            
-            <form id="form-novo-cliente" onsubmit="salvarNovoClienteAdmin(event)" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Completo</label>
-                        <input type="text" id="novo-cli-nome" required placeholder="Ex: João da Silva" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">WhatsApp (Apenas Números)</label>
-                        <input type="text" id="novo-cli-telefone" required placeholder="Ex: 41999999999" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-mono text-sm outline-none focus:border-brand-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CPF (Opcional)</label>
-                        <input type="text" id="novo-cli-cpf" placeholder="000.000.000-00" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CEP</label>
-                        <input type="text" id="novo-cli-cep" onblur="buscarCEP(this.value, 'novo-cli-endereco')" placeholder="00000-000" class="w-full px-4 py-3 border border-blue-200 bg-blue-50 text-blue-700 rounded-xl text-sm font-bold outline-none focus:border-blue-500">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço de Entrega</label>
-                        <input type="text" id="novo-cli-endereco" placeholder="Rua, Número, Bairro" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg shadow-emerald-500/30 active:scale-95 uppercase tracking-widest text-sm">
-                    Cadastrar Cliente no Sistema
-                </button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- 🚨 MEGA MODAL: CADASTRAR NOVO CLIENTE MANUAL (CRM) 🚨 -->
-    <div id="modal-novo-cliente" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-3xl rounded-[2rem] p-8 shadow-2xl relative my-auto border border-slate-200 dark:border-slate-700">
-            <button onclick="document.getElementById('modal-novo-cliente').classList.replace('flex','hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 bg-slate-100 dark:bg-slate-900 p-2 rounded-full transition-colors"><i class="ph-bold ph-x"></i></button>
-            <h2 class="font-black text-2xl mb-6 text-slate-800 dark:text-white flex items-center"><i class="ph-fill ph-user-plus text-brand-500 mr-3 text-3xl"></i> Cadastrar Novo Cliente</h2>
-            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-6 border-b border-slate-100 dark:border-slate-700 pb-4">A senha inicial do cliente será o próprio número de WhatsApp.</p>
-            
-            <form id="form-novo-cliente" onsubmit="salvarNovoClienteAdmin(event)" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Completo</label>
-                        <input type="text" id="novo-cli-nome" required placeholder="Ex: João da Silva" class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl font-bold outline-none focus:border-brand-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">WhatsApp (Apenas Números)</label>
-                        <input type="text" id="novo-cli-telefone" required placeholder="Ex: 41999999999" class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl font-mono text-sm outline-none focus:border-brand-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CPF (Opcional)</label>
-                        <input type="text" id="novo-cli-cpf" placeholder="000.000.000-00" class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl text-sm font-bold outline-none focus:border-brand-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CEP</label>
-                        <input type="text" id="novo-cli-cep" onblur="buscarCEP(this.value, 'novo-cli-endereco')" placeholder="00000-000" class="w-full px-4 py-3 border border-blue-200 dark:border-blue-500/50 bg-blue-50 dark:bg-slate-900 text-blue-700 dark:text-blue-400 rounded-xl text-sm font-bold outline-none focus:border-blue-500">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço (Rua e Bairro)</label>
-                        <input type="text" id="novo-cli-endereco" placeholder="Ex: Rua Brasil, Centro" class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl text-sm font-bold outline-none focus:border-brand-500">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Número da Casa</label>
-                        <input type="text" id="novo-cli-numero" placeholder="Ex: 123" required class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl font-bold outline-none focus:border-brand-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Complemento (Opcional)</label>
-                        <input type="text" id="novo-cli-comp" placeholder="Ex: Apto 42" class="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl font-bold outline-none focus:border-brand-500">
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg shadow-emerald-500/30 active:scale-95 uppercase tracking-widest text-sm">
-                    Cadastrar Cliente no Sistema
-                </button>
-            </form>
-        </div>
-    </div>
-    
     <!-- MEGA MODAL DE EDIÇÃO DE CLIENTE (CRM) -->
     <div id="modal-editar-cliente" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
         <div class="bg-white w-full max-w-3xl rounded-[2rem] p-8 shadow-2xl relative my-auto">
@@ -1444,12 +1327,11 @@
             return "R$ " + v;
         }
 
-        async function buscarCEP(cepInput, campoAlvoId) {
+        async function buscarCEP(cepInput) {
             const cep = cepInput.replace(/\D/g, '');
             if(cep.length === 8) {
-                const endField = document.getElementById(campoAlvoId);
-                if(!endField) return;
-                endField.value = "Buscando...";
+                const endField = document.getElementById('dos-end');
+                endField.value = "Buscando endereço via correios...";
                 try {
                     const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
                     const data = await res.json();
@@ -1498,18 +1380,22 @@
         // CONTROLE DE NAVEGAÇÃO E ABAS
         // -------------------------
         function abrirAba(idAba, elementoClicado) { 
-            document.querySelectorAll('.painel').forEach(p => { p.classList.remove('active'); p.classList.add('hidden'); }); 
-            // 🚨 CORREÇÃO DA COR TRANSPARENTE 🚨
-            document.querySelectorAll('.menu-item').forEach(m => { m.classList.remove('bg-brand-500', 'text-white', 'active'); m.classList.add('text-slate-600', 'dark:text-slate-400'); }); 
+            document.querySelectorAll('.painel').forEach(p => { 
+                p.classList.remove('active'); 
+                p.classList.add('hidden'); 
+            }); 
+            document.querySelectorAll('.menu-item').forEach(m => { 
+                m.classList.remove('bg-brand-500', 'text-white', 'active'); 
+                m.classList.add('text-slate-300'); 
+            }); 
             
             document.getElementById(idAba).classList.remove('hidden'); 
             document.getElementById(idAba).classList.add('active'); 
             
             if(elementoClicado) { 
-                elementoClicado.classList.remove('text-slate-600', 'dark:text-slate-400'); 
+                elementoClicado.classList.remove('text-slate-300'); 
                 elementoClicado.classList.add('bg-brand-500', 'text-white', 'active'); 
             } 
-            
             
            // Lógica de Carregamento Automático ao abrir as abas
             if(idAba === 'aba-relatorios') filtrarRelatorios(); 
@@ -1575,6 +1461,7 @@
                             </div>
                         </div>`;
                     } else {
+                        // Atestados/Ocorrencias Visualização
                         return `
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                             <div class="flex items-center mb-3 text-slate-600">
@@ -1599,6 +1486,7 @@
                 carregarCaixaEntradaRH();
             }
         }
+
 
         // -------------------------
         // SETUP E CONFIGURAÇÕES DA LOJA
@@ -1652,19 +1540,30 @@
         // DESTRUIÇÃO DE DADOS (ZONA DE PERIGO)
         // ==========================================
         async function zerarBancoDeDados() {
-            if(confirm("⚠️ ALERTA VERMELHO: Tem certeza absoluta? Isso vai apagar TODAS as vendas, financeiro, clientes e funcionários.")) {
+            if(confirm("⚠️ ALERTA VERMELHO: Tem certeza absoluta? Isso vai apagar TODAS as vendas, financeiro, clientes e produtos. Essa ação é IRREVERSÍVEL!")) {
+                
+                // Trava de segurança extra
                 const senha = prompt("Digite a palavra 'CONFIRMAR' em maiúsculo para autorizar a limpeza do banco de dados:");
+                
                 if (senha === "CONFIRMAR") {
                     try {
                         alertaPremium("Iniciando varredura e limpeza do banco de dados...", "Aguarde", "info");
+                        
                         const res = await fetch('/api/sistema/zerar-dados', { method: 'DELETE' });
                         const data = await res.json();
+                        
                         if(res.ok) {
                             alertaPremium(data.mensagem, "Sistema Zerado", "sucesso");
                             setTimeout(() => { window.location.reload(); }, 3000);
-                        } else { alertaPremium("Erro: " + data.detail, "Falha na Limpeza", "erro"); }
-                    } catch(e) { alertaPremium("Erro de conexão ao tentar limpar o banco.", "Falha de Rede", "erro"); }
-                } else { alertaPremium("Palavra de segurança incorreta. Operação abortada.", "Acesso Negado", "erro"); }
+                        } else {
+                            alertaPremium("Erro: " + data.detail, "Falha na Limpeza", "erro");
+                        }
+                    } catch(e) {
+                        alertaPremium("Erro de conexão ao tentar limpar o banco.", "Falha de Rede", "erro");
+                    }
+                } else {
+                    alertaPremium("Palavra de segurança incorreta. Operação de limpeza abortada.", "Acesso Negado", "erro");
+                }
             }
         }
         
@@ -1681,28 +1580,11 @@
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
                 document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
                 
-                // INJEÇÃO DO LOGO DINÂMICO
-                if(conf.logo_url && String(conf.logo_url).trim() !== '' && conf.logo_url !== 'None') {
+                if(conf.logo_url) {
                     document.getElementById('conf-logo-base64').value = conf.logo_url;
-                    const prevSetup = document.getElementById('preview-logo-setup');
-                    if(prevSetup) {
-                        prevSetup.src = conf.logo_url;
-                        prevSetup.classList.remove('hidden');
-                        document.getElementById('icone-logo-setup').classList.add('hidden');
-                    }
-                    
-                    const letra = document.getElementById('header-logo-letra'); 
-                    const img = document.getElementById('header-logo-img'); 
-                    const container = document.getElementById('header-logo-container');
-                    
-                    if(letra && img && container) {
-                        img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
-                        img.src = conf.logo_url; 
-                        img.classList.remove('hidden');
-                        letra.classList.add('hidden'); 
-                        container.classList.remove('bg-brand-500', 'border-transparent'); 
-                        container.classList.add('bg-white', 'border-slate-200', 'dark:border-slate-700');
-                    }
+                    document.getElementById('preview-logo-setup').src = conf.logo_url;
+                    document.getElementById('preview-logo-setup').classList.remove('hidden');
+                    document.getElementById('icone-logo-setup').classList.add('hidden');
                 }
                 
                 document.getElementById('conf-tempo').value = conf.tempo_preparo || 30; 
@@ -1780,17 +1662,21 @@
             
             try {
                 const res = await fetch('/api/gestao/configuracoes', { 
-                    method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) 
+                    method: 'PUT', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
                 }); 
                 
                 if(res.ok) {
-                    alertaPremium("Servidor Master Atualizado! Configurações salvas.", "Operação Concluída", "sucesso"); 
+                    alertaPremium("Servidor Master Atualizado! Configurações salvas com sucesso.", "Operação Concluída", "sucesso"); 
                     carregarConfiguracoesInit();
                 } else {
                     const data = await res.json();
                     alertaPremium("O Banco de Dados recusou: " + data.detail, "Falha de Sincronização", "erro");
                 }
-            } catch(err) { alertaPremium("Falha de Rede.", "Erro de Conexão", "erro"); }
+            } catch(err) {
+                alertaPremium("Falha de Rede ou Servidor Fora do Ar.", "Erro de Conexão", "erro");
+            }
             
             btn.innerHTML = textoOriginal;
             btn.disabled = false;
@@ -1826,7 +1712,9 @@
                 valor: parseFloat(document.getElementById('cupom-valor').value)
             };
             const res = await fetch('/api/gestao/cupons', {
-                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
             });
             if(res.ok) {
                 alertaPremium("Cupom criado com sucesso!", "Sucesso", "sucesso");
@@ -1877,8 +1765,11 @@
                         <td class="py-4 px-6 text-right font-black text-emerald-500">R$ ${p.faturamento_gerado.toFixed(2).replace('.', ',')}</td>
                     </tr>`).join('');
                 }
-            } catch (err) { console.log("Aguardando gerar vendas para o relatório..."); }
+            } catch (err) {
+                console.log("Aguardando gerar vendas para o relatório...");
+            }
         }
+
 
         // -------------------------
         // GESTÃO DE CARGOS DINÂMICOS
@@ -1899,10 +1790,12 @@
             const res = await fetch('/api/gestao/cargos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({nome: n, permissoes: p}) });
             
             if(res.ok) { 
-                alertaPremium("Cargo Corporativo criado!", "Sucesso", "sucesso"); 
+                alertaPremium("Cargo Corporativo criado e disponibilizado no sistema!", "Sucesso", "sucesso"); 
                 document.getElementById('form-cargo').reset(); 
                 carregarCargosParaRH(); 
-            } else { alertaPremium("Este cargo já existe ou erro na nuvem.", "Erro", "erro"); }
+            } else { 
+                alertaPremium("Este cargo já existe ou erro na nuvem.", "Erro", "erro"); 
+            }
         }
 
         // -------------------------
@@ -1914,7 +1807,8 @@
                 <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex flex-col text-center shadow-sm">
                     <span class="font-bold text-xs uppercase text-slate-700 mb-2 tracking-widest">${nomesDias[i]}</span>
                     <label class="text-[10px] font-black text-brand-600 cursor-pointer mb-3 flex items-center justify-center bg-white p-2 rounded-lg border border-brand-100 hover:bg-brand-50 transition-colors uppercase tracking-widest">
-                        <input type="checkbox" id="esc-folga-${d}" class="mr-2 w-3 h-3" onchange="toggleFolga('${d}')"> Folga Fixa
+                        <input type="checkbox" id="esc-folga-${d}" class="mr-2 w-3 h-3" onchange="toggleFolga('${d}')">
+                        Folga Fixa
                     </label>
                     <input type="time" id="esc-in-${d}" class="border border-slate-200 rounded-lg p-2 text-xs text-center mb-2 w-full font-mono bg-white outline-none focus:border-brand-500 text-slate-700 shadow-inner">
                     <input type="time" id="esc-out-${d}" class="border border-slate-200 rounded-lg p-2 text-xs text-center w-full font-mono bg-white outline-none focus:border-brand-500 text-slate-700 shadow-inner">
@@ -1924,67 +1818,131 @@
 
         function toggleFolga(d) {
             const isFolga = document.getElementById(`esc-folga-${d}`).checked;
-            document.getElementById(`esc-in-${d}`).disabled = isFolga; document.getElementById(`esc-out-${d}`).disabled = isFolga;
-            if(isFolga) { document.getElementById(`esc-in-${d}`).value = ''; document.getElementById(`esc-out-${d}`).value = ''; }
+            document.getElementById(`esc-in-${d}`).disabled = isFolga; 
+            document.getElementById(`esc-out-${d}`).disabled = isFolga;
+            if(isFolga) { 
+                document.getElementById(`esc-in-${d}`).value = ''; 
+                document.getElementById(`esc-out-${d}`).value = ''; 
+            }
         }
 
         function copiarLinkAdmissao() { 
             navigator.clipboard.writeText(window.location.origin + "/admissao"); 
-            alertaPremium("Link LGPD copiado!", "Link Copiado", "sucesso"); 
+            alertaPremium("Link do formulário LGPD copiado para a área de transferência! Envie para o futuro colaborador.", "Link Copiado", "sucesso"); 
         }
 
         async function cadastrarColaborador(e) {
             e.preventDefault(); 
             const btn = e.target.querySelector('button[type="submit"]'); 
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i>'; btn.disabled = true;
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i>'; 
+            btn.disabled = true;
             
             const payload = { 
-                nome: document.getElementById('rh-nome').value, usuario: document.getElementById('rh-usuario').value, senha: document.getElementById('rh-senha').value, 
-                cargo_id: parseInt(document.getElementById('rh-cargo').value), whatsapp: document.getElementById('rh-tel').value, cpf: document.getElementById('rh-cpf').value, email: document.getElementById('rh-email').value 
+                nome: document.getElementById('rh-nome').value, 
+                usuario: document.getElementById('rh-usuario').value, 
+                senha: document.getElementById('rh-senha').value, 
+                cargo_id: parseInt(document.getElementById('rh-cargo').value), 
+                whatsapp: document.getElementById('rh-tel').value, 
+                cpf: document.getElementById('rh-cpf').value, 
+                email: document.getElementById('rh-email').value 
             };
             
             try {
                 const res = await fetch('/api/gestao/funcionarios', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
                 const data = await res.json();
-                if(res.ok) { alertaPremium(data.mensagem, "Contrato Gerado", "sucesso"); document.getElementById('form-rh').reset(); carregarColaboradores(); } 
-                else { alertaPremium("Atenção: " + data.detail, "Erro no Cadastro", "erro"); }
-            } catch(error) { alertaPremium("Falha na rede.", "Erro de Conexão", "erro"); }
-            btn.innerHTML = 'Contratar'; btn.disabled = false;
+                
+                if(res.ok) { 
+                    alertaPremium(data.mensagem, "Contrato Gerado", "sucesso"); 
+                    document.getElementById('form-rh').reset(); 
+                    carregarColaboradores(); 
+                } else { 
+                    alertaPremium("Atenção: " + data.detail, "Erro no Cadastro", "erro"); 
+                }
+            } catch(error) { 
+                alertaPremium("Falha na rede. Verifique sua internet.", "Erro de Conexão", "erro"); 
+            }
+            btn.innerHTML = 'Contratar'; 
+            btn.disabled = false;
         }
 
         async function carregarColaboradores() {
             try {
-                const res = await fetch('/api/gestao/funcionarios'); const dados = await res.json(); const tbody = document.getElementById('lista-colaboradores');
-                if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400 font-medium">Nenhum funcionário na base de dados.</td></tr>'; return; }
+                const res = await fetch('/api/gestao/funcionarios'); 
+                const dados = await res.json();
+                const tbody = document.getElementById('lista-colaboradores');
+                
+                if (dados.length === 0) { 
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400 font-medium">Nenhum funcionário na base de dados.</td></tr>'; 
+                    return; 
+                }
 
                 tbody.innerHTML = dados.map(f => {
                     let badgeStatus = '';
-                    if(f.status_admissao === 'PENDENTE_PREENCHIMENTO') { badgeStatus = '<span class="bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Falta LGPD/Form.</span>'; } 
-                    else if(f.status_admissao === 'ATIVO') { badgeStatus = '<span class="bg-green-100 text-green-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest"><i class="ph-bold ph-check mr-1"></i> Contrato Ativo</span>'; } 
-                    else { badgeStatus = '<span class="bg-red-100 text-red-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Demitido</span>'; }
+                    if(f.status_admissao === 'PENDENTE_PREENCHIMENTO') {
+                        badgeStatus = '<span class="bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Falta LGPD/Form.</span>';
+                    } else if(f.status_admissao === 'ATIVO') {
+                        badgeStatus = '<span class="bg-green-100 text-green-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest"><i class="ph-bold ph-check mr-1"></i> Contrato Ativo</span>';
+                    } else {
+                        badgeStatus = '<span class="bg-red-100 text-red-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Demitido</span>';
+                    }
                     
                     let acaoAdmin = '';
-                    if (f.permissoes === 'total') { acaoAdmin = '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Acesso Supremo</span>'; } 
-                    else if (f.status_admissao === 'DEMITIDO') { acaoAdmin = `<button onclick="readmitirColaborador(${f.id})" class="text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm"><i class="ph-bold ph-arrow-counter-clockwise mr-1"></i> Readmitir</button>`; } 
-                    else { acaoAdmin = `<div class="flex space-x-1 justify-center"><button onclick="abrirModalEditarColaborador(${f.id}, '${f.nome}', '${f.matricula || ''}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar Nome/Matrícula"><i class="ph-bold ph-pencil-simple text-sm"></i></button><button onclick="abrirDossie(${f.id}, '${f.nome}', '${f.matricula}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm">Dossiê</button><button onclick="demitirColaborador(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button></div>`; }
+            if (f.permissoes === 'total') {
+                acaoAdmin = '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Acesso Supremo</span>';
+            } else if (f.status_admissao === 'DEMITIDO') {
+                acaoAdmin = `<button onclick="readmitirColaborador(${f.id})" class="text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm"><i class="ph-bold ph-arrow-counter-clockwise mr-1"></i> Readmitir</button>`;
+            } else {
+                acaoAdmin = `
+                <div class="flex space-x-1 justify-center">
+                    <button onclick="abrirModalEditarColaborador(${f.id}, '${f.nome}', '${f.matricula || ''}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar Nome/Matrícula"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                    <button onclick="abrirDossie(${f.id}, '${f.nome}', '${f.matricula}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm">Dossiê</button>
+                    <button onclick="demitirColaborador(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
+                </div>`;
+            }
                     
                     let pontoHtml = '';
                     if(f.status_admissao === 'ATIVO' && f.permissoes !== 'total') {
-                        if(!f.ponto_entrada) { pontoHtml = `<button onclick="baterPontoRH(${f.id}, 'entrada')" class="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-widest px-3 py-2 rounded-xl font-black shadow-md transition-all active:scale-95">Bater Entrada</button>`; } 
-                        else if(!f.ponto_saida) { pontoHtml = `<span class="text-[10px] text-green-700 font-black bg-green-50 px-2 py-1.5 rounded-lg border border-green-200 shadow-sm uppercase tracking-widest"><i class="ph-bold ph-arrow-right mr-1"></i> In: ${f.ponto_entrada}</span><br><button onclick="baterPontoRH(${f.id}, 'saida')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] uppercase tracking-widest px-3 py-2 rounded-xl mt-2 font-black shadow-md transition-all active:scale-95">Bater Saída</button>`; } 
-                        else { pontoHtml = `<span class="text-[10px] text-slate-600 font-black bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-inner uppercase tracking-widest">In: ${f.ponto_entrada} | Out: ${f.ponto_saida}</span>`; }
+                        if(!f.ponto_entrada) {
+                            pontoHtml = `<button onclick="baterPontoRH(${f.id}, 'entrada')" class="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-widest px-3 py-2 rounded-xl font-black shadow-md transition-all active:scale-95">Bater Entrada</button>`;
+                        } else if(!f.ponto_saida) {
+                            pontoHtml = `<span class="text-[10px] text-green-700 font-black bg-green-50 px-2 py-1.5 rounded-lg border border-green-200 shadow-sm uppercase tracking-widest"><i class="ph-bold ph-arrow-right mr-1"></i> In: ${f.ponto_entrada}</span><br><button onclick="baterPontoRH(${f.id}, 'saida')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] uppercase tracking-widest px-3 py-2 rounded-xl mt-2 font-black shadow-md transition-all active:scale-95">Bater Saída</button>`;
+                        } else {
+                            pontoHtml = `<span class="text-[10px] text-slate-600 font-black bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-inner uppercase tracking-widest">In: ${f.ponto_entrada} | Out: ${f.ponto_saida}</span>`;
+                        }
                     }
                     
                     let avatar = f.foto_3x4 ? `<img src="${f.foto_3x4}" class="w-12 h-12 rounded-2xl object-cover mr-4 border border-slate-200 shadow-sm">` : `<div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center font-black text-xl mr-4 border border-slate-200 shadow-sm">${f.nome.charAt(0)}</div>`;
 
-                    return `<tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors ${f.status_admissao==='DEMITIDO'?'opacity-50 grayscale':''}"><td class="py-4 px-6 flex items-center">${avatar} <div><p class="font-black text-slate-800 text-sm tracking-tight">${f.nome}</p><p class="text-[10px] font-mono text-slate-400 mt-1 uppercase tracking-widest">MAT: ${f.matricula||'-'} | CPF: ${f.cpf||'-'}</p></div></td><td class="py-4 px-6">${badgeStatus}<p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-2 bg-slate-100 inline-block px-2 py-1 rounded border border-slate-200"><i class="ph-fill ph-briefcase mr-1"></i> ${f.cargo}</p></td><td class="py-4 px-6 text-center align-middle">${pontoHtml}</td><td class="py-4 px-6 text-center align-middle">${acaoAdmin}</td></tr>`;
+                    return `<tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors ${f.status_admissao==='DEMITIDO'?'opacity-50 grayscale':''}">
+                        <td class="py-4 px-6 flex items-center">
+                            ${avatar} 
+                            <div>
+                                <p class="font-black text-slate-800 text-sm tracking-tight">${f.nome}</p>
+                                <p class="text-[10px] font-mono text-slate-400 mt-1 uppercase tracking-widest">MAT: ${f.matricula||'-'} | CPF: ${f.cpf||'-'}</p>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            ${badgeStatus}
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-2 bg-slate-100 inline-block px-2 py-1 rounded border border-slate-200"><i class="ph-fill ph-briefcase mr-1"></i> ${f.cargo}</p>
+                        </td>
+                        <td class="py-4 px-6 text-center align-middle">${pontoHtml}</td>
+                        <td class="py-4 px-6 text-center align-middle">${acaoAdmin}</td>
+                    </tr>`;
                 }).join('');
             } catch(e) {}
         }
         
-        async function baterPontoRH(id, tipo) { await fetch('/api/gestao/ponto', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ funcionario_id: id, tipo: tipo }) }); carregarColaboradores(); }
+        async function baterPontoRH(id, tipo) { 
+            await fetch('/api/gestao/ponto', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ funcionario_id: id, tipo: tipo }) }); 
+            carregarColaboradores(); 
+        }
         
-        async function demitirColaborador(id) { if(confirm("⚠️ ATENÇÃO CORPORATIVA: Demitir funcionário?")) { await fetch(`/api/gestao/funcionarios/${id}`, { method: 'DELETE' }); carregarColaboradores(); } }
+        async function demitirColaborador(id) { 
+            if(confirm("⚠️ ATENÇÃO CORPORATIVA: Demitir funcionário? O acesso será revogado imediatamente e os relatórios preservados para auditoria.")) { 
+                await fetch(`/api/gestao/funcionarios/${id}`, { method: 'DELETE' }); 
+                carregarColaboradores(); 
+            } 
+        }
 
         async function readmitirColaborador(id) {
             const senha_nova = prompt("Colaborador Readmitido! Digite uma nova senha temporária para ele acessar o portal:");
@@ -1997,59 +1955,202 @@
         }
 
         async function abrirDossie(id, nomeFunc, matFunc) {
-            document.getElementById('nome-dossie-modal').innerText = nomeFunc; document.getElementById('mat-dossie-modal').innerText = matFunc || '0000';
+            document.getElementById('nome-dossie-modal').innerText = nomeFunc;
+            document.getElementById('mat-dossie-modal').innerText = matFunc || '0000';
+            
             try {
-                const res = await fetch(`/api/gestao/funcionarios/${id}/dossie`); const r = await res.json();
-                document.getElementById('dos-id').value = id; document.getElementById('dos-cpf').value = r.cpf || ""; document.getElementById('dos-rg').value = r.rg || ""; document.getElementById('dos-pis').value = r.pis_pasep || ""; document.getElementById('dos-cnh').value = r.cnh || ""; document.getElementById('dos-email').value = r.email || ""; document.getElementById('dos-nasc').value = r.data_nascimento || ""; document.getElementById('dos-civil').value = r.estado_civil || "Solteiro"; document.getElementById('dos-eleitor').value = r.titulo_eleitor || ""; document.getElementById('dos-res').value = r.reservista || ""; document.getElementById('dos-cep').value = r.cep || ""; document.getElementById('dos-end').value = r.endereco_completo || ""; document.getElementById('dos-nat').value = r.naturalidade || ""; document.getElementById('dos-esc').value = r.escolaridade || "Ensino Médio"; document.getElementById('dos-filhos').value = r.qtd_filhos_menores || 0; 
+                const res = await fetch(`/api/gestao/funcionarios/${id}/dossie`); 
+                const r = await res.json();
+                
+                // TAB 1: Documentos
+                document.getElementById('dos-id').value = id; 
+                document.getElementById('dos-cpf').value = r.cpf || ""; 
+                document.getElementById('dos-rg').value = r.rg || ""; 
+                document.getElementById('dos-pis').value = r.pis_pasep || ""; 
+                document.getElementById('dos-cnh').value = r.cnh || ""; 
+                document.getElementById('dos-email').value = r.email || "";
+                document.getElementById('dos-nasc').value = r.data_nascimento || ""; 
+                document.getElementById('dos-civil').value = r.estado_civil || "Solteiro"; 
+                document.getElementById('dos-eleitor').value = r.titulo_eleitor || ""; 
+                document.getElementById('dos-res').value = r.reservista || "";
+                document.getElementById('dos-cep').value = r.cep || ""; 
+                document.getElementById('dos-end').value = r.endereco_completo || ""; 
+                document.getElementById('dos-nat').value = r.naturalidade || ""; 
+                document.getElementById('dos-esc').value = r.escolaridade || "Ensino Médio"; 
+                document.getElementById('dos-filhos').value = r.qtd_filhos_menores || 0; 
                 
                 if(r.plano_saude_escolhido) {
-                    const sel = document.getElementById('dos-plano'); const exists = Array.from(sel.options).some(o => o.value === r.plano_saude_escolhido);
+                    const sel = document.getElementById('dos-plano');
+                    const exists = Array.from(sel.options).some(o => o.value === r.plano_saude_escolhido);
                     if(exists) sel.value = r.plano_saude_escolhido;
                 }
                 
-                if(r.foto_3x4) { document.getElementById('preview-foto').src = r.foto_3x4; document.getElementById('preview-foto-header').src = r.foto_3x4; document.getElementById('dos-foto-base64').value = r.foto_3x4; } 
-                else { document.getElementById('preview-foto').src = "https://ui-avatars.com/api/?name=Upload&background=f1f5f9"; document.getElementById('preview-foto-header').src = "https://ui-avatars.com/api/?name="+nomeFunc+"&background=cbd5e1&color=fff"; document.getElementById('dos-foto-base64').value = ""; }
+                if(r.foto_3x4) { 
+                    document.getElementById('preview-foto').src = r.foto_3x4; 
+                    document.getElementById('preview-foto-header').src = r.foto_3x4; 
+                    document.getElementById('dos-foto-base64').value = r.foto_3x4; 
+                } else { 
+                    document.getElementById('preview-foto').src = "https://ui-avatars.com/api/?name=Upload&background=f1f5f9"; 
+                    document.getElementById('preview-foto-header').src = "https://ui-avatars.com/api/?name="+nomeFunc+"&background=cbd5e1&color=fff"; 
+                    document.getElementById('dos-foto-base64').value = ""; 
+                }
 
-                document.getElementById('fin-banco').value = r.banco || ""; document.getElementById('fin-agencia').value = r.agencia || ""; document.getElementById('fin-conta').value = r.conta || ""; document.getElementById('fin-salario').value = formataMoedaParaInput(r.salario); document.getElementById('fin-vt').value = formataMoedaParaInput(r.valor_vt); document.getElementById('fin-va').value = formataMoedaParaInput(r.valor_va); document.getElementById('fin-recebe-com').checked = r.recebe_comissao; document.getElementById('fin-tipo-com').value = r.tipo_comissao || "PERCENTUAL"; document.getElementById('fin-valor-com').value = formataMoedaParaInput(r.valor_comissao); document.getElementById('fin-diaria').value = formataMoedaParaInput(r.diaria_motoboy); document.getElementById('fin-repasse').value = formataMoedaParaInput(r.repasse_por_entrega);
+                // TAB 2: Financeiro e Banco
+                document.getElementById('fin-banco').value = r.banco || ""; 
+                document.getElementById('fin-agencia').value = r.agencia || ""; 
+                document.getElementById('fin-conta').value = r.conta || "";
+                
+                document.getElementById('fin-salario').value = formataMoedaParaInput(r.salario); 
+                document.getElementById('fin-vt').value = formataMoedaParaInput(r.valor_vt); 
+                document.getElementById('fin-va').value = formataMoedaParaInput(r.valor_va);
+                
+                document.getElementById('fin-recebe-com').checked = r.recebe_comissao; 
+                document.getElementById('fin-tipo-com').value = r.tipo_comissao || "PERCENTUAL"; 
+                document.getElementById('fin-valor-com').value = formataMoedaParaInput(r.valor_comissao);
+                
+                document.getElementById('fin-diaria').value = formataMoedaParaInput(r.diaria_motoboy); 
+                document.getElementById('fin-repasse').value = formataMoedaParaInput(r.repasse_por_entrega);
 
                 const escalaSalva = r.escala_matriz_json ? JSON.parse(r.escala_matriz_json) : {};
-                diasSemana.forEach(d => { const info = escalaSalva[d] || { folga: false, in: '', out: '' }; document.getElementById(`esc-folga-${d}`).checked = info.folga; document.getElementById(`esc-in-${d}`).value = info.in; document.getElementById(`esc-out-${d}`).value = info.out; toggleFolga(d); });
-                document.getElementById('modal-dossie').classList.replace('hidden', 'flex'); alternarAbaDossie('aba-dos-legal', document.querySelector('.btn-aba-dossie')); 
-            } catch(e) { alertaPremium("Erro ao puxar Dossiê do RH.", "Erro", "erro"); }
+                diasSemana.forEach(d => {
+                    const info = escalaSalva[d] || { folga: false, in: '', out: '' };
+                    document.getElementById(`esc-folga-${d}`).checked = info.folga; 
+                    document.getElementById(`esc-in-${d}`).value = info.in; 
+                    document.getElementById(`esc-out-${d}`).value = info.out;
+                    toggleFolga(d);
+                });
+
+                document.getElementById('modal-dossie').classList.replace('hidden', 'flex');
+                alternarAbaDossie('aba-dos-legal', document.querySelector('.btn-aba-dossie')); 
+                
+            } catch(e) { 
+                alertaPremium("Erro grave de banco de dados ao puxar Dossiê do RH.", "Erro Crítico", "erro"); 
+            }
         }
 
         async function salvarDossieLegal(e) {
-            e.preventDefault(); const id = document.getElementById('dos-id').value;
-            const payload = { cpf: document.getElementById('dos-cpf').value, rg: document.getElementById('dos-rg').value, pis_pasep: document.getElementById('dos-pis').value, cnh: document.getElementById('dos-cnh').value, email: document.getElementById('dos-email').value, data_nascimento: document.getElementById('dos-nasc').value, estado_civil: document.getElementById('dos-civil').value, titulo_eleitor: document.getElementById('dos-eleitor').value, reservista: document.getElementById('dos-res').value, cep: document.getElementById('dos-cep').value, endereco_completo: document.getElementById('dos-end').value, naturalidade: document.getElementById('dos-nat').value, escolaridade: document.getElementById('dos-esc').value, qtd_filhos_menores: parseInt(document.getElementById('dos-filhos').value)||0, plano_saude_escolhido: document.getElementById('dos-plano').value, foto_3x4: document.getElementById('dos-foto-base64').value, aceite_lgpd: true, banco: document.getElementById('fin-banco').value, agencia: document.getElementById('fin-agencia').value, conta: document.getElementById('fin-conta').value };
-            const btn = e.target.querySelector('button[type="submit"]'); btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Subindo Anexos...";
-            try { const r = await fetch(`/api/gestao/funcionarios/${id}/dossie`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }); if(r.ok) { alertaPremium("Salvos com Sucesso!", "Dossiê", "sucesso"); carregarColaboradores(); } } catch(err) { alertaPremium("Falha de Comunicação.", "Erro", "erro"); } btn.innerHTML = "Salvar Documentos Oficiais";
+            e.preventDefault(); 
+            const id = document.getElementById('dos-id').value;
+            
+            const payload = { 
+                cpf: document.getElementById('dos-cpf').value, 
+                rg: document.getElementById('dos-rg').value, 
+                pis_pasep: document.getElementById('dos-pis').value, 
+                cnh: document.getElementById('dos-cnh').value, 
+                email: document.getElementById('dos-email').value,
+                data_nascimento: document.getElementById('dos-nasc').value, 
+                estado_civil: document.getElementById('dos-civil').value, 
+                titulo_eleitor: document.getElementById('dos-eleitor').value, 
+                reservista: document.getElementById('dos-res').value,
+                cep: document.getElementById('dos-cep').value, 
+                endereco_completo: document.getElementById('dos-end').value, 
+                naturalidade: document.getElementById('dos-nat').value, 
+                escolaridade: document.getElementById('dos-esc').value, 
+                qtd_filhos_menores: parseInt(document.getElementById('dos-filhos').value)||0, 
+                plano_saude_escolhido: document.getElementById('dos-plano').value,
+                foto_3x4: document.getElementById('dos-foto-base64').value, 
+                aceite_lgpd: true, 
+                banco: document.getElementById('fin-banco').value, 
+                agencia: document.getElementById('fin-agencia').value, 
+                conta: document.getElementById('fin-conta').value 
+            };
+            
+            const btn = e.target.querySelector('button[type="submit"]'); 
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Subindo Anexos...";
+            
+            try {
+                const r = await fetch(`/api/gestao/funcionarios/${id}/dossie`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+                if(r.ok) { 
+                    alertaPremium("Documentos Pessoais Salvos com Sucesso na Nuvem!", "Dossiê Atualizado", "sucesso"); 
+                    carregarColaboradores(); 
+                }
+            } catch(err) {
+                alertaPremium("Falha de Comunicação com servidor ERP.", "Erro", "erro");
+            } 
+            
+            btn.innerHTML = "Salvar Documentos Oficiais";
         }
 
         async function salvarDossieFinanceiro(e) {
-            e.preventDefault(); const id = document.getElementById('dos-id').value; const btn = e.target.querySelector('button[type="submit"]'); btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Validando Banco...";
-            const payloadBancario = { banco: document.getElementById('fin-banco').value, agencia: document.getElementById('fin-agencia').value, conta: document.getElementById('fin-conta').value, cpf: document.getElementById('dos-cpf').value, email: document.getElementById('dos-email').value, endereco_completo: document.getElementById('dos-end').value, foto_3x4: document.getElementById('dos-foto-base64').value };
+            e.preventDefault(); 
+            const id = document.getElementById('dos-id').value;
+            const btn = e.target.querySelector('button[type="submit"]'); 
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Validando Banco...";
+
+            const payloadBancario = {
+                banco: document.getElementById('fin-banco').value, 
+                agencia: document.getElementById('fin-agencia').value, 
+                conta: document.getElementById('fin-conta').value,
+                cpf: document.getElementById('dos-cpf').value, 
+                email: document.getElementById('dos-email').value, 
+                endereco_completo: document.getElementById('dos-end').value, 
+                foto_3x4: document.getElementById('dos-foto-base64').value 
+            };
             await fetch(`/api/gestao/funcionarios/${id}/dossie`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payloadBancario) });
-            let escalaJsonFinal = {}; diasSemana.forEach(d => { escalaJsonFinal[d] = { folga: document.getElementById(`esc-folga-${d}`).checked, in: document.getElementById(`esc-in-${d}`).value, out: document.getElementById(`esc-out-${d}`).value }; });
-            const payloadFin = { salario: parseMoeda(document.getElementById('fin-salario').value), valor_vt: parseMoeda(document.getElementById('fin-vt').value), valor_va: parseMoeda(document.getElementById('fin-va').value), recebe_comissao: document.getElementById('fin-recebe-com').checked, tipo_comissao: document.getElementById('fin-tipo-com').value, valor_comissao: parseMoeda(document.getElementById('fin-valor-com').value), diaria_motoboy: parseMoeda(document.getElementById('fin-diaria').value), repasse_por_entrega: parseMoeda(document.getElementById('fin-repasse').value), escala_matriz_json: JSON.stringify(escalaJsonFinal) };
+
+            let escalaJsonFinal = {}; 
+            diasSemana.forEach(d => { 
+                escalaJsonFinal[d] = { 
+                    folga: document.getElementById(`esc-folga-${d}`).checked, 
+                    in: document.getElementById(`esc-in-${d}`).value, 
+                    out: document.getElementById(`esc-out-${d}`).value 
+                }; 
+            });
+            
+            const payloadFin = {
+                salario: parseMoeda(document.getElementById('fin-salario').value), 
+                valor_vt: parseMoeda(document.getElementById('fin-vt').value), 
+                valor_va: parseMoeda(document.getElementById('fin-va').value),
+                recebe_comissao: document.getElementById('fin-recebe-com').checked, 
+                tipo_comissao: document.getElementById('fin-tipo-com').value, 
+                valor_comissao: parseMoeda(document.getElementById('fin-valor-com').value),
+                diaria_motoboy: parseMoeda(document.getElementById('fin-diaria').value), 
+                repasse_por_entrega: parseMoeda(document.getElementById('fin-repasse').value), 
+                escala_matriz_json: JSON.stringify(escalaJsonFinal)
+            };
+            
             btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Aplicando Contrato...";
-            try { const r = await fetch(`/api/gestao/funcionarios/${id}/financeiro`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payloadFin) }); if(r.ok) { alertaPremium("Contrato Salvo!", "Sucesso", "sucesso"); } } catch(err) { alertaPremium("Erro ao validar contrato.", "Erro", "erro"); } btn.innerHTML = "Gravar Contrato e Escala";
+            
+            try {
+                const r = await fetch(`/api/gestao/funcionarios/${id}/financeiro`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payloadFin) });
+                if(r.ok) { 
+                    alertaPremium("Parâmetros Financeiros e Escala de Trabalho Salvos!", "Contrato Atualizado", "sucesso"); 
+                }
+            } catch(err) {
+                alertaPremium("Erro ao validar contrato financeiro.", "Erro", "erro");
+            } 
+            
+            btn.innerHTML = "Gravar Contrato e Escala";
         }
 
         async function carregarDesempenho() {
-            const mes = document.getElementById('mes-desempenho').value; const id = document.getElementById('dos-id').value; if(!mes || !id) return;
+            const mes = document.getElementById('mes-desempenho').value;
+            const id = document.getElementById('dos-id').value;
+            if(!mes || !id) return;
+            
             document.getElementById('res-faltas').innerText = "...";
             try {
-                const res = await fetch(`/api/gestao/rh/colaborador/${id}/holerite/${mes}`); const data = await res.json();
+                const res = await fetch(`/api/gestao/rh/colaborador/${id}/holerite/${mes}`);
+                const data = await res.json();
                 if(res.ok) {
-                    document.getElementById('res-faltas').innerText = `${data.descontos.horas_quantidade}h`; document.getElementById('res-valor-faltas').innerText = `R$ ${data.descontos.horas_nao_trabalhadas.toFixed(2).replace('.',',')}`; document.getElementById('res-var').innerText = `R$ ${(data.proventos.comissoes + data.proventos.gorjetas).toFixed(2).replace('.',',')}`;
-                    if(data.descontos.horas_quantidade > 8) { document.getElementById('res-dias').innerText = "RISCO DEMISSÃO"; document.getElementById('res-dias').className = "text-2xl mt-4 font-black text-red-500 uppercase tracking-tight"; } 
-                    else { document.getElementById('res-dias').innerText = "OK / ASSÍDUO"; document.getElementById('res-dias').className = "text-2xl mt-4 font-black text-green-500 uppercase tracking-tight"; }
+                    document.getElementById('res-faltas').innerText = `${data.descontos.horas_quantidade}h`;
+                    document.getElementById('res-valor-faltas').innerText = `R$ ${data.descontos.horas_nao_trabalhadas.toFixed(2).replace('.',',')}`;
+                    document.getElementById('res-var').innerText = `R$ ${(data.proventos.comissoes + data.proventos.gorjetas).toFixed(2).replace('.',',')}`;
+                    
+                    if(data.descontos.horas_quantidade > 8) { 
+                        document.getElementById('res-dias').innerText = "RISCO DEMISSÃO"; 
+                        document.getElementById('res-dias').className = "text-2xl mt-4 font-black text-red-500 uppercase tracking-tight"; 
+                    } else { 
+                        document.getElementById('res-dias').innerText = "OK / ASSÍDUO"; 
+                        document.getElementById('res-dias').className = "text-2xl mt-4 font-black text-green-500 uppercase tracking-tight"; 
+                    }
                 }
             } catch(e) {}
         }
 
+
         // -------------------------
-        // 🚨 COMPRAS, CARDÁPIO, ESTOQUE E FORNECEDORES (CORRIGIDO) 🚨
+        // MÓDULOS DE COMPRAS (CARDÁPIO, ESTOQUE, FORNECEDORES)
         // -------------------------
         let ingredientesFicha = []; 
         let itensDoGrupoLocal = [];
@@ -2062,41 +2163,65 @@
 
         function adicionarIngredienteNaLista() { 
             const select = document.getElementById('select-insumo'); 
-            let qtdStr = document.getElementById('input-qtd-insumo').value.replace(',', '.'); // Resolve o Bug da Vírgula
-            const inputQtd = parseFloat(qtdStr); 
+            const inputQtd = parseFloat(document.getElementById('input-qtd-insumo').value); 
             const insumoId = parseInt(select.value); 
             
             if(insumoId && inputQtd > 0) { 
-                const nomeInsumo = select.options[select.selectedIndex].text;
-                ingredientesFicha.push({ insumo_id: insumoId, quantidade: inputQtd, nome: nomeInsumo }); 
+                ingredientesFicha.push({ insumo_id: insumoId, quantidade: inputQtd, nome: select.options[select.selectedIndex].text }); 
                 
                 document.getElementById('lista-ingredientes-produto').innerHTML = ingredientesFicha.map((x, i) => `
-                <li class="flex justify-between items-center bg-white dark:bg-slate-800 px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm shadow-sm transition-colors">
-                    <span class="font-bold text-slate-700 dark:text-white">${x.nome} <span class="text-brand-500 ml-2">Qtd: ${x.quantidade}</span></span>
-                    <button type="button" onclick="ingredientesFicha.splice(${i}, 1); adicionarIngredienteNaLista()" class="text-red-400 hover:text-red-600"><i class="ph-bold ph-trash text-lg"></i></button>
+                <li class="flex justify-between items-center bg-white px-4 py-3 border border-slate-200 rounded-xl text-sm shadow-sm">
+                    <span class="font-bold text-slate-700">${x.nome} <span class="text-brand-500 ml-2">Qtd: ${x.quantidade}</span></span>
+                    <button type="button" onclick="ingredientesFicha.splice(${i}, 1); adicionarIngredienteNaLista()" class="text-red-400 hover:text-red-600"><i class="ph-bold ph-trash"></i></button>
                 </li>`).join(''); 
                 
-                document.getElementById('input-qtd-insumo').value = ''; select.value = ''; 
-            } else { alertaPremium("Selecione o insumo e informe uma quantidade maior que zero.", "Aviso", "erro"); }
+                document.getElementById('input-qtd-insumo').value = ''; 
+                select.value = ''; 
+            } 
         }
 
         async function salvarProduto(e) { 
             e.preventDefault(); 
-            const payload = { nome: document.getElementById('prod-nome').value, descricao: document.getElementById('prod-desc').value, imagem_url: document.getElementById('prod-img').value, preco: parseMoeda(document.getElementById('prod-preco').value), categoria: document.getElementById('prod-categoria').value, fichas: ingredientesFicha }; 
+            const payload = { 
+                nome: document.getElementById('prod-nome').value, 
+                descricao: document.getElementById('prod-desc').value, 
+                imagem_url: document.getElementById('prod-img').value, 
+                preco: parseMoeda(document.getElementById('prod-preco').value), 
+                categoria: document.getElementById('prod-categoria').value, 
+                fichas: ingredientesFicha 
+            }; 
+            
             await fetch('/api/gestao/produto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
-            document.getElementById('prod-nome').value = ''; document.getElementById('prod-desc').value = ''; document.getElementById('prod-img').value = ''; document.getElementById('prod-preco').value = ''; ingredientesFicha = []; document.getElementById('lista-ingredientes-produto').innerHTML = ''; carregarCardapio(); alertaPremium("Lanche Registrado no Cardápio!", "Sucesso", "sucesso"); 
+            
+            document.getElementById('prod-nome').value = '';
+            document.getElementById('prod-desc').value = '';
+            document.getElementById('prod-img').value = '';
+            document.getElementById('prod-preco').value = '';
+            ingredientesFicha = []; 
+            document.getElementById('lista-ingredientes-produto').innerHTML = ''; 
+            carregarCardapio(); 
+            alertaPremium("Lanche Registrado no Cardápio!", "Sucesso", "sucesso"); 
         }
 
        async function carregarCardapio() { 
-            const res = await fetch('/api/cardapio'); const produtos = await res.json(); 
+            const res = await fetch('/api/cardapio'); 
+            const produtos = await res.json(); 
+            
             document.getElementById('lista-cardapio').innerHTML = produtos.map(x => {
+                // Se a coluna ativo for false ou 0, mostra pausado (Trata undefined como true por padrão)
                 const isAtivo = x.ativo !== false && x.ativo !== 0; 
                 const badgeStatus = isAtivo ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ml-2">Ativo</span>' : '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ml-2">Pausado</span>';
+
                 return `
                 <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors ${!isAtivo ? 'opacity-60 bg-slate-50/50' : ''}">
                     <td class="py-4 px-6 font-bold text-slate-800 flex items-center">
-                        <div class="w-10 h-10 rounded-lg bg-slate-200 mr-3 overflow-hidden shrink-0 border border-slate-300">${x.imagem_url ? `<img src="${x.imagem_url}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-slate-400"><i class="ph-bold ph-image"></i></div>`}</div>
-                        <div>${x.nome} ${badgeStatus}<br> <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded inline-block mt-1">${x.categoria}</span></div>
+                        <div class="w-10 h-10 rounded-lg bg-slate-200 mr-3 overflow-hidden shrink-0 border border-slate-300">
+                            ${x.imagem_url ? `<img src="${x.imagem_url}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-slate-400"><i class="ph-bold ph-image"></i></div>`}
+                        </div>
+                        <div>
+                            ${x.nome} ${badgeStatus}
+                            <br> <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded inline-block mt-1">${x.categoria}</span>
+                        </div>
                     </td>
                     <td class="py-4 px-6 font-black text-emerald-500 text-lg">R$ ${x.preco_venda.toFixed(2).replace('.', ',')}</td>
                     <td class="py-4 px-6 text-center space-x-2">
@@ -2108,200 +2233,118 @@
             }).join(''); 
         }
 
+        // --- FUNÇÕES DE EDIÇÃO DE PRODUTO ---
         async function abrirModalEditarProduto(id) {
             try {
-                const res = await fetch('/api/cardapio'); const produtos = await res.json(); const p = produtos.find(x => x.id === id); if(!p) return;
-                document.getElementById('edit-prod-id').value = p.id; document.getElementById('edit-prod-nome').value = p.nome; document.getElementById('edit-prod-preco').value = formataMoedaParaInput(p.preco_venda); document.getElementById('edit-prod-desc').value = p.descricao || ""; document.getElementById('edit-prod-img').value = p.imagem_url || "";
-                carregarCategoriasSelect('edit-prod-categoria', listaCatCardapio); setTimeout(() => { document.getElementById('edit-prod-categoria').value = p.categoria; }, 100);
-                const isAtivo = p.ativo !== false && p.ativo !== 0; const checkAtivo = document.getElementById('edit-prod-ativo'); checkAtivo.checked = isAtivo; document.getElementById('label-status-prod').innerText = isAtivo ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
-                checkAtivo.onchange = (e) => { document.getElementById('label-status-prod').innerText = e.target.checked ? "Ativo (Vendendo)" : "Pausado (Esgotado)"; };
+                const res = await fetch('/api/cardapio');
+                const produtos = await res.json();
+                const p = produtos.find(x => x.id === id);
+                if(!p) return;
+
+                document.getElementById('edit-prod-id').value = p.id;
+                document.getElementById('edit-prod-nome').value = p.nome;
+                document.getElementById('edit-prod-preco').value = formataMoedaParaInput(p.preco_venda);
+                document.getElementById('edit-prod-desc').value = p.descricao || "";
+                document.getElementById('edit-prod-img').value = p.imagem_url || "";
+                
+                carregarCategoriasSelect('edit-prod-categoria', listaCatCardapio);
+                setTimeout(() => { document.getElementById('edit-prod-categoria').value = p.categoria; }, 100);
+
+                const isAtivo = p.ativo !== false && p.ativo !== 0;
+                const checkAtivo = document.getElementById('edit-prod-ativo');
+                checkAtivo.checked = isAtivo;
+                document.getElementById('label-status-prod').innerText = isAtivo ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
+                
+                checkAtivo.onchange = (e) => {
+                    document.getElementById('label-status-prod').innerText = e.target.checked ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
+                };
+
                 document.getElementById('modal-editar-produto').classList.replace('hidden', 'flex');
-            } catch(e) { alertaPremium("Erro ao carregar dados.", "Erro", "erro"); }
+            } catch(e) {
+                alertaPremium("Erro ao carregar dados do produto.", "Erro", "erro");
+            }
         }
 
         async function salvarEdicaoProduto(e) {
-            e.preventDefault(); const id = document.getElementById('edit-prod-id').value; const btn = e.target.querySelector('button[type="submit"]'); btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando..."; btn.disabled = true;
-            const payload = { nome: document.getElementById('edit-prod-nome').value, preco: parseMoeda(document.getElementById('edit-prod-preco').value), descricao: document.getElementById('edit-prod-desc').value, imagem_url: document.getElementById('edit-prod-img').value, categoria: document.getElementById('edit-prod-categoria').value, ativo: document.getElementById('edit-prod-ativo').checked };
-            try {
-                const res = await fetch(`/api/gestao/produto/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if(res.ok) { alertaPremium("Produto atualizado e sincronizado!", "Edição Salva", "sucesso"); document.getElementById('modal-editar-produto').classList.replace('flex', 'hidden'); carregarCardapio(); } 
-                else { alertaPremium("Erro ao salvar.", "Falha", "erro"); }
-            } catch(err) { alertaPremium("Erro de comunicação.", "Falha", "erro"); }
-            btn.innerHTML = "Salvar Alterações"; btn.disabled = false;
-        }
-
-        // ==============================================================
-        // MÓDULO DE FORNECEDORES (CORRIGIDO)
-        // ==============================================================
-        async function cadastrarFornecedor(e) { 
-            e.preventDefault(); 
-            const payload = { nome_fantasia: document.getElementById('forn-nome').value, cnpj: document.getElementById('forn-cnpj').value, categoria: document.getElementById('forn-cat').value, contato: document.getElementById('forn-contato').value }; 
-            try {
-                const res = await fetch('/api/gestao/fornecedores', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
-                if(res.ok) {
-                    alertaPremium("Fornecedor Salvo com Sucesso!", "Sucesso", "sucesso");
-                    document.getElementById('form-fornecedor').reset(); 
-                    carregarFornecedores(); // <--- ATUALIZA A TABELA NA HORA
-                } else { alertaPremium("Erro ao salvar o Fornecedor no Banco.", "Falha", "erro"); }
-            } catch(e) { alertaPremium("Erro de conexão.", "Erro", "erro"); }
-        }
-
-        async function carregarFornecedoresParaSelect() { 
-            const res = await fetch('/api/gestao/fornecedores'); const dados = await res.json(); 
-            document.getElementById('fin-fornecedor').innerHTML = '<option value="">-- Despesa Avulsa (Sem Fornecedor) --</option>' + dados.map(x => `<option value="${x.id}">${x.nome_fantasia}</option>`).join(''); 
-        }
-
-        async function abrirModalEditarFornecedor(id) {
-            try {
-                const res = await fetch('/api/gestao/fornecedores'); const fornecedores = await res.json(); const f = fornecedores.find(x => x.id === id); if(!f) return;
-                document.getElementById('edit-forn-id').value = f.id; document.getElementById('edit-forn-nome').value = f.nome_fantasia; document.getElementById('edit-forn-cnpj').value = f.cnpj || ""; document.getElementById('edit-forn-contato').value = f.contato || "";
-                carregarCategoriasSelect('edit-forn-cat', listaCatFornecedor); setTimeout(() => { document.getElementById('edit-forn-cat').value = f.categoria; }, 100);
-                document.getElementById('modal-editar-fornecedor').classList.replace('hidden', 'flex');
-            } catch(e) { alertaPremium("Erro ao carregar dados.", "Erro", "erro"); }
-        }
-
-        async function salvarEdicaoFornecedor(e) {
-            e.preventDefault(); const id = document.getElementById('edit-forn-id').value; const btn = e.target.querySelector('button[type="submit"]'); btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
-            const payload = { nome_fantasia: document.getElementById('edit-forn-nome').value, cnpj: document.getElementById('edit-forn-cnpj').value, categoria: document.getElementById('edit-forn-cat').value, contato: document.getElementById('edit-forn-contato').value };
-            try {
-                const res = await fetch(`/api/fornecedores/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if(res.ok) { alertaPremium("Fornecedor atualizado!", "Sucesso", "sucesso"); document.getElementById('modal-editar-fornecedor').classList.replace('flex', 'hidden'); carregarFornecedores(); } 
-                else { alertaPremium("Erro ao salvar.", "Falha", "erro"); }
-            } catch(err) { alertaPremium("Erro de comunicação.", "Falha", "erro"); }
-            btn.innerHTML = "Salvar Alterações";
-        }
-
-        async function excluirFornecedor(id) {
-            if(confirm('Tem certeza? Apagar este fornecedor?')) {
-                await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
-                alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
-                carregarFornecedores();
-            }
-        }
-
-        async function carregarFornecedoresParaSelect() { 
-            const res = await fetch('/api/gestao/fornecedores'); const dados = await res.json(); 
-            // 🚨 NOME ATUALIZADO PARA FICAR MAIS CLARO 🚨
-            document.getElementById('fin-fornecedor').innerHTML = '<option value="">-- Despesa Avulsa (Sem Fornecedor Fixo) --</option>' + dados.map(x => `<option value="${x.id}">${x.nome_fantasia}</option>`).join(''); 
-        }
-
-        async function salvarNovoClienteAdmin(e) {
             e.preventDefault();
+            const id = document.getElementById('edit-prod-id').value;
             const btn = e.target.querySelector('button[type="submit"]');
-            const textoOriginal = btn.innerHTML;
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Cadastrando...";
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
             btn.disabled = true;
 
             const payload = {
-                nome: document.getElementById('novo-cli-nome').value,
-                telefone: document.getElementById('novo-cli-telefone').value.replace(/\D/g, ''),
-                senha: document.getElementById('novo-cli-telefone').value.replace(/\D/g, ''), 
-                cpf: document.getElementById('novo-cli-cpf').value,
-                cep: document.getElementById('novo-cli-cep').value,
-                endereco: document.getElementById('novo-cli-endereco').value,
-                bairro: document.getElementById('novo-cli-numero').value, // Reaproveitando campos pro backend aceitar
-                complemento: document.getElementById('novo-cli-comp').value, 
-                data_nascimento: "" 
+                nome: document.getElementById('edit-prod-nome').value,
+                preco: parseMoeda(document.getElementById('edit-prod-preco').value),
+                descricao: document.getElementById('edit-prod-desc').value,
+                imagem_url: document.getElementById('edit-prod-img').value,
+                categoria: document.getElementById('edit-prod-categoria').value,
+                ativo: document.getElementById('edit-prod-ativo').checked
             };
 
             try {
-                const res = await fetch('/api/cliente/registrar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if(res.ok) {
-                    alertaPremium("Cliente cadastrado com sucesso! A senha inicial dele é o próprio telefone.", "Novo Cliente", "sucesso");
-                    document.getElementById('modal-novo-cliente').classList.replace('flex', 'hidden');
-                    document.getElementById('form-novo-cliente').reset();
-                    carregarClientesPainel();
-                } else {
-                    const data = await res.json();
-                    alertaPremium("Erro: " + data.detail, "Falha", "erro");
-                }
-            } catch(err) { alertaPremium("Erro de comunicação.", "Erro", "erro"); }
-
-            btn.innerHTML = textoOriginal;
-            btn.disabled = false;
-        }
-
-        async function excluirCliente(id) {
-            if(confirm('ATENÇÃO: Tem certeza que deseja excluir este cliente do sistema? Essa ação não pode ser desfeita e ele perderá todo o Cashback e Pontos.')) {
-                try {
-                    const res = await fetch(`/api/gestao/clientes/${id}`, { method: 'DELETE' });
-                    if(res.ok) {
-                        alertaPremium("Cliente excluído permanentemente com sucesso.", "Excluído", "sucesso");
-                        carregarClientesPainel();
-                    } else { alertaPremium("Erro ao excluir cliente. Verifique se ele não tem pedidos vinculados.", "Falha", "erro"); }
-                } catch(e) { alertaPremium("Erro de comunicação com servidor.", "Erro", "erro"); }
-            }
-        }
-        
-        // ==============================================================
-        // 🚨 CADASTRO E EXCLUSÃO MANUAL DE CLIENTES (CRM) 🚨
-        // ==============================================================
-        async function salvarNovoClienteAdmin(e) {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const textoOriginal = btn.innerHTML;
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Cadastrando...";
-            btn.disabled = true;
-
-            const payload = {
-                nome: document.getElementById('novo-cli-nome').value,
-                telefone: document.getElementById('novo-cli-telefone').value.replace(/\D/g, ''),
-                senha: document.getElementById('novo-cli-telefone').value.replace(/\D/g, ''), 
-                cpf: document.getElementById('novo-cli-cpf').value,
-                cep: document.getElementById('novo-cli-cep').value,
-                endereco: document.getElementById('novo-cli-endereco').value,
-                bairro: "", complemento: "", data_nascimento: "" 
-            };
-
-            try {
-                const res = await fetch('/api/cliente/registrar', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                const res = await fetch(`/api/gestao/produto/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 
                 if(res.ok) {
-                    alertaPremium("Cliente cadastrado com sucesso! A senha inicial dele é o próprio telefone.", "Novo Cliente", "sucesso");
-                    document.getElementById('modal-novo-cliente').classList.replace('flex', 'hidden');
-                    document.getElementById('form-novo-cliente').reset();
-                    carregarClientesPainel();
+                    alertaPremium("Produto atualizado e sincronizado com o Cardápio e PDV!", "Edição Salva", "sucesso");
+                    document.getElementById('modal-editar-produto').classList.replace('flex', 'hidden');
+                    carregarCardapio();
                 } else {
-                    const data = await res.json();
-                    alertaPremium("Erro: " + data.detail, "Falha", "erro");
+                    alertaPremium("Erro ao salvar alterações no banco.", "Falha", "erro");
                 }
-            } catch(err) { alertaPremium("Erro de comunicação.", "Erro", "erro"); }
-
-            btn.innerHTML = textoOriginal;
+            } catch(err) {
+                alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
+            }
+            btn.innerHTML = "Salvar Alterações";
             btn.disabled = false;
         }
 
-        async function excluirCliente(id) {
-            if(confirm('ATENÇÃO: Tem certeza que deseja excluir este cliente do sistema? Essa ação não pode ser desfeita e ele perderá todo o Cashback e Pontos.')) {
-                try {
-                    const res = await fetch(`/api/gestao/clientes/${id}`, { method: 'DELETE' });
-                    if(res.ok) {
-                        alertaPremium("Cliente excluído permanentemente com sucesso.", "Excluído", "sucesso");
-                        carregarClientesPainel();
-                    } else {
-                        alertaPremium("Erro ao excluir cliente. Verifique se ele não tem pedidos vinculados.", "Falha", "erro");
-                    }
-                } catch(e) { alertaPremium("Erro de comunicação com servidor.", "Erro", "erro"); }
-            }
+        async function salvarGrupoComplemento(e) { 
+            e.preventDefault(); 
+            const payload = { 
+                produto_id: parseInt(document.getElementById('add-grupo-prod-id').value), 
+                nome: document.getElementById('add-grupo-nome').value, 
+                obrigatorio: document.getElementById('add-grupo-obrig').value === 'true', 
+                minimo_opcoes: parseInt(document.getElementById('add-grupo-min').value), 
+                maximo_opcoes: parseInt(document.getElementById('add-grupo-max').value), 
+                itens: itensDoGrupoLocal 
+            }; 
+            
+            await fetch('/api/gestao/complementos', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+            alertaPremium("Extras vinculados ao produto!", "Cardápio Atualizado", "sucesso"); 
+            document.getElementById('modal-add-grupo').classList.replace('flex', 'hidden'); 
         }
 
-        // ==============================================================
-        // MÓDULO DE ESTOQUE
-        // ==============================================================
         async function salvarInsumo(e) { 
             e.preventDefault(); 
-            const payload = { nome: document.getElementById('ins-nome').value, unidade: document.getElementById('ins-unidade').value, quantidade: parseFloat(document.getElementById('ins-qtd').value), minimo: parseFloat(document.getElementById('ins-min').value), custo: parseMoeda(document.getElementById('ins-custo').value) }; 
+            const payload = { 
+                nome: document.getElementById('ins-nome').value, 
+                unidade: document.getElementById('ins-unidade').value, 
+                quantidade: parseFloat(document.getElementById('ins-qtd').value), 
+                minimo: parseFloat(document.getElementById('ins-min').value), 
+                custo: parseMoeda(document.getElementById('ins-custo').value) 
+            }; 
+            
             await fetch('/api/gestao/insumo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
             alertaPremium("Insumo registrado no estoque!", "Sucesso", "sucesso"); 
-            document.getElementById('ins-nome').value = ''; document.getElementById('ins-qtd').value = ''; document.getElementById('ins-min').value = ''; document.getElementById('ins-custo').value = ''; carregarEstoque(); 
+            
+            document.getElementById('ins-nome').value = '';
+            document.getElementById('ins-qtd').value = '';
+            document.getElementById('ins-min').value = '';
+            document.getElementById('ins-custo').value = '';
+            carregarEstoque(); 
         }
 
+        // ==============================================================
+        // MÓDULO DE ESTOQUE (EDIÇÃO E EXCLUSÃO)
+        // ==============================================================
         async function carregarEstoque() { 
-            const res = await fetch('/api/gestao/insumos'); const insumos = await res.json(); 
+            const res = await fetch('/api/gestao/insumos'); 
+            const insumos = await res.json(); 
+            
             document.getElementById('lista-estoque').innerHTML = insumos.map(x => `
             <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                 <td class="py-4 px-6 font-bold text-slate-700">${x.nome}</td>
@@ -2316,36 +2359,167 @@
 
         async function abrirModalEditarEstoque(id) {
             try {
-                const res = await fetch('/api/gestao/insumos'); const insumos = await res.json(); const ins = insumos.find(x => x.id === id); if(!ins) return;
-                document.getElementById('edit-ins-id').value = ins.id; document.getElementById('edit-ins-nome').value = ins.nome; document.getElementById('edit-ins-unidade').value = ins.unidade; document.getElementById('edit-ins-qtd').value = ins.quantidade_atual; document.getElementById('edit-ins-min').value = ins.quantidade_minima; document.getElementById('edit-ins-custo').value = formataMoedaParaInput(ins.custo);
+                const res = await fetch('/api/gestao/insumos');
+                const insumos = await res.json();
+                const ins = insumos.find(x => x.id === id);
+                if(!ins) return;
+
+                document.getElementById('edit-ins-id').value = ins.id;
+                document.getElementById('edit-ins-nome').value = ins.nome;
+                document.getElementById('edit-ins-unidade').value = ins.unidade;
+                document.getElementById('edit-ins-qtd').value = ins.quantidade_atual;
+                document.getElementById('edit-ins-min').value = ins.quantidade_minima;
+                document.getElementById('edit-ins-custo').value = formataMoedaParaInput(ins.custo);
+
                 document.getElementById('modal-editar-estoque').classList.replace('hidden', 'flex');
             } catch(e) { alertaPremium("Erro ao carregar.", "Erro", "erro"); }
         }
 
         async function salvarEdicaoEstoque(e) {
-            e.preventDefault(); const id = document.getElementById('edit-ins-id').value; const btn = e.target.querySelector('button[type="submit"]'); btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
-            const payload = { nome: document.getElementById('edit-ins-nome').value, unidade: document.getElementById('edit-ins-unidade').value, quantidade: parseFloat(document.getElementById('edit-ins-qtd').value), minimo: parseFloat(document.getElementById('edit-ins-min').value), custo: parseMoeda(document.getElementById('edit-ins-custo').value) };
+            e.preventDefault();
+            const id = document.getElementById('edit-ins-id').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+
+            const payload = {
+                nome: document.getElementById('edit-ins-nome').value,
+                unidade: document.getElementById('edit-ins-unidade').value,
+                quantidade: parseFloat(document.getElementById('edit-ins-qtd').value),
+                minimo: parseFloat(document.getElementById('edit-ins-min').value),
+                custo: parseMoeda(document.getElementById('edit-ins-custo').value)
+            };
+
             try {
                 const res = await fetch(`/api/gestao/insumo/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if(res.ok) { alertaPremium("Estoque atualizado!", "Sucesso", "sucesso"); document.getElementById('modal-editar-estoque').classList.replace('flex', 'hidden'); carregarEstoque(); }
+                if(res.ok) {
+                    alertaPremium("Estoque atualizado!", "Sucesso", "sucesso");
+                    document.getElementById('modal-editar-estoque').classList.replace('flex', 'hidden');
+                    carregarEstoque();
+                }
             } catch(err) { alertaPremium("Erro de comunicação.", "Falha", "erro"); }
             btn.innerHTML = "Atualizar Estoque";
         }
 
-        // ==============================================================
-        // MÓDULO FINANCEIRO (CONTAS A PAGAR)
-        // ==============================================================
-        async function lancarConta(e) { 
+        async function cadastrarFornecedor(e) { 
             e.preventDefault(); 
-            const vMoeda = parseMoeda(document.getElementById('fin-valor').value);
-            const payload = { descricao: document.getElementById('fin-desc').value, valor: vMoeda, vencimento: document.getElementById('fin-venc').value, tipo_despesa: document.getElementById('fin-tipo').value, fornecedor_id: document.getElementById('fin-fornecedor').value || null }; 
-            await fetch('/api/gestao/conta', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
-            document.getElementById('fin-desc').value = ''; document.getElementById('fin-valor').value = ''; carregarFinanceiro(); 
+            const payload = { 
+                nome_fantasia: document.getElementById('forn-nome').value, 
+                cnpj: document.getElementById('forn-cnpj').value, 
+                categoria: document.getElementById('forn-cat').value, 
+                contato: document.getElementById('forn-contato').value 
+            }; 
+            
+            await fetch('/api/gestao/fornecedores', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+            document.getElementById('form-fornecedor').reset(); 
+            carregarFornecedores(); 
         }
 
+        // ==============================================================
+        // MÓDULO DE FORNECEDORES (COM EDIÇÃO E EXCLUSÃO)
+        // ==============================================================
+        async function carregarFornecedores() { 
+            const res = await fetch('/api/gestao/fornecedores'); 
+            const dados = await res.json(); 
+            
+            document.getElementById('lista-fornecedores').innerHTML = dados.map(x => `
+            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                <td class="py-4 px-6 font-bold text-slate-700">${x.nome_fantasia}</td>
+                <td class="py-4 px-6"><span class="bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest">${x.categoria}</span></td>
+                <td class="py-4 px-6 font-mono text-xs text-slate-500 font-bold">${x.contato}</td>
+                <td class="py-4 px-6 text-center space-x-2">
+                    <button onclick="abrirModalEditarFornecedor(${x.id})" class="text-blue-600 bg-blue-50 border border-blue-100 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                    <button onclick="excluirFornecedor(${x.id})" class="text-red-400 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
+                </td>
+            </tr>`).join(''); 
+        }
+
+        async function abrirModalEditarFornecedor(id) {
+            try {
+                const res = await fetch('/api/gestao/fornecedores');
+                const fornecedores = await res.json();
+                const f = fornecedores.find(x => x.id === id);
+                if(!f) return;
+
+                document.getElementById('edit-forn-id').value = f.id;
+                document.getElementById('edit-forn-nome').value = f.nome_fantasia;
+                document.getElementById('edit-forn-cnpj').value = f.cnpj || "";
+                document.getElementById('edit-forn-contato').value = f.contato || "";
+                
+                carregarCategoriasSelect('edit-forn-cat', listaCatFornecedor);
+                setTimeout(() => { document.getElementById('edit-forn-cat').value = f.categoria; }, 100);
+
+                document.getElementById('modal-editar-fornecedor').classList.replace('hidden', 'flex');
+            } catch(e) { alertaPremium("Erro ao carregar dados.", "Erro", "erro"); }
+        }
+
+        async function salvarEdicaoFornecedor(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-forn-id').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+
+            const payload = {
+                nome_fantasia: document.getElementById('edit-forn-nome').value,
+                cnpj: document.getElementById('edit-forn-cnpj').value,
+                categoria: document.getElementById('edit-forn-cat').value,
+                contato: document.getElementById('edit-forn-contato').value
+            };
+
+            try {
+                const res = await fetch(`/api/fornecedores/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if(res.ok) {
+                    alertaPremium("Fornecedor atualizado!", "Sucesso", "sucesso");
+                    document.getElementById('modal-editar-fornecedor').classList.replace('flex', 'hidden');
+                    carregarFornecedores();
+                } else { alertaPremium("Erro ao salvar.", "Falha", "erro"); }
+            } catch(err) { alertaPremium("Erro de comunicação.", "Falha", "erro"); }
+            btn.innerHTML = "Salvar Alterações";
+        }
+
+        async function excluirFornecedor(id) {
+            if(confirm('Tem certeza? Apagar este fornecedor?')) {
+                await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
+                alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
+                carregarFornecedores();
+            }
+        }
+
+        async function carregarFornecedoresParaSelect() { 
+            const res = await fetch('/api/gestao/fornecedores'); 
+            const dados = await res.json(); 
+            document.getElementById('fin-fornecedor').innerHTML = '<option value="">-- Sem vínculo / Custo Solto --</option>' + dados.map(x => `<option value="${x.id}">${x.nome_fantasia}</option>`).join(''); 
+        }
+
+        async function lancarConta(e) { 
+            e.preventDefault(); 
+            
+            const vMoeda = parseMoeda(document.getElementById('fin-valor').value);
+            
+            const payload = { 
+                descricao: document.getElementById('fin-desc').value, 
+                valor: vMoeda, 
+                vencimento: document.getElementById('fin-venc').value, 
+                tipo_despesa: document.getElementById('fin-tipo').value, 
+                fornecedor_id: document.getElementById('fin-fornecedor').value || null 
+            }; 
+            
+            await fetch('/api/gestao/conta', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+            
+            document.getElementById('fin-desc').value = '';
+            document.getElementById('fin-valor').value = '';
+            carregarFinanceiro(); 
+        }
+
+        // ==============================================================
+        // MÓDULO FINANCEIRO (COM EDIÇÃO E EXCLUSÃO)
+        // ==============================================================
         async function carregarFinanceiro() { 
-            const res = await fetch('/api/gestao/financeiro/resumo'); const data = await res.json(); 
-            document.getElementById('fin-total-empresa').innerText = `R$ ${data.total_empresa.toFixed(2).replace('.', ',')}`; document.getElementById('fin-total-casa').innerText = `R$ ${data.total_casa.toFixed(2).replace('.', ',')}`; 
+            const res = await fetch('/api/gestao/financeiro/resumo'); 
+            const data = await res.json(); 
+            
+            document.getElementById('fin-total-empresa').innerText = `R$ ${data.total_empresa.toFixed(2).replace('.', ',')}`; 
+            document.getElementById('fin-total-casa').innerText = `R$ ${data.total_casa.toFixed(2).replace('.', ',')}`; 
+            
             document.getElementById('lista-financeiro').innerHTML = data.contas.map(x => `
             <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors ${x.status === 'PAGO' ? 'bg-slate-50 opacity-60' : ''}">
                 <td class="py-4 px-6 font-bold text-slate-800">${x.descricao}</td>
@@ -2353,7 +2527,10 @@
                 <td class="py-4 px-6"><span class="${x.tipo === 'Empresa' ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest">${x.tipo}</span></td>
                 <td class="py-4 px-6 font-black text-red-500 text-lg">R$ ${x.valor.toFixed(2).replace('.',',')}</td>
                 <td class="py-4 px-6 text-center flex justify-center space-x-2">
-                    ${x.status === 'PAGO' ? '<span class="text-[10px] font-black uppercase tracking-widest text-emerald-500 flex items-center mr-4"><i class="ph-bold ph-check text-lg mr-1"></i> Pago</span>' : `<button onclick="if(confirm('Dar baixa no caixa?')){fetch('/api/gestao/contas/${x.id}/pagar', {method:'PUT'}).then(carregarFinanceiro)}" class="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-500 hover:text-white transition-colors px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm" title="Pagar"><i class="ph-bold ph-check text-sm"></i></button>`}
+                    ${x.status === 'PAGO' ? 
+                        '<span class="text-[10px] font-black uppercase tracking-widest text-emerald-500 flex items-center mr-4"><i class="ph-bold ph-check text-lg mr-1"></i> Pago</span>' : 
+                        `<button onclick="if(confirm('Dar baixa no caixa?')){fetch('/api/gestao/contas/${x.id}/pagar', {method:'PUT'}).then(carregarFinanceiro)}" class="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-500 hover:text-white transition-colors px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm" title="Pagar"><i class="ph-bold ph-check text-sm"></i></button>`
+                    }
                     <button onclick="abrirModalEditarConta(${x.id})" class="text-blue-600 bg-blue-50 border border-blue-100 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-colors shadow-sm" title="Editar"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
                     <button onclick="excluirConta(${x.id})" class="text-red-400 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors shadow-sm" title="Apagar"><i class="ph-bold ph-trash text-base"></i></button>
                 </td>
@@ -2362,54 +2539,409 @@
 
         async function abrirModalEditarConta(id) {
             try {
-                const res = await fetch('/api/gestao/financeiro/resumo'); const data = await res.json(); const conta = data.contas.find(x => x.id === id); if(!conta) return;
-                document.getElementById('edit-conta-id').value = conta.id; document.getElementById('edit-conta-desc').value = conta.descricao; document.getElementById('edit-conta-valor').value = formataMoedaParaInput(conta.valor); document.getElementById('edit-conta-venc').value = conta.vencimento; document.getElementById('edit-conta-tipo').value = conta.tipo;
+                const res = await fetch('/api/gestao/financeiro/resumo');
+                const data = await res.json();
+                const conta = data.contas.find(x => x.id === id);
+                if(!conta) return;
+
+                document.getElementById('edit-conta-id').value = conta.id;
+                document.getElementById('edit-conta-desc').value = conta.descricao;
+                document.getElementById('edit-conta-valor').value = formataMoedaParaInput(conta.valor);
+                document.getElementById('edit-conta-venc').value = conta.vencimento;
+                document.getElementById('edit-conta-tipo').value = conta.tipo;
+
                 document.getElementById('modal-editar-conta').classList.replace('hidden', 'flex');
             } catch(e) { alertaPremium("Erro ao carregar dados.", "Erro", "erro"); }
         }
 
         async function salvarEdicaoConta(e) {
-            e.preventDefault(); const id = document.getElementById('edit-conta-id').value; const btn = e.target.querySelector('button[type="submit"]'); btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
-            const payload = { descricao: document.getElementById('edit-conta-desc').value, valor: parseMoeda(document.getElementById('edit-conta-valor').value), vencimento: document.getElementById('edit-conta-venc').value, tipo_despesa: document.getElementById('edit-conta-tipo').value };
+            e.preventDefault();
+            const id = document.getElementById('edit-conta-id').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+
+            const payload = {
+                descricao: document.getElementById('edit-conta-desc').value,
+                valor: parseMoeda(document.getElementById('edit-conta-valor').value),
+                vencimento: document.getElementById('edit-conta-venc').value,
+                tipo_despesa: document.getElementById('edit-conta-tipo').value
+            };
+
             try {
                 const res = await fetch(`/api/contas_pagar/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if(res.ok) { alertaPremium("Conta a pagar atualizada!", "Sucesso", "sucesso"); document.getElementById('modal-editar-conta').classList.replace('flex', 'hidden'); carregarFinanceiro(); } 
-                else { alertaPremium("Erro ao salvar.", "Falha", "erro"); }
+                if(res.ok) {
+                    alertaPremium("Conta a pagar atualizada!", "Sucesso", "sucesso");
+                    document.getElementById('modal-editar-conta').classList.replace('flex', 'hidden');
+                    carregarFinanceiro();
+                } else { alertaPremium("Erro ao salvar.", "Falha", "erro"); }
             } catch(err) { alertaPremium("Erro de comunicação.", "Falha", "erro"); }
             btn.innerHTML = "Salvar Conta";
         }
 
         async function excluirConta(id) {
             if(confirm('Tem certeza? Apagar este lançamento do financeiro?')) {
-                await fetch(`/api/contas_pagar/${id}`, { method: 'DELETE' }); alertaPremium("Conta apagada com sucesso.", "Excluída", "sucesso"); carregarFinanceiro();
+                await fetch(`/api/contas_pagar/${id}`, { method: 'DELETE' });
+                alertaPremium("Conta apagada com sucesso.", "Excluída", "sucesso");
+                carregarFinanceiro();
+            }
+        }
+
+        async function carregarClientesPainel() { 
+            try {
+                const res = await fetch('/api/gestao/clientes'); 
+                const data = await res.json(); 
+                
+                if (!res.ok) {
+                    throw new Error(data.detail || "Falha crítica na rota de clientes.");
+                }
+
+                let clientes = data;
+                
+                // A MÁGICA DO FILTRO DE ANIVERSARIANTES
+                const mesFiltro = document.getElementById('filtro-mes-niver').value;
+                if(mesFiltro) {
+                    clientes = clientes.filter(c => {
+                        if(!c.data_nascimento) return false;
+                        let mesCli = "";
+                        // Verifica se a data está no padrão YYYY-MM-DD ou DD/MM/YYYY
+                        if(c.data_nascimento.includes('-')) {
+                            mesCli = c.data_nascimento.split('-')[1]; 
+                        } else if(c.data_nascimento.includes('/')) {
+                            mesCli = c.data_nascimento.split('/')[1]; 
+                        }
+                        return mesCli === mesFiltro;
+                    });
+                }
+
+                const tbody = document.getElementById('lista-clientes-painel');
+
+                if (clientes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="ph-bold ph-ghost text-4xl mb-3 text-slate-300 block"></i><span class="font-black uppercase tracking-widest text-xs">Nenhum cliente encontrado.</span></td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = clientes.map(x => {
+                    let niverFormatado = "-";
+                    if(x.data_nascimento) {
+                        if(x.data_nascimento.includes('-')) {
+                            niverFormatado = x.data_nascimento.split('-').reverse().join('/');
+                        } else {
+                            niverFormatado = x.data_nascimento;
+                        }
+                    }
+
+                    return `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors ${x.bloqueado ? 'bg-red-50/30' : ''}">
+                        <td class="py-4 px-6 font-black text-slate-800">${x.nome}<br><span class="text-xs font-mono font-medium text-slate-400">${x.telefone}</span></td>
+                        <td class="py-4 px-6 text-center font-bold text-slate-500">${niverFormatado !== '-' ? '🎂 ' + niverFormatado : '-'}</td>
+                        <td class="py-4 px-6 text-center">
+                            <span class="bg-slate-100 border border-slate-200 px-2 py-1 rounded text-slate-600 font-black text-xs mr-1">${x.pontos} Pts</span>
+                            <span class="text-emerald-500 font-black text-xs">R$ ${x.cashback.toFixed(2).replace('.',',')}</span>
+                        </td>
+                        <td class="py-4 px-6 flex justify-center space-x-2">
+                            <button onclick="abrirModalEditarCliente(${x.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm" title="Editar Dossiê"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                            
+                            <!-- BOTÃO DO WHATSAPP CORRIGIDO E DESTACADO -->
+                            <button onclick="enviarPromoWhatsApp('${x.nome}', '${x.telefone}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-md active:scale-95 flex items-center" title="Enviar Promo de Aniversário">
+                                <i class="ph-bold ph-whatsapp-logo text-base"></i>
+                            </button>
+                            
+                            <button onclick="if(confirm('Alterar bloqueio automático para este cliente?')){fetch('/api/gestao/clientes/${x.id}/bloqueio', {method:'PUT'}).then(carregarClientesPainel)}" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm active:scale-95" title="${x.bloqueado ? 'Desbloquear' : 'Travar'}">
+                                <i class="ph-bold ${x.bloqueado ? 'ph-lock-open' : 'ph-lock-key'} text-sm"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                }).join(''); 
+            } catch(e) {
+                document.getElementById('lista-clientes-painel').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500 font-bold">Erro: ${e.message}</td></tr>`;
+            }
+        }
+
+        // DISPARADOR DE MARKETING NO WHATSAPP
+        function enviarPromoWhatsApp(nome, telefone) {
+            let numero = telefone.replace(/\D/g, ''); 
+            if(numero.length === 10 || numero.length === 11) {
+                numero = "55" + numero; 
+            }
+            const primeiroNome = nome.split(' ')[0];
+            const mensagem = `Fala ${primeiroNome}! 🎉 Vimos que seu aniversário está chegando! Para comemorar, preparamos um presente especial pra você. Acesse nosso cardápio online e use o cupom NIVER15 para ganhar desconto no seu pedido de hoje! 🍔🍟`;
+            const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+        }
+       // --- FUNÇÕES DE EDIÇÃO MANUAL DE CLIENTES (CRM) ---
+        async function abrirModalEditarCliente(id) {
+            try {
+                // 1. Puxa os dados do cliente
+                const res = await fetch('/api/gestao/clientes');
+                const clientes = await res.json();
+                const c = clientes.find(x => x.id === id);
+                if(!c) return;
+
+                document.getElementById('edit-cli-id').value = c.id;
+                document.getElementById('edit-cli-nome').value = c.nome;
+                document.getElementById('edit-cli-telefone').value = c.telefone || "";
+                document.getElementById('edit-cli-cpf').value = c.cpf || "";
+                document.getElementById('edit-cli-cep').value = c.cep || "";
+                document.getElementById('edit-cli-endereco').value = c.endereco || "";
+                document.getElementById('edit-cli-pontos').value = c.pontos || 0;
+                document.getElementById('edit-cli-cashback').value = formataMoedaParaInput(c.cashback || 0.0);
+                
+                const checkBloqueado = document.getElementById('edit-cli-bloqueado');
+                checkBloqueado.checked = c.bloqueado; 
+                document.getElementById('label-status-cli').innerText = c.bloqueado ? "Inadimplente (Bloqueado)" : "Cliente OK (Liberado)";
+                
+                checkBloqueado.onchange = (e) => {
+                    document.getElementById('label-status-cli').innerText = e.target.checked ? "Inadimplente (Bloqueado)" : "Cliente OK (Liberado)";
+                };
+
+                // 2. Puxa o Histórico de Pedidos
+                document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold"><i class="ph-bold ph-spinner animate-spin"></i> Buscando...</td></tr>';
+                document.getElementById('modal-editar-cliente').classList.replace('hidden', 'flex');
+
+                const resPed = await fetch(`/api/gestao/clientes/${id}/pedidos`);
+                const pedidos = await resPed.json();
+                
+                if (pedidos.length === 0) {
+                    document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold">Nenhum pedido encontrado.</td></tr>';
+                } else {
+                    document.getElementById('lista-historico-pedidos').innerHTML = pedidos.map(p => `
+                        <tr class="border-b border-slate-100 last:border-0 hover:bg-white">
+                            <td class="p-3 font-bold text-slate-700">#${p.id}</td>
+                            <td class="p-3 font-mono text-slate-500">${p.data}</td>
+                            <td class="p-3 font-black text-emerald-500">R$ ${p.valor.toFixed(2).replace('.',',')}</td>
+                            <td class="p-3"><span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-black uppercase">${p.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch(e) {
+                alertaPremium("Erro ao carregar dados do cliente.", "Erro", "erro");
+            }
+        }
+
+        // Função utilitária para o CEP (usada pelo RH e pelo Cliente)
+        async function buscarCEP(cepInput, campoAlvoId) {
+            const cep = cepInput.replace(/\D/g, '');
+            if(cep.length === 8) {
+                const endField = document.getElementById(campoAlvoId);
+                endField.value = "Buscando...";
+                try {
+                    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    const data = await res.json();
+                    if(!data.erro) {
+                        endField.value = `${data.logradouro}, Bairro: ${data.bairro}, ${data.localidade} - ${data.uf}`;
+                    } else {
+                        endField.value = "CEP não encontrado.";
+                    }
+                } catch(e) { endField.value = ""; }
+            }
+        }
+
+        async function salvarEdicaoCliente(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-cli-id').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Gravando...";
+            btn.disabled = true;
+
+            const payload = {
+                nome: document.getElementById('edit-cli-nome').value,
+                telefone: document.getElementById('edit-cli-telefone').value,
+                cpf: document.getElementById('edit-cli-cpf').value,
+                cep: document.getElementById('edit-cli-cep').value,
+                endereco: document.getElementById('edit-cli-endereco').value,
+                pontos: parseInt(document.getElementById('edit-cli-pontos').value) || 0,
+                cashback: parseMoeda(document.getElementById('edit-cli-cashback').value),
+                bloqueado: document.getElementById('edit-cli-bloqueado').checked
+            };
+
+            try {
+                const res = await fetch(`/api/gestao/clientes/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if(res.ok) {
+                    alertaPremium("Dossiê do cliente atualizado com sucesso!", "CRM Atualizado", "sucesso");
+                    document.getElementById('modal-editar-cliente').classList.replace('flex', 'hidden');
+                    carregarClientesPainel();
+                } else {
+                    const erroData = await res.json();
+                    alertaPremium("Erro: " + erroData.detail, "Falha", "erro");
+                }
+            } catch(err) {
+                alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
+            }
+            btn.innerHTML = "Gravar Dossiê Completo";
+            btn.disabled = false;
+        }
+
+        // ==============================================================
+        // MÁQUINA DE COMBOS FAST FOOD
+        // ==============================================================
+        let etapasCombo = [];
+
+        function abrirAssistenteCombo() {
+            etapasCombo = [];
+            document.getElementById('form-combo-maker').reset();
+            renderizarEtapasCombo();
+            document.getElementById('modal-assistente-combo').classList.replace('hidden', 'flex');
+        }
+
+        function fecharAssistenteCombo() {
+            document.getElementById('modal-assistente-combo').classList.replace('flex', 'hidden');
+        }
+
+        function adicionarEtapaCombo() {
+            const nome = prompt("Nome da Etapa (Ex: 'Escolha seu 1º Lanche' ou 'Escolha a Bebida'):");
+            if(nome) {
+                etapasCombo.push({ nome: nome, itens: [] });
+                renderizarEtapasCombo();
+            }
+        }
+
+        function adicionarItemEtapa(index) {
+            const nome = prompt("Nome da Opção (Ex: Bacon Smash ou Coca-Cola):");
+            if(nome) {
+                const precoStr = prompt("Essa opção tem custo extra? (Deixe 0 se já estiver inclusa no pacote do combo):", "0");
+                const preco = parseFloat(precoStr.replace(',','.')) || 0;
+                etapasCombo[index].itens.push({ nome: nome, preco_adicional: preco });
+                renderizarEtapasCombo();
+            }
+        }
+
+        function removerEtapa(index) {
+            etapasCombo.splice(index, 1);
+            renderizarEtapasCombo();
+        }
+
+        function renderizarEtapasCombo() {
+            const container = document.getElementById('lista-etapas-combo');
+            if(etapasCombo.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 font-bold text-center p-4 border border-dashed border-slate-300 rounded-xl bg-white">Nenhuma etapa configurada.<br>Ex: Clique acima e adicione "Escolha a Bebida".</p>';
+                return;
+            }
+
+            container.innerHTML = etapasCombo.map((etapa, idx) => `
+                <div class="bg-white border border-slate-200 p-4 rounded-xl relative shadow-sm">
+                    <button type="button" onclick="removerEtapa(${idx})" class="absolute top-3 right-3 text-red-400 hover:text-red-600 bg-slate-50 p-1 rounded-full"><i class="ph-bold ph-trash"></i></button>
+                    <h4 class="font-black text-slate-800 text-sm mb-3"><span class="bg-amber-400 text-amber-900 w-5 h-5 inline-flex items-center justify-center rounded-full text-[10px] mr-1">${idx+1}</span> ${etapa.nome}</h4>
+                    
+                    <div class="space-y-1 mb-3">
+                        ${etapa.itens.map(item => `
+                            <div class="flex justify-between items-center text-xs font-bold text-slate-600 bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg">
+                                <span><i class="ph-bold ph-arrow-elbow-down-right text-slate-400 mr-1"></i> ${item.nome}</span>
+                                <span class="${item.preco_adicional > 0 ? 'text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded' : 'text-slate-400'}">${item.preco_adicional > 0 ? '+ R$ '+item.preco_adicional.toFixed(2).replace('.',',') : 'Já Inclusa'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <button type="button" onclick="adicionarItemEtapa(${idx})" class="text-[10px] font-black uppercase tracking-widest text-brand-500 bg-brand-50 px-3 py-2 rounded-lg border border-brand-100 hover:bg-brand-500 hover:text-white transition-colors w-full">+ Adicionar Opção Nesta Etapa</button>
+                </div>
+            `).join('');
+        }
+
+        async function salvarComboFastFood(e) {
+            e.preventDefault();
+            
+            if(etapasCombo.length === 0) {
+                alertaPremium("Adicione pelo menos uma etapa (Ex: 'Escolha a Bebida') para fazer sentido ser um Combo!", "Atenção", "erro");
+                return;
+            }
+
+            const payload = {
+                nome: document.getElementById('combo-nome').value,
+                descricao: document.getElementById('combo-desc').value,
+                preco: parseMoeda(document.getElementById('combo-preco').value),
+                imagem_url: document.getElementById('combo-img').value,
+                categoria: document.getElementById('combo-categoria').value,
+                etapas: etapasCombo
+            };
+
+            const btn = document.getElementById('btn-salvar-combo');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Subindo Combo...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/gestao/combo-maker', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+
+                if(res.ok) {
+                    alertaPremium("Combo Mestre criado e enviado para o Cardápio Digital!", "Máquina de Vendas", "sucesso");
+                    fecharAssistenteCombo();
+                    carregarCardapio();
+                } else {
+                    alertaPremium("Erro ao criar combo no banco.", "Falha", "erro");
+                }
+            } catch(err) { alertaPremium("Erro de rede.", "Erro", "erro"); }
+            
+            btn.innerHTML = "Lançar Combo Mestre na Vitrine";
+            btn.disabled = false;
+        }
+        // ==========================================
+        // LOGÍSTICA E TAXAS DE ENTREGA
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', carregarTaxasEntrega);
+
+        async function carregarTaxasEntrega() {
+            try {
+                const res = await fetch('/api/gestao/taxas');
+                const taxas = await res.json();
+                const tbody = document.getElementById('lista-taxas-entrega');
+                if(taxas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-6 text-slate-400 font-bold">Nenhuma taxa cadastrada. O frete será único ou grátis.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = taxas.map(t => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50">
+                        <td class="py-3 px-6 font-bold text-slate-700">${t.bairro}</td>
+                        <td class="py-3 px-6 font-black text-emerald-500">R$ ${t.taxa.toFixed(2).replace('.',',')}</td>
+                        <td class="py-3 px-6 text-center">
+                            <button onclick="deletarTaxaEntrega(${t.id})" class="text-red-400 hover:text-red-600 bg-white border border-slate-200 p-2 rounded-lg shadow-sm"><i class="ph-bold ph-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {}
+        }
+
+        async function salvarTaxaEntrega() {
+            const bairro = document.getElementById('taxa-bairro').value.trim();
+            const taxa = parseMoeda(document.getElementById('taxa-valor').value);
+            if(!bairro) { alertaPremium("Digite o nome do bairro.", "Aviso", "erro"); return; }
+            
+            await fetch('/api/gestao/taxas', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({bairro, taxa}) });
+            document.getElementById('taxa-bairro').value = '';
+            document.getElementById('taxa-valor').value = '';
+            alertaPremium("Taxa de entrega registrada!", "Logística", "sucesso");
+            carregarTaxasEntrega();
+        }
+
+        async function deletarTaxaEntrega(id) {
+            if(confirm("Remover esta taxa de entrega?")) {
+                await fetch(`/api/gestao/taxas/${id}`, { method: 'DELETE' });
+                carregarTaxasEntrega();
             }
         }
     </script>
     <script>
-        function toggleTheme() {
-            const htmlEl = document.documentElement;
-            const tIcon = document.getElementById('theme-icon');
-            
-            if (htmlEl.classList.contains('dark')) {
-                // Vai pro Claro
-                htmlEl.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-                if(tIcon) tIcon.classList.replace('ph-sun', 'ph-moon');
-            } else {
-                // Vai pro Escuro
-                htmlEl.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-                if(tIcon) tIcon.classList.replace('ph-moon', 'ph-sun');
-            }
-        }
+    const htmlElement = document.documentElement;
+    const themeIcon = document.getElementById('theme-icon');
+    if (htmlElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
 
-        // Garante que o ícone fique correto logo que a página abrir
-        document.addEventListener("DOMContentLoaded", () => {
-            const tIcon = document.getElementById('theme-icon');
-            if (document.documentElement.classList.contains('dark') && tIcon) {
-                tIcon.classList.replace('ph-moon', 'ph-sun');
-            }
-        });
-    </script>
+    function toggleTheme() {
+        if (htmlElement.classList.contains('dark')) {
+            htmlElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            themeIcon.classList.replace('ph-sun', 'ph-moon');
+        } else {
+            htmlElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            themeIcon.classList.replace('ph-moon', 'ph-sun');
+        }
+    }
+</script>
 </body>
 </html>
