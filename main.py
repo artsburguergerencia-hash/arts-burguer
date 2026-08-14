@@ -2447,9 +2447,17 @@ def listar_cupons(db: Session = Depends(get_db)):
 
 @app.post("/api/gestao/cupons")
 def criar_cupom(dados: dict, db: Session = Depends(get_db)):
+    from datetime import datetime, timedelta
+    
     codigo = dados.get("codigo", "").upper().strip()
     if not codigo:
         raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
+        
+    # Tenta importar o modelo de onde quer que ele esteja
+    try:
+        from pagamentos_crm import CupomModel
+    except ImportError:
+        pass # Usa o que já está no arquivo
         
     existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
     if existe:
@@ -2458,7 +2466,9 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     tipo_cupom = dados.get("tipo", "PERCENTUAL")
     val_cupom = float(dados.get("valor", 0.0))
     
-    from datetime import datetime, timedelta
+    # 🔥 A MÁGICA AQUI: Gerando uma validade de 10 anos automaticamente!
+    # Isso impede que o PostgreSQL dê o erro de NotNullViolation
+    validade_infinita = datetime.utcnow() + timedelta(days=3650)
     
     novo = CupomModel(
         codigo=codigo,
@@ -2467,7 +2477,7 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
         desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
         desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
         ativo=True,
-        data_validade=datetime.utcnow() + timedelta(days=365) # Validade automática de 1 ano
+        data_validade=validade_infinita # Nunca mais será "None"
     )
     db.add(novo)
     db.commit()
