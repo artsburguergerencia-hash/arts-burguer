@@ -2451,18 +2451,20 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
     if existe:
         raise HTTPException(status_code=400, detail="Este código de cupom já existe.")
-
-    # 🚨 PROTEÇÃO CONTRA O "NOT NULL VIOLATION" DO POSTGRES
-    validade = dados.get("data_validade")
-    if not validade:
-        validade = ""
         
+    tipo_cupom = dados.get("tipo", "PERCENTUAL")
+    val_cupom = float(dados.get("valor", 0.0))
+    
+    from datetime import datetime, timedelta
+    
     novo = CupomModel(
         codigo=codigo,
-        tipo=dados.get("tipo", "PERCENTUAL"),
-        valor=float(dados.get("valor", 0.0)),
-        data_validade=validade, 
-        ativo=True
+        tipo=tipo_cupom,
+        valor=val_cupom,
+        desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
+        desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
+        ativo=True,
+        data_validade=datetime.utcnow() + timedelta(days=365) # Validade automática de 1 ano
     )
     db.add(novo)
     db.commit()
