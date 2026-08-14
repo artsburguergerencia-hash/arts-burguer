@@ -35,13 +35,16 @@ class FidelidadeModel(Base):
 class CupomModel(Base):
     """Gerenciador de Cupons de Desconto do Art's Burguer."""
     __tablename__ = "cupons_desconto"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
-    codigo = Column(String, unique=True, nullable=False, index=True) # Ex: "ARTS10", "FRETEGRATIS"
-    desconto_percentual = Column(Float, default=0.0) # Ex: 10 para 10%
-    desconto_fixo = Column(Float, default=0.0)       # Ex: 5.00 para R$ 5 off
+    codigo = Column(String, unique=True, nullable=False, index=True)
+    tipo = Column(String, default="PERCENTUAL")
+    valor = Column(Float, default=0.0)
+    desconto_percentual = Column(Float, default=0.0)
+    desconto_fixo = Column(Float, default=0.0)
     ativo = Column(Boolean, default=True)
-    data_validade = Column(DateTime, nullable=False)
+    data_validade = Column(DateTime, nullable=True) # <- O SEGREDO ESTÁ AQUI (nullable=True)
 
 # ==============================================================================
 # 2. INTEGRAÇÃO DE PAGAMENTO (Mock Gateway PagSeguro/MercadoPago)
