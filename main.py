@@ -2441,7 +2441,7 @@ class CupomModel(Base):
     desconto_percentual = Column(Float, default=0.0)
     desconto_fixo = Column(Float, default=0.0)
     ativo = Column(Boolean, default=True)
-    data_validade = Column(DateTime, nullable=True) # <- AGORA ELA ESTÁ AQUI
+    data_validade = Column(dateTime, nullable=True) # <- AGORA ELA ESTÁ AQUI
 
 @app.get("/api/gestao/cupons")
 def listar_cupons(db: Session = Depends(get_db)):
