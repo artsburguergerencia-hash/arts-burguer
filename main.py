@@ -1822,6 +1822,22 @@ def listar_clientes_gestao(db: Session = Depends(get_db)):
         # ==========================================
 # MOTOR UNIVERSAL DE GESTÃO (CRUD FASE 4)
 # ==========================================
+
+# MUDANÇA: Definição única e absoluta do CupomModel aqui para evitar conflitos!
+class CupomModel(Base):
+    __tablename__ = "cupons_desconto"
+    __table_args__ = {'extend_existing': True}
+    
+    id = Column(Integer, primary_key=True, index=True)
+    codigo = Column(String, unique=True, index=True)
+    tipo = Column(String, default="PERCENTUAL") 
+    valor = Column(Float, default=0.0)
+    desconto_percentual = Column(Float, default=0.0)
+    desconto_fixo = Column(Float, default=0.0)
+    data_validade = Column(String, nullable=True) 
+    ativo = Column(Boolean, default=True)
+
+
 def pegar_modelo_banco(tabela: str):
     # Traduz o nome da URL para a tabela real do banco
     if tabela == "insumos": return InsumoModel
@@ -2114,6 +2130,7 @@ def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
 def limpar_banco_dados(db: Session = Depends(get_db)):
     from sqlalchemy import text
     try:
+        # A Ordem de Exclusão é a lei sagrada dos Bancos de Dados!
         db.execute(text("DELETE FROM itens_complemento"))
         db.execute(text("DELETE FROM grupos_complemento"))
         db.execute(text("DELETE FROM fichas_tecnicas"))
@@ -2428,19 +2445,6 @@ def atualizar_funcionario(func_id: int, dados: dict, db: Session = Depends(get_d
 # MÁQUINA DE VENDAS: CUPONS E PROMOÇÕES
 # ==========================================
 
-from sqlalchemy import Column, Integer, String, Float, Boolean
-
-class CupomModel(Base):
-    __tablename__ = "cupons_desconto"
-    __table_args__ = {'extend_existing': True} # <--- ESTA É A MÁGICA SALVADORA
-    
-    id = Column(Integer, primary_key=True, index=True)
-    codigo = Column(String, unique=True, index=True)
-    tipo = Column(String, default="PERCENTUAL") # PERCENTUAL ou VALOR_FIXO
-    valor = Column(Float, default=0.0)
-    data_validade = Column(String, nullable=True) # 🚨 CAMPO DE DATA ADICIONADO PARA CORRIGIR O BUG
-    ativo = Column(Boolean, default=True)
-
 @app.get("/api/gestao/cupons")
 def listar_cupons(db: Session = Depends(get_db)):
     return db.query(CupomModel).all()
@@ -2459,6 +2463,7 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     val_cupom = float(dados.get("valor", 0.0))
     
     from datetime import datetime, timedelta
+    data_segura_str = (datetime.utcnow() + timedelta(days=3650)).strftime("%Y-%m-%d %H:%M:%S")
     
     novo = CupomModel(
         codigo=codigo,
@@ -2467,7 +2472,7 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
         desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
         desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
         ativo=True,
-        data_validade=datetime.utcnow() + timedelta(days=365) # Validade automática de 1 ano
+        data_validade=data_segura_str 
     )
     db.add(novo)
     db.commit()
