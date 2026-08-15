@@ -2432,16 +2432,14 @@ from sqlalchemy import Column, Integer, String, Float, Boolean
 
 class CupomModel(Base):
     __tablename__ = "cupons_desconto"
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = {'extend_existing': True} # <--- ESTA É A MÁGICA SALVADORA
     
     id = Column(Integer, primary_key=True, index=True)
     codigo = Column(String, unique=True, index=True)
     tipo = Column(String, default="PERCENTUAL") # PERCENTUAL ou VALOR_FIXO
     valor = Column(Float, default=0.0)
-    desconto_percentual = Column(Float, default=0.0)
-    desconto_fixo = Column(Float, default=0.0)
+    data_validade = Column(String, nullable=True) # 🚨 CAMPO DE DATA ADICIONADO PARA CORRIGIR O BUG
     ativo = Column(Boolean, default=True)
-    data_validade = Column(dateTime, nullable=True) # <- AGORA ELA ESTÁ AQUI
 
 @app.get("/api/gestao/cupons")
 def listar_cupons(db: Session = Depends(get_db)):
@@ -2449,8 +2447,6 @@ def listar_cupons(db: Session = Depends(get_db)):
 
 @app.post("/api/gestao/cupons")
 def criar_cupom(dados: dict, db: Session = Depends(get_db)):
-    from datetime import datetime, timedelta
-    
     codigo = dados.get("codigo", "").upper().strip()
     if not codigo:
         raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
@@ -2462,8 +2458,7 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     tipo_cupom = dados.get("tipo", "PERCENTUAL")
     val_cupom = float(dados.get("valor", 0.0))
     
-    # 🚨 BLINDAGEM MÁXIMA: Garante que NUNCA vai vazio pro PostgreSQL
-    data_segura = datetime.utcnow() + timedelta(days=3650) # 10 anos de validade
+    from datetime import datetime, timedelta
     
     novo = CupomModel(
         codigo=codigo,
@@ -2472,7 +2467,7 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
         desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
         desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
         ativo=True,
-        data_validade=data_segura 
+        data_validade=datetime.utcnow() + timedelta(days=365) # Validade automática de 1 ano
     )
     db.add(novo)
     db.commit()
