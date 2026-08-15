@@ -8,7 +8,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./banco_v5_master_rh.db")
 
-# Ajuste automático de URL para drivers PostgreSQL modernos
+# Ajuste automático de prefixo postgres para SQLAlchemy
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
@@ -20,7 +20,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # ==========================================
-# MODELOS DE DADOS (BANCO DE DADOS)
+# MODELOS DE DADOS
 # ==========================================
 
 class ConfiguracaoLojaModel(Base):
@@ -263,7 +263,7 @@ class TaxaEntregaModel(Base):
 
 
 # ==========================================
-# AUTO-MIGRAÇÕES E INICIALIZAÇÃO
+# INICIALIZAÇÃO & MIGRAÇÕES
 # ==========================================
 
 def inicializar_banco():
@@ -357,7 +357,6 @@ def inicializar_banco():
 
     try:
         with engine.connect() as conn:
-            # Tenta afrouxar o NOT NULL do Postgres se existir
             try:
                 conn.execute(text("ALTER TABLE cupons_desconto ALTER COLUMN data_validade DROP NOT NULL;"))
                 conn.commit()
@@ -371,7 +370,7 @@ def inicializar_banco():
                 except Exception:
                     pass
     except Exception as e:
-        print(f"Aviso na inicialização das migrações: {e}")
+        print(f"Log Migração: {e}")
 
     try:
         cargo_admin = db.query(Cargo).filter(Cargo.permissoes == "total").first()
@@ -398,7 +397,7 @@ def inicializar_banco():
             
         db.commit()
     except Exception as e: 
-        print(f"Aviso ao verificar dados padrão: {e}")
+        print(f"Log Inicialização: {e}")
         db.rollback()
     finally:
         db.close()
