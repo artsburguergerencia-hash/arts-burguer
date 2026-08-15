@@ -1711,26 +1711,35 @@
         }
 
         async function criarCupom(e) {
-            e.preventDefault();
-            const payload = {
-                codigo: document.getElementById('cupom-codigo').value,
-                tipo: document.getElementById('cupom-tipo').value,
-                valor: parseFloat(document.getElementById('cupom-valor').value)
-            };
-            const res = await fetch('/api/gestao/cupons', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            if(res.ok) {
-                alertaPremium("Cupom criado com sucesso!", "Sucesso", "sucesso");
-                document.getElementById('form-cupom').reset();
-                carregarCupons();
-            } else {
-                const err = await res.json();
-                alertaPremium(err.detail, "Erro", "erro");
-            }
-        }
+    e.preventDefault();
+    
+    const validadeInput = document.getElementById('cupom-validade').value;
+    
+    const payload = {
+        codigo: document.getElementById('cupom-codigo').value,
+        tipo: document.getElementById('cupom-tipo').value,
+        valor: parseFloat(document.getElementById('cupom-valor').value)
+    };
+    
+    if (validadeInput) {
+        payload.data_validade = validadeInput;
+    }
+
+    const res = await fetch('/api/gestao/cupons', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    });
+    
+    if(res.ok) {
+        alertaPremium("Cupom criado com sucesso!", "Sucesso", "sucesso");
+        document.getElementById('form-cupom').reset();
+        carregarCupons();
+    } else {
+        const err = await res.json();
+        alertaPremium(err.detail || "Erro ao criar cupom.", "Erro", "erro");
+    }
+}
 
         async function excluirCupom(id) {
             if(confirm("Tem certeza que deseja excluir este cupom?")) {
