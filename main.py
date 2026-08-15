@@ -2432,14 +2432,16 @@ from sqlalchemy import Column, Integer, String, Float, Boolean
 
 class CupomModel(Base):
     __tablename__ = "cupons_desconto"
-    __table_args__ = {'extend_existing': True} # <--- ESTA É A MÁGICA SALVADORA
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
     codigo = Column(String, unique=True, index=True)
     tipo = Column(String, default="PERCENTUAL") # PERCENTUAL ou VALOR_FIXO
     valor = Column(Float, default=0.0)
-    data_validade = Column(String, nullable=True) # 🚨 CAMPO DE DATA ADICIONADO PARA CORRIGIR O BUG
+    desconto_percentual = Column(Float, default=0.0)
+    desconto_fixo = Column(Float, default=0.0)
     ativo = Column(Boolean, default=True)
+    data_validade = Column(DateTime, nullable=True) # <- AGORA ELA ESTÁ AQUI
 
 @app.get("/api/gestao/cupons")
 def listar_cupons(db: Session = Depends(get_db)):
@@ -2453,12 +2455,6 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     if not codigo:
         raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
         
-    # Tenta importar o modelo de onde quer que ele esteja
-    try:
-        from pagamentos_crm import CupomModel
-    except ImportError:
-        pass # Usa o que já está no arquivo
-        
     existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
     if existe:
         raise HTTPException(status_code=400, detail="Este código de cupom já existe.")
@@ -2466,9 +2462,8 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     tipo_cupom = dados.get("tipo", "PERCENTUAL")
     val_cupom = float(dados.get("valor", 0.0))
     
-    # 🔥 A MÁGICA AQUI: Gerando uma validade de 10 anos automaticamente!
-    # Isso impede que o PostgreSQL dê o erro de NotNullViolation
-    validade_infinita = datetime.utcnow() + timedelta(days=3650)
+    # 🚨 BLINDAGEM MÁXIMA: Garante que NUNCA vai vazio pro PostgreSQL
+    data_segura = datetime.utcnow() + timedelta(days=3650) # 10 anos de validade
     
     novo = CupomModel(
         codigo=codigo,
@@ -2477,7 +2472,7 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
         desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
         desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
         ativo=True,
-        data_validade=validade_infinita # Nunca mais será "None"
+        data_validade=data_segura 
     )
     db.add(novo)
     db.commit()
