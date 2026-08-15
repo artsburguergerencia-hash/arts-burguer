@@ -1824,6 +1824,11 @@ def listar_clientes_gestao(db: Session = Depends(get_db)):
 # ==========================================
 
 # MUDANÇA: Definição única e absoluta do CupomModel aqui para evitar conflitos!
+# Gerador automático para cupons sem validade preenchida no front-end
+def data_infinita_str():
+    from datetime import datetime, timedelta
+    return (datetime.utcnow() + timedelta(days=3650)).strftime("%Y-%m-%dT%H:%M")
+
 class CupomModel(Base):
     __tablename__ = "cupons_desconto"
     __table_args__ = {'extend_existing': True}
@@ -1834,7 +1839,8 @@ class CupomModel(Base):
     valor = Column(Float, default=0.0)
     desconto_percentual = Column(Float, default=0.0)
     desconto_fixo = Column(Float, default=0.0)
-    data_validade = Column(String, nullable=True) 
+    # BLINDAGEM: Se a data não vier do HTML, ele insere 10 anos automaticamente
+    data_validade = Column(String, default=data_infinita_str, nullable=True) 
     ativo = Column(Boolean, default=True)
 
 
