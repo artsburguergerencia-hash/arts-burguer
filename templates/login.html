@@ -107,16 +107,21 @@
                 const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const data = await res.json();
                 
-                if (res.ok) {
-                    localStorage.setItem('arts_admin_nome', data.nome);
-                    localStorage.setItem('arts_admin_cargo', data.cargo_nome);
-                    window.location.href = "/portal"; 
-                } else {
-                    alert("Erro: " + (data.detail || "Credenciais inválidas"));
-                }
-            } catch(e) { alert("Falha de conexão com o servidor."); }
+                if (res.ok && data.status === "sucesso") {
+            // Salva os dados de quem logou no navegador
+            localStorage.setItem('funcionario_nome', data.nome);
+            localStorage.setItem('funcionario_cargo', data.cargo_id);
             
-            btn.innerHTML = originalHtml; btn.disabled = false;
+            // O SMART REDIRECT (Lógica de Permissão)
+            // Se for o cargo_id 1 (Administrador), pula o Hub e vai direto pro Painel
+            if (data.cargo_id === 1 || data.cargo_id === '1') {
+                window.location.replace('/gestao');
+            } else {
+                // Se for outro funcionário (caixa, motoboy), vai pro Hub (Portal)
+                window.location.replace('/portal');
+            }
+        } else {
+            alert(data.detail || "Erro ao fazer login.");
         }
     </script>
 </body>
