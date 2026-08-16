@@ -1289,17 +1289,21 @@
         const diasSemana = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
         const nomesDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
-        document.addEventListener('DOMContentLoaded', () => { 
-            document.getElementById('nome-admin-lateral').innerText = localStorage.getItem('funcionario_nome') || "Admin"; 
-            carregarConfiguracoesInit(); 
-            carregarCargosParaRH();
-            renderizarEscalaUI();
-            carregarCaixaEntradaRH();
-            
-            const hoje = new Date();
-            const mesStr = (hoje.getMonth() + 1).toString().padStart(2, '0');
-            document.getElementById('mes-desempenho').value = `${hoje.getFullYear()}-${mesStr}`;    
-        });
+        document.addEventListener('DOMContentLoaded', async () => { 
+    document.getElementById('nome-admin-lateral').innerText = localStorage.getItem('funcionario_nome') || "Admin"; 
+    await carregarConfiguracoesInit(); 
+    await carregarFornecedoresParaSelect();
+    await carregarInsumosParaSelect();
+    await carregarCargosParaRH();
+    renderizarEscalaUI();
+    carregarCaixaEntradaRH();
+    
+    const hoje = new Date();
+    const mesStr = (hoje.getMonth() + 1).toString().padStart(2, '0');
+    if(document.getElementById('mes-desempenho')) {
+        document.getElementById('mes-desempenho').value = `${hoje.getFullYear()}-${mesStr}`;
+    }
+});
 
         // -------------------------
         // UTILITÁRIOS E MÁSCARAS
@@ -2491,6 +2495,38 @@
         }
 
         async function lancarConta(e) { 
+    e.preventDefault(); 
+    const vMoeda = parseMoeda(document.getElementById('fin-valor').value);
+    const fornIdVal = document.getElementById('fin-fornecedor').value;
+    
+    const payload = { 
+        descricao: document.getElementById('fin-desc').value, 
+        valor: vMoeda, 
+        vencimento: document.getElementById('fin-venc').value, 
+        tipo_despesa: document.getElementById('fin-tipo').value, 
+        fornecedor_id: (fornIdVal && fornIdVal !== "") ? parseInt(fornIdVal) : null 
+    }; 
+    
+    try {
+        const res = await fetch('/api/gestao/conta', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(payload) 
+        }); 
+        
+        if (res.ok) {
+            alertaPremium("Conta lançada com sucesso!", "Fluxo de Caixa", "sucesso");
+            document.getElementById('fin-desc').value = '';
+            document.getElementById('fin-valor').value = '';
+            carregarFinanceiro(); 
+        } else {
+            const err = await res.json();
+            alertaPremium("Erro: " + (err.detail || "Falha ao gravar"), "Erro", "erro");
+        }
+    } catch(err) {
+        alertaPremium("Erro de rede ao salvar conta.", "Erro", "erro");
+    }
+} 
             e.preventDefault(); 
             
             const vMoeda = parseMoeda(document.getElementById('fin-valor').value);
