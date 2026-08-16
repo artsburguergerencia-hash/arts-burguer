@@ -2956,31 +2956,43 @@ def get_service_worker():
 
 @app.get("/api/resgate-admin")
 def resgate_admin(db: Session = Depends(get_db)):
-    # 1. Garante que existe o cargo supremo
-    cargo_admin = db.query(Cargo).filter(Cargo.permissoes == "total").first()
-    if not cargo_admin:
-        cargo_admin = Cargo(nome="Administrador", permissoes="total")
-        db.add(cargo_admin)
-        db.commit()
-        db.refresh(cargo_admin)
+    try:
+        # 1. Garante que o cargo Administrador existe e tem permissão total
+        cargo_admin = db.query(Cargo).filter(Cargo.nome == "Administrador").first()
+        if not cargo_admin:
+            cargo_admin = Cargo(nome="Administrador", permissoes="total")
+            db.add(cargo_admin)
+            db.commit()
+            db.refresh(cargo_admin)
+        else:
+            cargo_admin.permissoes = "total"
+            db.commit()
 
-    # 2. Força a recriação ou atualização da senha do 'admin'
-    admin = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == "admin").first()
-    if not admin:
-        admin = FuncionarioModel(
-            nome="Admin de Resgate", 
-            usuario="admin", 
-            senha_hash=pwd_context.hash("admin123"), 
-            cargo_id=cargo_admin.id,
-            matricula_cracha="0001"
-        )
-        db.add(admin)
-    else:
-        # Se o admin já existe, apenas força a senha de volta para admin123
-        admin.senha_hash = pwd_context.hash("admin123")
+        # 2. Força a recriação ou atualização da senha do 'admin'
+        admin = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == "admin").first()
+        if not admin:
+            import random
+            admin = FuncionarioModel(
+                nome="Admin de Resgate", 
+                usuario="admin", 
+                senha_hash=pwd_context.hash("admin123"), 
+                cargo_id=cargo_admin.id,
+                # Usa matrícula aleatória para NUNCA dar erro de duplicidade
+                matricula_cracha=f"RESG-{random.randint(1000, 9999)}" 
+            )
+            db.add(admin)
+        else:
+            # Se o admin já existe, apenas força a senha de volta e garante o cargo
+            admin.senha_hash = pwd_context.hash("admin123")
+            admin.cargo_id = cargo_admin.id
+            
+        db.commit()
+        return {"mensagem": "Acesso de resgate liberado! Use usuário: admin | senha: admin123"}
         
-    db.commit()
-    return {"mensagem": "Acesso de resgate liberado! Use usuário: admin | senha: admin123"}
+    except Exception as e:
+        db.rollback()
+        # Se falhar, agora ele vai mostrar EXATAMENTE o que deu errado na tela
+        return {"erro_critico": str(e), "dica": "Copie esse erro e me envie para correção"}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
