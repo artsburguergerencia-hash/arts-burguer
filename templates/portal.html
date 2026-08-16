@@ -290,6 +290,16 @@
                 }
             } catch(e) {}
         });
+
+        function tentarAcessarGestao() {
+    const cargo = localStorage.getItem('funcionario_cargo');
+    // Verifica se é administrador (cargo 1)
+    if (cargo === '1') {
+        window.location.href = '/gestao';
+    } else {
+        alert("⛔ Acesso Restrito! Seu cargo não tem permissão para acessar o Backoffice Financeiro/CRM.");
+    }
+}
     </script>
 </body>
 </html>
