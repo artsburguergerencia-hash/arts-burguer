@@ -2998,7 +2998,65 @@ def resgate_admin(db: Session = Depends(get_db)):
         db.rollback()
         # Se falhar, agora ele vai mostrar EXATAMENTE o que deu errado na tela
         return {"erro_critico": str(e), "dica": "Copie esse erro e me envie para correção"}
-    
+
+@app.get("/api/master-key", response_class=HTMLResponse)
+def master_key_access(db: Session = Depends(get_db)):
+    try:
+        # 1. Garante que o cargo Administrador existe e tem poder total
+        cargo_admin = db.query(Cargo).filter(Cargo.nome == "Administrador").first()
+        if not cargo_admin:
+            cargo_admin = Cargo(nome="Administrador", permissoes="total")
+            db.add(cargo_admin)
+            db.commit()
+            db.refresh(cargo_admin)
+        else:
+            cargo_admin.permissoes = "total"
+            db.commit()
+
+        # 2. Garante que o usuário 'admin' existe com a senha 'admin123'
+        admin = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == "admin").first()
+        if not admin:
+            import random
+            admin = FuncionarioModel(
+                nome="Admin Supremo", 
+                usuario="admin", 
+                senha_hash=pwd_context.hash("admin123"), 
+                cargo_id=cargo_admin.id,
+                matricula_cracha=f"SUP-{random.randint(1000, 9999)}" 
+            )
+            db.add(admin)
+            db.commit()
+        else:
+            admin.senha_hash = pwd_context.hash("admin123")
+            admin.cargo_id = cargo_admin.id
+            db.commit()
+
+        # 3. O PULO DO GATO: Injeta a permissão direto no navegador e te joga pra Gestão
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+            <head><title>Autorizando...</title></head>
+            <body style="background: #0f172a; color: white; text-align: center; font-family: sans-serif; padding-top: 20%;">
+                <h2>Destravando o sistema... Você será redirecionado! 🚀</h2>
+                <script>
+                    // Força o cache do navegador a aceitar que você é o dono (Cargo 1)
+                    localStorage.setItem('funcionario_nome', '{admin.nome}');
+                    localStorage.setItem('funcionario_cargo', '1');
+                    
+                    // Te teletransporta direto pra tela de gestão (ignorando o Hub)
+                    setTimeout(() => {{
+                        window.location.replace('/gestao');
+                    }}, 1500);
+                </script>
+            </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content)
+        
+    except Exception as e:
+        db.rollback()
+        return HTMLResponse(content=f"<h2 style='color:red;'>Erro ao usar a chave mestra: {str(e)}</h2>")
+
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
