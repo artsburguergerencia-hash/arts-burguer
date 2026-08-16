@@ -1241,10 +1241,15 @@ def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
     
     cargo = db.query(Cargo).filter(Cargo.id == funcionario.cargo_id).first()
     
+    # === A MÁGICA QUE RESOLVE A TELA BRANCA ===
+    # O arquivo gestao.html exige que o cargo seja exatamente o ID 1.
+    # Se o funcionário tem permissão 'total', mandamos '1' pro frontend enganar o bloqueio e liberar o acesso!
+    id_liberacao = 1 if (cargo and cargo.permissoes == "total") else funcionario.cargo_id
+    
     return { 
         "status": "sucesso", 
         "nome": funcionario.nome, 
-        "cargo_id": funcionario.cargo_id, 
+        "cargo_id": id_liberacao, 
         "cargo_nome": cargo.nome if cargo else "Indefinido" 
     }
 
