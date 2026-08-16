@@ -2954,6 +2954,34 @@ def get_service_worker():
     """
     return Response(content=sw_content, media_type="application/javascript")
 
+@app.get("/api/resgate-admin")
+def resgate_admin(db: Session = Depends(get_db)):
+    # 1. Garante que existe o cargo supremo
+    cargo_admin = db.query(Cargo).filter(Cargo.permissoes == "total").first()
+    if not cargo_admin:
+        cargo_admin = Cargo(nome="Administrador", permissoes="total")
+        db.add(cargo_admin)
+        db.commit()
+        db.refresh(cargo_admin)
+
+    # 2. Força a recriação ou atualização da senha do 'admin'
+    admin = db.query(FuncionarioModel).filter(FuncionarioModel.usuario == "admin").first()
+    if not admin:
+        admin = FuncionarioModel(
+            nome="Admin de Resgate", 
+            usuario="admin", 
+            senha_hash=pwd_context.hash("admin123"), 
+            cargo_id=cargo_admin.id,
+            matricula_cracha="0001"
+        )
+        db.add(admin)
+    else:
+        # Se o admin já existe, apenas força a senha de volta para admin123
+        admin.senha_hash = pwd_context.hash("admin123")
+        
+    db.commit()
+    return {"mensagem": "Acesso de resgate liberado! Use usuário: admin | senha: admin123"}
+    
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
