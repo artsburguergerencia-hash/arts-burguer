@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from pathlib import Path
 from datetime import datetime, date
-from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text
+from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text, DateTime
 import uvicorn
 from passlib.context import CryptContext
 
@@ -2457,7 +2457,7 @@ def listar_cupons(db: Session = Depends(get_db)):
 
 @app.post("/api/gestao/cupons")
 def criar_cupom(dados: dict, db: Session = Depends(get_db)):
-    codigo = dados.get("codigo", "").upper().strip()
+    codigo = str(dados.get("codigo", "")).upper().strip()
     if not codigo:
         raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
         
@@ -2469,7 +2469,6 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     val_cupom = float(dados.get("valor", 0.0))
     
     from datetime import datetime, timedelta
-    data_segura_str = (datetime.utcnow() + timedelta(days=3650)).strftime("%Y-%m-%d %H:%M:%S")
     
     novo = CupomModel(
         codigo=codigo,
@@ -2478,7 +2477,7 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
         desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
         desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
         ativo=True,
-        data_validade=data_segura_str 
+        data_validade=datetime.utcnow() + timedelta(days=365) # Preenche a validade exigida pelo PostgreSQL
     )
     db.add(novo)
     db.commit()
