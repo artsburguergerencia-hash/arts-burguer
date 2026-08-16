@@ -11,16 +11,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script>
-        // 1. BLINDAGEM DE ACESSO
+        // 1. BLINDAGEM DE ACESSO (Ajustada para validar apenas login ativo)
         const cargoAtual = localStorage.getItem('funcionario_cargo');
-        if (!cargoAtual || cargoAtual !== '1') {
-            alert("⛔ Acesso Negado! Área restrita para Administradores.");
+        if (!cargoAtual) {
+            alert("⛔ Faça o login para acessar o sistema.");
             window.location.replace('/login');
         }
 
         // 2. CONFIGURAÇÃO UNIFICADA DO TAILWIND (O CÉREBRO)
         tailwind.config = { 
-            darkMode: 'class', // <--- Isso obriga o Tailwind a aceitar o modo escuro
+            darkMode: 'class',
             theme: { 
                 extend: { 
                     fontFamily: { sans: ['Inter', 'sans-serif'] }, 
@@ -28,6 +28,7 @@
                 } 
             } 
         };
+
 
         // 3. SINCRONIZADOR DE TEMA
         if (localStorage.getItem('theme') === 'light') {
