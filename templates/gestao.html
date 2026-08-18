@@ -476,6 +476,8 @@
                                 <option value="12">🎂 Dezembro</option>
                             </select>
                             <button onclick="carregarClientesPainel()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-black hover:bg-slate-800 transition-colors shadow-sm">Filtrar</button>
+                            <!-- BOTÃO DE NOVO CLIENTE DEVOLVIDO -->
+<button onclick="abrirModalEditarCliente('novo')" class="bg-brand-500 text-white px-4 py-2 rounded-xl text-sm font-black hover:bg-brand-600 transition-colors shadow-sm ml-2">+ Novo</button>
                         </div>
                     </div>
                     <table class="w-full text-left text-sm">
@@ -1382,24 +1384,24 @@
             window.location.replace('/login'); 
         }
 
-        // -------------------------
         // CONTROLE DE NAVEGAÇÃO E ABAS
-        // -------------------------
         function abrirAba(idAba, elementoClicado) { 
             document.querySelectorAll('.painel').forEach(p => { 
                 p.classList.remove('active'); 
                 p.classList.add('hidden'); 
             }); 
+            
+            // CORREÇÃO DO MENU ESMAECIDO AQUI
             document.querySelectorAll('.menu-item').forEach(m => { 
-                m.classList.remove('bg-brand-500', 'text-white', 'active'); 
-                m.classList.add('text-slate-300'); 
+                m.classList.remove('bg-brand-500', 'text-white', 'active', 'text-slate-300'); 
+                m.classList.add('text-slate-600', 'dark:text-slate-300'); 
             }); 
             
             document.getElementById(idAba).classList.remove('hidden'); 
             document.getElementById(idAba).classList.add('active'); 
             
             if(elementoClicado) { 
-                elementoClicado.classList.remove('text-slate-300'); 
+                elementoClicado.classList.remove('text-slate-600', 'dark:text-slate-300'); 
                 elementoClicado.classList.add('bg-brand-500', 'text-white', 'active'); 
             } 
             
@@ -2714,7 +2716,24 @@
        // --- FUNÇÕES DE EDIÇÃO MANUAL DE CLIENTES (CRM) ---
         async function abrirModalEditarCliente(id) {
             try {
-                // 1. Puxa os dados do cliente
+                // SE FOR CLIENTE NOVO, LIMPA O MODAL E ABRE
+                if (id === 'novo') {
+                    document.getElementById('edit-cli-id').value = 'novo';
+                    document.getElementById('edit-cli-nome').value = '';
+                    document.getElementById('edit-cli-telefone').value = '';
+                    document.getElementById('edit-cli-cpf').value = '';
+                    document.getElementById('edit-cli-cep').value = '';
+                    document.getElementById('edit-cli-endereco').value = '';
+                    document.getElementById('edit-cli-pontos').value = 0;
+                    document.getElementById('edit-cli-cashback').value = formataMoedaParaInput(0.0);
+                    document.getElementById('edit-cli-bloqueado').checked = false;
+                    document.getElementById('label-status-cli').innerText = "Cliente OK (Liberado)";
+                    document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold">Nenhum pedido (Cliente Novo).</td></tr>';
+                    document.getElementById('modal-editar-cliente').classList.replace('hidden', 'flex');
+                    return;
+                }
+
+                // SE FOR EDIÇÃO, PUXA OS DADOS DO BANCO
                 const res = await fetch('/api/gestao/clientes');
                 const clientes = await res.json();
                 const c = clientes.find(x => x.id === id);
@@ -2736,6 +2755,87 @@
                 checkBloqueado.onchange = (e) => {
                     document.getElementById('label-status-cli').innerText = e.target.checked ? "Inadimplente (Bloqueado)" : "Cliente OK (Liberado)";
                 };
+
+                document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold"><i class="ph-bold ph-spinner animate-spin"></i> Buscando...</td></tr>';
+                document.getElementById('modal-editar-cliente').classList.replace('hidden', 'flex');
+
+                const resPed = await fetch(`/api/gestao/clientes/${id}/pedidos`);
+                const pedidos = await resPed.json();
+                
+                if (pedidos.length === 0) {
+                    document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold">Nenhum pedido encontrado.</td></tr>';
+                } else {
+                    document.getElementById('lista-historico-pedidos').innerHTML = pedidos.map(p => `
+                        <tr class="border-b border-slate-100 last:border-0 hover:bg-white">
+                            <td class="p-3 font-bold text-slate-700">#${p.id}</td>
+                            <td class="p-3 font-mono text-slate-500">${p.data}</td>
+                            <td class="p-3 font-black text-emerald-500">R$ ${p.valor.toFixed(2).replace('.',',')}</td>
+                            <td class="p-3"><span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-black uppercase">${p.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch(e) {
+                alertaPremium("Erro ao carregar dados do cliente.", "Erro", "erro");
+            }
+        }
+
+        async function salvarEdicaoCliente(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-cli-id').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Gravando...";
+            btn.disabled = true;
+
+            const payload = {
+                nome: document.getElementById('edit-cli-nome').value,
+                telefone: document.getElementById('edit-cli-telefone').value,
+                cpf: document.getElementById('edit-cli-cpf').value,
+                cep: document.getElementById('edit-cli-cep').value,
+                endereco: document.getElementById('edit-cli-endereco').value,
+                pontos: parseInt(document.getElementById('edit-cli-pontos').value) || 0,
+                cashback: parseMoeda(document.getElementById('edit-cli-cashback').value),
+                bloqueado: document.getElementById('edit-cli-bloqueado').checked
+            };
+
+            try {
+                // SE O ID FOR "novo", CHAMA A ROTA DE REGISTRAR, SE NÃO, CHAMA A DE EDITAR
+                if (id === 'novo') {
+                    const res = await fetch('/api/cliente/registrar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if(res.ok) {
+                        alertaPremium("Novo cliente cadastrado com sucesso!", "Sucesso", "sucesso");
+                        document.getElementById('modal-editar-cliente').classList.replace('flex', 'hidden');
+                        carregarClientesPainel();
+                    } else {
+                        const erroData = await res.json();
+                        alertaPremium("Erro: " + erroData.detail, "Falha", "erro");
+                    }
+                } else {
+                    const res = await fetch(`/api/gestao/clientes/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if(res.ok) {
+                        alertaPremium("Dossiê do cliente atualizado com sucesso!", "CRM Atualizado", "sucesso");
+                        document.getElementById('modal-editar-cliente').classList.replace('flex', 'hidden');
+                        carregarClientesPainel();
+                    } else {
+                        const erroData = await res.json();
+                        alertaPremium("Erro: " + erroData.detail, "Falha", "erro");
+                    }
+                }
+            } catch(err) {
+                alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
+            }
+            btn.innerHTML = "Gravar Dossiê Completo";
+            btn.disabled = false;
+        }
 
                 // 2. Puxa o Histórico de Pedidos
                 document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold"><i class="ph-bold ph-spinner animate-spin"></i> Buscando...</td></tr>';
