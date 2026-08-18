@@ -2408,6 +2408,11 @@
 
         async function cadastrarFornecedor(e) { 
             e.preventDefault(); 
+            const btn = e.target.querySelector('button[type="submit"]');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+            btn.disabled = true;
+
             const payload = { 
                 nome_fantasia: document.getElementById('forn-nome').value, 
                 cnpj: document.getElementById('forn-cnpj').value, 
@@ -2415,9 +2420,27 @@
                 contato: document.getElementById('forn-contato').value 
             }; 
             
-            await fetch('/api/gestao/fornecedores', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
-            document.getElementById('form-fornecedor').reset(); 
-            carregarFornecedores(); 
+            try {
+                const res = await fetch('/api/gestao/fornecedores', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                }); 
+                
+                if(res.ok) {
+                    alertaPremium("Fornecedor cadastrado com sucesso!", "Parceiro Salvo", "sucesso");
+                    document.getElementById('form-fornecedor').reset(); 
+                    carregarFornecedores(); 
+                } else {
+                    const err = await res.json();
+                    alertaPremium("O banco de dados recusou o cadastro: " + (err.detail || "Erro interno."), "Erro", "erro");
+                }
+            } catch(e) {
+                alertaPremium("Falha na rede ou servidor offline.", "Erro de Conexão", "erro");
+            }
+
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
         }
 
         // ==============================================================
