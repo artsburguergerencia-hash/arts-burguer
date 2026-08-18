@@ -352,7 +352,11 @@ def inicializar_banco():
         "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
         "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
         "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE clientes ADD COLUMN foto VARCHAR DEFAULT '';"
+        "ALTER TABLE clientes ADD COLUMN foto VARCHAR DEFAULT '';",
+        
+        # ---> AQUI ESTÁ A CORREÇÃO EXATA PARA O SEU ERRO DO FORNECEDOR <---
+        "ALTER TABLE fornecedores ADD COLUMN contato VARCHAR DEFAULT '';",
+        "ALTER TABLE fornecedores ADD COLUMN telefone VARCHAR DEFAULT '';"
     ]
 
     try:
