@@ -3063,6 +3063,31 @@ def master_key_access(db: Session = Depends(get_db)):
         db.rollback()
         return HTMLResponse(content=f"<h2 style='color:red;'>Erro ao usar a chave mestra: {str(e)}</h2>")
 
+@app.get("/api/cura-fornecedor")
+def cura_fornecedor(db: Session = Depends(get_db)):
+    from sqlalchemy import text
+    logs = []
+    
+    # Tenta criar a coluna contato
+    try:
+        db.execute(text("ALTER TABLE fornecedores ADD COLUMN contato VARCHAR DEFAULT '';"))
+        db.commit()
+        logs.append("Coluna 'contato' injetada com sucesso!")
+    except Exception as e:
+        db.rollback()
+        logs.append(f"Contato ignorado: {str(e)}")
+
+    # Tenta criar a coluna telefone
+    try:
+        db.execute(text("ALTER TABLE fornecedores ADD COLUMN telefone VARCHAR DEFAULT '';"))
+        db.commit()
+        logs.append("Coluna 'telefone' injetada com sucesso!")
+    except Exception as e:
+        db.rollback()
+        logs.append(f"Telefone ignorado: {str(e)}")
+
+    return {"status": "Operação Concluída!", "detalhes": logs}
+    
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
