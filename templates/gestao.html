@@ -54,9 +54,13 @@
         
         <div class="h-20 flex items-center px-8 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
             <i class="ph-fill ph-hamburger text-3xl text-brand-500 mr-3"></i>
-            <div>
-                <h1 class="text-slate-900 dark:text-white font-black text-xl tracking-tight" id="sidebar-nome-loja">Art's Burguer</h1>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">ERP Cloud V5</p>
+            <div class="flex items-center">
+                <!-- A LOGO DEVOLVIDA AQUI -->
+                <img id="sidebar-logo" src="" class="h-8 object-contain mr-2 hidden">
+                <div>
+                    <h1 class="text-slate-900 dark:text-white font-black text-xl tracking-tight" id="sidebar-nome-loja">Art's Burguer</h1>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">ERP Cloud V5</p>
+                </div>
             </div>
         </div>
         
@@ -93,19 +97,37 @@
 
             <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 mb-2 mt-6 border-t border-slate-200 dark:border-slate-800 pt-4">Operação (Ao Vivo)</p>
             
-            <a href="/pdv" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-white hover:bg-emerald-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+            <a href="/pdv" target="_blank" class="w-full flex items-center text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-monitor text-xl mr-3"></i> PDV (Caixa) <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            <a href="/kds" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-white hover:bg-red-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+            <a href="/kds" target="_blank" class="w-full flex items-center text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-cooking-pot text-xl mr-3"></i> Monitor Cozinha <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            <a href="/logistica" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+            <a href="/logistica" target="_blank" class="w-full flex items-center text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
                 <i class="ph-fill ph-moped text-xl mr-3"></i> Despacho <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            <a href="/portal_colaborador" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+            
+            <!-- LINKS RESTAURADOS AQUI -->
+            <a href="/mesas" target="_blank" class="w-full flex items-center text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+                <i class="ph-fill ph-armchair text-xl mr-3"></i> Mapa do Salão <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
+            </a>
+            <a href="/motoboy" target="_blank" class="w-full flex items-center text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+                <i class="ph-fill ph-navigation-arrow text-xl mr-3"></i> App Entregador <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
+            </a>
+            <a href="/totem" target="_blank" class="w-full flex items-center text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+                <i class="ph-fill ph-device-tablet text-xl mr-3"></i> Totem <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
+            </a>
+            <a href="/tv" target="_blank" class="w-full flex items-center text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+                <i class="ph-fill ph-monitor-play text-xl mr-3"></i> TV de Senhas <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
+            </a>
+            <a href="/mapa" target="_blank" class="w-full flex items-center text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold">
+                <i class="ph-fill ph-radar text-xl mr-3"></i> Radar do Cliente <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
+            </a>
+
+            <a href="/portal_colaborador" target="_blank" class="w-full flex items-center text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mt-4">
                 <i class="ph-fill ph-identification-badge text-xl mr-3"></i> Portal RH <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
-            <a href="/" onclick="window.open(this.href, '_blank'); return false;" class="w-full flex items-center text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-white hover:bg-red-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8">
+            <a href="/" target="_blank" class="w-full flex items-center text-brand-600 dark:text-brand-400 hover:bg-red-50 dark:hover:bg-slate-800 p-3 rounded-xl transition-all font-bold mb-8">
                 <i class="ph-fill ph-storefront text-xl mr-3"></i> Cardápio Online <i class="ph ph-arrow-square-out ml-auto opacity-50"></i>
             </a>
         </nav>
@@ -113,10 +135,11 @@
         <div class="p-6 border-t border-slate-200 dark:border-slate-800 shrink-0 transition-colors duration-300">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=ff4757&color=fff" alt="Admin" class="h-10 w-10 rounded-full border-2 border-slate-200 dark:border-slate-700">
+                    <!-- AVATAR DINÂMICO DEVOLVIDO AQUI -->
+                    <img id="avatar-admin-lateral" src="https://ui-avatars.com/api/?name=A&background=ff4757&color=fff" alt="Avatar" class="h-10 w-10 rounded-full border-2 border-slate-200 dark:border-slate-700">
                     <div class="ml-3">
-                        <p class="text-sm font-bold text-slate-800 dark:text-white" id="nome-admin-lateral">Administrador</p>
-                        <p class="text-[10px] text-brand-500 font-bold uppercase tracking-wider">Acesso Total</p>
+                        <p class="text-sm font-bold text-slate-800 dark:text-white" id="nome-admin-lateral">Carregando...</p>
+                        <p class="text-[10px] text-brand-500 font-bold uppercase tracking-wider">Logado</p>
                     </div>
                 </div>
                 <button onclick="sairDoSistema()" class="text-slate-400 hover:text-brand-500 transition-colors" title="Sair"><i class="ph ph-sign-out text-2xl"></i></button>
@@ -1259,7 +1282,11 @@
         const nomesDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
         document.addEventListener('DOMContentLoaded', async () => { 
-            document.getElementById('nome-admin-lateral').innerText = localStorage.getItem('funcionario_nome') || "Admin"; 
+            // CARREGA SEU NOME E AVATAR NO CANTO ESQUERDO
+            const nomeUsuario = localStorage.getItem('funcionario_nome') || "Admin";
+            document.getElementById('nome-admin-lateral').innerText = nomeUsuario;
+            document.getElementById('avatar-admin-lateral').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nomeUsuario)}&background=ff4757&color=fff`;
+
             await carregarConfiguracoesInit(); 
             await carregarFornecedoresParaSelect();
             await carregarInsumosParaSelect();
@@ -1524,18 +1551,22 @@
                 const conf = await res.json();
                 
                 document.getElementById('conf-nome').value = conf.nome_empresa || ""; 
-                document.getElementById('sidebar-nome-loja').innerText = conf.nome_empresa || "ERP V6";
+                document.getElementById('sidebar-nome-loja').innerText = conf.nome_empresa || "Art's Burguer";
                 document.getElementById('conf-cnpj').value = conf.cnpj || ""; 
                 document.getElementById('conf-ie').value = conf.inscricao_estadual || ""; 
                 document.getElementById('conf-endereco').value = conf.endereco || "";
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
                 document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
                 
+                // DEVOLVENDO A LOGO PARA O MENU LATERAL
                 if(conf.logo_url) {
                     document.getElementById('conf-logo-base64').value = conf.logo_url;
                     document.getElementById('preview-logo-setup').src = conf.logo_url;
                     document.getElementById('preview-logo-setup').classList.remove('hidden');
                     document.getElementById('icone-logo-setup').classList.add('hidden');
+                    
+                    document.getElementById('sidebar-logo').src = conf.logo_url;
+                    document.getElementById('sidebar-logo').classList.remove('hidden');
                 }
                 
                 document.getElementById('conf-tempo').value = conf.tempo_preparo || 30; 
@@ -1569,7 +1600,7 @@
                 if(document.getElementById('aba-relatorios').classList.contains('active')) {
                     filtrarRelatorios();
                 }
-            } catch (e) {}
+            } catch (e) { console.error("Erro ao carregar setup:", e); }
         }
 
         function carregarCategoriasSelect(idSelect, arrayOpcoes) { 
@@ -1689,6 +1720,13 @@
             const dataFim = document.getElementById('filtro-fim').value; 
             let queryUrl = (dataInicio && dataFim) ? `?data_inicio=${dataInicio}&data_fim=${dataFim}` : '';
             
+            // FEEDBACK VISUAL NO DRE DEVOLVIDO
+            document.getElementById('rel-faturamento').innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
+            document.getElementById('rel-despesas-empresa').innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
+            document.getElementById('rel-despesas-casa').innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
+            document.getElementById('rel-lucro-real').innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
+            document.getElementById('lista-curva-abc').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold"><i class="ph-bold ph-spinner animate-spin mr-2"></i>Buscando dados...</td></tr>';
+            
             try {
                 const res = await fetch(`/api/gestao/financeiro/lucratividade${queryUrl}`); 
                 const data = await res.json(); 
@@ -1713,7 +1751,9 @@
                         <td class="py-4 px-6 text-right font-black text-emerald-500">R$ ${p.faturamento_gerado.toFixed(2).replace('.', ',')}</td>
                     </tr>`).join('');
                 }
-            } catch (err) {}
+            } catch (err) {
+                alertaPremium("Falha ao carregar DRE", "Erro", "erro");
+            }
         }
 
         async function carregarCargosParaRH() {
@@ -2956,6 +2996,44 @@
             themeIcon.classList.replace('ph-moon', 'ph-sun');
         }
     }
+
+    function abrirModalEditarColaborador(id, nome, matricula) {
+            document.getElementById('edit-colab-id').value = id;
+            document.getElementById('edit-colab-nome').value = nome;
+            document.getElementById('edit-colab-mat').value = (matricula && matricula !== 'null') ? matricula : '';
+            document.getElementById('modal-editar-colaborador').classList.replace('hidden', 'flex');
+        }
+
+        async function salvarEdicaoColaborador(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-colab-id').value;
+            const nome = document.getElementById('edit-colab-nome').value;
+            const matricula = document.getElementById('edit-colab-mat').value;
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch(`/api/gestao/funcionarios/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ nome: nome, matricula: matricula })
+                });
+                
+                if(res.ok) {
+                    alertaPremium("Dados atualizados!", "Sucesso", "sucesso");
+                    document.getElementById('modal-editar-colaborador').classList.replace('flex', 'hidden');
+                    carregarColaboradores();
+                } else {
+                    alertaPremium("Erro ao atualizar funcionário.", "Erro", "erro");
+                }
+            } catch(err) {
+                alertaPremium("Erro de conexão.", "Erro", "erro");
+            }
+            btn.innerHTML = "Salvar Alterações";
+            btn.disabled = false;
+        }
     </script>
 </body>
 </html>
