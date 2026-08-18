@@ -2497,55 +2497,37 @@
         }
 
         async function lancarConta(e) { 
-    e.preventDefault(); 
-    const vMoeda = parseMoeda(document.getElementById('fin-valor').value);
-    const fornIdVal = document.getElementById('fin-fornecedor').value;
-    
-    const payload = { 
-        descricao: document.getElementById('fin-desc').value, 
-        valor: vMoeda, 
-        vencimento: document.getElementById('fin-venc').value, 
-        tipo_despesa: document.getElementById('fin-tipo').value, 
-        fornecedor_id: (fornIdVal && fornIdVal !== "") ? parseInt(fornIdVal) : null 
-    }; 
-    
-    try {
-        const res = await fetch('/api/gestao/conta', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify(payload) 
-        }); 
-        
-        if (res.ok) {
-            alertaPremium("Conta lançada com sucesso!", "Fluxo de Caixa", "sucesso");
-            document.getElementById('fin-desc').value = '';
-            document.getElementById('fin-valor').value = '';
-            carregarFinanceiro(); 
-        } else {
-            const err = await res.json();
-            alertaPremium("Erro: " + (err.detail || "Falha ao gravar"), "Erro", "erro");
-        }
-    } catch(err) {
-        alertaPremium("Erro de rede ao salvar conta.", "Erro", "erro");
-    }
-} 
             e.preventDefault(); 
-            
             const vMoeda = parseMoeda(document.getElementById('fin-valor').value);
+            const fornIdVal = document.getElementById('fin-fornecedor').value;
             
             const payload = { 
                 descricao: document.getElementById('fin-desc').value, 
                 valor: vMoeda, 
                 vencimento: document.getElementById('fin-venc').value, 
                 tipo_despesa: document.getElementById('fin-tipo').value, 
-                fornecedor_id: document.getElementById('fin-fornecedor').value || null 
+                fornecedor_id: (fornIdVal && fornIdVal !== "") ? parseInt(fornIdVal) : null 
             }; 
             
-            await fetch('/api/gestao/conta', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
-            
-            document.getElementById('fin-desc').value = '';
-            document.getElementById('fin-valor').value = '';
-            carregarFinanceiro(); 
+            try {
+                const res = await fetch('/api/gestao/conta', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                }); 
+                
+                if (res.ok) {
+                    alertaPremium("Conta lançada com sucesso!", "Fluxo de Caixa", "sucesso");
+                    document.getElementById('fin-desc').value = '';
+                    document.getElementById('fin-valor').value = '';
+                    carregarFinanceiro(); 
+                } else {
+                    const err = await res.json();
+                    alertaPremium("Erro: " + (err.detail || "Falha ao gravar"), "Erro", "erro");
+                }
+            } catch(err) {
+                alertaPremium("Erro de rede ao salvar conta.", "Erro", "erro");
+            }
         }
 
         // ==============================================================
