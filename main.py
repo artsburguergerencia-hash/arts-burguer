@@ -349,13 +349,18 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
         # Tratamento do CNPJ: Se vier vazio, salva como nulo no banco
         cnpj_limpo = dados.cnpj.strip() if dados.cnpj and dados.cnpj.strip() != "" else None
         
+        # Cria o modelo usando apenas as colunas garantidas
         novo_fornecedor = FornecedorModel(
             nome_fantasia=dados.nome_fantasia, 
             categoria=dados.categoria, 
             contato=dados.contato,
-            telefone=dados.contato, # Salva nos dois para garantir retrocompatibilidade
             cnpj=cnpj_limpo
         )
+        
+        # O pulo do gato: Só salva o telefone duplo se a coluna realmente existir no seu financeiro.py
+        if hasattr(novo_fornecedor, 'telefone'):
+            novo_fornecedor.telefone = dados.contato
+            
         db.add(novo_fornecedor)
         db.commit()
         db.refresh(novo_fornecedor)
@@ -367,7 +372,8 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
         }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        # Se falhar, agora ele envia o erro EXATO para a tela do Gestão mostrar no alerta
+        raise HTTPException(status_code=500, detail=f"Falha ao salvar no banco: {str(e)}")
 
 
 # ==========================================
