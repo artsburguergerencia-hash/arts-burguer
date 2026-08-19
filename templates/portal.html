@@ -7,6 +7,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        // BLINDAGEM DE ACESSO DO PORTAL
+        const cargoAtual = localStorage.getItem('funcionario_cargo');
+        if (!cargoAtual) {
+            window.location.replace('/login');
+        }
+        
+        // Função para checar se é admin antes de tentar abrir o Gestão
+        function tentarAcessarGestao() {
+            if (cargoAtual === '1') {
+                window.location.href = '/gestao';
+            } else {
+                alert("⛔ Acesso Restrito! Apenas Administradores podem acessar o Backoffice.");
+            }
+        }
+    </script>
     
     <!-- CONFIGURAÇÃO DO TAILWIND PARA MODO ESCURO -->
     <script>
