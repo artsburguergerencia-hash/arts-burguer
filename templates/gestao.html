@@ -53,10 +53,9 @@
     <aside class="w-72 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 flex flex-col shadow-2xl z-20 shrink-0 border-r border-slate-200 dark:border-slate-800 transition-colors duration-300">
         
         <div class="h-20 flex items-center px-8 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
-            <i class="ph-fill ph-hamburger text-3xl text-brand-500 mr-3"></i>
             <div class="flex items-center">
-                <!-- A LOGO DEVOLVIDA AQUI -->
-                <img id="sidebar-logo" src="" class="h-8 object-contain mr-2 hidden">
+                <img id="sidebar-logo" src="" class="h-8 object-contain mr-3 hidden">
+                <i id="sidebar-logo-padrao" class="ph-fill ph-hamburger text-3xl text-brand-500 mr-3"></i>
                 <div>
                     <h1 class="text-slate-900 dark:text-white font-black text-xl tracking-tight" id="sidebar-nome-loja">Art's Burguer</h1>
                     <p class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">ERP Cloud V5</p>
@@ -1558,7 +1557,6 @@
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
                 document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
                 
-                // DEVOLVENDO A LOGO PARA O MENU LATERAL
                 if(conf.logo_url) {
                     document.getElementById('conf-logo-base64').value = conf.logo_url;
                     document.getElementById('preview-logo-setup').src = conf.logo_url;
@@ -1567,6 +1565,7 @@
                     
                     document.getElementById('sidebar-logo').src = conf.logo_url;
                     document.getElementById('sidebar-logo').classList.remove('hidden');
+                    document.getElementById('sidebar-logo-padrao').classList.add('hidden');
                 }
                 
                 document.getElementById('conf-tempo').value = conf.tempo_preparo || 30; 
@@ -1720,7 +1719,6 @@
             const dataFim = document.getElementById('filtro-fim').value; 
             let queryUrl = (dataInicio && dataFim) ? `?data_inicio=${dataInicio}&data_fim=${dataFim}` : '';
             
-            // FEEDBACK VISUAL NO DRE DEVOLVIDO
             document.getElementById('rel-faturamento').innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
             document.getElementById('rel-despesas-empresa').innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
             document.getElementById('rel-despesas-casa').innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
@@ -3025,6 +3023,14 @@
                     alertaPremium("Dados atualizados!", "Sucesso", "sucesso");
                     document.getElementById('modal-editar-colaborador').classList.replace('flex', 'hidden');
                     carregarColaboradores();
+                    
+                    // SE O USUÁRIO EDITAR A SI PRÓPRIO, ATUALIZA A SESSÃO E O NOME NA TELA
+                    const nomeSessao = localStorage.getItem('funcionario_nome');
+                    if (document.getElementById('nome-admin-lateral').innerText === nomeSessao) {
+                         localStorage.setItem('funcionario_nome', nome);
+                         document.getElementById('nome-admin-lateral').innerText = nome;
+                         document.getElementById('avatar-admin-lateral').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=ff4757&color=fff`;
+                    }
                 } else {
                     alertaPremium("Erro ao atualizar funcionário.", "Erro", "erro");
                 }
