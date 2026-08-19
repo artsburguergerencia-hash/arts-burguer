@@ -540,7 +540,6 @@ async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
 @app.post("/api/pedidos/online")
 def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
     from fastapi import HTTPException
-    from datetime import datetime
     
     try:
         config = db.query(ConfiguracaoLojaModel).first()
@@ -585,10 +584,12 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         
         if novo_pedido_real:
             novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
-            novo_pedido_real.origem = "SITE (Online)"
-            novo_pedido_real.data_pedido = datetime.utcnow().date()
+            
+            # 🚨 CORREÇÃO: Só injeta a origem se a coluna existir (removemos a data_pedido que causava o erro!)
+            if hasattr(novo_pedido_real, 'origem'):
+                novo_pedido_real.origem = "SITE (Online)"
 
-        # 2. BLINDAGEM NO ESTOQUE (Se der erro, ignora e avança)
+        # 2. BLINDAGEM NO ESTOQUE
         try:
             for item in itens_carrinho:
                 processar_baixa_estoque(db, produto_id=item["produto_id"], quantidade_vendida=item["quantidade"])
@@ -607,7 +608,6 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
                 novo_pedido_real.status = "EM_PREPARO" if aceite_auto else "RECEBIDO"
                 db.commit()
             
-            # BLINDAGEM DO WHATSAPP (A Causa do Erro 500 na entrega!)
             try:
                 notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
             except Exception as err_wpp:
@@ -672,7 +672,6 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
     except HTTPException:
         raise
     except Exception as global_e:
-        # 🚨 SE QUALQUER OUTRA COISA EXPLODIR, NÃO DARÁ MAIS 500 INVISÍVEL 🚨
         from fastapi import HTTPException
         print(f"ERRO CRÍTICO: {global_e}", flush=True)
         raise HTTPException(status_code=400, detail=f"Falha no Python: {str(global_e)}")
