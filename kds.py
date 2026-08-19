@@ -1,11 +1,6 @@
 from datetime import datetime
 from database import SessionLocal
-
-# Importamos com segurança para evitar erros de ciclo
-try:
-    from vendas_pdv import PedidoModel, ItemPedidoModel
-except ImportError:
-    pass
+from vendas_pdv import PedidoModel, ItemPedidoModel, StatusPedido
 
 # ==============================================================================
 # 1. ENGENHARIA DE OPERAÇÃO DA COZINHA (Lógica do KDS)
@@ -14,57 +9,57 @@ except ImportError:
 def obter_fila_kds(db):
     """
     Busca todos os pedidos que estão na fila de produção.
-    Retorna apenas os pedidos com status 'RECEBIDO' ou 'EM_PREPARO'.
-    Ordena por ID (o mais antigo aparece primeiro na tela).
+    Lógica blindada: Busca tudo no banco e filtra no Python para evitar erros de formato!
     """
-    # 🚨 CORREÇÃO 1: Usando as palavras exatas que o main.py salva no banco!
-    status_visiveis = ["RECEBIDO", "EM_PREPARO"]
-    
     try:
-        pedidos_fila = (
-            db.query(PedidoModel)
-            .filter(PedidoModel.status.in_(status_visiveis))
-            # 🚨 CORREÇÃO 2: order_by no lugar de order_index, e usando ID para fugir da data inexistente!
-            .order_by(PedidoModel.id.asc())
-            .all()
-        )
-        return pedidos_fila
+        todos_pedidos = db.query(PedidoModel).all()
+        fila = []
+        
+        for pedido in todos_pedidos:
+            # Transforma o status para texto. Assim não dá briga no banco de dados!
+            st = str(pedido.status).upper()
+            
+            # Se o status contiver 'RECEBIDO' ou 'PREPAR', ele vai pra fila!
+            if "RECEBIDO" in st or "PREPAR" in st:
+                fila.append(pedido)
+        
+        # Ordena do mais antigo para o mais novo pelo número do ID (Foge do erro de data!)
+        fila.sort(key=lambda p: p.id)
+        return fila
+        
     except Exception as e:
-        print(f"❌ Erro ao buscar fila do KDS: {e}", flush=True)
+        print(f"❌ Erro KDS (obter_fila): {e}", flush=True)
         return []
 
 
 def avancar_status_kds(db, pedido_id: int):
     """
-    Controla o fluxo do painel da cozinha.
-    - Se o pedido está 'RECEBIDO', ele vai para 'EM_PREPARO' (chapeiro iniciou).
-    - Se o pedido está 'EM_PREPARO', ele vai para 'PRONTO' (vai para o balcão/motoboy).
+    Avança o status do pedido na cozinha de forma segura.
     """
     try:
         pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
-        
         if not pedido:
-            print(f"❌ Erro: Pedido #{pedido_id} não encontrado.")
             return None
 
-        # Trabalhando com as strings exatas para não dar conflito
-        if pedido.status == "RECEBIDO":
-            pedido.status = "EM_PREPARO"
-            print(f"👨‍🍳 Art's Burguer KDS: Pedido #{pedido.id} ENTROU EM PREPARO.")
-        elif pedido.status == "EM_PREPARO":
-            pedido.status = "PRONTO"
-            print(f"🔔 Art's Burguer KDS: Pedido #{pedido.id} ESTÁ PRONTO para entrega/retirada!")
-        else:
-            print(f"⚠️ Pedido #{pedido.id} já está com status '{pedido.status}' e não é gerenciado pelo KDS.")
-
+        st = str(pedido.status).upper()
+        
+        if "RECEBIDO" in st:
+            # Se estava recebido, vai para PREPARANDO
+            pedido.status = StatusPedido.PREPARANDO
+            print(f"👨‍🍳 KDS: Pedido #{pedido.id} ENTROU EM PREPARO.", flush=True)
+        elif "PREPAR" in st:
+            # Se estava preparando, vai para PRONTO
+            pedido.status = StatusPedido.PRONTO
+            print(f"🔔 KDS: Pedido #{pedido.id} ESTÁ PRONTO!", flush=True)
+            
         db.commit()
         db.refresh(pedido)
         return pedido
+        
     except Exception as e:
-        print(f"❌ Erro ao avançar status: {e}", flush=True)
         db.rollback()
+        print(f"❌ Erro KDS (avancar_status): {e}", flush=True)
         return None
-
 
 # ==============================================================================
 # 2. RENDERIZADOR DE TELA (Simulador Visual do Monitor da Cozinha)
@@ -84,28 +79,32 @@ def atualizar_painel_visual_kds(db):
         return
 
     for pedido in fila:
-        # 🚨 CORREÇÃO 3: Proteção caso a data não exista
+        # Tenta calcular o tempo, mas se a data não existir, não quebra a tela
         try:
             tempo_espera = int((datetime.utcnow() - pedido.data_hora).total_seconds() / 60)
         except:
-            tempo_espera = "?" # Se a coluna de data não existir, não quebra a tela!
+            tempo_espera = 0
+            
+        st = str(pedido.status).upper()
+        alerta_status = "[FOGO 🔥]" if "PREPAR" in st else "[FILA ⏳]"
+        tipo_ped = getattr(pedido, 'tipo_pedido', 'DELIVERY')
         
-        # Cor visual para destacar se o pedido está apenas recebido ou já em preparo
-        alerta_status = "[FOGO 🔥]" if pedido.status == "EM_PREPARO" else "[FILA ⏳]"
-        
-        # Proteção caso a coluna tipo_pedido não exista
-        tipo = getattr(pedido, 'tipo_pedido', 'DELIVERY')
-        
-        print(f"\n📦 PEDIDO #{pedido.id} | Tipo: {tipo} | {alerta_status} ({tempo_espera} min de espera)")
+        print(f"\n📦 PEDIDO #{pedido.id} | Tipo: {tipo_ped} | {alerta_status} ({tempo_espera} min de espera)")
         print("-" * 50)
         
         # Lista os lanches e observações de montagem
         if hasattr(pedido, 'itens'):
             for item in pedido.itens:
-                nome_produto = item.produto.nome if hasattr(item, 'produto') and item.produto else f"Produto ID {item.produto_id}"
+                # Tenta pegar o nome do produto
+                nome_produto = "Item de Cardápio"
+                if hasattr(item, 'produto') and item.produto:
+                    nome_produto = getattr(item.produto, 'nome', f"Produto ID {item.produto_id}")
+                
                 print(f"  • {item.quantidade}x {nome_produto}")
-                if getattr(item, 'observacao', None):
-                    print(f"    ⚠️ OBS: {item.observacao}")
+                
+                obs = getattr(item, 'observacao', None)
+                if obs:
+                    print(f"    ⚠️ OBS: {obs}")
                 
         print("-" * 50)
     print("="*50 + "\n")
@@ -116,18 +115,6 @@ def atualizar_painel_visual_kds(db):
 # ==============================================================================
 if __name__ == "__main__":
     db_session = SessionLocal()
-    
     print("--- Cenário 1: Chapeiro olha para o monitor da cozinha ---")
     atualizar_painel_visual_kds(db_session)
-    
-    print("--- Cenário 2: Chapeiro assume o Pedido #1 ---")
-    avancar_status_kds(db_session, pedido_id=1)
-    
-    atualizar_painel_visual_kds(db_session)
-    
-    print("--- Cenário 3: Pedido #1 finalizado na chapa ---")
-    avancar_status_kds(db_session, pedido_id=1)
-    
-    atualizar_painel_visual_kds(db_session)
-    
     db_session.close()
