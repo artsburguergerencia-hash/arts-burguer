@@ -3117,34 +3117,32 @@ def cura_produtos(db: Session = Depends(get_db)):
 
     return {"status": "Banco Consertado", "logs": logs}
 
-@app.get("/api/cura-produtos")
-def cura_produtos(db: Session = Depends(get_db)):
+@app.get("/api/cura-produtos-bruta")
+def cura_produtos_bruta(db: Session = Depends(get_db)):
     from sqlalchemy import text
     logs = []
     
-    # 1. Converte a coluna 'ativo' de Número para Boolean
+    # 1. Arranca a coluna velha e recria a 'ativo' perfeitamente como Boolean
     try:
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN ativo DROP DEFAULT;"))
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN ativo TYPE boolean USING (ativo != 0);"))
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN ativo SET DEFAULT TRUE;"))
+        db.execute(text("ALTER TABLE produtos DROP COLUMN IF EXISTS ativo;"))
+        db.execute(text("ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT TRUE;"))
         db.commit()
-        logs.append("Coluna 'ativo' convertida para BOOLEAN com sucesso!")
+        logs.append("Coluna 'ativo' DESTRUÍDA e RECRIADA como BOOLEAN com sucesso!")
     except Exception as e:
         db.rollback()
-        logs.append(f"Ativo ignorado (já deve estar correto): {str(e)}")
+        logs.append(f"Erro no ativo: {str(e)}")
 
-    # 2. Converte a coluna 'participa_fidelidade' de Número para Boolean
+    # 2. Arranca a coluna velha e recria a 'participa_fidelidade' como Boolean
     try:
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN participa_fidelidade DROP DEFAULT;"))
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN participa_fidelidade TYPE boolean USING (participa_fidelidade != 0);"))
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN participa_fidelidade SET DEFAULT TRUE;"))
+        db.execute(text("ALTER TABLE produtos DROP COLUMN IF EXISTS participa_fidelidade;"))
+        db.execute(text("ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT TRUE;"))
         db.commit()
-        logs.append("Coluna 'participa_fidelidade' convertida para BOOLEAN com sucesso!")
+        logs.append("Coluna 'participa_fidelidade' DESTRUÍDA e RECRIADA como BOOLEAN com sucesso!")
     except Exception as e:
         db.rollback()
-        logs.append(f"Fidelidade ignorada (já deve estar correto): {str(e)}")
+        logs.append(f"Erro na fidelidade: {str(e)}")
 
-    return {"status": "Banco Consertado", "logs": logs}
+    return {"status": "Tabela de Produtos Consertada na Força Bruta!", "logs": logs}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
