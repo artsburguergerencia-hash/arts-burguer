@@ -3143,6 +3143,52 @@ def cura_produtos_bruta(db: Session = Depends(get_db)):
         logs.append(f"Erro na fidelidade: {str(e)}")
 
     return {"status": "Tabela de Produtos Consertada na Força Bruta!", "logs": logs}
+
+@app.get("/api/cura-checkout")
+def cura_checkout(db: Session = Depends(get_db)):
+    from sqlalchemy import text
+    logs = []
+    
+    # 1. Consertando os campos de Verdadeiro/Falso na tabela CLIENTES
+    try:
+        db.execute(text("ALTER TABLE clientes DROP COLUMN IF EXISTS bloqueado;"))
+        db.execute(text("ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"))
+        
+        db.execute(text("ALTER TABLE clientes DROP COLUMN IF EXISTS permite_fiado;"))
+        db.execute(text("ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;"))
+        db.commit()
+        logs.append("Tabela CLIENTES curada com sucesso!")
+    except Exception as e:
+        db.rollback()
+        logs.append(f"Erro em Clientes: {str(e)}")
+
+    # 2. Consertando os campos de Verdadeiro/Falso na tabela CONFIGURAÇÕES
+    try:
+        db.execute(text("ALTER TABLE configuracoes_loja DROP COLUMN IF EXISTS aceita_delivery;"))
+        db.execute(text("ALTER TABLE configuracoes_loja ADD COLUMN aceita_delivery BOOLEAN DEFAULT TRUE;"))
+        
+        db.execute(text("ALTER TABLE configuracoes_loja DROP COLUMN IF EXISTS aceita_retirada;"))
+        db.execute(text("ALTER TABLE configuracoes_loja ADD COLUMN aceita_retirada BOOLEAN DEFAULT TRUE;"))
+        
+        db.execute(text("ALTER TABLE configuracoes_loja DROP COLUMN IF EXISTS aceite_automatico;"))
+        db.execute(text("ALTER TABLE configuracoes_loja ADD COLUMN aceite_automatico BOOLEAN DEFAULT FALSE;"))
+        db.commit()
+        logs.append("Tabela CONFIGURACOES_LOJA curada com sucesso!")
+    except Exception as e:
+        db.rollback()
+        logs.append(f"Erro em Configurações: {str(e)}")
+
+    # 3. Consertando os Cupons (Por precaução)
+    try:
+        db.execute(text("ALTER TABLE cupons_desconto DROP COLUMN IF EXISTS ativo;"))
+        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN ativo BOOLEAN DEFAULT TRUE;"))
+        db.commit()
+        logs.append("Tabela CUPONS curada com sucesso!")
+    except Exception as e:
+        db.rollback()
+        logs.append(f"Erro em Cupons: {str(e)}")
+
+    return {"status": "Vacina do Checkout Aplicada!", "logs": logs}
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
