@@ -39,33 +39,37 @@
     <!-- CABEÇALHO DA LOJA -->
     <header class="glass fixed top-0 w-full z-30 transition-all duration-300">
         <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-3 truncate pr-2">
                 <div id="header-logo-container" class="w-10 h-10 bg-brand-500 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-500/40 border-2 border-slate-800 dark:border-slate-800 overflow-hidden shrink-0 transition-colors duration-300">
                     <span id="header-logo-letra">A</span>
                     <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
                 </div>
-                <div>
-                    <h1 id="nome-loja-header" class="font-black text-lg tracking-tight text-slate-800 dark:text-white leading-none">Art's Burguer</h1>
+                <div class="truncate">
+                    <h1 id="nome-loja-header" class="font-black text-lg tracking-tight text-slate-800 dark:text-white leading-none truncate">Art's Burguer</h1>
                     <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-500 dark:text-emerald-400 mt-1 flex items-center">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 mr-1.5 animate-pulse"></span> Aberto agora
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 mr-1.5 animate-pulse shrink-0"></span> Aberto agora
                     </p>
+                    <!-- INFOS DA LOJA (TELEFONE/HORÁRIO) ADICIONADAS AQUI -->
+                    <p id="info-loja-header" class="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 hidden truncate"></p>
                 </div>
             </div>
             
-            <div id="area-auth" class="flex items-center space-x-2">
-                <button id="btn-instalar-app" onclick="instalarApp()" class="hidden text-sm bg-brand-500 hover:bg-brand-600 px-4 py-2 rounded-full font-black transition-all flex items-center text-white shadow-lg shadow-brand-500/40 animate-pulse">
-                    <i class="ph-bold ph-download-simple mr-2 text-lg"></i> Instalar
+            <!-- BOTÕES RECALIBRADOS PARA CABER NO CELULAR -->
+            <div id="area-auth" class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+                <button id="btn-instalar-app" onclick="instalarApp()" class="hidden text-xs sm:text-sm bg-brand-500 hover:bg-brand-600 p-2 sm:px-4 sm:py-2 rounded-full font-black transition-all flex items-center text-white shadow-lg shadow-brand-500/40 animate-pulse">
+                    <i class="ph-bold ph-download-simple sm:mr-2 text-lg"></i> <span class="hidden sm:inline">Instalar</span>
                 </button>
                 
-                <button onclick="toggleTheme()" class="text-sm bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 px-3 py-2 rounded-full font-bold transition-colors flex items-center text-slate-600 dark:text-brand-400 border border-slate-300 dark:border-white/5 shadow-sm">
+                <button onclick="toggleTheme()" class="text-sm bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 p-2 sm:px-3 sm:py-2 rounded-full font-bold transition-colors flex items-center text-slate-600 dark:text-brand-400 border border-slate-300 dark:border-white/5 shadow-sm">
                     <i id="theme-icon" class="ph-bold ph-moon text-lg"></i>
                 </button>
 
-                <button onclick="abrirModalRastreio()" class="text-sm bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 px-3 py-2 rounded-full font-bold transition-colors flex items-center text-slate-600 dark:text-brand-400 border border-slate-300 dark:border-white/5">
-                    <i class="ph-bold ph-crosshair mr-1 text-lg"></i>
+                <button onclick="abrirModalRastreio()" class="text-sm bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 p-2 sm:px-3 sm:py-2 rounded-full font-bold transition-colors flex items-center text-slate-600 dark:text-brand-400 border border-slate-300 dark:border-white/5">
+                    <i class="ph-bold ph-crosshair text-lg"></i>
                 </button>
-                <button onclick="abrirModalAuth()" class="text-sm bg-brand-50 dark:bg-white/10 hover:bg-brand-100 dark:hover:bg-white/20 px-4 py-2 rounded-full font-bold transition-colors flex items-center text-brand-600 dark:text-white border border-brand-200 dark:border-white/5">
-                    <i class="ph-bold ph-user mr-2"></i> Entrar
+                
+                <button onclick="abrirModalAuth()" class="text-xs sm:text-sm bg-brand-50 dark:bg-white/10 hover:bg-brand-100 dark:hover:bg-white/20 px-3 py-2 sm:px-4 sm:py-2 rounded-full font-bold transition-colors flex items-center text-brand-600 dark:text-white border border-brand-200 dark:border-white/5">
+                    <i class="ph-bold ph-user mr-1.5"></i> Entrar
                 </button>
             </div>
         </div>
@@ -165,7 +169,7 @@
         </div>
     </div>
 
-    <!-- 🚨 MODAL DE EDIÇÃO DE DADOS DO CLIENTE (COM TELEFONE INJETADO) 🚨 -->
+    <!-- MODAL DE EDIÇÃO DE DADOS DO CLIENTE -->
     <div id="modal-editar-perfil" class="fixed inset-0 bg-slate-900/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-[2rem] p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto no-scrollbar">
             <button onclick="fecharModalEditarPerfil()" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
@@ -184,10 +188,7 @@
                 </div>
 
                 <input type="text" id="edit-perf-nome" placeholder="Nome Completo" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
-                
-                <!-- 🚨 A CAIXINHA DO TELEFONE ADICIONADA AQUI 🚨 -->
                 <input type="tel" id="edit-perf-tel" placeholder="WhatsApp (Apenas números)" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
-
                 <input type="password" id="edit-perf-senha" placeholder="Nova Senha (Opcional)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
 
                 <div class="flex space-x-3 pt-2">
@@ -304,12 +305,13 @@
                 <div class="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
                     <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center"><i class="ph-fill ph-moped mr-2 text-brand-500 text-lg"></i> Logística</h3>
                     
+                    <!-- BOTÕES DE ENTREGA (COM ID PARA CONTROLE DE TRAVA) -->
                     <div class="flex space-x-2 mb-4">
-                        <label class="flex-1 cursor-pointer">
+                        <label id="label-delivery" class="flex-1 cursor-pointer">
                             <input type="radio" name="tipo_entrega" value="entrega" checked onchange="toggleEndereco(true)" class="peer sr-only">
                             <div class="text-center py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 peer-checked:bg-brand-50 dark:peer-checked:bg-brand-500/20 peer-checked:text-brand-600 dark:peer-checked:text-brand-400 peer-checked:border-brand-200 dark:peer-checked:border-brand-500/40 transition-colors"><i class="ph-bold ph-moped text-lg mb-1 block"></i> Delivery</div>
                         </label>
-                        <label class="flex-1 cursor-pointer">
+                        <label id="label-retirada" class="flex-1 cursor-pointer">
                             <input type="radio" name="tipo_entrega" value="retirada" onchange="toggleEndereco(false)" class="peer sr-only">
                             <div class="text-center py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 peer-checked:bg-brand-50 dark:peer-checked:bg-brand-500/20 peer-checked:text-brand-600 dark:peer-checked:text-brand-400 peer-checked:border-brand-200 dark:peer-checked:border-brand-500/40 transition-colors"><i class="ph-bold ph-storefront text-lg mb-1 block"></i> Retirar Local</div>
                         </label>
@@ -401,7 +403,6 @@
     <!-- MOTOR JAVASCRIPT PRINCIPAL -->
     <!-- ============================================== -->
     <script>
-        // SCRIPT DE MODO ESCURO RESTAURADO E BLINDADO
         function toggleTheme() {
             const icon = document.getElementById('theme-icon');
             if (document.documentElement.classList.contains('dark')) {
@@ -468,7 +469,7 @@
                     document.getElementById('edit-perf-end').value = d.endereco || "";
                     document.getElementById('edit-perf-num').value = d.numero || "";
                     document.getElementById('edit-perf-comp').value = d.complemento || "";
-                    document.getElementById('edit-perf-senha').value = ""; // Sempre vem vazio por segurança
+                    document.getElementById('edit-perf-senha').value = "";
                     
                     const nomeSeguro = d.nome || "Cliente";
                     const iniciais = nomeSeguro.substring(0, 2).toUpperCase();
@@ -589,6 +590,7 @@
             setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 200);
         }
 
+        // 🚨 CONFIGURAÇÕES E DADOS DA LOJA (CORRIGIDO PARA EXIBIR TELEFONE E TRAVAR BOTÕES)
         async function carregarConfiguracoes() {
             try {
                 const res = await fetch('/api/gestao/configuracoes'); 
@@ -598,8 +600,14 @@
                     const nomeEl = document.getElementById('nome-loja-header'); 
                     if(nomeEl) nomeEl.innerText = configLoja.nome_empresa; 
                 }
+
+                // INJETA O TELEFONE E O HORÁRIO NO CABEÇALHO
+                if(configLoja.telefone || configLoja.horario_funcionamento) {
+                    const infoEl = document.getElementById('info-loja-header');
+                    infoEl.innerText = `${configLoja.telefone ? '📞 ' + configLoja.telefone : ''} ${configLoja.horario_funcionamento ? ' ⏰ ' + configLoja.horario_funcionamento : ''}`;
+                    infoEl.classList.remove('hidden');
+                }
                 
-                // 🚨 BLINDAGEM DA LOGO (Evita que o JS quebre se o campo for null) 🚨
                 if(configLoja.logo_url && String(configLoja.logo_url).trim() !== '' && configLoja.logo_url !== 'None') {
                     const letra = document.getElementById('header-logo-letra'); 
                     const img = document.getElementById('header-logo-img'); 
@@ -614,6 +622,18 @@
                         container.classList.remove('bg-brand-500', 'border-slate-800', 'dark:border-slate-800'); 
                         container.classList.add('bg-white', 'border-slate-200', 'dark:border-slate-700');
                     }
+                }
+
+                // TRAVAS DO BOTÃO DE DELIVERY E RETIRADA NO CARRINHO
+                if(configLoja.aceita_retirada === false) {
+                    document.getElementById('label-retirada').style.display = 'none';
+                    document.querySelector('input[value="entrega"]').checked = true;
+                    toggleEndereco(true);
+                }
+                if(configLoja.aceita_delivery === false) {
+                    document.getElementById('label-delivery').style.display = 'none';
+                    document.querySelector('input[value="retirada"]').checked = true;
+                    toggleEndereco(false);
                 }
 
                 const pgs = configLoja.formas_pagamento ? configLoja.formas_pagamento.split(',') : ['Dinheiro Físico', 'Pix', 'Cartão'];
@@ -695,7 +715,6 @@
             if (dados) {
                 clienteLogado = JSON.parse(dados);
                 
-                // 🚨 BLINDAGEM CONTRA NOME EM BRANCO 🚨
                 const nomeSeguro = clienteLogado.nome || "Visitante";
                 const fotoAvatar = clienteLogado.foto || "";
                 let htmlAvatar = "";
@@ -708,15 +727,15 @@
                 }
 
                 document.getElementById('area-auth').innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <button onclick="toggleTheme()" class="text-sm bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 px-3 py-2 rounded-full font-bold transition-colors flex items-center text-slate-600 dark:text-brand-400 border border-slate-300 dark:border-white/5 shadow-sm">
+                    <div class="flex items-center space-x-1.5 sm:space-x-2">
+                        <button onclick="toggleTheme()" class="text-sm bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 p-2 sm:px-3 sm:py-2 rounded-full font-bold transition-colors flex items-center text-slate-600 dark:text-brand-400 border border-slate-300 dark:border-white/5 shadow-sm">
                             <i id="theme-icon" class="ph-bold ph-moon text-lg"></i>
                         </button>
-                        <button onclick="abrirModalRastreio()" class="text-sm bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 px-3 py-2 rounded-full font-bold transition-colors flex items-center text-slate-600 dark:text-brand-400 border border-slate-300 dark:border-white/5">
-                            <i class="ph-bold ph-crosshair mr-1 text-lg"></i>
+                        <button onclick="abrirModalRastreio()" class="text-sm bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 p-2 sm:px-3 sm:py-2 rounded-full font-bold transition-colors flex items-center text-slate-600 dark:text-brand-400 border border-slate-300 dark:border-white/5">
+                            <i class="ph-bold ph-crosshair text-lg"></i>
                         </button>
-                        <div class="flex items-center cursor-pointer bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 py-1.5 px-2 rounded-full transition-colors shadow-sm" onclick="abrirModalPerfil()">
-                            <div class="text-right mr-3 hidden sm:block pl-2">
+                        <div class="flex items-center cursor-pointer bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 py-1 sm:py-1.5 px-1 sm:px-2 rounded-full transition-colors shadow-sm" onclick="abrirModalPerfil()">
+                            <div class="text-right mr-2 hidden sm:block pl-2">
                                 <p class="text-[9px] text-brand-500 dark:text-brand-400 font-bold uppercase tracking-widest">Cliente VIP</p>
                                 <p class="text-xs font-black leading-none text-slate-800 dark:text-white">${nomeSeguro.split(' ')[0]}</p>
                             </div>
@@ -745,65 +764,6 @@
             }
         }
 
-        async function abrirModalPerfil() {
-            const nomeSeguro = clienteLogado.nome || "Visitante";
-            document.getElementById('vip-nome').innerText = nomeSeguro;
-            document.getElementById('vip-tel').innerText = clienteLogado.telefone || "";
-            
-            if (clienteLogado.foto && clienteLogado.foto.trim() !== "") {
-                document.getElementById('vip-foto').src = clienteLogado.foto;
-                document.getElementById('vip-foto').classList.remove('hidden');
-                document.getElementById('vip-iniciais').classList.add('hidden');
-            } else {
-                document.getElementById('vip-foto').classList.add('hidden');
-                document.getElementById('vip-iniciais').innerText = nomeSeguro.substring(0, 2).toUpperCase();
-                document.getElementById('vip-iniciais').classList.remove('hidden');
-            }
-            
-            document.getElementById('vip-pontos').innerText = clienteLogado.pontos || 0;
-            const cashbackVal = parseFloat(clienteLogado.cashback) || 0;
-            document.getElementById('vip-cashback').innerText = "R$ " + cashbackVal.toFixed(2).replace('.', ',');
-            
-            const listaHistorico = document.getElementById('lista-historico');
-            listaHistorico.innerHTML = '<p class="text-center text-slate-500 text-sm py-4"><i class="ph-bold ph-spinner animate-spin text-2xl"></i></p>';
-            
-            document.getElementById('modal-perfil').classList.remove('hidden');
-            document.getElementById('modal-perfil').classList.add('flex');
-
-            try {
-                const res = await fetch(`/api/cliente/${clienteLogado.id}/pedidos`);
-                const historico = await res.json();
-                
-                if(historico.length === 0) {
-                    listaHistorico.innerHTML = '<p class="text-center text-slate-500 text-sm py-4">Você ainda não fez nenhum pedido.</p>';
-                    return;
-                }
-                
-                listaHistorico.innerHTML = historico.map(p => {
-                    const statusCores = {
-                        "RECEBIDO": "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700",
-                        "EM_PREPARO": "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30",
-                        "PRONTO": "bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30",
-                        "SAIU_PARA_ENTREGA": "bg-purple-50 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/30",
-                        "ENTREGUE": "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
-                        "CANCELADO": "bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/30"
-                    };
-                    const cor = statusCores[p.status] || "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700";
-                    return `
-                        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="font-black text-slate-800 dark:text-white text-sm">Pedido #${p.id}</span>
-                                <span class="text-[9px] font-black tracking-widest px-2 py-1 border rounded uppercase ${cor}">${p.status.replace(/_/g, ' ')}</span>
-                            </div>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-3 font-medium">${p.itens_resumo}</p>
-                            <p class="font-black text-brand-500 dark:text-brand-400 text-sm">R$ ${p.total.toFixed(2).replace('.', ',')}</p>
-                        </div>
-                    `;
-                }).join('');
-            } catch(e) { listaHistorico.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Erro ao carregar histórico.</p>'; }
-        }
-
-        function fecharModalPerfil() { document.getElementById('modal-perfil').classList.add('hidden'); document.getElementById('modal-perfil').classList.remove('flex'); }
         function fazerLogout() { localStorage.removeItem('arts_cliente'); window.location.reload(); }
 
         function abrirModalAuth() { document.getElementById('modal-auth').classList.remove('hidden'); document.getElementById('modal-auth').classList.add('flex'); }
@@ -1020,28 +980,42 @@
                     </div>
                 </div>
             `).join('');
+            
+            // 🚨 INJEÇÃO DO ENDEREÇO DO CLIENTE LOGADO 🚨
+            if(clienteLogado && document.getElementById('ped-endereco').value === "") {
+                document.getElementById('ped-endereco').value = clienteLogado.endereco_completo || "";
+            }
+
             document.getElementById('modal-carrinho').classList.replace('hidden', 'flex');
         }
 
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.replace('flex', 'hidden'); }
 
+        // 🚨 CHECKOUT BLINDADO CONTRA ERRO DE JSON DA NUVEM 🚨
         async function enviarPedidoNuvem(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-enviar-pedido'); const txtOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i>'; btn.disabled = true;
 
             let nome, tel, end, cliente_id, cpf;
-            const isDelivery = document.querySelector('input[name="tipo_entrega"]:checked').value === 'entrega';
+            const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked');
+            const isDelivery = radioEntrega ? radioEntrega.value === 'entrega' : false;
+            
             const selBairro = document.getElementById('ped-bairro');
             const nomeBairro = (isDelivery && selBairro && selBairro.value !== "0") ? selBairro.options[selBairro.selectedIndex].text : "";
 
             if (clienteLogado) {
-                nome = clienteLogado.nome; tel = clienteLogado.telefone; end = isDelivery ? (document.getElementById('ped-endereco').value || clienteLogado.endereco_completo) : "Retirada Balcão";
-                cliente_id = clienteLogado.id; cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
+                nome = clienteLogado.nome; 
+                tel = clienteLogado.telefone; 
+                end = isDelivery ? (document.getElementById('ped-endereco').value || clienteLogado.endereco_completo) : "Retirada Balcão";
+                cliente_id = clienteLogado.id; 
+                cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
             } else {
-                nome = document.getElementById('guest-nome').value.trim(); tel = document.getElementById('guest-tel').value.trim();
+                nome = document.getElementById('guest-nome').value.trim(); 
+                tel = document.getElementById('guest-tel').value.trim();
                 end = isDelivery ? document.getElementById('ped-endereco').value.trim() : "Retirada Balcão";
-                cpf = document.getElementById('guest-cpf').value.replace(/\D/g, ''); cliente_id = null;
+                cpf = document.getElementById('guest-cpf').value.replace(/\D/g, ''); 
+                cliente_id = null;
                 if (!nome || !tel || (isDelivery && !end)) { alert("⚠️ Preencha Nome, WhatsApp e Endereço."); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
             }
 
@@ -1059,7 +1033,17 @@
             if(cupomAplicado) itensFinais[0].observacao += ` | 🎫 Cupom Usado: ${cupomAplicado} (-R$ ${valorDescontoCupom.toFixed(2)})`;
 
             const descontoFinalEnviado = valorDescontoCupom - valorFreteAtual;
-            const payload = { cliente_id: cliente_id, nome_cliente: nome, telefone_cliente: tel, endereco_cliente: end, cpf: cpf, itens: itensFinais, usar_saldo_cashback: descontoFinalEnviado };
+            
+            // Garantindo que o CPF não vá como string vazia para o Python
+            const payload = { 
+                cliente_id: cliente_id, 
+                nome_cliente: nome, 
+                telefone_cliente: tel, 
+                endereco_cliente: end, 
+                cpf: cpf || null, 
+                itens: itensFinais, 
+                usar_saldo_cashback: descontoFinalEnviado 
+            };
 
             if (tipoPgto === 'credito') {
                 const numCartao = document.getElementById('cc-num').value.replace(/\D/g, ''); const nomeCartao = document.getElementById('cc-nome').value;
@@ -1084,16 +1068,47 @@
             }
 
             try {
-                const res = await fetch(`/api/pedidos/online?forma_pagamento=${tipoPgto}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                const data = await res.json();
+                const res = await fetch(`/api/pedidos/online?forma_pagamento=${tipoPgto}`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                });
                 
+                // Se res.ok for true, o pedido FOI CADASTRADO NO BANCO!
                 if (res.ok) {
-                    if (data.status === "checkout_transparente") { prompt("✅ SEU PIX FOI GERADO!\n\nCopie o código abaixo e pague no app do banco:", data.copia_e_cola); } 
-                    else if (tipoPgto === 'credito') { alert("✅ PAGAMENTO APROVADO!\nSeu pedido foi para a cozinha."); } 
-                    else { alert("✅ Pedido enviado para a cozinha com sucesso!"); }
+                    let data = {};
+                    try {
+                        data = await res.json();
+                    } catch(jsonErr) {
+                        // Se o Python não devolveu um JSON válido, mas o status foi 200, a gente prossegue mesmo assim
+                        console.warn("Aviso: Resposta JSON não pôde ser lida, mas o pedido passou.");
+                    }
+
+                    if (data.status === "checkout_transparente") { 
+                        prompt("✅ SEU PIX FOI GERADO!\n\nCopie o código abaixo e pague no app do banco:", data.copia_e_cola); 
+                    } 
+                    else if (tipoPgto === 'credito') { 
+                        alert("✅ PAGAMENTO APROVADO!\nSeu pedido foi para a cozinha."); 
+                    } 
+                    else { 
+                        alert("✅ Pedido enviado para a cozinha com sucesso!"); 
+                    }
+                    
+                    // Limpa tudo e recarrega a página
                     window.location.reload();
-                } else { alert("Erro: " + (data.detail || "Pagamento recusado.")); btn.disabled = false; btn.innerHTML = txtOriginal; }
-            } catch(e) { alert("Falha de conexão com a loja."); btn.disabled = false; btn.innerHTML = txtOriginal; }
+                } else { 
+                    let errData = {};
+                    try { errData = await res.json(); } catch(e) {}
+                    alert("⚠️ Pedido não autorizado: " + (errData.detail || "Consulte a loja.")); 
+                    btn.disabled = false; 
+                    btn.innerHTML = txtOriginal; 
+                }
+            } catch(e) { 
+                console.error(e);
+                alert("Ocorreu um erro de rede ao finalizar. Verifique se o pedido apareceu em 'Meus Pedidos' ou chame no WhatsApp."); 
+                btn.disabled = false; 
+                btn.innerHTML = txtOriginal; 
+            }
         }
     </script>
 </body>
