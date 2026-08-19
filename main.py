@@ -563,43 +563,57 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         obs_atual = itens_carrinho[0]["observacao"]
         itens_carrinho[0]["observacao"] = f"Endereço: {pedido_web.endereco_cliente} | {obs_atual}"
 
-    novo_pedido = registrar_venda_pdv(
-        db=db, 
-        tipo=TipoPedido.DELIVERY, 
-        itens_carrinho=itens_carrinho, 
-        cliente_id=cliente.id
-    )
+    try:
+        novo_pedido = registrar_venda_pdv(
+            db=db, 
+            tipo=TipoPedido.DELIVERY, 
+            itens_carrinho=itens_carrinho, 
+            cliente_id=cliente.id
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao registrar: {str(e)}")
 
     novo_pedido_real = db.query(PedidoModel).filter(PedidoModel.id == novo_pedido.id).first()
     novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
     novo_pedido_real.origem = "SITE (Online)"
     novo_pedido_real.data_pedido = datetime.utcnow().date()
 
-    for item in itens_carrinho:
-        processar_baixa_estoque(
-            db, 
-            produto_id=item["produto_id"], 
-            quantidade_vendida=item["quantidade"]
-        )
+    try:
+        for item in itens_carrinho:
+            processar_baixa_estoque(db, produto_id=item["produto_id"], quantidade_vendida=item["quantidade"])
+    except Exception as e:
+        print(f"Erro ao baixar estoque: {e}") # Não trava o pedido se falhar o estoque
     
+    # Validação segura do Aceite Automático
+    aceite_auto = config.aceite_automatico if config else False
+
     if forma_pagamento in ["pix", "credito", "vr"]:
         novo_pedido_real.status = "AGUARDANDO_PAGAMENTO"
         db.commit()
     else:
-        novo_pedido_real.status = "EM_PREPARO" if getattr(config, 'aceite_automatico', False) else "RECEBIDO"
+        novo_pedido_real.status = "EM_PREPARO" if aceite_auto else "RECEBIDO"
         db.commit()
-        notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
+        # 🚨 BLINDAGEM DO WHATSAPP AQUI 🚨
+        try:
+            notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
+        except Exception as e:
+            print(f"WhatsApp ignorado: {e}")
 
     if forma_pagamento == "pix":
         if not pedido_web.cpf:
             raise HTTPException(status_code=400, detail="CPF é obrigatório para gerar o Pix.")
         
-        resultado_pix = criar_pagamento_pix_mp(
-            novo_pedido_real.id, 
-            novo_pedido_real.total_pago, 
-            cliente.nome, 
-            pedido_web.cpf
-        )
+        try:
+            resultado_pix = criar_pagamento_pix_mp(
+                novo_pedido_real.id, 
+                novo_pedido_real.total_pago, 
+                cliente.nome, 
+                pedido_web.cpf
+            )
+        except Exception as e:
+            novo_pedido_real.status = "CANCELADO"
+            db.commit()
+            raise HTTPException(status_code=400, detail=f"Erro MP: {str(e)}")
         
         if type(resultado_pix) is dict and "qr_code" in resultado_pix:
             return {"status": "checkout_transparente", "copia_e_cola": resultado_pix["qr_code"]}
@@ -612,20 +626,29 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         if not pedido_web.token_cartao or not pedido_web.cpf:
             raise HTTPException(status_code=400, detail="Faltam dados do cartão ou CPF para processar o pagamento.")
             
-        resposta_pagamento = criar_pagamento_cartao_mp(
-            pedido_id=novo_pedido_real.id, 
-            valor_total=novo_pedido_real.total_pago, 
-            token_cartao=pedido_web.token_cartao, 
-            email_cliente=f"cliente{cliente.id}@artsburguer.com",
-            payment_method_id=pedido_web.payment_method_id, 
-            parcelas=pedido_web.parcelas, 
-            cpf_cliente=pedido_web.cpf
-        )
+        try:
+            resposta_pagamento = criar_pagamento_cartao_mp(
+                pedido_id=novo_pedido_real.id, 
+                valor_total=novo_pedido_real.total_pago, 
+                token_cartao=pedido_web.token_cartao, 
+                email_cliente=f"cliente{cliente.id}@artsburguer.com",
+                payment_method_id=pedido_web.payment_method_id, 
+                parcelas=pedido_web.parcelas, 
+                cpf_cliente=pedido_web.cpf
+            )
+        except Exception as e:
+            novo_pedido_real.status = "CANCELADO"
+            db.commit()
+            raise HTTPException(status_code=400, detail=f"O banco emissor recusou o pagamento.")
         
         if resposta_pagamento and resposta_pagamento.get("status") in ["approved", "in_process"]:
-            novo_pedido_real.status = "EM_PREPARO" if getattr(config, 'aceite_automatico', False) else "RECEBIDO"
+            novo_pedido_real.status = "EM_PREPARO" if aceite_auto else "RECEBIDO"
             db.commit()
-            notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
+            # 🚨 BLINDAGEM DO WHATSAPP AQUI TAMBÉM 🚨
+            try:
+                notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
+            except Exception:
+                pass
             return {"status": "sucesso", "mensagem": "Pagamento aprovado!"}
         else:
             novo_pedido_real.status = "CANCELADO"
