@@ -540,6 +540,7 @@ async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
 @app.post("/api/pedidos/online")
 def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
     from fastapi import HTTPException
+    import traceback
     
     try:
         config = db.query(ConfiguracaoLojaModel).first()
@@ -568,13 +569,16 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
                 obs_atual = ""
             itens_carrinho[0]["observacao"] = f"Endereço: {pedido_web.endereco_cliente} | {obs_atual}"
 
-        # 1. REGISTRA O PEDIDO E SALVA NO BANCO
-        novo_pedido = registrar_venda_pdv(
-            db=db, 
-            tipo=TipoPedido.DELIVERY, 
-            itens_carrinho=itens_carrinho, 
-            cliente_id=cliente.id
-        )
+        # 1. REGISTRA O PEDIDO NO PDV
+        try:
+            novo_pedido = registrar_venda_pdv(
+                db=db, 
+                tipo=TipoPedido.DELIVERY, 
+                itens_carrinho=itens_carrinho, 
+                cliente_id=cliente.id
+            )
+        except Exception as e_pdv:
+            raise HTTPException(status_code=400, detail=f"Erro ao salvar pedido (PDV): {str(e_pdv)}")
 
         p_id = getattr(novo_pedido, "id", None)
         if not p_id and type(novo_pedido) is dict:
@@ -583,11 +587,18 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         novo_pedido_real = db.query(PedidoModel).filter(PedidoModel.id == p_id).first()
         
         if novo_pedido_real:
-            novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
-            
-            # 🚨 CORREÇÃO: Só injeta a origem se a coluna existir (removemos a data_pedido que causava o erro!)
+            # 🚨 BLINDAGEM MÁXIMA DA SENHA DIÁRIA (A causa do problema!) 🚨
+            try:
+                novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
+            except Exception as e_senha:
+                print(f"Erro na senha diária: {e_senha}", flush=True)
+                # O banco não tem data_pedido, então usamos o ID como Senha!
+                novo_pedido_real.senha_diaria = str(novo_pedido_real.id).zfill(3)
+
             if hasattr(novo_pedido_real, 'origem'):
                 novo_pedido_real.origem = "SITE (Online)"
+            
+            db.commit()
 
         # 2. BLINDAGEM NO ESTOQUE
         try:
