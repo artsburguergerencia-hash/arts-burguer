@@ -9,10 +9,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script>
-        // 1. BLINDAGEM DE ACESSO (Corrigida)
+        // 1. BLINDAGEM DE ACESSO
         const cargoAtual = localStorage.getItem('funcionario_cargo');
-        if (!cargoAtual) {
-            alert("⛔ Faça o login para acessar o sistema.");
+        if (!cargoAtual || cargoAtual !== '1') {
+            alert("⛔ Acesso Negado! Área restrita para Administradores.");
             window.location.replace('/login');
         }
 
