@@ -2,10 +2,19 @@ import os
 import requests
 import uuid # <-- A biblioteca que vai gerar a chave anti-duplicidade exigida pelo MP!
 
+# 🚨 COLOQUE SEU ACCESS TOKEN REAL AQUI DENTRO DAS ASPAS 🚨
+MEU_TOKEN_MP = "APP_USR-3588115293297057-071715-f7c8a8cfe1c50ab78d398101182a723f-3548282389"
+
+def get_token():
+    """Tenta pegar do servidor. Se falhar, usa a chave fixa acima."""
+    token_env = os.getenv("TOKEN_MERCADOPAGO")
+    return token_env if token_env else MEU_TOKEN_MP
+
+
 # === 1. A FUNÇÃO DO PIX ===
 def criar_pagamento_pix_mp(pedido_id, valor, nome, cpf):
-    token = os.getenv("TOKEN_MERCADOPAGO")
-    if not token:
+    token = get_token()
+    if not token or token == "APP_USR-COLE-SEU-TOKEN-AQUI":
         return {"erro": "Token do Mercado Pago não encontrado no servidor."}
 
     # A MÁGICA ESTÁ AQUI: Adicionando o X-Idempotency-Key
@@ -49,7 +58,7 @@ def criar_pagamento_pix_mp(pedido_id, valor, nome, cpf):
 
 # === 2. A FUNÇÃO DO LINK DE PAGAMENTO (Se você ainda usar) ===
 def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
-    token = os.getenv("TOKEN_MERCADOPAGO")
+    token = get_token()
     headers = {
         "Authorization": f"Bearer {token}", 
         "Content-Type": "application/json"
@@ -86,7 +95,7 @@ def criar_link_pagamento_mp(pedido_id, valor_total, nome_cliente):
 
 # === 3. A FUNÇÃO DO CHECKOUT TRANSPARENTE (Cartão direto no site) ===
 def criar_pagamento_cartao_mp(pedido_id, valor_total, token_cartao, email_cliente, payment_method_id, parcelas, cpf_cliente):
-    token_mp = os.getenv("TOKEN_MERCADOPAGO")
+    token_mp = get_token()
     
     # A MÁGICA ESTÁ AQUI TAMBÉM: Protegendo o pagamento de cartão
     headers = {
