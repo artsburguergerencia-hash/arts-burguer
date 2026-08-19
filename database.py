@@ -14,7 +14,9 @@ if DATABASE_URL.startswith("postgres://"):
 
 engine = create_engine(
     DATABASE_URL, 
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
+    pool_pre_ping=True,      # Testa se a conexão está viva antes de usar (Evita o erro SSL closed)
+    pool_recycle=1800        # Recicla as conexões a cada 30 minutos para mantê-las sempre frescas
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
