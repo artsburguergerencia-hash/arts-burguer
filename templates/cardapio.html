@@ -51,13 +51,12 @@
                     <p id="status-loja-header" class="text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center text-slate-400">
                         <span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5 shrink-0" id="status-dot"></span> <span id="status-text">Carregando...</span>
                     </p>
+                    <p id="info-loja-header" class="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 hidden truncate"></p>
                 </div>
             </div>
             
-            <!-- BOTÕES RECALIBRADOS PARA CABER NO CELULAR -->
             <div id="area-auth" class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-                
-                <!-- BOTÃO INSTALAR FORÇADO -->
+                <!-- BOTÃO INSTALAR SEMPRE VISÍVEL -->
                 <button id="btn-instalar-app" onclick="instalarApp()" class="text-xs sm:text-sm bg-brand-500 hover:bg-brand-600 p-2 sm:px-4 sm:py-2 rounded-full font-black transition-all flex items-center text-white shadow-lg shadow-brand-500/40 animate-pulse" title="Instalar App">
                     <i class="ph-bold ph-download-simple sm:mr-2 text-lg"></i> <span class="hidden sm:inline">Instalar</span>
                 </button>
@@ -114,7 +113,7 @@
         </button>
     </div>
 
-    <!-- MODAL DE INFORMAÇÕES DA LOJA (HORÁRIO E CONTATO) -->
+    <!-- MODAL DE INFORMAÇÕES DA LOJA -->
     <div id="modal-info-loja" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4" onclick="document.getElementById('modal-info-loja').classList.replace('flex','hidden')">
         <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative text-center" onclick="event.stopPropagation()">
             <button onclick="document.getElementById('modal-info-loja').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
@@ -123,11 +122,11 @@
             <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-500 dark:text-emerald-400 mb-6" id="info-modal-status-text">Calculando status...</p>
             
             <div class="space-y-4 text-left border-t border-slate-200 dark:border-slate-800 pt-6">
-                <div class="flex items-center text-slate-600 dark:text-slate-300">
+                <div class="flex items-start text-slate-600 dark:text-slate-300">
                     <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mr-4 shrink-0"><i class="ph-bold ph-clock text-xl"></i></div>
                     <div>
                         <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Horário de Funcionamento</p>
-                        <p class="text-sm font-medium" id="info-modal-horario">Não informado</p>
+                        <p class="text-sm font-medium leading-relaxed" id="info-modal-horario">Não informado</p>
                     </div>
                 </div>
                 <div class="flex items-center text-slate-600 dark:text-slate-300">
@@ -340,7 +339,6 @@
                 <div class="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
                     <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center"><i class="ph-fill ph-moped mr-2 text-brand-500 text-lg"></i> Logística</h3>
                     
-                    <!-- BOTÕES DE ENTREGA -->
                     <div class="flex space-x-2 mb-4">
                         <label id="label-delivery" class="flex-1 cursor-pointer">
                             <input type="radio" name="tipo_entrega" value="entrega" checked onchange="toggleEndereco(true)" class="peer sr-only">
@@ -433,7 +431,6 @@
         </div>
     </div>
 
-
     <!-- ============================================== -->
     <!-- MOTOR JAVASCRIPT PRINCIPAL -->
     <!-- ============================================== -->
@@ -468,9 +465,6 @@
             carregarTaxasEntrega(); 
         });
 
-        // ==========================
-        // SISTEMA DE EDIÇÃO DE PERFIL E FOTO
-        // ==========================
         function fecharModalEditarPerfil() {
             document.getElementById('modal-editar-perfil').classList.add('hidden');
             document.getElementById('modal-editar-perfil').classList.remove('flex');
@@ -571,16 +565,13 @@
                 navigator.serviceWorker.register('/sw.js').then(reg => { console.log('App Registrado!'); }).catch(err => console.log('Erro no App', err));
             });
         }
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); eventoInstalacao = e; document.getElementById('btn-instalar-app').classList.remove('hidden'); });
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); eventoInstalacao = e; });
         
         function instalarApp() { 
             if (eventoInstalacao) { 
                 eventoInstalacao.prompt(); 
-                eventoInstalacao.userChoice.then((choice) => { 
-                    if (choice.outcome === 'accepted') document.getElementById('btn-instalar-app').classList.add('hidden'); 
-                }); 
             } else {
-                alert("Para instalar o nosso App, abra o menu do seu navegador (três pontinhos) e toque na opção 'Adicionar à Tela Inicial'.");
+                alert("Para instalar o nosso App, abra o menu do seu navegador (os 3 pontinhos ou botão de Compartilhar) e toque em 'Adicionar à Tela Inicial'.");
             }
         }
 
@@ -646,39 +637,63 @@
             const statusText = document.getElementById('status-text');
             const statusTextModal = document.getElementById('info-modal-status-text');
             
-            let aberto = true; // Por padrão deixa aberto se não tiver horário configurado
+            let aberto = true; 
+            
             if(horarioStr && horarioStr.trim() !== "") {
-                // Tenta encontrar dois números na frase (ex: "18h às 23h")
-                const match = horarioStr.match(/(\d{1,2})h.*?(\d{1,2})h/i);
-                if(match) {
-                    const hInicio = parseInt(match[1]);
-                    const hFim = parseInt(match[2]);
-                    const agora = new Date().getHours();
-                    if(hInicio < hFim) {
-                        aberto = (agora >= hInicio && agora < hFim);
-                    } else {
-                        // Passou da meia noite (Ex: 18h as 02h)
-                        aberto = (agora >= hInicio || agora < hFim);
+                try {
+                    const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                    const dataAtual = new Date();
+                    const diaAtualNome = diasSemana[dataAtual.getDay()]; 
+                    
+                    const regexDia = new RegExp(diaAtualNome + "\\s*:\\s*([^,]*)", "i");
+                    const matchDia = horarioStr.match(regexDia);
+                    
+                    if (matchDia && matchDia[1]) {
+                        const horarioHoje = matchDia[1].trim().toLowerCase();
+                        if (horarioHoje.includes('fechado')) {
+                            aberto = false;
+                        } else {
+                            const times = horarioHoje.match(/(\d{1,2})(?::(\d{2}))?/g);
+                            if (times && times.length >= 2) {
+                                let hInicio = parseInt(times[0].split(':')[0]);
+                                let mInicio = times[0].includes(':') ? parseInt(times[0].split(':')[1]) : 0;
+                                let hFim = parseInt(times[1].split(':')[0]);
+                                let mFim = times[1].includes(':') ? parseInt(times[1].split(':')[1]) : 0;
+                                
+                                const minutosAgora = dataAtual.getHours() * 60 + dataAtual.getMinutes();
+                                const minutosInicio = hInicio * 60 + mInicio;
+                                const minutosFim = hFim * 60 + mFim;
+                                
+                                if (minutosInicio < minutosFim) {
+                                    aberto = (minutosAgora >= minutosInicio && minutosAgora <= minutosFim);
+                                } else {
+                                    aberto = (minutosAgora >= minutosInicio || minutosAgora <= minutosFim);
+                                }
+                            }
+                        }
                     }
-                }
+                } catch(e) { console.error("Erro ao fazer parse do horário", e); }
             }
 
             if(aberto) {
                 statusDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 mr-1.5 animate-pulse shrink-0";
                 statusText.innerText = "Aberto agora";
                 statusText.className = "text-emerald-500 dark:text-emerald-400";
-                statusTextModal.innerText = "Estamos Abertos! Faça seu pedido.";
-                statusTextModal.className = "text-[10px] font-bold uppercase tracking-widest text-emerald-500 dark:text-emerald-400 mb-6";
+                if(statusTextModal) {
+                    statusTextModal.innerText = "Estamos Abertos! Faça seu pedido.";
+                    statusTextModal.className = "text-[10px] font-bold uppercase tracking-widest text-emerald-500 dark:text-emerald-400 mb-6";
+                }
             } else {
                 statusDot.className = "w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-400 mr-1.5 shrink-0";
                 statusText.innerText = "Fechado agora";
                 statusText.className = "text-red-500 dark:text-red-400";
-                statusTextModal.innerText = "A loja está fechada no momento.";
-                statusTextModal.className = "text-[10px] font-bold uppercase tracking-widest text-red-500 dark:text-red-400 mb-6";
+                if(statusTextModal) {
+                    statusTextModal.innerText = "A loja está fechada no momento.";
+                    statusTextModal.className = "text-[10px] font-bold uppercase tracking-widest text-red-500 dark:text-red-400 mb-6";
+                }
             }
         }
 
-        // 🚨 CONFIGURAÇÕES E DADOS DA LOJA 🚨
         async function carregarConfiguracoes() {
             try {
                 const res = await fetch('/api/gestao/configuracoes'); 
@@ -690,12 +705,10 @@
                     document.getElementById('info-modal-nome').innerText = configLoja.nome_empresa;
                 }
 
-                // INJETA AS INFORMAÇÕES NO MODAL DE INFO
                 document.getElementById('info-modal-horario').innerText = configLoja.horario_funcionamento || "Não informado";
                 document.getElementById('info-modal-tel').innerText = configLoja.telefone || "Não informado";
                 document.getElementById('info-modal-end').innerText = configLoja.endereco || "Não informado";
                 
-                // VERIFICA SE ESTÁ ABERTO OU FECHADO
                 atualizarStatusAberto(configLoja.horario_funcionamento);
                 
                 if(configLoja.logo_url && String(configLoja.logo_url).trim() !== '' && configLoja.logo_url !== 'None') {
@@ -714,7 +727,6 @@
                     }
                 }
 
-                // TRAVAS DO BOTÃO DE DELIVERY E RETIRADA NO CARRINHO
                 if(configLoja.aceita_retirada === false) {
                     document.getElementById('label-retirada').style.display = 'none';
                     document.querySelector('input[value="entrega"]').checked = true;
@@ -745,27 +757,6 @@
             const forma = document.getElementById('forma-pag-online').value.toLowerCase();
             const area = document.getElementById('area-cartao');
             if(forma === 'credito' || forma === 'vr') { area.classList.remove('hidden'); } else { area.classList.add('hidden'); }
-        }
-
-        async function buscarCep(cep, modo='reg') {
-            const c = cep.replace(/\D/g, '');
-            if(c.length === 8) {
-                if(modo === 'reg') document.getElementById('cad-rua').value = "Buscando...";
-                else document.getElementById('edit-perf-end').value = "Buscando...";
-                try {
-                    const res = await fetch(`https://viacep.com.br/ws/${c}/json/`); const data = await res.json();
-                    if(!data.erro) {
-                        const endStr = `${data.logradouro}, Bairro: ${data.bairro}, ${data.localidade} - ${data.uf}`;
-                        if(modo === 'reg') { document.getElementById('cad-rua').value = data.logradouro; document.getElementById('cad-bairro').value = data.bairro; document.getElementById('cad-num').focus(); }
-                        else { document.getElementById('edit-perf-end').value = endStr; }
-                    } else {
-                        if(modo === 'reg') document.getElementById('cad-rua').value = ""; else document.getElementById('edit-perf-end').value = "";
-                        alert("CEP não encontrado.");
-                    }
-                } catch(e) { 
-                    if(modo === 'reg') document.getElementById('cad-rua').value = ""; else document.getElementById('edit-perf-end').value = "";
-                }
-            }
         }
 
         function abrirModalRastreio() { 
@@ -1125,13 +1116,13 @@
 
             // Proteção final do payload para evitar conflitos de tipos no Python
             const payload = { 
-                cliente_id: cliente_id || 0, 
-                nome_cliente: nome || "", 
-                telefone_cliente: tel || "", 
-                endereco_cliente: end || "", 
-                cpf: cpf || "", 
+                cliente_id: cliente_id ? parseInt(cliente_id) : null, 
+                nome_cliente: nome.trim(), 
+                telefone_cliente: tel.trim(), 
+                endereco_cliente: end.trim(), 
+                cpf: cpf ? cpf.trim() : null, 
                 itens: itensFinais, 
-                usar_saldo_cashback: (valorDescontoCupom > 0)
+                usar_saldo_cashback: 0.0 // Trava o formato para evitar erro 422 de booleano
             };
 
             if (tipoPgto === 'credito') {
@@ -1182,7 +1173,7 @@
                     let errData = {};
                     try { errData = await res.json(); } catch(e) {}
                     
-                    // Decodificador de erro do Python (FastAPI 422 Unprocessable Entity)
+                    // Decodificador de erro do Python (Mostra exatamente qual campo deu problema)
                     let mensagemErro = errData.detail || "Verifique os dados preenchidos.";
                     if(Array.isArray(mensagemErro)) {
                         mensagemErro = mensagemErro.map(e => `Campo [${e.loc[e.loc.length-1]}]: ${e.msg}`).join('\n');
