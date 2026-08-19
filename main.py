@@ -2446,15 +2446,16 @@ def atualizar_insumo(insumo_id: int, dados: dict, db: Session = Depends(get_db))
 
 # 6. Atualizar Colaborador (Nome e Matrícula)
 @app.put("/api/gestao/funcionarios/{func_id}")
-def atualizar_funcionario(func_id: int, dados: dict, db: Session = Depends(get_db)):
-    from models import FuncionarioModel
+def atualizar_funcionario_basico(func_id: int, dados: dict, db: Session = Depends(get_db)):
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
     if not func:
         raise HTTPException(status_code=404, detail="Funcionário não encontrado")
-
-    if 'nome' in dados: func.nome = dados['nome']
-    if 'matricula' in dados: func.matricula = dados['matricula']
-
+        
+    if 'nome' in dados: 
+        func.nome = dados['nome']
+    if 'matricula' in dados: 
+        func.matricula_cracha = dados['matricula']
+        
     db.commit()
     return {"status": "sucesso", "mensagem": "Colaborador atualizado!"}
 
