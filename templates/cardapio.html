@@ -56,7 +56,7 @@
             </div>
             
             <div id="area-auth" class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-                <!-- BOTÃO INSTALAR -->
+                <!-- BOTÃO INSTALAR SEMPRE VISÍVEL -->
                 <button id="btn-instalar-app" onclick="instalarApp()" class="text-xs sm:text-sm bg-brand-500 hover:bg-brand-600 p-2 sm:px-4 sm:py-2 rounded-full font-black transition-all flex items-center text-white shadow-lg shadow-brand-500/40 animate-pulse" title="Instalar App">
                     <i class="ph-bold ph-download-simple sm:mr-2 text-lg"></i> <span class="hidden sm:inline">Instalar</span>
                 </button>
@@ -509,7 +509,8 @@
                     document.getElementById('edit-perf-senha').value = "";
                     
                     const nomeSeguro = d.nome || "Cliente";
-                    document.getElementById('edit-perf-iniciais').innerText = nomeSeguro.substring(0, 2).toUpperCase();
+                    const iniciais = nomeSeguro.substring(0, 2).toUpperCase();
+                    document.getElementById('edit-perf-iniciais').innerText = iniciais;
 
                     const imgPreview = document.getElementById('edit-perf-foto-preview');
                     if (clienteLogado.foto && clienteLogado.foto.trim() !== "") {
@@ -578,7 +579,7 @@
             if (eventoInstalacao) { 
                 eventoInstalacao.prompt(); 
             } else {
-                alert("Para instalar o nosso App, abra o menu do seu navegador (três pontinhos) e toque em 'Adicionar à Tela Inicial'.");
+                alert("Para instalar o nosso App, abra o menu do seu navegador (os 3 pontinhos ou botão de Compartilhar) e toque em 'Adicionar à Tela Inicial'.");
             }
         }
 
@@ -690,7 +691,7 @@
                 statusText.innerText = "Aberto agora";
                 statusText.className = "text-emerald-500 dark:text-emerald-400";
                 if(statusTextModal) {
-                    statusTextModal.innerText = "Estamos Abertos! Faça seu pedido.";
+                    statusTextModal.innerText = "ESTAMOS ABERTOS! FAÇA SEU PEDIDO.";
                     statusTextModal.className = "text-[10px] font-bold uppercase tracking-widest text-emerald-500 dark:text-emerald-400 mb-6";
                 }
             } else {
@@ -698,7 +699,7 @@
                 statusText.innerText = "Fechado agora";
                 statusText.className = "text-red-500 dark:text-red-400";
                 if(statusTextModal) {
-                    statusTextModal.innerText = "A loja está fechada no momento.";
+                    statusTextModal.innerText = "A LOJA ESTÁ FECHADA NO MOMENTO.";
                     statusTextModal.className = "text-[10px] font-bold uppercase tracking-widest text-red-500 dark:text-red-400 mb-6";
                 }
             }
@@ -1091,7 +1092,7 @@
 
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.replace('flex', 'hidden'); }
 
-        // 🚨 CHECKOUT BLINDADO COM LEITURA DETALHADA DE ERRO DO BACKEND 🚨
+        // 🚨 CHECKOUT BLINDADO E RESTAURADO PARA O MODELO QUE FUNCIONOU 🚨
         async function enviarPedidoNuvem(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-enviar-pedido'); const txtOriginal = btn.innerHTML;
@@ -1129,6 +1130,7 @@
                 btn.innerHTML=txtOriginal; btn.disabled=false; return;
             }
 
+            // RESTAURANDO A CARGA EXATA DE DADOS QUE FUNCIONOU PARA OS PEDIDOS #183 E #184
             let itensFinais = carrinho.map(i => ({ 
                 produto_id: i.produto_id, 
                 quantidade: i.quantidade, 
@@ -1136,16 +1138,17 @@
             }));
             if(cupomAplicado) itensFinais[0].observacao += ` | 🎫 Cupom Usado: ${cupomAplicado} (-R$ ${valorDescontoCupom.toFixed(2)})`;
 
-            // 🚨 PROTEÇÃO FINAL DE TIPOS: Omite os campos problemáticos se não existirem
+            const descontoFinalEnviado = valorDescontoCupom - valorFreteAtual;
+
             const payload = { 
-                nome_cliente: nome.trim(), 
-                telefone_cliente: tel.trim(), 
-                endereco_cliente: end.trim(), 
+                cliente_id: cliente_id, 
+                nome_cliente: nome, 
+                telefone_cliente: tel, 
+                endereco_cliente: end, 
+                cpf: cpf, 
                 itens: itensFinais, 
-                usar_saldo_cashback: valorDescontoCupom > 0 ? parseFloat(valorDescontoCupom) : 0.0
+                usar_saldo_cashback: descontoFinalEnviado 
             };
-            if(cliente_id) payload.cliente_id = parseInt(cliente_id);
-            if(cpf) payload.cpf = cpf.trim();
 
             if (tipoPgto === 'credito') {
                 const numCartao = document.getElementById('cc-num').value.replace(/\D/g, ''); const nomeCartao = document.getElementById('cc-nome').value;
@@ -1192,19 +1195,19 @@
                     
                     window.location.reload();
                 } else { 
-                    // 🚨 LEITURA PROFUNDA DO ERRO (422 Pydantic ou 500 Interno)
-                    let errText = await res.text();
-                    let msgErro = "Erro desconhecido.";
-                    try {
-                        let errData = JSON.parse(errText);
-                        if (errData.detail) {
-                            if (Array.isArray(errData.detail)) {
-                                msgErro = errData.detail.map(e => `Campo '${e.loc[e.loc.length-1]}': ${e.msg}`).join('\n');
-                            } else { msgErro = errData.detail; }
-                        } else { msgErro = JSON.stringify(errData); }
-                    } catch(e) { msgErro = "O servidor recusou os dados.\nDetalhe: " + errText.substring(0, 100); }
+                    if (res.status === 500) {
+                        alert("⚠️ Erro Interno do Servidor (500)!\n\nIsso significa que o pedido chegou no servidor, mas o Python travou ao finalizar.\n\nMotivos comuns:\n1. Falta do Token do Mercado Pago (Se escolheu PIX/Cartão).\n2. Erro no disparo de WhatsApp.\n\nVerifique no Painel de Gestão se o pedido apareceu lá!");
+                        btn.disabled = false; btn.innerHTML = txtOriginal;
+                        return;
+                    }
                     
-                    alert("⚠️ Pedido recusado:\n\n" + msgErro); 
+                    let errData = {};
+                    try { errData = await res.json(); } catch(e) {}
+                    let mensagemErro = errData.detail || "Verifique os dados preenchidos.";
+                    if(Array.isArray(mensagemErro)) {
+                        mensagemErro = mensagemErro.map(e => `Campo '${e.loc[e.loc.length-1]}': ${e.msg}`).join('\n');
+                    }
+                    alert("⚠️ Pedido recusado pelo servidor:\n\n" + mensagemErro); 
                     btn.disabled = false; btn.innerHTML = txtOriginal; 
                 }
             } catch(e) { 
