@@ -56,7 +56,7 @@
             </div>
             
             <div id="area-auth" class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-                <!-- BOTÃO INSTALAR SEMPRE VISÍVEL -->
+                <!-- BOTÃO INSTALAR -->
                 <button id="btn-instalar-app" onclick="instalarApp()" class="text-xs sm:text-sm bg-brand-500 hover:bg-brand-600 p-2 sm:px-4 sm:py-2 rounded-full font-black transition-all flex items-center text-white shadow-lg shadow-brand-500/40 animate-pulse" title="Instalar App">
                     <i class="ph-bold ph-download-simple sm:mr-2 text-lg"></i> <span class="hidden sm:inline">Instalar</span>
                 </button>
@@ -117,7 +117,13 @@
     <div id="modal-info-loja" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4" onclick="document.getElementById('modal-info-loja').classList.replace('flex','hidden')">
         <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative text-center" onclick="event.stopPropagation()">
             <button onclick="document.getElementById('modal-info-loja').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
-            <div class="w-16 h-16 bg-brand-50 dark:bg-brand-500/10 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100 dark:border-brand-500/20"><i class="ph-fill ph-storefront text-3xl"></i></div>
+            
+            <!-- LOGO INJETADA AQUI -->
+            <div class="w-16 h-16 bg-brand-50 dark:bg-brand-500/10 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100 dark:border-brand-500/20 overflow-hidden" id="info-modal-logo-container">
+                <i class="ph-fill ph-storefront text-3xl" id="info-modal-icon"></i>
+                <img id="info-modal-img" src="" class="w-full h-full object-cover hidden">
+            </div>
+
             <h2 class="text-2xl font-black text-slate-800 dark:text-white mb-1" id="info-modal-nome">Carregando...</h2>
             <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-500 dark:text-emerald-400 mb-6" id="info-modal-status-text">Calculando status...</p>
             
@@ -465,6 +471,9 @@
             carregarTaxasEntrega(); 
         });
 
+        // ==========================
+        // SISTEMA DE EDIÇÃO DE PERFIL E FOTO
+        // ==========================
         function fecharModalEditarPerfil() {
             document.getElementById('modal-editar-perfil').classList.add('hidden');
             document.getElementById('modal-editar-perfil').classList.remove('flex');
@@ -476,7 +485,6 @@
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     document.getElementById('edit-perf-foto-base64').value = reader.result;
-                    
                     const imgPreview = document.getElementById('edit-perf-foto-preview');
                     imgPreview.src = reader.result;
                     imgPreview.classList.remove('hidden');
@@ -501,8 +509,7 @@
                     document.getElementById('edit-perf-senha').value = "";
                     
                     const nomeSeguro = d.nome || "Cliente";
-                    const iniciais = nomeSeguro.substring(0, 2).toUpperCase();
-                    document.getElementById('edit-perf-iniciais').innerText = iniciais;
+                    document.getElementById('edit-perf-iniciais').innerText = nomeSeguro.substring(0, 2).toUpperCase();
 
                     const imgPreview = document.getElementById('edit-perf-foto-preview');
                     if (clienteLogado.foto && clienteLogado.foto.trim() !== "") {
@@ -571,7 +578,7 @@
             if (eventoInstalacao) { 
                 eventoInstalacao.prompt(); 
             } else {
-                alert("Para instalar o nosso App, abra o menu do seu navegador (os 3 pontinhos ou botão de Compartilhar) e toque em 'Adicionar à Tela Inicial'.");
+                alert("Para instalar o nosso App, abra o menu do seu navegador (três pontinhos) e toque em 'Adicionar à Tela Inicial'.");
             }
         }
 
@@ -631,7 +638,7 @@
             document.getElementById('modal-info-loja').classList.add('flex');
         }
 
-        // 🚨 VERIFICAR STATUS DA LOJA 🚨
+        // 🚨 RELÓGIO INTELIGENTE: LÊ O DIA EXATO E MOSTRA SE ESTÁ ABERTO 🚨
         function atualizarStatusAberto(horarioStr) {
             const statusDot = document.getElementById('status-dot');
             const statusText = document.getElementById('status-text');
@@ -641,38 +648,41 @@
             
             if(horarioStr && horarioStr.trim() !== "") {
                 try {
-                    const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                    const diasSemana = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
                     const dataAtual = new Date();
                     const diaAtualNome = diasSemana[dataAtual.getDay()]; 
                     
-                    const regexDia = new RegExp(diaAtualNome + "\\s*:\\s*([^,]*)", "i");
-                    const matchDia = horarioStr.match(regexDia);
+                    const strLower = horarioStr.toLowerCase();
+                    const partes = strLower.split(',');
+                    const parteHoje = partes.find(p => p.includes(diaAtualNome) || p.includes(diaAtualNome.replace('ç', 'c')));
                     
-                    if (matchDia && matchDia[1]) {
-                        const horarioHoje = matchDia[1].trim().toLowerCase();
-                        if (horarioHoje.includes('fechado')) {
+                    if (parteHoje) {
+                        if (parteHoje.includes('fechado')) {
                             aberto = false;
                         } else {
-                            const times = horarioHoje.match(/(\d{1,2})(?::(\d{2}))?/g);
+                            // Extrai os horários no formato 19:00 ou 19h
+                            const times = parteHoje.match(/(\d{1,2})[h:]?(\d{2})?/g);
                             if (times && times.length >= 2) {
-                                let hInicio = parseInt(times[0].split(':')[0]);
-                                let mInicio = times[0].includes(':') ? parseInt(times[0].split(':')[1]) : 0;
-                                let hFim = parseInt(times[1].split(':')[0]);
-                                let mFim = times[1].includes(':') ? parseInt(times[1].split(':')[1]) : 0;
+                                let extractTime = (tStr) => {
+                                    let clean = tStr.replace('h', ':');
+                                    if(!clean.includes(':')) clean += ':00';
+                                    let [h, m] = clean.split(':');
+                                    return parseInt(h) * 60 + (parseInt(m) || 0);
+                                };
                                 
-                                const minutosAgora = dataAtual.getHours() * 60 + dataAtual.getMinutes();
-                                const minutosInicio = hInicio * 60 + mInicio;
-                                const minutosFim = hFim * 60 + mFim;
+                                let minInicio = extractTime(times[0]);
+                                let minFim = extractTime(times[1]);
+                                let minAgora = dataAtual.getHours() * 60 + dataAtual.getMinutes();
                                 
-                                if (minutosInicio < minutosFim) {
-                                    aberto = (minutosAgora >= minutosInicio && minutosAgora <= minutosFim);
+                                if (minInicio < minFim) {
+                                    aberto = (minAgora >= minInicio && minAgora <= minFim);
                                 } else {
-                                    aberto = (minutosAgora >= minutosInicio || minutosAgora <= minutosFim);
+                                    aberto = (minAgora >= minInicio || minAgora <= minFim); // Passou da meia noite
                                 }
                             }
                         }
                     }
-                } catch(e) { console.error("Erro ao fazer parse do horário", e); }
+                } catch(e) { console.error("Erro no relógio inteligente:", e); }
             }
 
             if(aberto) {
@@ -701,7 +711,7 @@
                 
                 if(configLoja.nome_empresa) { 
                     const nomeEl = document.getElementById('nome-loja-header'); 
-                    if(nomeEl) nomeEl.innerText = configLoja.nome_empresa; 
+                    if(nomeEl) nomeEl.innerHTML = `${configLoja.nome_empresa} <i class="ph-bold ph-caret-down text-sm ml-0.5 text-slate-400"></i>`; 
                     document.getElementById('info-modal-nome').innerText = configLoja.nome_empresa;
                 }
 
@@ -711,19 +721,31 @@
                 
                 atualizarStatusAberto(configLoja.horario_funcionamento);
                 
+                // INJETANDO A LOGO NO CABEÇALHO E NO MODAL
                 if(configLoja.logo_url && String(configLoja.logo_url).trim() !== '' && configLoja.logo_url !== 'None') {
                     const letra = document.getElementById('header-logo-letra'); 
                     const img = document.getElementById('header-logo-img'); 
                     const container = document.getElementById('header-logo-container');
                     
+                    const modalImg = document.getElementById('info-modal-img');
+                    const modalIcon = document.getElementById('info-modal-icon');
+                    const modalContainer = document.getElementById('info-modal-logo-container');
+
                     if(letra && img && container) {
                         img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
                         img.src = configLoja.logo_url; 
                         img.classList.remove('hidden');
                         letra.classList.add('hidden'); 
-                        
                         container.classList.remove('bg-brand-500', 'border-slate-800', 'dark:border-slate-800'); 
                         container.classList.add('bg-white', 'border-slate-200', 'dark:border-slate-700');
+                    }
+
+                    if(modalImg && modalIcon && modalContainer) {
+                        modalImg.src = configLoja.logo_url;
+                        modalImg.classList.remove('hidden');
+                        modalIcon.classList.add('hidden');
+                        modalContainer.classList.remove('bg-brand-50', 'dark:bg-brand-500/10', 'text-brand-500', 'border-brand-100');
+                        modalContainer.classList.add('bg-white', 'dark:bg-slate-800', 'border-slate-200', 'dark:border-slate-700');
                     }
                 }
 
@@ -807,7 +829,7 @@
                     htmlAvatar = `<div class="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center font-black text-xs shrink-0">${inic}</div>`;
                 }
 
-                // MOSTRAR APENAS AVATAR, SEM A BARRA GIGANTE
+                // MOSTRA O AVATAR E ESCONDE O BOTÃO "ENTRAR"
                 document.getElementById('area-auth').innerHTML = `
                     <button id="btn-instalar-app" onclick="instalarApp()" class="text-xs sm:text-sm bg-brand-500 hover:bg-brand-600 p-2 sm:px-4 sm:py-2 rounded-full font-black transition-all flex items-center text-white shadow-lg shadow-brand-500/40 animate-pulse" title="Instalar App">
                         <i class="ph-bold ph-download-simple sm:mr-2 text-lg"></i> <span class="hidden sm:inline">Instalar</span>
@@ -1114,16 +1136,16 @@
             }));
             if(cupomAplicado) itensFinais[0].observacao += ` | 🎫 Cupom Usado: ${cupomAplicado} (-R$ ${valorDescontoCupom.toFixed(2)})`;
 
-            // Proteção final do payload para evitar conflitos de tipos no Python
+            // 🚨 PROTEÇÃO FINAL DE TIPOS: Omite os campos problemáticos se não existirem
             const payload = { 
-                cliente_id: cliente_id ? parseInt(cliente_id) : null, 
                 nome_cliente: nome.trim(), 
                 telefone_cliente: tel.trim(), 
                 endereco_cliente: end.trim(), 
-                cpf: cpf ? cpf.trim() : null, 
                 itens: itensFinais, 
-                usar_saldo_cashback: 0.0 // Trava o formato para evitar erro 422 de booleano
+                usar_saldo_cashback: valorDescontoCupom > 0 ? parseFloat(valorDescontoCupom) : 0.0
             };
+            if(cliente_id) payload.cliente_id = parseInt(cliente_id);
+            if(cpf) payload.cpf = cpf.trim();
 
             if (tipoPgto === 'credito') {
                 const numCartao = document.getElementById('cc-num').value.replace(/\D/g, ''); const nomeCartao = document.getElementById('cc-nome').value;
@@ -1170,24 +1192,25 @@
                     
                     window.location.reload();
                 } else { 
-                    let errData = {};
-                    try { errData = await res.json(); } catch(e) {}
+                    // 🚨 LEITURA PROFUNDA DO ERRO (422 Pydantic ou 500 Interno)
+                    let errText = await res.text();
+                    let msgErro = "Erro desconhecido.";
+                    try {
+                        let errData = JSON.parse(errText);
+                        if (errData.detail) {
+                            if (Array.isArray(errData.detail)) {
+                                msgErro = errData.detail.map(e => `Campo '${e.loc[e.loc.length-1]}': ${e.msg}`).join('\n');
+                            } else { msgErro = errData.detail; }
+                        } else { msgErro = JSON.stringify(errData); }
+                    } catch(e) { msgErro = "O servidor recusou os dados.\nDetalhe: " + errText.substring(0, 100); }
                     
-                    // Decodificador de erro do Python (Mostra exatamente qual campo deu problema)
-                    let mensagemErro = errData.detail || "Verifique os dados preenchidos.";
-                    if(Array.isArray(mensagemErro)) {
-                        mensagemErro = mensagemErro.map(e => `Campo [${e.loc[e.loc.length-1]}]: ${e.msg}`).join('\n');
-                    }
-                    
-                    alert("⚠️ Pedido recusado pelo servidor:\n\n" + mensagemErro); 
-                    btn.disabled = false; 
-                    btn.innerHTML = txtOriginal; 
+                    alert("⚠️ Pedido recusado:\n\n" + msgErro); 
+                    btn.disabled = false; btn.innerHTML = txtOriginal; 
                 }
             } catch(e) { 
                 console.error(e);
                 alert("Ocorreu um erro de rede. Se o pedido descontou, avise a loja no WhatsApp."); 
-                btn.disabled = false; 
-                btn.innerHTML = txtOriginal; 
+                btn.disabled = false; btn.innerHTML = txtOriginal; 
             }
         }
     </script>
