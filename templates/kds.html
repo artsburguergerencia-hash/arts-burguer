@@ -4,44 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitor KDS | Art's Burguer</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- CONFIGURAÇÃO DO TEMA CLARO/ESCURO -->
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
-        }
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
+        if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); } 
+        else { document.documentElement.classList.add('dark'); }
     </script>
-    <!-- SINCRONIZAÇÃO GLOBAL DE TEMA -->
-    <script>
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.remove('dark');
-        } else {
-            document.documentElement.classList.add('dark');
-        }
-    </script>
-
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .card-enter { animation: slideIn 0.3s ease-out forwards; }
-        @keyframes slideIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes slideIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
 
-    <!-- HEADER DO KDS -->
-    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm shrink-0 transition-colors duration-300">
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm shrink-0">
         <div class="flex items-center">
-            <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-amber-500/30">
-                <i class="ph-bold ph-fire text-2xl text-white"></i>
+            <div id="header-logo-container" class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg border-2 border-transparent overflow-hidden shrink-0 mr-4 transition-colors">
+                <i id="header-logo-letra" class="ph-bold ph-fire text-2xl"></i>
+                <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
             </div>
             <div>
                 <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">MONITOR KDS</h1>
@@ -52,120 +36,125 @@
         </div>
         
         <div class="flex items-center space-x-4">
-            <button onclick="carregarKDS()" class="flex items-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 py-3 rounded-xl transition-colors shadow-sm font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+            <button id="btn-som" onclick="toggleSom()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-400 rounded-xl shadow-inner border border-slate-200 dark:border-slate-700" title="Ativar Som">
+                <i class="ph-bold ph-speaker-slash text-xl"></i>
+            </button>
+            <button onclick="carregarKDS()" class="flex items-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-4 py-3 rounded-xl shadow-sm font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-700">
                 <i class="ph-bold ph-arrows-clockwise text-lg mr-2"></i> Atualizar
             </button>
-            <button onclick="toggleTheme()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-inner border border-slate-200 dark:border-slate-700">
+            <button onclick="toggleTheme()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-xl shadow-inner border border-slate-200 dark:border-slate-700">
                 <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
             </button>
-            <a href="/gestao" class="bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500 p-3 rounded-xl transition-colors border border-red-200 dark:border-red-500/20">
-                <i class="ph-bold ph-sign-out text-xl"></i>
-            </a>
+            <a href="/gestao" class="bg-red-50 dark:bg-red-500/10 text-red-500 p-3 rounded-xl border border-red-200 dark:border-red-500/20"><i class="ph-bold ph-sign-out text-xl"></i></a>
         </div>
     </header>
 
-    <!-- ÁREA DAS COMANDAS -->
     <main class="flex-1 flex overflow-hidden p-6 space-x-6">
-        
-        <!-- COLUNA 1: FILA DE PREPARO -->
         <section class="flex-1 flex flex-col bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-200 dark:border-slate-700 overflow-hidden shadow-inner">
             <div class="p-4 bg-slate-200/50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
-                <h2 class="font-black text-lg text-slate-700 dark:text-slate-300 flex items-center">
-                    <i class="ph-bold ph-receipt text-slate-500 mr-2 text-xl"></i> Fila de Preparo
-                </h2>
+                <h2 class="font-black text-lg text-slate-700 dark:text-slate-300 flex items-center"><i class="ph-bold ph-receipt text-slate-500 mr-2 text-xl"></i> Fila de Preparo</h2>
                 <span class="bg-slate-700 dark:bg-slate-600 text-white px-3 py-1 rounded-lg text-xs font-black shadow-sm" id="badge-fila">0</span>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="lista-fila">
-                <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-50">
-                    <i class="ph-bold ph-spinner animate-spin text-5xl mb-4"></i>
-                    <p class="font-bold text-sm uppercase tracking-widest">Buscando...</p>
-                </div>
-            </div>
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="lista-fila"></div>
         </section>
 
-        <!-- COLUNA 2: NA CHAPA -->
         <section class="flex-1 flex flex-col bg-amber-50/50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-200 dark:border-amber-700/50 overflow-hidden shadow-inner relative">
-            <!-- Fundo decorativo -->
-            <div class="absolute inset-0 opacity-5 dark:opacity-[0.02] pointer-events-none flex items-center justify-center overflow-hidden">
-                <i class="ph-fill ph-fire text-[300px] text-amber-500"></i>
-            </div>
-            
+            <div class="absolute inset-0 opacity-5 pointer-events-none flex items-center justify-center overflow-hidden"><i class="ph-fill ph-fire text-[300px] text-amber-500"></i></div>
             <div class="relative z-10 p-4 bg-amber-100 dark:bg-amber-900/40 border-b border-amber-200 dark:border-amber-700/50 flex justify-between items-center shrink-0">
-                <h2 class="font-black text-lg text-amber-800 dark:text-amber-500 flex items-center">
-                    <i class="ph-fill ph-fire text-amber-500 mr-2 text-xl animate-pulse"></i> Na Chapa
-                </h2>
+                <h2 class="font-black text-lg text-amber-800 dark:text-amber-500 flex items-center"><i class="ph-fill ph-fire text-amber-500 mr-2 text-xl animate-pulse"></i> Na Chapa</h2>
                 <span class="bg-amber-500 text-white px-3 py-1 rounded-lg text-xs font-black shadow-sm" id="badge-chapa">0</span>
             </div>
-            <div class="relative z-10 flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="lista-chapa">
-                <!-- Injetado via JS -->
-            </div>
+            <div class="relative z-10 flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="lista-chapa"></div>
         </section>
-
     </main>
 
     <script>
-        // MOTOR DE TEMA
-        const htmlElement = document.documentElement;
-        const themeIcon = document.getElementById('theme-icon');
-        if (htmlElement.classList.contains('dark')) themeIcon.classList.replace('ph-moon', 'ph-sun');
+        let somAtivado = false;
+        let ultimoIdPedido = 0;
+        let ultimaCargaDeDados = ""; // Memória para não piscar a tela à toa
 
-        function toggleTheme() {
-            if (htmlElement.classList.contains('dark')) {
-                htmlElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-                themeIcon.classList.replace('ph-sun', 'ph-moon');
+        function toggleSom() {
+            somAtivado = !somAtivado;
+            const btn = document.getElementById('btn-som');
+            if(somAtivado) {
+                btn.classList.replace('text-slate-400', 'text-amber-500');
+                btn.innerHTML = '<i class="ph-bold ph-speaker-high text-xl animate-pulse"></i>';
+                falarNomeAviso();
             } else {
-                htmlElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-                themeIcon.classList.replace('ph-moon', 'ph-sun');
+                btn.classList.replace('text-amber-500', 'text-slate-400');
+                btn.innerHTML = '<i class="ph-bold ph-speaker-slash text-xl"></i>';
             }
         }
 
-        // MOTOR DO KDS
-        document.addEventListener('DOMContentLoaded', carregarKDS);
-        setInterval(carregarKDS, 5000); // Auto-Refresh a cada 5s
+        function falarNomeAviso() {
+            if(!somAtivado) return;
+            const msg = new SpeechSynthesisUtterance("Art's!");
+            msg.lang = 'pt-BR'; window.speechSynthesis.speak(msg);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            carregarKDS();
+            try {
+                const res = await fetch('/api/gestao/configuracoes'); const configLoja = await res.json();
+                if(configLoja.logo_url && configLoja.logo_url !== 'None') {
+                    document.getElementById('header-logo-img').src = configLoja.logo_url; 
+                    document.getElementById('header-logo-img').classList.remove('hidden');
+                    document.getElementById('header-logo-letra').classList.add('hidden'); 
+                    document.getElementById('header-logo-container').classList.remove('bg-amber-500'); 
+                    document.getElementById('header-logo-container').classList.add('bg-white', 'border-slate-200');
+                }
+            } catch(e) {}
+        });
+
+        setInterval(carregarKDS, 4000); 
 
         async function carregarKDS() {
             try {
-                // Supondo que sua rota de KDS retorna os pedidos
                 const response = await fetch('/api/kds/pedidos'); 
                 const dados = await response.json();
+                const jsonString = JSON.stringify(dados);
                 
-                renderFila(dados.recebidos || []);
-                renderChapa(dados.preparando || []);
+                // SE NADA MUDOU, NÃO PISCA A TELA!
+                if(jsonString === ultimaCargaDeDados) return; 
+                ultimaCargaDeDados = jsonString;
+
+                const recebidos = dados.recebidos || [];
+                const preparando = dados.preparando || [];
+
+                let maiorIdAtual = 0;
+                recebidos.forEach(p => { if (p.id > maiorIdAtual) maiorIdAtual = p.id; });
+                preparando.forEach(p => { if (p.id > maiorIdAtual) maiorIdAtual = p.id; });
                 
-                document.getElementById('badge-fila').innerText = (dados.recebidos || []).length;
-                document.getElementById('badge-chapa').innerText = (dados.preparando || []).length;
-            } catch (error) {
-                console.error("Erro no KDS:", error);
-            }
+                if (ultimoIdPedido > 0 && maiorIdAtual > ultimoIdPedido) { falarNomeAviso(); }
+                if (maiorIdAtual > ultimoIdPedido) { ultimoIdPedido = maiorIdAtual; }
+
+                renderFila(recebidos); renderChapa(preparando);
+                document.getElementById('badge-fila').innerText = recebidos.length;
+                document.getElementById('badge-chapa').innerText = preparando.length;
+            } catch (e) {}
         }
 
-        // FUNÇÃO DE MUDAR STATUS
+        function imprimirPedido(id) {
+            // Se o seu Python tem uma rota de impressão, ele vai chamar aqui:
+            fetch(`/api/pedidos/${id}/imprimir`, { method: 'POST' }).catch(()=>{});
+            alert(`Comanda #${id} enviada para a impressora!`);
+        }
+
         async function mudarStatus(id, novoStatus, botao) {
-            const textoOriginal = botao.innerHTML;
-            botao.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>';
-            botao.disabled = true;
+            // MAGIA: SOME DA TELA NA HORA SEM ESPERAR O SERVIDOR (Evita travamentos)
+            const card = botao.closest('.card-enter');
+            if(card) card.style.display = 'none';
 
-            try {
-                const res = await fetch(`/api/kds/pedidos/${id}/status`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: novoStatus })
-                });
-
-                if(res.ok) {
-                    carregarKDS(); // Recarrega a tela instantaneamente
-                } else {
-                    alert("Falha ao atualizar o pedido no banco de dados.");
-                    botao.innerHTML = textoOriginal;
-                    botao.disabled = false;
-                }
-            } catch(e) {
-                alert("Erro de conexão.");
-                botao.innerHTML = textoOriginal;
-                botao.disabled = false;
-            }
+            fetch(`/api/kds/pedidos/${id}/status`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: novoStatus })
+            }).then(() => {
+                ultimaCargaDeDados = ""; // Força o KDS a re-desenhar a tela depois que salvar
+                carregarKDS(); 
+            }).catch(e => {
+                if(card) card.style.display = 'block'; // Volta se deu erro
+                alert("Erro de conexão ao mover o pedido.");
+            });
         }
 
         function gerarHTMLComanda(p, isChapa) {
@@ -176,64 +165,31 @@
                     <div class="flex items-start">
                         <span class="font-black text-amber-500 mr-2">${item.quantidade}x</span>
                         <div class="flex-1">
-                            <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">${item.nome}</p>
+                            <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">${item.nome || 'Item'}</p>
                             ${item.observacao ? `<p class="text-xs font-semibold text-red-500 mt-1 bg-red-50 dark:bg-red-500/10 inline-block px-2 py-0.5 rounded">⚠️ ${item.observacao}</p>` : ''}
                         </div>
                     </div>
+                </div>`).join('');
+
+            return `
+            <div class="card-enter bg-white dark:bg-slate-800 border ${isChapa ? 'border-2 border-amber-400 shadow-amber-500/10' : 'border-slate-200'} rounded-2xl p-4 shadow-sm relative overflow-hidden mb-3">
+                <div class="flex justify-between items-center mb-3 border-b border-slate-100 dark:border-slate-700 pb-2">
+                    <h3 class="font-black ${isChapa ? 'text-2xl text-amber-600' : 'text-xl text-slate-800 dark:text-white'} tracking-tighter">#${senha}</h3>
+                    <div class="flex space-x-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">${origem}</span>
+                        <!-- BOTÃO DE IMPRIMIR -->
+                        <button onclick="imprimirPedido(${p.id})" class="text-slate-400 hover:text-blue-500 bg-slate-100 dark:bg-slate-700 p-1 rounded" title="Imprimir Comanda"><i class="ph-bold ph-printer text-lg"></i></button>
+                    </div>
                 </div>
-            `).join('');
-
-            if (!isChapa) {
-                // CARD DA FILA DE PREPARO
-                return `
-                <div class="card-enter bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm relative overflow-hidden">
-                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-300 dark:bg-slate-600"></div>
-                    <div class="flex justify-between items-center mb-3 border-b border-slate-100 dark:border-slate-700 pb-2">
-                        <h3 class="font-black text-xl text-slate-800 dark:text-white tracking-tighter">#${senha}</h3>
-                        <span class="text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-1 rounded">${origem}</span>
-                    </div>
-                    <div class="mb-4 space-y-1">
-                        ${itensHTML}
-                    </div>
-                    <button onclick="mudarStatus(${p.id}, 'PREPARANDO', this)" class="w-full bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-black py-3 rounded-xl uppercase tracking-widest text-xs transition-colors shadow-md">
-                        🔥 Jogar na Chapa
-                    </button>
-                </div>`;
-            } else {
-                // CARD DA CHAPA
-                return `
-                <div class="card-enter bg-white dark:bg-slate-800 border-2 border-amber-400 dark:border-amber-500 rounded-2xl p-4 shadow-lg shadow-amber-500/10 relative overflow-hidden">
-                    <div class="flex justify-between items-center mb-3 border-b border-amber-100 dark:border-slate-700 pb-2">
-                        <h3 class="font-black text-2xl text-amber-600 dark:text-amber-400 tracking-tighter">#${senha}</h3>
-                        <span class="text-[10px] font-black uppercase tracking-widest bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-2 py-1 rounded animate-pulse">${origem}</span>
-                    </div>
-                    <div class="mb-4 space-y-1">
-                        ${itensHTML}
-                    </div>
-                    <button onclick="mudarStatus(${p.id}, 'PRONTO', this)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl uppercase tracking-widest text-sm transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center">
-                        <i class="ph-bold ph-check-circle mr-2 text-lg"></i> Pedido Pronto!
-                    </button>
-                </div>`;
-            }
+                <div class="mb-4 space-y-1">${itensHTML}</div>
+                <button onclick="mudarStatus(${p.id}, '${isChapa ? 'PRONTO' : 'EM_PREPARO'}', this)" class="w-full ${isChapa ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30 text-sm' : 'bg-slate-800 hover:bg-slate-700 text-xs'} text-white font-black py-3 rounded-xl uppercase tracking-widest transition-colors shadow-md">
+                    ${isChapa ? '<i class="ph-bold ph-check-circle mr-2 text-lg"></i> Pedido Pronto!' : '🔥 Jogar na Chapa'}
+                </button>
+            </div>`;
         }
 
-        function renderFila(pedidos) {
-            const cont = document.getElementById('lista-fila');
-            if(pedidos.length === 0) {
-                cont.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600"><i class="ph-fill ph-check-circle text-5xl mb-2"></i><p class="font-bold text-xs uppercase tracking-widest">Fila Limpa</p></div>`;
-                return;
-            }
-            cont.innerHTML = pedidos.map(p => gerarHTMLComanda(p, false)).join('');
-        }
-
-        function renderChapa(pedidos) {
-            const cont = document.getElementById('lista-chapa');
-            if(pedidos.length === 0) {
-                cont.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-amber-200 dark:text-slate-600"><i class="ph-fill ph-fire text-5xl mb-2 opacity-50"></i><p class="font-bold text-xs uppercase tracking-widest opacity-50">Chapa Fria</p></div>`;
-                return;
-            }
-            cont.innerHTML = pedidos.map(p => gerarHTMLComanda(p, true)).join('');
-        }
+        function renderFila(pedidos) { document.getElementById('lista-fila').innerHTML = pedidos.length ? pedidos.map(p => gerarHTMLComanda(p, false)).join('') : `<div class="h-full flex flex-col items-center justify-center text-slate-300"><i class="ph-fill ph-check-circle text-5xl mb-2"></i><p class="font-bold text-xs">FILA LIMPA</p></div>`; }
+        function renderChapa(pedidos) { document.getElementById('lista-chapa').innerHTML = pedidos.length ? pedidos.map(p => gerarHTMLComanda(p, true)).join('') : `<div class="h-full flex flex-col items-center justify-center text-amber-200"><i class="ph-fill ph-fire text-5xl mb-2"></i><p class="font-bold text-xs">CHAPA FRIA</p></div>`; }
     </script>
 </body>
 </html>
