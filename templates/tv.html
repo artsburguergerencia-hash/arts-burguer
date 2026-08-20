@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' }, dark: { 950: '#05080f', 900: '#0B0F19', 800: '#151A27', 700: '#1F2639' } } } } }
-        // 🚨 MODO ESCURO FORÇADO POR PADRÃO PARA DAR O AR PREMIUM DA TV 🚨
+        // MODO ESCURO FORÇADO POR PADRÃO
         if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); } 
         else { document.documentElement.classList.add('dark'); }
     </script>
@@ -23,11 +23,15 @@
         }
         .fade-slide-up { animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Efeito de hover suave nos botões rechamar */
+        .btn-rechamar { transition: all 0.2s ease-in-out; cursor: pointer; }
+        .btn-rechamar:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .btn-rechamar:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-dark-950 text-slate-800 dark:text-slate-100 h-screen w-screen flex flex-col transition-colors duration-300">
 
-    <!-- CAMPAINHA PREMIUM -->
     <audio id="som-chamada" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_22dcd5dbda.mp3?filename=airport-chime-1-105102.mp3" preload="auto"></audio>
 
     <div id="tela-ativacao" class="fixed inset-0 z-50 bg-white/95 dark:bg-dark-950/95 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-colors" onclick="iniciarTV()">
@@ -42,7 +46,6 @@
         </button>
     </div>
 
-    <!-- HEADER GIGANTE E MINIMALISTA -->
     <header class="h-28 px-10 flex items-center justify-between shrink-0 relative z-10 bg-white dark:bg-dark-900 shadow-md">
         <div class="flex items-center">
             <div id="header-logo-container" class="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-[0_0_20px_rgba(255,71,87,0.4)] mr-5 overflow-hidden shrink-0 transition-colors">
@@ -64,7 +67,7 @@
 
     <main class="flex-1 flex overflow-hidden p-8 gap-8 relative bg-slate-100 dark:bg-dark-950">
         
-        <!-- COLUNA 1: PREPARANDO (Fundo Escuro) -->
+        <!-- COLUNA 1: PREPARANDO -->
         <div class="w-[35%] bg-white dark:bg-dark-900 rounded-[2.5rem] border border-slate-200 dark:border-dark-800 flex flex-col shadow-xl overflow-hidden transition-colors">
             <div class="bg-amber-500 py-6 text-center shrink-0 shadow-md z-10">
                 <h2 class="font-black text-3xl uppercase tracking-widest text-white flex items-center justify-center gap-3">
@@ -72,16 +75,12 @@
                 </h2>
             </div>
             <div class="flex-1 p-8 overflow-y-auto no-scrollbar bg-slate-50 dark:bg-dark-900/50 relative">
-                <!-- Luz de fundo sutil -->
                 <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent pointer-events-none"></div>
-                
-                <div id="lista-preparo" class="grid grid-cols-2 gap-5 auto-rows-max relative z-10">
-                    <!-- Itens entram aqui -->
-                </div>
+                <div id="lista-preparo" class="grid grid-cols-2 gap-5 auto-rows-max relative z-10"></div>
             </div>
         </div>
 
-        <!-- COLUNA 2: PRONTO (Destaque Principal) -->
+        <!-- COLUNA 2: PRONTO -->
         <div class="flex-1 bg-white dark:bg-dark-900 rounded-[2.5rem] border border-slate-200 dark:border-dark-800 flex flex-col shadow-xl overflow-hidden transition-colors">
             <div class="bg-emerald-500 py-6 text-center shrink-0 shadow-md z-10">
                 <h2 class="font-black text-3xl uppercase tracking-widest text-white flex items-center justify-center gap-3">
@@ -90,28 +89,23 @@
             </div>
             
             <div class="flex-1 flex flex-col p-10 bg-slate-50 dark:bg-dark-900/50 relative">
-                 <!-- Luz de fundo sutil -->
                  <div class="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none"></div>
 
-                <!-- DESTAQUE (ÚLTIMO PEDIDO GIGANTE) -->
-                <div id="destaque-pronto" class="flex-[2] flex flex-col items-center justify-center mb-10 relative z-10">
-                    <!-- Fica vazio até o JS preencher -->
-                </div>
+                <!-- DESTAQUE -->
+                <div id="destaque-pronto" class="flex-[2] flex flex-col items-center justify-center mb-10 relative z-10"></div>
 
-                <!-- FILA DE PRONTOS (PEDIDOS ANTERIORES) -->
+                <!-- FILA DE PRONTOS -->
                 <div class="shrink-0 bg-white dark:bg-dark-800 p-8 rounded-3xl shadow-inner border border-slate-200 dark:border-dark-700 relative z-10">
-                    <p class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Últimos Chamados:
+                    <p class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Últimos Chamados:</span>
+                        <span class="text-[10px] text-emerald-500/50 animate-pulse">Clique na senha para chamar novamente</span>
                     </p>
-                    <div id="lista-pronto-fila" class="grid grid-cols-4 gap-5">
-                        <!-- Itens entram aqui -->
-                    </div>
+                    <div id="lista-pronto-fila" class="grid grid-cols-4 gap-5"></div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- O MESMO SCRIPT INTELIGENTE E INTACTO -->
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -172,6 +166,11 @@
         }
 
         function chamarSenhaVoz(senha, nomeCompleto) {
+            if (!somAtivado) return; // Segurança extra
+            
+            // Para as falas anteriores (se o usuário clicar rápido várias vezes)
+            window.speechSynthesis.cancel();
+            
             const som = document.getElementById('som-chamada');
             som.currentTime = 0; som.play().catch(()=>{});
 
@@ -218,7 +217,6 @@
                 if (emPreparo.length === 0) {
                     gridPreparo.innerHTML = '<div class="col-span-2 text-center text-slate-400 dark:text-slate-600 font-bold mt-20 text-xl">Nenhum pedido na chapa</div>';
                 } else {
-                    // CAIXINHAS LINDAS COM ALTO CONTRASTE!
                     gridPreparo.innerHTML = emPreparo.map(p => `
                         <div class="bg-white dark:bg-dark-800 border-2 border-slate-200 dark:border-dark-700 rounded-3xl flex items-center justify-center py-8 shadow-sm fade-slide-up">
                             <span class="text-6xl font-black text-slate-700 dark:text-white tracking-tighter">${p.senha_diaria}</span>
@@ -235,20 +233,28 @@
                 } else {
                     const pDestaque = prontos[0];
                     const nomeVisual = pDestaque.cliente_nome ? pDestaque.cliente_nome.split(' ')[0] : 'Cliente';
+                    
+                    // Tratamento seguro do nome para a função JS (remove aspas que quebrariam o clique)
+                    const nomeSeguroDestaque = pDestaque.cliente_nome ? pDestaque.cliente_nome.replace(/'/g, "\\'") : '';
 
-                    // O NÚMERO GIGANTE E GLOWING!
+                    // 🚨 NÚMERO GIGANTE AGORA É CLICÁVEL (RECHAMADA) 🚨
                     destaque.innerHTML = `
-                        <div class="destaque-pulse fade-slide-up flex flex-col items-center justify-center">
+                        <div onclick="chamarSenhaVoz('${pDestaque.senha_diaria}', '${nomeSeguroDestaque}')" title="Clique para rechamar" class="btn-rechamar destaque-pulse fade-slide-up flex flex-col items-center justify-center group relative">
                             <span class="text-[14rem] font-black text-emerald-500 leading-none tracking-tighter drop-shadow-md">${pDestaque.senha_diaria}</span>
                             <span class="text-5xl font-black text-slate-800 dark:text-white mt-4 uppercase tracking-[0.2em] bg-emerald-100 dark:bg-emerald-500/20 px-8 py-3 rounded-full border-2 border-emerald-300 dark:border-emerald-500/50">${nomeVisual}</span>
+                            <span class="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity text-emerald-600 font-black tracking-widest uppercase flex items-center gap-2"><i class="ph-bold ph-speaker-high"></i> Clicar para rechamar</span>
                         </div>`;
 
                     const outrosProntos = prontos.slice(1, 9); 
                     if (outrosProntos.length > 0) {
-                        filaProntos.innerHTML = outrosProntos.map(p => `
-                            <div class="bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-center justify-center py-5 fade-slide-up">
+                        filaProntos.innerHTML = outrosProntos.map(p => {
+                            const nomeSeguroFila = p.cliente_nome ? p.cliente_nome.replace(/'/g, "\\'") : '';
+                            // 🚨 CAIXAS PEQUENAS AGORA TAMBÉM SÃO CLICÁVEIS 🚨
+                            return `
+                            <div onclick="chamarSenhaVoz('${p.senha_diaria}', '${nomeSeguroFila}')" title="Chamar ${p.senha_diaria} novamente" class="btn-rechamar bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-center justify-center py-5 fade-slide-up hover:bg-emerald-100 dark:hover:bg-emerald-500/30">
                                 <span class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tracking-tighter">${p.senha_diaria}</span>
-                            </div>`).join('');
+                            </div>`;
+                        }).join('');
                     } else {
                         filaProntos.innerHTML = '<div class="col-span-4 text-slate-400 dark:text-slate-600 font-bold text-sm">Apenas o pedido acima pronto no momento.</div>';
                     }
