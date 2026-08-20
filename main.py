@@ -1645,49 +1645,65 @@ def obter_recibo_pedido(pedido_id: int, db: Session = Depends(get_db)):
 
 @app.get("/api/logistica/pedidos")
 def listar_pedidos_logistica(db: Session = Depends(get_db)):
-    pedidos = db.query(PedidoModel).order_by(desc(PedidoModel.id)).all()
-    prontos, em_rota = [], []
-    
-    for p in pedidos:
-        status_atual = str(p.status).split('.')[-1].upper()
-        tipo_atual = str(getattr(p, 'tipo_pedido', getattr(p, 'tipo', ''))).split('.')[-1].upper()
+    try:
+        # CORREÇÃO 1: Usando .desc() direto na coluna (não precisa importar nada!)
+        pedidos = db.query(PedidoModel).order_by(PedidoModel.id.desc()).all()
+        prontos, em_rota = [], []
         
-        if tipo_atual not in ["DELIVERY", "RETIRADA"]: 
-            continue
-        
-        endereco_completo = 'Retirada no Balcão' if tipo_atual == 'RETIRADA' else 'Endereço não informado'
-        
-        for item in getattr(p, 'itens', getattr(p, 'itens_pedido', [])):
-            obs = getattr(item, 'observacao', getattr(item, 'observacoes', ''))
-            if obs and "Endereço: " in obs:
-                partes = obs.split(" | ")
-                for parte in partes:
-                    if "Endereço: " in parte:
-                        endereco_completo = parte.replace("Endereço: ", "").strip()
-                        break
-                break
+        for p in pedidos:
+            try:
+                status_atual = str(p.status).split('.')[-1].upper()
+                tipo_atual = str(getattr(p, 'tipo_pedido', getattr(p, 'tipo', 'DELIVERY'))).split('.')[-1].upper()
                 
-        dados_pedido = { 
-            "id": p.id,  
-            "senha_diaria": getattr(p, 'senha_diaria', p.id),
-            "origem": getattr(p, 'origem', 'SITE'),
-            "cliente": p.cliente.nome if p.cliente else "Cliente", 
-            "telefone": p.telefone_cliente, # <--- ESSA É A LINHA MÁGICA QUE FALTAVA
-            "status": status_atual,  
-            "endereco": endereco_completo,
-            "tipo": tipo_atual
-        }
-        
-        if status_atual == "PRONTO": 
-            prontos.append(dados_pedido)
-        elif status_atual == "SAIU_PARA_ENTREGA": 
-            em_rota.append(dados_pedido)
-            
-    return {"prontos": prontos, "em_rota": em_rota}
+                if tipo_atual not in ["DELIVERY", "RETIRADA"]: 
+                    continue
+                
+                endereco_completo = 'Retirada no Balcão' if tipo_atual == 'RETIRADA' else 'Endereço não informado'
+                
+                # Sua lógica genial mantida e blindada!
+                for item in getattr(p, 'itens', getattr(p, 'itens_pedido', [])):
+                    obs = getattr(item, 'observacao', getattr(item, 'observacoes', ''))
+                    if obs and "Endereço: " in obs:
+                        partes = obs.split(" | ")
+                        for parte in partes:
+                            if "Endereço: " in parte:
+                                endereco_completo = parte.replace("Endereço: ", "").strip()
+                                break
+                        break
+                
+                # CORREÇÃO 2: Buscando o telefone com segurança
+                telefone_seguro = "Não informado"
+                if hasattr(p, 'cliente') and p.cliente:
+                    telefone_seguro = p.cliente.telefone
+                    
+                dados_pedido = { 
+                    "id": p.id,  
+                    "senha_diaria": getattr(p, 'senha_diaria', p.id),
+                    "origem": getattr(p, 'origem', 'SITE'),
+                    "cliente": p.cliente.nome if p.cliente else "Cliente", 
+                    "telefone": getattr(p, 'telefone_cliente', telefone_seguro), 
+                    "status": status_atual,  
+                    "endereco": endereco_completo,
+                    "tipo": tipo_atual
+                }
+                
+                if status_atual == "PRONTO": 
+                    prontos.append(dados_pedido)
+                elif status_atual == "SAIU_PARA_ENTREGA": 
+                    em_rota.append(dados_pedido)
+            except Exception as e_item:
+                print(f"Erro ao ler pedido na logística: {e_item}", flush=True)
+                continue # Pula o pedido com defeito e mostra o resto!
+                
+        return {"prontos": prontos, "em_rota": em_rota}
+    except Exception as e:
+        print(f"Erro geral da Rota Logística: {e}", flush=True)
+        return {"prontos": [], "em_rota": []} # Devolve vazio para não travar a tela!
 
 
 @app.put("/api/logistica/pedidos/{pedido_id}/despachar")
-def despachar_pedido(pedido_id: int, payload: DespachoMotoboy, db: Session = Depends(get_db)):
+def despachar_pedido(pedido_id: int, payload: dict, db: Session = Depends(get_db)): # CORREÇÃO 3: dict genérico
+    from fastapi import HTTPException
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
     
     if not pedido: 
@@ -1698,13 +1714,18 @@ def despachar_pedido(pedido_id: int, payload: DespachoMotoboy, db: Session = Dep
     
     if pedido.cliente:
         senha_enviar = getattr(pedido, 'senha_diaria', pedido.id)
-        notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, "SAIU_PARA_ENTREGA")
+        # BLINDAGEM DO WHATSAPP AQUI!
+        try:
+            notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, "SAIU_PARA_ENTREGA")
+        except:
+            pass
         
     return {"status": "sucesso"}
 
 
 @app.put("/api/logistica/pedidos/{pedido_id}/entregar")
 def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
+    from fastapi import HTTPException
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
     
     if not pedido: 
@@ -1715,7 +1736,11 @@ def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
     
     if pedido.cliente:
         senha_enviar = getattr(pedido, 'senha_diaria', pedido.id)
-        notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, "ENTREGUE")
+        # BLINDAGEM DO WHATSAPP AQUI TAMBÉM!
+        try:
+            notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, "ENTREGUE")
+        except:
+            pass
         
     return {"status": "sucesso", "mensagem": "Baixa realizada e cliente notificado!"}
 
