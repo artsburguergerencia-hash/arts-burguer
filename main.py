@@ -2855,34 +2855,40 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
 
 @app.get("/api/rastreio/{busca}")
 def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
-    hoje = datetime.utcnow().date()
-    pedido = None
-    
-    if busca.isdigit() and len(busca) <= 4:
-        pedido = db.query(PedidoModel).filter(PedidoModel.data_pedido == hoje, PedidoModel.senha_diaria == int(busca)).first()
-    else:
-        telefone = busca.replace("-", "").replace(" ", "").replace("(", "").replace(")", "")
-        pedido = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == telefone).order_by(desc(PedidoModel.id)).first()
+    """ Busca o pedido pelo ID, pela Senha Diária ou pelo Telefone """
+    try:
+        # Tenta achar o pedido que bata com a busca (ID, Senha ou Telefone)
+        pedido = db.query(PedidoModel).filter(
+            (PedidoModel.id == busca) | 
+            (PedidoModel.senha_diaria == busca) |
+            (PedidoModel.telefone_cliente.contains(busca))
+        ).order_by(PedidoModel.id.desc()).first()
         
-    if not pedido:
-        raise HTTPException(status_code=404, detail="Pedido não encontrado.")
+        if not pedido:
+            return JSONResponse(status_code=404, content={"erro": "Pedido não encontrado"})
+            
+        st = str(pedido.status).upper()
         
-    status_atual = str(pedido.status).split('.')[-1].upper()
-    
-    progresso = 20 # Recebido
-    if status_atual == "EM_PREPARO": progresso = 50
-    elif status_atual in ["PRONTO", "SAIU_PARA_ENTREGA"]: progresso = 80
-    elif status_atual == "ENTREGUE": progresso = 100
-    elif status_atual == "CANCELADO": progresso = 0
-    
-    return {
-        "id": pedido.id,
-        "senha": getattr(pedido, 'senha_diaria', pedido.id),
-        "status": status_atual,
-        "progresso": progresso,
-        "tipo": str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', ''))).split('.')[-1].upper(),
-        "total": pedido.total_pago
-    }
+        # Calcula a porcentagem da barra de progresso
+        progresso = 20 # Recebido
+        if "PREPAR" in st: 
+            progresso = 50
+        elif "PRONTO" in st: 
+            progresso = 80
+        elif "SAIU" in st or "ROTA" in st: 
+            progresso = 90
+        elif "ENTREGUE" in st or "FINALIZADO" in st: 
+            progresso = 100
+        
+        return {
+            "id": pedido.id,
+            "senha": getattr(pedido, 'senha_diaria', str(pedido.id)),
+            "status": st,
+            "progresso": progresso
+        }
+    except Exception as e:
+        print(f"Erro no rastreio: {e}", flush=True)
+        return JSONResponse(status_code=500, content={"erro": "Falha no servidor ao buscar pedido"})
 
 # ==========================================
 # MÓDULO DE LOGÍSTICA (TAXAS DE ENTREGA)
