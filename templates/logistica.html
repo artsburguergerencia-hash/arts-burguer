@@ -4,23 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Despacho e Logística | Art's Burguer</title>
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 🚨 MOTOR DE TEMA CLARO/ESCURO 🚨 -->
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } };
         if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
     </script>
+
     <style>
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .card-enter { animation: slideIn 0.3s ease-out forwards; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 flex flex-col h-screen overflow-hidden transition-colors duration-300">
 
+    <!-- HEADER LOGÍSTICA -->
     <header class="bg-slate-900 dark:bg-slate-950 text-white h-24 flex items-center justify-between px-8 shadow-xl shrink-0 z-10 relative border-b border-transparent dark:border-slate-800 transition-colors">
         <div class="absolute inset-0 opacity-10 overflow-hidden pointer-events-none">
             <i class="ph-fill ph-map-pin text-[150px] absolute -right-10 -top-10"></i>
@@ -45,9 +57,11 @@
                 <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></div>
                 <span class="text-xs font-bold text-slate-300 tracking-wider">Auto-Refresh Ativo</span>
             </div>
+            
             <button onclick="toggleTheme()" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-3.5 rounded-xl transition-colors active:scale-95 shadow-sm" title="Mudar Tema">
                 <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
             </button>
+
             <button onclick="buscarPedidosLogistica()" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-3.5 rounded-xl transition-colors active:scale-95 shadow-sm" title="Atualizar Agora">
                 <i class="ph-bold ph-arrows-clockwise text-xl"></i>
             </button>
@@ -57,7 +71,9 @@
         </div>
     </header>
 
+    <!-- KANBAN BOARD -->
     <main class="flex-1 flex overflow-hidden p-4 md:p-8 space-x-4 md:space-x-8">
+        
         <!-- COLUNA 1: PRONTOS PARA DESPACHO -->
         <section class="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
             <div class="p-6 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-100 dark:border-amber-500/20 flex justify-between items-center shrink-0 transition-colors">
@@ -66,10 +82,15 @@
                 </h2>
                 <span class="bg-amber-500 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="badge-prontos">0</span>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/50 no-scrollbar relative transition-colors" id="lista-prontos"></div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/50 no-scrollbar relative transition-colors" id="lista-prontos">
+                <div class="flex flex-col items-center justify-center h-full text-slate-300 dark:text-slate-600 opacity-50">
+                    <i class="ph-bold ph-spinner animate-spin text-5xl mb-4"></i>
+                    <p class="font-bold text-sm uppercase tracking-widest">Buscando Pedidos...</p>
+                </div>
+            </div>
         </section>
 
-        <!-- COLUNA 2: EM ROTA -->
+        <!-- COLUNA 2: EM ROTA (Com o Cliente) -->
         <section class="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
             <div class="p-6 bg-blue-50 dark:bg-blue-500/10 border-b border-blue-100 dark:border-blue-500/20 flex justify-between items-center shrink-0 transition-colors">
                 <h2 class="font-black text-lg text-blue-900 dark:text-blue-400 flex items-center tracking-tight">
@@ -77,10 +98,17 @@
                 </h2>
                 <span class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="badge-rota">0</span>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/50 no-scrollbar relative transition-colors" id="lista-rota"></div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/50 no-scrollbar relative transition-colors" id="lista-rota">
+                <div class="flex flex-col items-center justify-center h-full text-slate-300 dark:text-slate-600 opacity-50">
+                    <i class="ph-fill ph-motorcycle text-6xl mb-4"></i>
+                    <p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p>
+                </div>
+            </div>
         </section>
+
     </main>
 
+    <!-- SCRIPT DE EXPEDIÇÃO -->
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             buscarPedidosLogistica();
@@ -122,7 +150,6 @@
 
         async function buscarPedidosLogistica() {
             try {
-                // 🚨 NOVA ROTA DE LOGÍSTICA
                 const response = await fetch('/api/logistica/pedidos');
                 const dados = await response.json();
                 
