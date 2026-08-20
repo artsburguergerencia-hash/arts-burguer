@@ -1,295 +1,158 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Despacho e Logística | Art's Burguer</title>
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Boolean
+from sqlalchemy.orm import relationship
+
+# Importando a base do nosso sistema
+from database import Base, SessionLocal
+from vendas_pdv import PedidoModel, StatusPedido
+
+# ==============================================================================
+# 1. MODELOS DO BANCO DE DADOS (Logística e Entregadores)
+# ==============================================================================
+
+class MotoboyModel(Base):
+    """Cadastro da frota de entregadores."""
+    __tablename__ = "motoboys"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, nullable=False)
+    telefone = Column(String, nullable=False)
+    placa_moto = Column(String, nullable=True)
+    ativo = Column(Boolean, default=True)
     
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    # Modelo de remuneração (ex: R$ 2,00 fixo + valor por KM, ou taxa integral)
+    taxa_fixa_por_entrega = Column(Float, default=0.0)
     
-    <!-- 🚨 MOTOR DE TEMA CLARO/ESCURO 🚨 -->
-    <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } };
-        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
-    </script>
+    entregas = relationship("EntregaModel", back_populates="motoboy")
 
-    <style>
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .card-enter { animation: slideIn 0.3s ease-out forwards; }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-</head>
-<body class="bg-slate-100 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 flex flex-col h-screen overflow-hidden transition-colors duration-300">
 
-    <!-- HEADER LOGÍSTICA -->
-    <header class="bg-slate-900 dark:bg-slate-950 text-white h-24 flex items-center justify-between px-8 shadow-xl shrink-0 z-10 relative border-b border-transparent dark:border-slate-800 transition-colors">
-        <div class="absolute inset-0 opacity-10 overflow-hidden pointer-events-none">
-            <i class="ph-fill ph-map-pin text-[150px] absolute -right-10 -top-10"></i>
-        </div>
+class EntregaModel(Base):
+    """Registro de cada corrida feita por um motoboy."""
+    __tablename__ = "entregas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    pedido_id = Column(Integer, ForeignKey("pedidos.id"), unique=True, nullable=False)
+    motoboy_id = Column(Integer, ForeignKey("motoboys.id"), nullable=False)
+    
+    distancia_km = Column(Float, default=0.0)
+    valor_pago_motoboy = Column(Float, nullable=False) # Comissão/Taxa desta corrida
+    
+    hora_saida = Column(DateTime, default=datetime.utcnow)
+    hora_entrega = Column(DateTime, nullable=True)
+    
+    pedido = relationship("PedidoModel")
+    motoboy = relationship("MotoboyModel", back_populates="entregas")
+
+# ==============================================================================
+# 2. LÓGICA DE NEGÓCIO E ROTEIRIZAÇÃO
+# ==============================================================================
+
+def calcular_distancia_e_taxa(endereco_cliente: dict):
+    """
+    Simula a integração com a API do Google Maps ou Waze para roteirização.
+    Aqui calculamos a distância entre o Art's Burguer e a casa do cliente.
+    """
+    # Em um cenário real, enviaríamos o endereço da hamburgueria e do cliente para a API.
+    # Exemplo mockado de processamento em Fazenda Rio Grande:
+    bairro_cliente = endereco_cliente.get("bairro", "").lower()
+    
+    # Tabela de contingência/raio de entrega (Mock)
+    if bairro_cliente == "centro":
+        return {"distancia_km": 1.5, "taxa_cobrada_cliente": 5.00}
+    elif bairro_cliente == "eucaliptos":
+        return {"distancia_km": 3.2, "taxa_cobrada_cliente": 8.00}
+    elif bairro_cliente == "nações":
+        return {"distancia_km": 5.0, "taxa_cobrada_cliente": 12.00}
+    else:
+        # Cálculo genérico para outros bairros via API
+        distancia_simulada = 4.5
+        taxa_base = 3.00
+        taxa_por_km = 1.50
+        taxa_final = taxa_base + (distancia_simulada * taxa_por_km)
+        return {"distancia_km": distancia_simulada, "taxa_cobrada_cliente": round(taxa_final, 2)}
+
+
+def despachar_pedido(db, pedido_id: int, motoboy_id: int, distancia_km: float):
+    """
+    Pega o lanche que está 'Pronto' na cozinha e entrega para o motoboy.
+    """
+    pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+    motoboy = db.query(MotoboyModel).filter(MotoboyModel.id == motoboy_id).first()
+    
+    if not pedido or not motoboy:
+        print("❌ Erro: Pedido ou Motoboy não encontrado.")
+        return False
         
-        <div class="relative z-10 flex items-center">
-            <!-- 🚨 LOGO INJETADA AQUI 🚨 -->
-            <div id="header-logo-container" class="w-14 h-14 bg-brand-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-brand-500/30 overflow-hidden">
-                <i id="header-logo-letra" class="ph-bold ph-moped text-3xl text-white"></i>
-                <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
-            </div>
-            <div>
-                <h1 class="text-2xl font-black tracking-tight">Central de Expedição e Despacho</h1>
-                <p class="text-[10px] text-brand-400 font-bold uppercase tracking-widest mt-0.5 flex items-center">
-                    <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse mr-2"></span> Integração Uber / 99 / Frota Própria
-                </p>
-            </div>
-        </div>
-        
-        <div class="relative z-10 flex items-center space-x-4">
-            <div class="bg-slate-800/80 backdrop-blur border border-slate-700 px-4 py-2.5 rounded-xl flex items-center shadow-inner hidden md:flex">
-                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></div>
-                <span class="text-xs font-bold text-slate-300 tracking-wider">Auto-Refresh Ativo</span>
-            </div>
-            
-            <button onclick="toggleTheme()" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-3.5 rounded-xl transition-colors active:scale-95 shadow-sm" title="Mudar Tema">
-                <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
-            </button>
+    if pedido.status != StatusPedido.PRONTO:
+        print(f"⚠️ O pedido #{pedido.id} ainda não está pronto na cozinha!")
+        return False
 
-            <button onclick="buscarPedidosLogistica()" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-3.5 rounded-xl transition-colors active:scale-95 shadow-sm" title="Atualizar Agora">
-                <i class="ph-bold ph-arrows-clockwise text-xl"></i>
-            </button>
-            <a href="/gestao" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 p-3.5 rounded-xl transition-colors active:scale-95 border border-red-500/20 flex items-center" title="Sair da Expedição">
-                <i class="ph-bold ph-sign-out text-xl"></i>
-            </a>
-        </div>
-    </header>
+    # 1. Calcula quanto o motoboy vai ganhar nessa corrida
+    # (Pode ser a taxa de entrega integral que o cliente pagou, ou um valor fixo seu)
+    valor_comissao = motoboy.taxa_fixa_por_entrega
+    if valor_comissao == 0.0:
+        valor_comissao = pedido.taxa_entrega # Ele ganha a taxa 100%
 
-    <!-- KANBAN BOARD -->
-    <main class="flex-1 flex overflow-hidden p-4 md:p-8 space-x-4 md:space-x-8">
-        
-        <!-- COLUNA 1: PRONTOS PARA DESPACHO -->
-        <section class="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
-            <div class="p-6 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-100 dark:border-amber-500/20 flex justify-between items-center shrink-0 transition-colors">
-                <h2 class="font-black text-lg text-amber-900 dark:text-amber-400 flex items-center tracking-tight">
-                    <i class="ph-fill ph-package text-amber-500 mr-2 text-2xl"></i> Aguardando Saída
-                </h2>
-                <span class="bg-amber-500 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="badge-prontos">0</span>
-            </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/50 no-scrollbar relative transition-colors" id="lista-prontos">
-                <div class="flex flex-col items-center justify-center h-full text-slate-300 dark:text-slate-600 opacity-50">
-                    <i class="ph-bold ph-spinner animate-spin text-5xl mb-4"></i>
-                    <p class="font-bold text-sm uppercase tracking-widest">Buscando Pedidos...</p>
-                </div>
-            </div>
-        </section>
+    # 2. Cria o registro de logística
+    nova_entrega = EntregaModel(
+        pedido_id=pedido.id,
+        motoboy_id=motoboy.id,
+        distancia_km=distancia_km,
+        valor_pago_motoboy=valor_comissao
+    )
+    db.add(nova_entrega)
+    
+    # 3. Atualiza o status do pedido (isso pode disparar um WhatsApp pro cliente!)
+    pedido.status = StatusPedido.EM_ROTA
+    
+    db.commit()
+    db.refresh(nova_entrega)
+    print(f"🛵 Pedido #{pedido.id} DESPACHADO! Motoboy: {motoboy.nome} | Comissão: R$ {valor_comissao:.2f}")
+    return nova_entrega
 
-        <!-- COLUNA 2: EM ROTA (Com o Cliente) -->
-        <section class="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
-            <div class="p-6 bg-blue-50 dark:bg-blue-500/10 border-b border-blue-100 dark:border-blue-500/20 flex justify-between items-center shrink-0 transition-colors">
-                <h2 class="font-black text-lg text-blue-900 dark:text-blue-400 flex items-center tracking-tight">
-                    <i class="ph-fill ph-map-pin-line text-blue-500 mr-2 text-2xl"></i> Em Rota de Entrega
-                </h2>
-                <span class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-black shadow-sm" id="badge-rota">0</span>
-            </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/50 no-scrollbar relative transition-colors" id="lista-rota">
-                <div class="flex flex-col items-center justify-center h-full text-slate-300 dark:text-slate-600 opacity-50">
-                    <i class="ph-fill ph-motorcycle text-6xl mb-4"></i>
-                    <p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p>
-                </div>
-            </div>
-        </section>
 
-    </main>
+def fechar_acerto_motoboy(db, motoboy_id: int):
+    """
+    Gera o relatório de fim de noite para pagar o motoboy.
+    """
+    entregas_hoje = db.query(EntregaModel).filter(
+        EntregaModel.motoboy_id == motoboy_id,
+        EntregaModel.hora_saida >= datetime.utcnow().date() # Corridas do dia atual
+    ).all()
+    
+    total_corridas = len(entregas_hoje)
+    valor_total_receber = sum(entrega.valor_pago_motoboy for entrega in entregas_hoje)
+    
+    print("\n" + "="*40)
+    print(f"💸 ACERTO DE MOTOBOY - ID: {motoboy_id}")
+    print(f"   Corridas realizadas hoje: {total_corridas}")
+    print(f"   Valor a ser pago: R$ {valor_total_receber:.2f}")
+    print("="*40 + "\n")
+    
+    return valor_total_receber
 
-    <!-- SCRIPT DE EXPEDIÇÃO -->
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            buscarPedidosLogistica();
-            try {
-                const res = await fetch('/api/gestao/configuracoes'); 
-                const configLoja = await res.json();
-                
-                if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
-                    const letra = document.getElementById('header-logo-letra'); 
-                    const img = document.getElementById('header-logo-img'); 
-                    const container = document.getElementById('header-logo-container');
-                    
-                    img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
-                    img.src = configLoja.logo_url; 
-                    img.classList.remove('hidden');
-                    letra.classList.add('hidden'); 
-                    container.classList.remove('bg-brand-500'); 
-                    container.classList.add('bg-white', 'border', 'border-slate-200');
-                }
-            } catch(e) {}
-        });
-
-        const themeIcon = document.getElementById('theme-icon');
-        if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
-
-        function toggleTheme() {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-                if(themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-                if(themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
-            }
-        }
-
-        setInterval(buscarPedidosLogistica, 5000);
-
-        async function buscarPedidosLogistica() {
-            try {
-                const response = await fetch('/api/logistica/pedidos');
-                const dados = await response.json();
-                
-                renderizarProntos(dados.prontos || []);
-                renderizarEmRota(dados.em_rota || []);
-                
-                document.getElementById('badge-prontos').innerText = (dados.prontos || []).length;
-                document.getElementById('badge-rota').innerText = (dados.em_rota || []).length;
-            } catch (error) { console.error("Erro ao buscar dados logísticos:", error); }
-        }
-
-        function renderizarProntos(pedidos) {
-            const container = document.getElementById('lista-prontos');
-            if (pedidos.length === 0) {
-                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 opacity-50 transition-colors"><i class="ph-fill ph-check-circle text-6xl mb-4"></i><p class="font-bold text-sm uppercase tracking-widest">Expedição Limpa</p></div>`;
-                return;
-            }
-
-            container.innerHTML = pedidos.map(p => {
-                const isRetirada = (p.tipo && p.tipo.includes('RETIRADA')) || (p.endereco && p.endereco.includes('Retirada'));
-                const endLimpo = p.endereco ? p.endereco.replace(/'/g, "\\'") : '';
-
-                return `
-                    <div class="card-enter bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all relative overflow-hidden">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 ${isRetirada ? 'bg-purple-500' : 'bg-amber-400'}"></div>
-                        <div class="flex justify-between items-start mb-3 pl-2">
-                            <div>
-                                <span class="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-200 dark:border-slate-700 shadow-inner">#${p.senha_diaria || p.id}</span>
-                                <span class="${isRetirada ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'} px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest border shadow-sm">${isRetirada ? 'Retirada' : 'Delivery'}</span>
-                            </div>
-                        </div>
-                        <div class="pl-2 mb-4">
-                            <h3 class="font-black text-slate-800 dark:text-white text-lg mb-1 tracking-tight">${p.cliente}</h3>
-                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-start leading-snug">
-                                <i class="ph-fill ph-map-pin text-brand-500 mr-1.5 mt-0.5 text-base"></i> ${p.endereco}
-                            </p>
-                        </div>
-                        <div class="pl-2">
-                            ${isRetirada ? `
-                                <button onclick="concluirRetirada(${p.id})" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-xs uppercase tracking-widest shadow-md">
-                                    <i class="ph-fill ph-check-circle mr-2 text-lg"></i> Cliente Retirou
-                                </button>
-                            ` : `
-                                <div class="space-y-2">
-                                    <div class="flex space-x-2">
-                                        <button onclick="copilotoDespacho(${p.id}, 'Uber', '${endLimpo}')" id="btn-uber-${p.id}" class="flex-1 bg-black hover:bg-slate-800 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md"><i class="ph-fill ph-car-profile mr-1 text-base"></i> Uber</button>
-                                        <button onclick="copilotoDespacho(${p.id}, '99', '${endLimpo}')" id="btn-99-${p.id}" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md"><i class="ph-fill ph-car-profile mr-1 text-base"></i> 99</button>
-                                    </div>
-                                    <button onclick="despacharMotoboyProprio(${p.id})" id="btn-proprio-${p.id}" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-md"><i class="ph-fill ph-moped mr-2 text-lg"></i> Motoboy da Casa</button>
-                                    <button onclick="window.open('/motoboy?pedido=${p.senha_diaria || p.id}&end=${encodeURIComponent(endLimpo)}', '_blank')" class="w-full bg-slate-800 dark:bg-slate-900 hover:bg-slate-700 text-slate-300 font-bold py-2 mt-2 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest shadow-inner border border-transparent dark:border-slate-700"><i class="ph-bold ph-qr-code mr-1"></i> Enviar Link do GPS</button>
-                                </div>
-                            `}
-                        </div>
-                    </div>`;
-            }).join('');
-        }
-
-        function renderizarEmRota(pedidos) {
-            const container = document.getElementById('lista-rota');
-            if (pedidos.length === 0) {
-                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 opacity-50 transition-colors"><i class="ph-fill ph-motorcycle text-6xl mb-4"></i><p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p></div>`;
-                return;
-            }
-
-            container.innerHTML = pedidos.map(p => {
-                const endLimpo = p.endereco ? p.endereco.replace(/'/g, "\\'") : '';
-                return `
-                <div class="card-enter bg-slate-900 dark:bg-slate-800 text-white border border-slate-800 dark:border-slate-700 p-5 rounded-2xl shadow-lg relative overflow-hidden transition-colors">
-                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
-                    <div class="flex justify-between items-start mb-3 pl-2">
-                        <div>
-                            <span class="bg-slate-800 dark:bg-slate-900 text-slate-300 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest mr-2 border border-slate-700 shadow-inner">#${p.senha_diaria || p.id}</span>
-                            <span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest"><i class="ph-fill ph-motorcycle mr-1"></i> A Caminho</span>
-                        </div>
-                    </div>
-                    <div class="pl-2 mb-4">
-                        <h3 class="font-black text-white text-lg mb-1 tracking-tight">${p.cliente}</h3>
-                        <p class="text-xs font-medium text-slate-400 flex items-start leading-snug"><i class="ph-fill ph-map-pin text-brand-500 mr-1.5 mt-0.5 text-base"></i> ${p.endereco}</p>
-                    </div>
-                    <div class="flex space-x-2 pl-2">
-                        <button onclick="abrirGPS('${endLimpo}')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 px-4 rounded-xl flex items-center justify-center transition-colors text-xs shadow-md"><i class="ph-fill ph-navigation-arrow text-blue-400 text-lg"></i></button>
-                        <button onclick="marcarComoEntregue(${p.id})" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl flex items-center justify-center transition-colors text-xs uppercase tracking-widest shadow-md border border-blue-500"><i class="ph-bold ph-check-circle mr-2 text-lg"></i> Entregue</button>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        function abrirGPS(endereco) {
-            if(!endereco || endereco.includes('Retirada')) return alert("Endereço inválido para GPS.");
-            const enderecoLimpo = endereco.replace('Endereço: ', '').trim();
-            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoLimpo)}`, '_blank');
-        }
-
-        async function copilotoDespacho(pedidoId, plataforma, enderecoFormatado) {
-            const isUber = plataforma === 'Uber';
-            const enderecoLimpo = enderecoFormatado.replace('Endereço: ', '').trim();
-            try { await navigator.clipboard.writeText(enderecoLimpo); } catch(e) {}
-
-            if (isUber) window.location.href = `uber://?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(enderecoLimpo)}`;
-            else { alert("Endereço copiado! 📋\nA 99 vai abrir."); window.location.href = "taxis99://"; }
-
-            setTimeout(async () => {
-                if(!confirm(`Já pediu a corrida na ${plataforma} para este cliente?`)) return;
-                try {
-                    const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nome_motoboy: `App Parceiro (${plataforma})` })
-                    });
-                    if(res.ok) buscarPedidosLogistica(); 
-                } catch(e) { alert("Falha de conexão."); }
-            }, 4000);
-        }
-
-        async function despacharMotoboyProprio(pedidoId) {
-            const nomeMotoboy = prompt("Nome do Motoboy:", "Motoboy Próprio");
-            if (nomeMotoboy === null) return;
-            try {
-                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome_motoboy: nomeMotoboy })
-                });
-                if(res.ok) buscarPedidosLogistica(); 
-            } catch(e) { alert("Falha de conexão."); }
-        }
-
-        async function concluirRetirada(pedidoId) {
-            if(!confirm("Confirmar que o cliente retirou o pedido?")) return;
-            try {
-                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' });
-                if(res.ok) buscarPedidosLogistica(); 
-            } catch(e) {}
-        }
-
-        async function marcarComoEntregue(pedidoId) {
-            if(!confirm("Confirmar que foi entregue?")) return;
-            try {
-                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' });
-                if(res.ok) buscarPedidosLogistica(); 
-            } catch(e) {}
-        }
-    </script>
-</body>
-</html>
+# ==============================================================================
+# 3. SIMULAÇÃO DO FLUXO DE DELIVERY
+# ==============================================================================
+if __name__ == "__main__":
+    db_session = SessionLocal()
+    
+    print("--- 1. Roteirização (Cliente finalizando no App) ---")
+    endereco_mock = {"logradouro": "Avenida das Araucárias", "bairro": "Centro"}
+    dados_rota = calcular_distancia_e_taxa(endereco_mock)
+    print(f"📍 Endereço analisado. Distância: {dados_rota['distancia_km']}km. Taxa calculada: R$ {dados_rota['taxa_cobrada_cliente']:.2f}")
+    
+    # (Em uma operação real, aqui o cliente faria o pedido pagando essa taxa)
+    
+    print("\n--- 2. Cadastrando Motoboy da casa ---")
+    # Cadastrando motoboy que ganha o valor integral da taxa de entrega
+    piloto_1 = MotoboyModel(nome="Carlos Silva", telefone="41999999999", placa_moto="ABC-1234", taxa_fixa_por_entrega=0.0)
+    db_session.add(piloto_1)
+    db_session.commit()
+    
+    # (Para o teste do despacho funcionar localmente, precisaríamos de um Pedido ID válido no banco 
+    # com status PRONTO, o que normalmente vem do kds.py)
+    # despachar_pedido(db_session, pedido_id=1, motoboy_id=piloto_1.id, distancia_km=dados_rota['distancia_km'])
+    # fechar_acerto_motoboy(db_session, piloto_1.id)
+    
+    db_session.close()
