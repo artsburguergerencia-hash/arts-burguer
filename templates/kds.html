@@ -40,13 +40,9 @@
     <!-- HEADER DO KDS -->
     <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm shrink-0 transition-colors duration-300">
         <div class="flex items-center">
-            
-            <!-- 🚨 LOGO DINÂMICA INJETADA AQUI 🚨 -->
-            <div id="header-logo-container" class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg border-2 border-transparent overflow-hidden shrink-0 mr-4 transition-colors">
-                <i id="header-logo-letra" class="ph-bold ph-fire text-2xl"></i>
-                <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
+            <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-amber-500/30">
+                <i class="ph-bold ph-fire text-2xl text-white"></i>
             </div>
-
             <div>
                 <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">MONITOR KDS</h1>
                 <p class="text-[10px] font-bold tracking-widest text-amber-500 uppercase mt-1 flex items-center">
@@ -108,51 +104,30 @@
     </main>
 
     <script>
-        // 🚨 SCRIPT QUE BUSCA A LOGO NO BANCO 🚨
-        document.addEventListener('DOMContentLoaded', async () => {
-            carregarKDS(); // Carrega as comandas
-            try {
-                const res = await fetch('/api/gestao/configuracoes'); 
-                const configLoja = await res.json();
-                
-                if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
-                    const letra = document.getElementById('header-logo-letra'); 
-                    const img = document.getElementById('header-logo-img'); 
-                    const container = document.getElementById('header-logo-container');
-                    if(letra && img && container) {
-                        img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
-                        img.src = configLoja.logo_url; 
-                        img.classList.remove('hidden');
-                        letra.classList.add('hidden'); 
-                        container.classList.remove('bg-amber-500'); 
-                        container.classList.add('bg-white', 'border-slate-200', 'dark:bg-slate-800', 'dark:border-slate-700');
-                    }
-                }
-            } catch(e) {}
-        });
-
         // MOTOR DE TEMA
         const htmlElement = document.documentElement;
         const themeIcon = document.getElementById('theme-icon');
-        if (htmlElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+        if (htmlElement.classList.contains('dark')) themeIcon.classList.replace('ph-moon', 'ph-sun');
 
         function toggleTheme() {
             if (htmlElement.classList.contains('dark')) {
                 htmlElement.classList.remove('dark');
                 localStorage.setItem('theme', 'light');
-                if (themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
+                themeIcon.classList.replace('ph-sun', 'ph-moon');
             } else {
                 htmlElement.classList.add('dark');
                 localStorage.setItem('theme', 'dark');
-                if (themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+                themeIcon.classList.replace('ph-moon', 'ph-sun');
             }
         }
 
         // MOTOR DO KDS
+        document.addEventListener('DOMContentLoaded', carregarKDS);
         setInterval(carregarKDS, 5000); // Auto-Refresh a cada 5s
 
         async function carregarKDS() {
             try {
+                // Supondo que sua rota de KDS retorna os pedidos
                 const response = await fetch('/api/kds/pedidos'); 
                 const dados = await response.json();
                 
@@ -211,11 +186,11 @@
             if (!isChapa) {
                 // CARD DA FILA DE PREPARO
                 return `
-                <div class="card-enter bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm relative overflow-hidden transition-colors">
+                <div class="card-enter bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm relative overflow-hidden">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-300 dark:bg-slate-600"></div>
-                    <div class="flex justify-between items-center mb-3 border-b border-slate-100 dark:border-slate-700 pb-2 transition-colors">
+                    <div class="flex justify-between items-center mb-3 border-b border-slate-100 dark:border-slate-700 pb-2">
                         <h3 class="font-black text-xl text-slate-800 dark:text-white tracking-tighter">#${senha}</h3>
-                        <span class="text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-1 rounded transition-colors">${origem}</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-1 rounded">${origem}</span>
                     </div>
                     <div class="mb-4 space-y-1">
                         ${itensHTML}
@@ -227,10 +202,10 @@
             } else {
                 // CARD DA CHAPA
                 return `
-                <div class="card-enter bg-white dark:bg-slate-800 border-2 border-amber-400 dark:border-amber-500/50 rounded-2xl p-4 shadow-lg shadow-amber-500/10 relative overflow-hidden transition-colors">
-                    <div class="flex justify-between items-center mb-3 border-b border-amber-100 dark:border-slate-700 pb-2 transition-colors">
+                <div class="card-enter bg-white dark:bg-slate-800 border-2 border-amber-400 dark:border-amber-500 rounded-2xl p-4 shadow-lg shadow-amber-500/10 relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-3 border-b border-amber-100 dark:border-slate-700 pb-2">
                         <h3 class="font-black text-2xl text-amber-600 dark:text-amber-400 tracking-tighter">#${senha}</h3>
-                        <span class="text-[10px] font-black uppercase tracking-widest bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-2 py-1 rounded animate-pulse transition-colors">${origem}</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-2 py-1 rounded animate-pulse">${origem}</span>
                     </div>
                     <div class="mb-4 space-y-1">
                         ${itensHTML}
