@@ -95,13 +95,11 @@
                 if(configLoja.nome_empresa) document.getElementById('tv-nome-loja').innerText = configLoja.nome_empresa;
                 
                 if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
-                    // Logo do Cabeçalho
                     const img = document.getElementById('header-logo-img'); 
                     img.src = configLoja.logo_url; img.classList.remove('hidden');
                     document.getElementById('header-logo-letra').classList.add('hidden'); 
                     document.getElementById('header-logo-container').classList.replace('bg-brand-500', 'bg-white');
 
-                    // Logo da Ativação
                     const imgStart = document.getElementById('start-logo-img'); 
                     imgStart.src = configLoja.logo_url; imgStart.classList.remove('hidden');
                     document.getElementById('start-logo-letra').classList.add('hidden'); 
@@ -127,6 +125,7 @@
 
         let ultimoPedidoProntoId = 0;
         let somAtivado = false;
+        let ultimaCargaTV = "";
 
         setInterval(() => {
             const agora = new Date();
@@ -145,9 +144,17 @@
             if(!somAtivado) return; 
             
             try {
-                // 🚨 NOVA ROTA DE DADOS EXCLUSIVA DA TV 🚨
                 const res = await fetch('/api/tv/pedidos');
                 const dados = await res.json();
+                
+                // 🚨 NOVA BLINDAGEM ANTI-PISCAR (Cria uma assinatura só com os IDs das comandas em ordem)
+                const idsPreparo = (dados.em_preparo || []).map(p => p.id).sort().join(',');
+                const idsProntos = (dados.prontos || []).map(p => p.id).sort().join(',');
+                const assinaturaAtual = idsPreparo + "|" + idsProntos;
+
+                // Se as comandas que estão na TV forem exatamente as mesmas da busca, ignora a atualização visual!
+                if (assinaturaAtual === ultimaCargaTV) return; 
+                ultimaCargaTV = assinaturaAtual;
                 
                 const emPreparo = dados.em_preparo || [];
                 let prontos = dados.prontos || [];
