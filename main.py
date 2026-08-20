@@ -1720,11 +1720,15 @@ def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
 @app.get("/api/kds/pedidos")
 def listar_pedidos_cozinha(db: Session = Depends(get_db)):
     pedidos_ativos = db.query(PedidoModel).order_by(PedidoModel.id.asc()).all()
-    lista_kds = []
+    
+    # Criamos as duas caixas que o HTML está esperando!
+    recebidos = []
+    preparando = []
     
     for pedido in pedidos_ativos:
         status_atual = str(pedido.status).split('.')[-1].upper()
-        if status_atual not in ["RECEBIDO", "EM_PREPARO", "PRONTO"]: 
+        # Se não estiver nesses 3, ignora
+        if status_atual not in ["RECEBIDO", "EM_PREPARO", "PREPARANDO"]: 
             continue
             
         tipo_atual = str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', ''))).split('.')[-1].upper()
@@ -1735,20 +1739,27 @@ def listar_pedidos_cozinha(db: Session = Depends(get_db)):
             obs = getattr(item, 'observacao', getattr(item, 'observacoes', ''))
             itens.append({
                 "quantidade": item.quantidade, 
-                "nome_produto": produto.nome if produto else "Removido", 
+                "nome": produto.nome if produto else "Item Editado", # Ajustado para bater com o HTML!
                 "observacao": obs
             })
             
-        lista_kds.append({
+        obj_pedido = {
             "id": pedido.id, 
             "senha_diaria": getattr(pedido, 'senha_diaria', pedido.id),
             "origem": getattr(pedido, 'origem', 'SITE'),
             "tipo": tipo_atual, 
             "status": status_atual, 
             "itens": itens
-        })
-        
-    return lista_kds
+        }
+
+        # Separa nas caixas certas
+        if status_atual == "RECEBIDO":
+            recebidos.append(obj_pedido)
+        else:
+            preparando.append(obj_pedido)
+            
+    # Manda as duas caixas com os nomes que o kds.html espera
+    return {"recebidos": recebidos, "preparando": preparando}
 
 
 @app.put("/api/kds/pedidos/{pedido_id}/status")
@@ -1763,7 +1774,10 @@ def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, db: Session = 
     
     if pedido.cliente:
         senha_enviar = getattr(pedido, 'senha_diaria', pedido.id)
-        notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, novo_status)
+        try:
+            notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, novo_status)
+        except:
+            pass # Ignora se o WhatsApp não estiver configurado
         
     return {"mensagem": "Status atualizado"}
 
