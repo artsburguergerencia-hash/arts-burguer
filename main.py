@@ -3300,11 +3300,8 @@ def obter_pedidos_tv(db: Session = Depends(get_db)):
         prontos = []
         for p in pedidos:
             st = str(p.status).upper()
-            tipo = str(getattr(p, 'tipo_pedido', getattr(p, 'tipo', 'DELIVERY'))).upper()
             
-            # Se for Delivery, não polui a tela da TV (opcional, pode remover o if se quiser)
-            if "DELIVERY" in tipo:
-                continue 
+            # 🚨 TRAVA DE DELIVERY REMOVIDA AQUI! AGORA TODOS APARECEM NA TV 🚨
             
             obj = {
                 "id": p.id,
