@@ -3262,6 +3262,139 @@ def cura_checkout(db: Session = Depends(get_db)):
 
     return {"status": "Vacina do Checkout Aplicada!", "logs": logs}
     
+ # =======================================================
+# ROTAS DE CONEXÃO: TV E LOGÍSTICA (À PROVA DE FALHAS)
+# =======================================================
+
+@app.get("/api/tv/pedidos")
+def obter_pedidos_tv(db: Session = Depends(get_db)):
+    """ Rota exclusiva para alimentar a tela da TV do Salão """
+    try:
+        pedidos = db.query(PedidoModel).all()
+        em_preparo = []
+        prontos = []
+        for p in pedidos:
+            st = str(p.status).upper()
+            tipo = str(getattr(p, 'tipo_pedido', getattr(p, 'tipo', 'DELIVERY'))).upper()
+            
+            # Se for Delivery, não polui a tela da TV (opcional, pode remover o if se quiser)
+            if "DELIVERY" in tipo:
+                continue 
+            
+            obj = {
+                "id": p.id,
+                "senha_diaria": getattr(p, 'senha_diaria', str(p.id).zfill(3)),
+                "cliente_nome": p.cliente.nome if getattr(p, 'cliente', None) else "Cliente"
+            }
+            
+            if "RECEBIDO" in st or "PREPAR" in st:
+                em_preparo.append(obj)
+            elif "PRONTO" in st:
+                prontos.append(obj)
+                
+        return {"em_preparo": em_preparo, "prontos": prontos}
+    except Exception: 
+        return {"em_preparo": [], "prontos": []}
+
+
+@app.get("/api/logistica/pedidos")
+def obter_pedidos_logistica(db: Session = Depends(get_db)):
+    """ Rota exclusiva para alimentar o Painel de Expedição e Logística """
+    try:
+        pedidos = db.query(PedidoModel).all()
+        prontos = []
+        em_rota = []
+        for p in pedidos:
+            st = str(p.status).upper()
+            tipo = str(getattr(p, 'tipo_pedido', getattr(p, 'tipo', 'DELIVERY'))).upper()
+            
+            # Puxa apenas o que está saindo da cozinha ou na rua
+            if "PRONTO" in st or "SAIU" in st or "ROTA" in st:
+                obj = {
+                    "id": p.id,
+                    "senha_diaria": getattr(p, 'senha_diaria', str(p.id).zfill(3)),
+                    "cliente": p.cliente.nome if getattr(p, 'cliente', None) else "Cliente",
+                    "endereco": getattr(p, 'endereco', 'Retirada Balcão'),
+                    "tipo": tipo
+                }
+                
+                if "PRONTO" in st:
+                    prontos.append(obj)
+                else:
+                    em_rota.append(obj)
+                    
+        return {"prontos": prontos, "em_rota": em_rota}
+    except Exception: 
+        return {"prontos": [], "em_rota": []}
+
+
+@app.put("/api/logistica/pedidos/{pedido_id}/despachar")
+def despachar_pedido(pedido_id: int, payload: dict, db: Session = Depends(get_db)):
+    try:
+        pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+        if pedido:
+            pedido.status = "SAIU_PARA_ENTREGA"
+            db.commit()
+            senha = getattr(pedido, 'senha_diaria', pedido.id)
+            if getattr(pedido, 'cliente', None):
+                try:
+                    notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha, "SAIU_PARA_ENTREGA")
+                except: pass
+        return {"ok": True}
+    except Exception: 
+        return {"ok": False}
+
+
+@app.put("/api/logistica/pedidos/{pedido_id}/entregar")
+def entregar_pedido(pedido_id: int, db: Session = Depends(get_db)):
+    try:
+        pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
+        if pedido:
+            pedido.status = "ENTREGUE"
+            db.commit()
+            senha = getattr(pedido, 'senha_diaria', pedido.id)
+            if getattr(pedido, 'cliente', None):
+                try:
+                    notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha, "ENTREGUE")
+                except: pass
+        return {"ok": True}
+    except Exception: 
+        return {"ok": False}
+
+# =======================================================
+# 🚨 RESOLUÇÃO DO BUG DAS SENHAS DIÁRIAS (SUBSTITUA A SUA) 🚨
+# =======================================================
+def gerar_senha_diaria(db: Session):
+    """
+    Substitua a sua função antiga por esta. 
+    Lê o último pedido de forma segura e reseta a senha para 001 à meia-noite.
+    """
+    from datetime import datetime
+    hoje = datetime.utcnow().date()
+    try:
+        ultimo = db.query(PedidoModel).order_by(PedidoModel.id.desc()).first()
+        if not ultimo: 
+            return "001"
+        
+        # Procura onde o seu banco salvou a data
+        data_ultimo = getattr(ultimo, 'data_pedido', None)
+        if not data_ultimo:
+            dh = getattr(ultimo, 'data_hora', None)
+            if dh and hasattr(dh, 'date'): 
+                data_ultimo = dh.date()
+                
+        if data_ultimo == hoje:
+            try:
+                # É de hoje, então soma 1 à senha anterior
+                return str(int(ultimo.senha_diaria) + 1).zfill(3)
+            except: 
+                return str(ultimo.id + 1).zfill(3)
+        else:
+            # Não é de hoje (já é o dia seguinte), reseta para 001
+            return "001"
+    except Exception: 
+        return "001"
+        
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
