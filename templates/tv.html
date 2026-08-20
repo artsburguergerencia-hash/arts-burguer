@@ -23,6 +23,7 @@
 </head>
 <body class="bg-slate-50 dark:bg-dark-900 text-slate-800 dark:text-slate-100 h-screen w-screen flex flex-col transition-colors duration-300">
 
+    <!-- CAMPAINHA PREMIUM -->
     <audio id="som-chamada" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_22dcd5dbda.mp3?filename=airport-chime-1-105102.mp3" preload="auto"></audio>
 
     <div id="tela-ativacao" class="fixed inset-0 z-50 bg-white/95 dark:bg-dark-900/90 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-colors" onclick="iniciarTV()">
@@ -31,7 +32,7 @@
             <img id="start-logo-img" src="" class="w-full h-full object-cover hidden">
         </div>
         <h1 class="text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">TV de Senhas Pronta</h1>
-        <p class="text-xl font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-10">Toque em qualquer lugar para ligar a tela e o som</p>
+        <p class="text-xl font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-10">Toque em qualquer lugar para ligar a tela e a voz</p>
         <button class="bg-slate-900 dark:bg-white text-white dark:text-dark-900 px-10 py-5 rounded-full font-black uppercase tracking-widest text-lg shadow-2xl flex items-center hover:scale-105 transition-transform">
             <i class="ph-bold ph-power mr-3 text-2xl text-brand-500"></i> Iniciar Sistema
         </button>
@@ -135,9 +136,39 @@
         function iniciarTV() {
             somAtivado = true;
             document.getElementById('tela-ativacao').classList.add('hidden');
+            
+            // Um toque mudo só para desbloquear o áudio do navegador
             const som = document.getElementById('som-chamada');
             som.volume = 0; som.play().then(() => { som.pause(); som.currentTime = 0; som.volume = 1; }).catch(()=>{});
+            
+            // Fala de boas-vindas mudinha para desbloquear a Voz Sintética
+            const msgInicial = new SpeechSynthesisUtterance("Sistema iniciado");
+            msgInicial.volume = 0;
+            window.speechSynthesis.speak(msgInicial);
+
             atualizarTV();
+        }
+
+        // 🚨 FUNÇÃO ESTILO HOSPITAL: CAMPAINHA + VOZ SINTÉTICA 🚨
+        function chamarSenhaVoz(senha, nomeCompleto) {
+            const som = document.getElementById('som-chamada');
+            
+            // Toca o Ding-Dong
+            som.currentTime = 0;
+            som.play().catch(()=>{});
+
+            // Pega só o primeiro nome
+            const primeiroNome = nomeCompleto ? nomeCompleto.split(' ')[0] : 'Cliente';
+
+            // Aguarda 1.5 segundos (tempo da campainha tocar) e fala a frase!
+            setTimeout(() => {
+                // A frase que será falada. As vírgulas dão uma pausa natural na voz.
+                const frase = `Senha, ${senha}. ${primeiroNome}, seu pedido está pronto.`;
+                const msg = new SpeechSynthesisUtterance(frase);
+                msg.lang = 'pt-BR';
+                msg.rate = 0.9; // Deixa a voz um pouco mais calma e compreensível
+                window.speechSynthesis.speak(msg);
+            }, 1500); 
         }
 
         async function atualizarTV() {
@@ -147,24 +178,24 @@
                 const res = await fetch('/api/tv/pedidos');
                 const dados = await res.json();
                 
-                // 🚨 NOVA BLINDAGEM ANTI-PISCAR (Cria uma assinatura só com os IDs das comandas em ordem)
                 const idsPreparo = (dados.em_preparo || []).map(p => p.id).sort().join(',');
                 const idsProntos = (dados.prontos || []).map(p => p.id).sort().join(',');
                 const assinaturaAtual = idsPreparo + "|" + idsProntos;
 
-                // Se as comandas que estão na TV forem exatamente as mesmas da busca, ignora a atualização visual!
                 if (assinaturaAtual === ultimaCargaTV) return; 
                 ultimaCargaTV = assinaturaAtual;
                 
                 const emPreparo = dados.em_preparo || [];
                 let prontos = dados.prontos || [];
-                prontos = prontos.sort((a,b) => b.id - a.id); // Mais recente no topo
+                prontos = prontos.sort((a,b) => b.id - a.id);
 
                 if (prontos.length > 0) {
                     const maisRecente = prontos[0];
                     if (ultimoPedidoProntoId !== 0 && maisRecente.id > ultimoPedidoProntoId && somAtivado) {
-                        const som = document.getElementById('som-chamada');
-                        som.currentTime = 0; som.play().catch(()=>{});
+                        
+                        // 🚨 CHAMA A FUNÇÃO DE VOZ AQUI!
+                        chamarSenhaVoz(maisRecente.senha_diaria, maisRecente.cliente_nome);
+
                     }
                     ultimoPedidoProntoId = Math.max(ultimoPedidoProntoId, maisRecente.id);
                 }
@@ -187,10 +218,14 @@
                     filaProntos.innerHTML = '';
                 } else {
                     const pDestaque = prontos[0];
+                    
+                    // 🚨 EXTRAI SÓ O PRIMEIRO NOME PARA APARECER GIGANTE NA TELA 🚨
+                    const nomeVisual = pDestaque.cliente_nome ? pDestaque.cliente_nome.split(' ')[0] : 'Aguardando Retirada';
+
                     destaque.innerHTML = `
                         <div class="w-full h-full bg-emerald-50 dark:bg-emerald-500/10 border-4 border-emerald-400 dark:border-emerald-500/50 rounded-[3rem] flex flex-col items-center justify-center destaque-pulse fade-slide-up transition-colors">
                             <span class="text-[150px] font-black text-emerald-500 dark:text-emerald-400 tracking-tighter leading-none">${pDestaque.senha_diaria}</span>
-                            <span class="text-emerald-600 dark:text-emerald-500 text-2xl font-black uppercase tracking-widest mt-2 bg-emerald-100 dark:bg-emerald-500/20 px-6 py-2 rounded-full border border-emerald-200 dark:border-emerald-500/30">${pDestaque.cliente_nome || 'Aguardando Retirada'}</span>
+                            <span class="text-emerald-600 dark:text-emerald-500 text-2xl font-black uppercase tracking-widest mt-2 bg-emerald-100 dark:bg-emerald-500/20 px-6 py-2 rounded-full border border-emerald-200 dark:border-emerald-500/30">${nomeVisual}</span>
                         </div>`;
 
                     const outrosProntos = prontos.slice(1, 9); 
