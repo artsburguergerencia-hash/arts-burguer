@@ -8,7 +8,8 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' }, dark: { 900: '#0B0F19', 800: '#151A27', 700: '#1F2639' } } } } }
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' }, dark: { 950: '#05080f', 900: '#0B0F19', 800: '#151A27', 700: '#1F2639' } } } } }
+        // 🚨 MODO ESCURO FORÇADO POR PADRÃO PARA DAR O AR PREMIUM DA TV 🚨
         if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); } 
         else { document.documentElement.classList.add('dark'); }
     </script>
@@ -16,77 +17,101 @@
         body { font-family: 'Inter', sans-serif; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .destaque-pulse { animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 60px rgba(16, 185, 129, 0.4); border-color: rgba(16, 185, 129, 0.8); } }
-        .fade-slide-up { animation: fadeSlideUp 0.6s ease-out forwards; }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseGlow { 
+            0%, 100% { filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.2)); transform: scale(1); } 
+            50% { filter: drop-shadow(0 0 40px rgba(16, 185, 129, 0.6)); transform: scale(1.02); } 
+        }
+        .fade-slide-up { animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-dark-900 text-slate-800 dark:text-slate-100 h-screen w-screen flex flex-col transition-colors duration-300">
+<body class="bg-slate-100 dark:bg-dark-950 text-slate-800 dark:text-slate-100 h-screen w-screen flex flex-col transition-colors duration-300">
 
     <!-- CAMPAINHA PREMIUM -->
     <audio id="som-chamada" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_22dcd5dbda.mp3?filename=airport-chime-1-105102.mp3" preload="auto"></audio>
 
-    <div id="tela-ativacao" class="fixed inset-0 z-50 bg-white/95 dark:bg-dark-900/90 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-colors" onclick="iniciarTV()">
-        <div id="start-logo-container" class="w-32 h-32 bg-brand-500 rounded-3xl flex items-center justify-center text-white font-black text-6xl shadow-[0_0_50px_rgba(255,71,87,0.5)] mb-8 animate-bounce overflow-hidden border-4 border-transparent transition-colors">
+    <div id="tela-ativacao" class="fixed inset-0 z-50 bg-white/95 dark:bg-dark-950/95 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-colors" onclick="iniciarTV()">
+        <div id="start-logo-container" class="w-40 h-40 bg-brand-500 rounded-[2.5rem] flex items-center justify-center text-white font-black text-6xl shadow-[0_0_60px_rgba(255,71,87,0.4)] mb-10 overflow-hidden border-4 border-transparent transition-colors">
             <span id="start-logo-letra">A</span>
             <img id="start-logo-img" src="" class="w-full h-full object-cover hidden">
         </div>
-        <h1 class="text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">TV de Senhas Pronta</h1>
-        <p class="text-xl font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-10">Toque em qualquer lugar para ligar a tela e a voz</p>
-        <button class="bg-slate-900 dark:bg-white text-white dark:text-dark-900 px-10 py-5 rounded-full font-black uppercase tracking-widest text-lg shadow-2xl flex items-center hover:scale-105 transition-transform">
-            <i class="ph-bold ph-power mr-3 text-2xl text-brand-500"></i> Iniciar Sistema
+        <h1 class="text-6xl font-black text-slate-900 dark:text-white tracking-tighter mb-4">TV Inteligente Pronta</h1>
+        <p class="text-2xl font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-12">Toque para iniciar o painel e o áudio</p>
+        <button class="bg-slate-900 dark:bg-white text-white dark:text-dark-950 px-12 py-6 rounded-full font-black uppercase tracking-widest text-xl shadow-2xl flex items-center hover:scale-105 transition-transform">
+            <i class="ph-bold ph-power mr-3 text-3xl text-brand-500"></i> Iniciar Sistema
         </button>
     </div>
 
-    <header class="h-24 px-8 flex items-center justify-between shrink-0 relative z-10 border-b border-slate-200 dark:border-white/5 transition-colors bg-white/50 dark:bg-transparent backdrop-blur-sm">
+    <!-- HEADER GIGANTE E MINIMALISTA -->
+    <header class="h-28 px-10 flex items-center justify-between shrink-0 relative z-10 bg-white dark:bg-dark-900 shadow-md">
         <div class="flex items-center">
-            <div id="header-logo-container" class="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-[0_0_20px_rgba(255,71,87,0.4)] mr-4 overflow-hidden shrink-0 transition-colors">
+            <div id="header-logo-container" class="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-[0_0_20px_rgba(255,71,87,0.4)] mr-5 overflow-hidden shrink-0 transition-colors">
                 <span id="header-logo-letra">A</span>
                 <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
             </div>
             <div>
-                <h1 id="tv-nome-loja" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Art's Burguer</h1>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Acompanhe seu pedido</p>
+                <h1 id="tv-nome-loja" class="text-3xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">Art's Burguer</h1>
+                <p class="text-[12px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 mt-1">Status de Pedidos</p>
             </div>
         </div>
-        <div class="flex items-center space-x-6">
-            <button onclick="toggleTheme()" class="w-12 h-12 rounded-full flex items-center justify-center bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-brand-400 hover:bg-slate-300 dark:hover:bg-white/10 transition-colors shadow-inner">
-                <i id="theme-icon" class="ph-bold ph-moon text-2xl"></i>
+        <div class="flex items-center space-x-8">
+            <button onclick="toggleTheme()" class="w-14 h-14 rounded-full flex items-center justify-center bg-slate-100 dark:bg-dark-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-dark-700 transition-colors shadow-inner">
+                <i id="theme-icon" class="ph-bold ph-moon text-3xl"></i>
             </button>
-            <div id="relogio" class="text-4xl font-black tracking-tighter text-slate-800 dark:text-slate-300">00:00</div>
+            <div id="relogio" class="text-5xl font-black tracking-tighter text-slate-800 dark:text-white">00:00</div>
         </div>
     </header>
 
-    <main class="flex-1 flex overflow-hidden p-6 gap-6 relative">
-        <div class="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none hidden dark:block"></div>
-        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none hidden dark:block"></div>
-
-        <div class="w-[30%] bg-white dark:bg-dark-800 rounded-[2rem] border border-slate-200 dark:border-white/5 flex flex-col shadow-2xl relative z-10 overflow-hidden transition-colors">
-            <div class="p-8 pb-4 shrink-0 text-center border-b border-slate-100 dark:border-white/5 transition-colors">
-                <i class="ph-fill ph-cooking-pot text-amber-500 text-5xl mb-2"></i>
-                <h2 class="font-black text-2xl uppercase tracking-widest text-amber-500 dark:text-amber-400">Preparando</h2>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Na chapa</p>
+    <main class="flex-1 flex overflow-hidden p-8 gap-8 relative bg-slate-100 dark:bg-dark-950">
+        
+        <!-- COLUNA 1: PREPARANDO (Fundo Escuro) -->
+        <div class="w-[35%] bg-white dark:bg-dark-900 rounded-[2.5rem] border border-slate-200 dark:border-dark-800 flex flex-col shadow-xl overflow-hidden transition-colors">
+            <div class="bg-amber-500 py-6 text-center shrink-0 shadow-md z-10">
+                <h2 class="font-black text-3xl uppercase tracking-widest text-white flex items-center justify-center gap-3">
+                    <i class="ph-bold ph-cooking-pot text-4xl"></i> Preparando
+                </h2>
             </div>
-            <div class="flex-1 p-6 overflow-y-auto no-scrollbar">
-                <div id="lista-preparo" class="grid grid-cols-2 gap-4 auto-rows-max"></div>
+            <div class="flex-1 p-8 overflow-y-auto no-scrollbar bg-slate-50 dark:bg-dark-900/50 relative">
+                <!-- Luz de fundo sutil -->
+                <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent pointer-events-none"></div>
+                
+                <div id="lista-preparo" class="grid grid-cols-2 gap-5 auto-rows-max relative z-10">
+                    <!-- Itens entram aqui -->
+                </div>
             </div>
         </div>
 
-        <div class="flex-1 bg-white dark:bg-dark-800 rounded-[2rem] border border-emerald-200 dark:border-emerald-900/30 flex flex-col shadow-2xl relative z-10 overflow-hidden transition-colors">
-            <div class="p-8 pb-4 shrink-0 text-center border-b border-slate-100 dark:border-white/5 transition-colors">
-                <h2 class="font-black text-4xl uppercase tracking-widest text-emerald-500 dark:text-emerald-400 tracking-tight">Retire seu Pedido</h2>
-                <p class="text-xs font-bold text-emerald-600/70 uppercase tracking-widest mt-2">Venha ao balcão com sua senha</p>
+        <!-- COLUNA 2: PRONTO (Destaque Principal) -->
+        <div class="flex-1 bg-white dark:bg-dark-900 rounded-[2.5rem] border border-slate-200 dark:border-dark-800 flex flex-col shadow-xl overflow-hidden transition-colors">
+            <div class="bg-emerald-500 py-6 text-center shrink-0 shadow-md z-10">
+                <h2 class="font-black text-3xl uppercase tracking-widest text-white flex items-center justify-center gap-3">
+                    <i class="ph-bold ph-check-circle text-4xl"></i> Retire Seu Pedido
+                </h2>
             </div>
-            <div class="flex-1 flex flex-col p-8">
-                <div id="destaque-pronto" class="flex-[3] flex items-center justify-center mb-8"></div>
-                <div class="flex-1 border-t border-slate-100 dark:border-white/5 pt-8 transition-colors">
-                    <p class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Também aguardando retirada:</p>
-                    <div id="lista-pronto-fila" class="grid grid-cols-4 gap-4"></div>
+            
+            <div class="flex-1 flex flex-col p-10 bg-slate-50 dark:bg-dark-900/50 relative">
+                 <!-- Luz de fundo sutil -->
+                 <div class="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none"></div>
+
+                <!-- DESTAQUE (ÚLTIMO PEDIDO GIGANTE) -->
+                <div id="destaque-pronto" class="flex-[2] flex flex-col items-center justify-center mb-10 relative z-10">
+                    <!-- Fica vazio até o JS preencher -->
+                </div>
+
+                <!-- FILA DE PRONTOS (PEDIDOS ANTERIORES) -->
+                <div class="shrink-0 bg-white dark:bg-dark-800 p-8 rounded-3xl shadow-inner border border-slate-200 dark:border-dark-700 relative z-10">
+                    <p class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Últimos Chamados:
+                    </p>
+                    <div id="lista-pronto-fila" class="grid grid-cols-4 gap-5">
+                        <!-- Itens entram aqui -->
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- O MESMO SCRIPT INTELIGENTE E INTACTO -->
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -127,12 +152,8 @@
         let ultimoPedidoProntoId = 0;
         let somAtivado = false;
         let ultimaCargaTV = "";
-        
-        // 🚨 MEMÓRIA DE VOZES DO NAVEGADOR 🚨
         let vozesDisponiveis = [];
-        window.speechSynthesis.onvoiceschanged = () => {
-            vozesDisponiveis = window.speechSynthesis.getVoices();
-        };
+        window.speechSynthesis.onvoiceschanged = () => { vozesDisponiveis = window.speechSynthesis.getVoices(); };
 
         setInterval(() => {
             const agora = new Date();
@@ -142,75 +163,43 @@
         function iniciarTV() {
             somAtivado = true;
             document.getElementById('tela-ativacao').classList.add('hidden');
-            
             const som = document.getElementById('som-chamada');
             som.volume = 0; som.play().then(() => { som.pause(); som.currentTime = 0; som.volume = 1; }).catch(()=>{});
-            
-            // Força o carregamento das vozes
             vozesDisponiveis = window.speechSynthesis.getVoices();
             const msgInicial = new SpeechSynthesisUtterance("Sistema iniciado");
-            msgInicial.volume = 0;
-            window.speechSynthesis.speak(msgInicial);
-
+            msgInicial.volume = 0; window.speechSynthesis.speak(msgInicial);
             atualizarTV();
         }
 
-        // 🚨 FUNÇÃO DE VOZ COM "CAÇADOR DE VOZ NATURAL" 🚨
         function chamarSenhaVoz(senha, nomeCompleto) {
             const som = document.getElementById('som-chamada');
-            
-            som.currentTime = 0;
-            som.play().catch(()=>{});
+            som.currentTime = 0; som.play().catch(()=>{});
 
             const primeiroNome = nomeCompleto ? nomeCompleto.split(' ')[0] : 'Cliente';
 
             setTimeout(() => {
                 const frase = `Senha, ${senha}. ${primeiroNome}, seu pedido está pronto.`;
                 const msg = new SpeechSynthesisUtterance(frase);
-                msg.lang = 'pt-BR';
-                msg.rate = 0.95; // Velocidade ligeiramente ajustada para soar mais humano
-                msg.pitch = 1.0; 
+                msg.lang = 'pt-BR'; msg.rate = 0.95; msg.pitch = 1.0; 
 
-                // Filtra apenas vozes em português
                 let vozesPT = vozesDisponiveis.filter(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR'));
-                
                 if (vozesPT.length > 0) {
-                    // O "Caçador": Procura por vozes nativas de alta qualidade (Google, Microsoft Edge Online, Apple)
-                    let vozNatural = vozesPT.find(v => 
-                        v.name.includes('Google') || 
-                        v.name.includes('Natural') || 
-                        v.name.includes('Premium') || 
-                        v.name.includes('Luciana') || 
-                        v.name.includes('Francisca') || 
-                        v.name.includes('Antonio') ||
-                        v.name.includes('Online')
-                    );
-                    
-                    // Se achar uma premium, usa ela. Se não, usa a primeira que o PC tiver.
-                    if (vozNatural) {
-                        msg.voice = vozNatural;
-                    } else {
-                        msg.voice = vozesPT[0];
-                    }
+                    let vozNatural = vozesPT.find(v => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium') || v.name.includes('Luciana') || v.name.includes('Francisca') || v.name.includes('Online'));
+                    if (vozNatural) msg.voice = vozNatural; else msg.voice = vozesPT[0];
                 }
-
                 window.speechSynthesis.speak(msg);
             }, 1500); 
         }
 
         async function atualizarTV() {
             if(!somAtivado) return; 
-            
             try {
-                const res = await fetch('/api/tv/pedidos');
-                const dados = await res.json();
+                const res = await fetch('/api/tv/pedidos'); const dados = await res.json();
                 
                 const idsPreparo = (dados.em_preparo || []).map(p => p.id).sort().join(',');
                 const idsProntos = (dados.prontos || []).map(p => p.id).sort().join(',');
                 const assinaturaAtual = idsPreparo + "|" + idsProntos;
-
-                if (assinaturaAtual === ultimaCargaTV) return; 
-                ultimaCargaTV = assinaturaAtual;
+                if (assinaturaAtual === ultimaCargaTV) return; ultimaCargaTV = assinaturaAtual;
                 
                 const emPreparo = dados.em_preparo || [];
                 let prontos = dados.prontos || [];
@@ -224,45 +213,48 @@
                     ultimoPedidoProntoId = Math.max(ultimoPedidoProntoId, maisRecente.id);
                 }
 
+                // RENDENRIZA FILA DE PREPARO
                 const gridPreparo = document.getElementById('lista-preparo');
                 if (emPreparo.length === 0) {
-                    gridPreparo.innerHTML = '<div class="col-span-2 text-center text-slate-400 dark:text-slate-600 font-bold mt-10">Fila Limpa</div>';
+                    gridPreparo.innerHTML = '<div class="col-span-2 text-center text-slate-400 dark:text-slate-600 font-bold mt-20 text-xl">Nenhum pedido na chapa</div>';
                 } else {
+                    // CAIXINHAS LINDAS COM ALTO CONTRASTE!
                     gridPreparo.innerHTML = emPreparo.map(p => `
-                        <div class="bg-slate-100 dark:bg-dark-900 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center justify-center py-6 shadow-sm fade-slide-up transition-colors">
-                            <span class="text-4xl font-black text-slate-600 dark:text-slate-300 tracking-tighter">${p.senha_diaria}</span>
+                        <div class="bg-white dark:bg-dark-800 border-2 border-slate-200 dark:border-dark-700 rounded-3xl flex items-center justify-center py-8 shadow-sm fade-slide-up">
+                            <span class="text-6xl font-black text-slate-700 dark:text-white tracking-tighter">${p.senha_diaria}</span>
                         </div>`).join('');
                 }
 
+                // RENDERIZA DESTAQUE E FILA DE PRONTOS
                 const destaque = document.getElementById('destaque-pronto');
                 const filaProntos = document.getElementById('lista-pronto-fila');
                 
                 if (prontos.length === 0) {
-                    destaque.innerHTML = `<div class="w-full h-full bg-slate-50 dark:bg-dark-900/50 border border-slate-200 dark:border-white/5 rounded-[3rem] flex flex-col items-center justify-center"><i class="ph-fill ph-check-circle text-6xl text-slate-300 dark:text-slate-700 mb-4"></i><span class="text-slate-400 dark:text-slate-500 text-lg font-black uppercase tracking-widest">Balcão Livre</span></div>`;
-                    filaProntos.innerHTML = '';
+                    destaque.innerHTML = `<div class="flex flex-col items-center justify-center opacity-50"><i class="ph-fill ph-check-circle text-8xl text-slate-300 dark:text-slate-700 mb-6"></i><span class="text-slate-400 dark:text-slate-500 text-3xl font-black uppercase tracking-widest">Balcão Livre</span></div>`;
+                    filaProntos.innerHTML = '<div class="col-span-4 text-center text-slate-400 dark:text-slate-600 font-bold text-lg mt-4">Aguardando novos pedidos...</div>';
                 } else {
                     const pDestaque = prontos[0];
-                    const nomeVisual = pDestaque.cliente_nome ? pDestaque.cliente_nome.split(' ')[0] : 'Aguardando Retirada';
+                    const nomeVisual = pDestaque.cliente_nome ? pDestaque.cliente_nome.split(' ')[0] : 'Cliente';
 
+                    // O NÚMERO GIGANTE E GLOWING!
                     destaque.innerHTML = `
-                        <div class="w-full h-full bg-emerald-50 dark:bg-emerald-500/10 border-4 border-emerald-400 dark:border-emerald-500/50 rounded-[3rem] flex flex-col items-center justify-center destaque-pulse fade-slide-up transition-colors">
-                            <span class="text-[150px] font-black text-emerald-500 dark:text-emerald-400 tracking-tighter leading-none">${pDestaque.senha_diaria}</span>
-                            <span class="text-emerald-600 dark:text-emerald-500 text-2xl font-black uppercase tracking-widest mt-2 bg-emerald-100 dark:bg-emerald-500/20 px-6 py-2 rounded-full border border-emerald-200 dark:border-emerald-500/30">${nomeVisual}</span>
+                        <div class="destaque-pulse fade-slide-up flex flex-col items-center justify-center">
+                            <span class="text-[14rem] font-black text-emerald-500 leading-none tracking-tighter drop-shadow-md">${pDestaque.senha_diaria}</span>
+                            <span class="text-5xl font-black text-slate-800 dark:text-white mt-4 uppercase tracking-[0.2em] bg-emerald-100 dark:bg-emerald-500/20 px-8 py-3 rounded-full border-2 border-emerald-300 dark:border-emerald-500/50">${nomeVisual}</span>
                         </div>`;
 
                     const outrosProntos = prontos.slice(1, 9); 
                     if (outrosProntos.length > 0) {
                         filaProntos.innerHTML = outrosProntos.map(p => `
-                            <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl flex items-center justify-center py-4 fade-slide-up transition-colors">
-                                <span class="text-3xl font-black text-emerald-500 dark:text-emerald-300 tracking-tighter">${p.senha_diaria}</span>
+                            <div class="bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-center justify-center py-5 fade-slide-up">
+                                <span class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tracking-tighter">${p.senha_diaria}</span>
                             </div>`).join('');
                     } else {
-                        filaProntos.innerHTML = '<div class="col-span-4 text-slate-400 dark:text-slate-600 font-bold text-sm">Nenhum outro pedido na fila.</div>';
+                        filaProntos.innerHTML = '<div class="col-span-4 text-slate-400 dark:text-slate-600 font-bold text-sm">Apenas o pedido acima pronto no momento.</div>';
                     }
                 }
             } catch(e) {}
         }
-
         setInterval(atualizarTV, 3000); 
     </script>
 </body>
