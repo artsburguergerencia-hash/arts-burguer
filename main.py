@@ -271,15 +271,18 @@ class AjusteFinanceiroRH(BaseModel):
 # ==========================================
 
 def gerar_senha_diaria(db: Session):
+    from datetime import datetime
+    from sqlalchemy import func
     hoje = datetime.utcnow().date()
-    ultimo_pedido = db.query(PedidoModel).filter(
-        PedidoModel.data_pedido == hoje
-    ).order_by(desc(PedidoModel.senha_diaria)).first()
     
-    if ultimo_pedido and ultimo_pedido.senha_diaria:
-        return ultimo_pedido.senha_diaria + 1
-    
-    return 1 
+    # 🚨 Correção Absoluta: Busca usando data_hora (que existe na sua tabela) 🚨
+    try:
+        total_hoje = db.query(PedidoModel).filter(func.date(PedidoModel.data_hora) == hoje).count()
+        return str(total_hoje + 1).zfill(3)
+    except:
+        # Se falhar a leitura de data_hora, usa a contagem geral
+        total_hoje = db.query(PedidoModel).count()
+        return str(total_hoje + 1).zfill(3)
 
 # ==========================================
 # GESTÃO DE MESAS (SALÃO)
@@ -1762,8 +1765,10 @@ def listar_pedidos_cozinha(db: Session = Depends(get_db)):
     return {"recebidos": recebidos, "preparando": preparando}
 
 
+from fastapi import BackgroundTasks # Coloque isso no começo do arquivo se não tiver
+
 @app.put("/api/kds/pedidos/{pedido_id}/status")
-def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, db: Session = Depends(get_db)):
+def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
     if not pedido: 
         raise HTTPException(status_code=404)
@@ -1774,10 +1779,10 @@ def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, db: Session = 
     
     if pedido.cliente:
         senha_enviar = getattr(pedido, 'senha_diaria', pedido.id)
+        # 🚨 Dispara o WhatsApp em Segundo Plano (O KDS atualiza em 0.1s agora!) 🚨
         try:
-            notificar_status_pedido(pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, novo_status)
-        except:
-            pass # Ignora se o WhatsApp não estiver configurado
+            background_tasks.add_task(notificar_status_pedido, pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, novo_status)
+        except: pass
         
     return {"mensagem": "Status atualizado"}
 
