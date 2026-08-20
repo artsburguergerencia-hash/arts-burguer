@@ -7,46 +7,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 🚨 MOTOR DE TEMA CLARO/ESCURO 🚨 -->
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' }, dark: { 900: '#0B0F19', 800: '#151A27', 700: '#1F2639' } } } } }
         if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); } 
-        else { document.documentElement.classList.add('dark'); } // Padrão da TV é o Escuro
+        else { document.documentElement.classList.add('dark'); }
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* Animação para o pedido mais recente */
         .destaque-pulse { animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
-            50% { box-shadow: 0 0 60px rgba(16, 185, 129, 0.4); border-color: rgba(16, 185, 129, 0.8); }
-        }
-        
-        /* Animação de entrada suave */
+        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 60px rgba(16, 185, 129, 0.4); border-color: rgba(16, 185, 129, 0.8); } }
         .fade-slide-up { animation: fadeSlideUp 0.6s ease-out forwards; }
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-dark-900 text-slate-800 dark:text-slate-100 h-screen w-screen flex flex-col transition-colors duration-300">
 
-    <!-- Áudio de Chamada (Campainha Premium) -->
     <audio id="som-chamada" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_22dcd5dbda.mp3?filename=airport-chime-1-105102.mp3" preload="auto"></audio>
 
-    <!-- TELA DE ATIVAÇÃO INICIAL (Fica invisível depois que liga a TV) -->
     <div id="tela-ativacao" class="fixed inset-0 z-50 bg-white/95 dark:bg-dark-900/90 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-colors" onclick="iniciarTV()">
-        
-        <!-- 🚨 LOGO DINÂMICA DA TELA INICIAL 🚨 -->
         <div id="start-logo-container" class="w-32 h-32 bg-brand-500 rounded-3xl flex items-center justify-center text-white font-black text-6xl shadow-[0_0_50px_rgba(255,71,87,0.5)] mb-8 animate-bounce overflow-hidden border-4 border-transparent transition-colors">
             <span id="start-logo-letra">A</span>
             <img id="start-logo-img" src="" class="w-full h-full object-cover hidden">
         </div>
-        
         <h1 class="text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">TV de Senhas Pronta</h1>
         <p class="text-xl font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-10">Toque em qualquer lugar para ligar a tela e o som</p>
         <button class="bg-slate-900 dark:bg-white text-white dark:text-dark-900 px-10 py-5 rounded-full font-black uppercase tracking-widest text-lg shadow-2xl flex items-center hover:scale-105 transition-transform">
@@ -54,22 +37,17 @@
         </button>
     </div>
 
-    <!-- HEADER PREMIUM E LIMPO -->
     <header class="h-24 px-8 flex items-center justify-between shrink-0 relative z-10 border-b border-slate-200 dark:border-white/5 transition-colors bg-white/50 dark:bg-transparent backdrop-blur-sm">
         <div class="flex items-center">
-            
-            <!-- 🚨 LOGO DINÂMICA DO CABEÇALHO 🚨 -->
             <div id="header-logo-container" class="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-[0_0_20px_rgba(255,71,87,0.4)] mr-4 overflow-hidden shrink-0 transition-colors">
                 <span id="header-logo-letra">A</span>
                 <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
             </div>
-
             <div>
                 <h1 id="tv-nome-loja" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Art's Burguer</h1>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Acompanhe seu pedido</p>
             </div>
         </div>
-        
         <div class="flex items-center space-x-6">
             <button onclick="toggleTheme()" class="w-12 h-12 rounded-full flex items-center justify-center bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-brand-400 hover:bg-slate-300 dark:hover:bg-white/10 transition-colors shadow-inner">
                 <i id="theme-icon" class="ph-bold ph-moon text-2xl"></i>
@@ -79,96 +57,58 @@
     </header>
 
     <main class="flex-1 flex overflow-hidden p-6 gap-6 relative">
-        <!-- Luz de fundo ambiente (Visível apenas no dark mode) -->
         <div class="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none hidden dark:block"></div>
         <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none hidden dark:block"></div>
 
-        <!-- COLUNA 1: PREPARANDO (30% DA TELA) -->
         <div class="w-[30%] bg-white dark:bg-dark-800 rounded-[2rem] border border-slate-200 dark:border-white/5 flex flex-col shadow-2xl relative z-10 overflow-hidden transition-colors">
             <div class="p-8 pb-4 shrink-0 text-center border-b border-slate-100 dark:border-white/5 transition-colors">
                 <i class="ph-fill ph-cooking-pot text-amber-500 text-5xl mb-2"></i>
                 <h2 class="font-black text-2xl uppercase tracking-widest text-amber-500 dark:text-amber-400">Preparando</h2>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Na chapa</p>
             </div>
-            
             <div class="flex-1 p-6 overflow-y-auto no-scrollbar">
-                <div id="lista-preparo" class="grid grid-cols-2 gap-4 auto-rows-max">
-                    <div class="col-span-2 text-center text-slate-400 dark:text-slate-600 font-bold mt-10">Aguardando...</div>
-                </div>
+                <div id="lista-preparo" class="grid grid-cols-2 gap-4 auto-rows-max"></div>
             </div>
         </div>
 
-        <!-- COLUNA 2: PRONTO (70% DA TELA) -->
         <div class="flex-1 bg-white dark:bg-dark-800 rounded-[2rem] border border-emerald-200 dark:border-emerald-900/30 flex flex-col shadow-2xl relative z-10 overflow-hidden transition-colors">
             <div class="p-8 pb-4 shrink-0 text-center border-b border-slate-100 dark:border-white/5 transition-colors">
                 <h2 class="font-black text-4xl uppercase tracking-widest text-emerald-500 dark:text-emerald-400 tracking-tight">Retire seu Pedido</h2>
                 <p class="text-xs font-bold text-emerald-600/70 uppercase tracking-widest mt-2">Venha ao balcão com sua senha</p>
             </div>
-            
             <div class="flex-1 flex flex-col p-8">
-                <!-- DESTAQUE (ÚLTIMO PEDIDO) -->
-                <div id="destaque-pronto" class="flex-[3] flex items-center justify-center mb-8">
-                    <div class="w-full h-full bg-slate-50 dark:bg-dark-900/50 border-2 border-slate-200 dark:border-slate-800 rounded-[3rem] flex flex-col items-center justify-center transition-colors">
-                        <span class="text-slate-400 dark:text-slate-600 text-2xl font-black uppercase tracking-widest">Aguardando Chamada</span>
-                    </div>
-                </div>
-
-                <!-- FILA DE PRONTOS (PEDIDOS ANTERIORES) -->
+                <div id="destaque-pronto" class="flex-[3] flex items-center justify-center mb-8"></div>
                 <div class="flex-1 border-t border-slate-100 dark:border-white/5 pt-8 transition-colors">
                     <p class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Também aguardando retirada:</p>
-                    <div id="lista-pronto-fila" class="grid grid-cols-4 gap-4">
-                        <!-- Itens injetados via JS -->
-                    </div>
+                    <div id="lista-pronto-fila" class="grid grid-cols-4 gap-4"></div>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        // 🚨 SCRIPT QUE BUSCA A LOGO NO BANCO E INJETA NA TELA 🚨
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const res = await fetch('/api/gestao/configuracoes'); 
                 const configLoja = await res.json();
                 
-                // Atualiza o nome da loja
-                if(configLoja.nome_empresa) {
-                    document.getElementById('tv-nome-loja').innerText = configLoja.nome_empresa;
-                }
-
+                if(configLoja.nome_empresa) document.getElementById('tv-nome-loja').innerText = configLoja.nome_empresa;
+                
                 if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
-                    
-                    // 1. Injeta Logo no Cabeçalho
-                    const letra = document.getElementById('header-logo-letra'); 
+                    // Logo do Cabeçalho
                     const img = document.getElementById('header-logo-img'); 
-                    const container = document.getElementById('header-logo-container');
-                    
-                    if(letra && img && container) {
-                        img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
-                        img.src = configLoja.logo_url; 
-                        img.classList.remove('hidden');
-                        letra.classList.add('hidden'); 
-                        container.classList.remove('bg-brand-500'); 
-                        container.classList.add('bg-white', 'dark:bg-slate-800', 'border', 'border-slate-200', 'dark:border-slate-700');
-                    }
+                    img.src = configLoja.logo_url; img.classList.remove('hidden');
+                    document.getElementById('header-logo-letra').classList.add('hidden'); 
+                    document.getElementById('header-logo-container').classList.replace('bg-brand-500', 'bg-white');
 
-                    // 2. Injeta Logo na Tela Inicial (Ativação)
-                    const letraStart = document.getElementById('start-logo-letra'); 
+                    // Logo da Ativação
                     const imgStart = document.getElementById('start-logo-img'); 
-                    const containerStart = document.getElementById('start-logo-container');
-                    
-                    if(letraStart && imgStart && containerStart) {
-                        imgStart.onerror = function() { this.classList.add('hidden'); letraStart.classList.remove('hidden'); };
-                        imgStart.src = configLoja.logo_url; 
-                        imgStart.classList.remove('hidden');
-                        letraStart.classList.add('hidden'); 
-                        containerStart.classList.remove('bg-brand-500', 'border-transparent'); 
-                        containerStart.classList.add('bg-white', 'dark:bg-slate-800', 'border-slate-200', 'dark:border-slate-700');
-                    }
+                    imgStart.src = configLoja.logo_url; imgStart.classList.remove('hidden');
+                    document.getElementById('start-logo-letra').classList.add('hidden'); 
+                    document.getElementById('start-logo-container').classList.replace('bg-brand-500', 'bg-white');
                 }
-            } catch(e) { console.error("Erro ao carregar logo na TV", e); }
+            } catch(e) {}
         });
-
 
         const themeIcon = document.getElementById('theme-icon');
         if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
@@ -188,7 +128,6 @@
         let ultimoPedidoProntoId = 0;
         let somAtivado = false;
 
-        // Atualiza Relógio
         setInterval(() => {
             const agora = new Date();
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
@@ -197,15 +136,8 @@
         function iniciarTV() {
             somAtivado = true;
             document.getElementById('tela-ativacao').classList.add('hidden');
-            
             const som = document.getElementById('som-chamada');
-            som.volume = 0; 
-            som.play().then(() => {
-                som.pause();
-                som.currentTime = 0;
-                som.volume = 1; 
-            }).catch(()=>{});
-            
+            som.volume = 0; som.play().then(() => { som.pause(); som.currentTime = 0; som.volume = 1; }).catch(()=>{});
             atualizarTV();
         }
 
@@ -213,30 +145,23 @@
             if(!somAtivado) return; 
             
             try {
-                const res = await fetch('/api/kds/pedidos');
-                const pedidos = await res.json();
+                // 🚨 NOVA ROTA DE DADOS EXCLUSIVA DA TV 🚨
+                const res = await fetch('/api/tv/pedidos');
+                const dados = await res.json();
                 
-                // Separa os pedidos (Ignora Delivery na TV de salão)
-                const pedidosSalao = pedidos.filter(p => p.tipo !== 'DELIVERY');
-                
-                const emPreparo = pedidosSalao.filter(p => p.status === 'EM_PREPARO' || p.status === 'RECEBIDO');
-                let prontos = pedidosSalao.filter(p => p.status === 'PRONTO');
-                
-                // Ordena os prontos do mais recente (maior ID) para o mais antigo
-                prontos = prontos.sort((a,b) => b.id - a.id);
+                const emPreparo = dados.em_preparo || [];
+                let prontos = dados.prontos || [];
+                prontos = prontos.sort((a,b) => b.id - a.id); // Mais recente no topo
 
-                // Lógica de Chamada (Som) quando o pedido mais novo entra
                 if (prontos.length > 0) {
                     const maisRecente = prontos[0];
                     if (ultimoPedidoProntoId !== 0 && maisRecente.id > ultimoPedidoProntoId && somAtivado) {
                         const som = document.getElementById('som-chamada');
-                        som.currentTime = 0;
-                        som.play().catch(()=>{});
+                        som.currentTime = 0; som.play().catch(()=>{});
                     }
                     ultimoPedidoProntoId = Math.max(ultimoPedidoProntoId, maisRecente.id);
                 }
 
-                // Renderiza PREPARANDO
                 const gridPreparo = document.getElementById('lista-preparo');
                 if (emPreparo.length === 0) {
                     gridPreparo.innerHTML = '<div class="col-span-2 text-center text-slate-400 dark:text-slate-600 font-bold mt-10">Fila Limpa</div>';
@@ -244,46 +169,34 @@
                     gridPreparo.innerHTML = emPreparo.map(p => `
                         <div class="bg-slate-100 dark:bg-dark-900 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center justify-center py-6 shadow-sm fade-slide-up transition-colors">
                             <span class="text-4xl font-black text-slate-600 dark:text-slate-300 tracking-tighter">${p.senha_diaria}</span>
-                        </div>
-                    `).join('');
+                        </div>`).join('');
                 }
 
-                // Renderiza PRONTOS
                 const destaque = document.getElementById('destaque-pronto');
                 const filaProntos = document.getElementById('lista-pronto-fila');
                 
                 if (prontos.length === 0) {
-                    destaque.innerHTML = `
-                        <div class="w-full h-full bg-slate-50 dark:bg-dark-900/50 border border-slate-200 dark:border-white/5 rounded-[3rem] flex flex-col items-center justify-center transition-colors">
-                            <i class="ph-fill ph-check-circle text-6xl text-slate-300 dark:text-slate-700 mb-4"></i>
-                            <span class="text-slate-400 dark:text-slate-500 text-lg font-black uppercase tracking-widest">Balcão Livre</span>
-                        </div>
-                    `;
+                    destaque.innerHTML = `<div class="w-full h-full bg-slate-50 dark:bg-dark-900/50 border border-slate-200 dark:border-white/5 rounded-[3rem] flex flex-col items-center justify-center"><i class="ph-fill ph-check-circle text-6xl text-slate-300 dark:text-slate-700 mb-4"></i><span class="text-slate-400 dark:text-slate-500 text-lg font-black uppercase tracking-widest">Balcão Livre</span></div>`;
                     filaProntos.innerHTML = '';
                 } else {
                     const pDestaque = prontos[0];
                     destaque.innerHTML = `
                         <div class="w-full h-full bg-emerald-50 dark:bg-emerald-500/10 border-4 border-emerald-400 dark:border-emerald-500/50 rounded-[3rem] flex flex-col items-center justify-center destaque-pulse fade-slide-up transition-colors">
                             <span class="text-[150px] font-black text-emerald-500 dark:text-emerald-400 tracking-tighter leading-none">${pDestaque.senha_diaria}</span>
-                            <span class="text-emerald-600 dark:text-emerald-500 text-2xl font-black uppercase tracking-widest mt-2 bg-emerald-100 dark:bg-emerald-500/20 px-6 py-2 rounded-full border border-emerald-200 dark:border-emerald-500/30">
-                                ${pDestaque.cliente_nome || 'Aguardando Retirada'}
-                            </span>
-                        </div>
-                    `;
+                            <span class="text-emerald-600 dark:text-emerald-500 text-2xl font-black uppercase tracking-widest mt-2 bg-emerald-100 dark:bg-emerald-500/20 px-6 py-2 rounded-full border border-emerald-200 dark:border-emerald-500/30">${pDestaque.cliente_nome || 'Aguardando Retirada'}</span>
+                        </div>`;
 
                     const outrosProntos = prontos.slice(1, 9); 
                     if (outrosProntos.length > 0) {
                         filaProntos.innerHTML = outrosProntos.map(p => `
                             <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl flex items-center justify-center py-4 fade-slide-up transition-colors">
                                 <span class="text-3xl font-black text-emerald-500 dark:text-emerald-300 tracking-tighter">${p.senha_diaria}</span>
-                            </div>
-                        `).join('');
+                            </div>`).join('');
                     } else {
                         filaProntos.innerHTML = '<div class="col-span-4 text-slate-400 dark:text-slate-600 font-bold text-sm">Nenhum outro pedido na fila.</div>';
                     }
                 }
-
-            } catch(e) { console.log("Aguardando conexão com o servidor..."); }
+            } catch(e) {}
         }
 
         setInterval(atualizarTV, 3000); 
