@@ -3419,6 +3419,59 @@ def gerar_senha_diaria(db: Session):
             return "001"
     except Exception: 
         return "001"
+
+# =======================================================
+# ROTAS DO GPS E MOTOBOY (MAPA EM TEMPO REAL)
+# =======================================================
+
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import Request
+import os
+
+# Memória RAM temporária para guardar as coordenadas das motos ao vivo
+# Estrutura: { 195: {"lat": -25.64, "lng": -49.31, "status": "online", "ultima_atualizacao": datetime} }
+POSICOES_MOTOBOYS_AO_VIVO = {}
+
+@app.get("/mapa", response_class=HTMLResponse)
+def tela_rastreio_mapa(request: Request):
+    """ Retorna a tela do mapa para o cliente acompanhar o motoboy """
+    return FileResponse(os.path.join("templates", "mapa.html"))
+
+@app.get("/motoboy", response_class=HTMLResponse)
+def tela_app_motoboy(request: Request):
+    """ Retorna a tela/app web para o motoboy transmitir o GPS """
+    return FileResponse(os.path.join("templates", "motoboy.html"))
+
+@app.post("/api/logistica/gps/{pedido_id}/atualizar")
+def atualizar_posicao_motoboy(pedido_id: int, payload: dict):
+    """ O app do motoboy manda a posição a cada 5 segundos pra cá """
+    try:
+        lat = payload.get("lat")
+        lng = payload.get("lng")
+        
+        if lat and lng:
+            from datetime import datetime
+            POSICOES_MOTOBOYS_AO_VIVO[pedido_id] = {
+                "lat": float(lat),
+                "lng": float(lng),
+                "status": "online",
+                "ultima_atualizacao": datetime.utcnow()
+            }
+            return {"ok": True}
+        return {"ok": False, "erro": "Coordenadas não enviadas"}
+    except Exception as e:
+        return {"ok": False, "erro": str(e)}
+
+@app.get("/api/logistica/gps/{pedido_id}")
+def buscar_posicao_motoboy(pedido_id: int):
+    """ A tela do cliente pede a posição da moto pra cá a cada 5 segundos """
+    posicao = POSICOES_MOTOBOYS_AO_VIVO.get(pedido_id)
+    
+    if posicao:
+        return {"status": "online", "posicao": {"lat": posicao["lat"], "lng": posicao["lng"]}}
+    else:
+        # Se não tiver posição na memória, avisa o mapa que está aguardando sinal
+        return {"status": "aguardando_sinal", "posicao": None}
         
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
