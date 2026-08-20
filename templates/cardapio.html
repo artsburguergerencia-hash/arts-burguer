@@ -1216,6 +1216,77 @@
                 btn.disabled = false; btn.innerHTML = txtOriginal; 
             }
         }
+
+        // 🚨 1. RESTAURA O MODAL DO PERFIL E HISTÓRICO DE PEDIDOS 🚨
+        async function abrirModalPerfil() {
+            const nomeSeguro = clienteLogado.nome || "Visitante";
+            document.getElementById('vip-nome').innerText = nomeSeguro;
+            document.getElementById('vip-tel').innerText = clienteLogado.telefone || "";
+            if (clienteLogado.foto && clienteLogado.foto.trim() !== "") {
+                document.getElementById('vip-foto').src = clienteLogado.foto;
+                document.getElementById('vip-foto').classList.remove('hidden');
+                document.getElementById('vip-iniciais').classList.add('hidden');
+            } else {
+                document.getElementById('vip-foto').classList.add('hidden');
+                document.getElementById('vip-iniciais').innerText = nomeSeguro.substring(0, 2).toUpperCase();
+                document.getElementById('vip-iniciais').classList.remove('hidden');
+            }
+            document.getElementById('vip-pontos').innerText = clienteLogado.pontos || 0;
+            const cashbackVal = parseFloat(clienteLogado.cashback) || 0;
+            document.getElementById('vip-cashback').innerText = "R$ " + cashbackVal.toFixed(2).replace('.', ',');
+            
+            const listaHistorico = document.getElementById('lista-historico');
+            listaHistorico.innerHTML = '<p class="text-center text-slate-500 text-sm py-4"><i class="ph-bold ph-spinner animate-spin text-2xl"></i></p>';
+            document.getElementById('modal-perfil').classList.remove('hidden');
+            document.getElementById('modal-perfil').classList.add('flex');
+
+            try {
+                const res = await fetch(`/api/cliente/${clienteLogado.id}/pedidos`);
+                const historico = await res.json();
+                if(historico.length === 0) {
+                    listaHistorico.innerHTML = '<p class="text-center text-slate-500 text-sm py-4">Você ainda não fez nenhum pedido.</p>';
+                    return;
+                }
+                listaHistorico.innerHTML = historico.map(p => {
+                    const statusCores = { "RECEBIDO": "bg-slate-100", "EM_PREPARO": "bg-amber-50", "PRONTO": "bg-blue-50", "SAIU_PARA_ENTREGA": "bg-purple-50", "ENTREGUE": "bg-emerald-50", "CANCELADO": "bg-red-50" };
+                    const cor = statusCores[p.status] || "bg-slate-100";
+                    return `<div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mb-3">
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="font-black text-sm text-slate-800 dark:text-white">Pedido #${p.id}</span>
+                                    <span class="text-[9px] font-black px-2 py-1 border rounded uppercase ${cor} text-slate-700">${p.status.replace(/_/g, ' ')}</span>
+                                </div>
+                                <p class="font-black text-brand-500 text-sm">R$ ${p.total.toFixed(2).replace('.', ',')}</p>
+                            </div>`;
+                }).join('');
+            } catch(e) { listaHistorico.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Erro ao carregar histórico.</p>'; }
+        }
+
+        // 🚨 2. CORRIGE O RASTREIO PARA IGNORAR A HASHTAG (#) 🚨
+        async function buscarRastreio() {
+            let busca = document.getElementById('input-rastreio').value.trim();
+            busca = busca.replace('#', ''); // Arranca a hashtag se o cliente digitar!
+            if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
+            
+            const btn = document.getElementById('btn-rastreio'); btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; btn.disabled = true;
+            try {
+                const res = await fetch(`/api/rastreio/${busca}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    document.getElementById('rastreio-senha').innerText = data.senha || data.id; 
+                    document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
+                    
+                    const bar = document.getElementById('rastreio-progresso'); 
+                    bar.style.width = data.progresso + '%';
+                    if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
+                    else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
+                    else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
+                    document.getElementById('resultado-rastreio').classList.remove('hidden');
+                } else {
+                    alert("Ops! Nenhum pedido ativo encontrado."); document.getElementById('resultado-rastreio').classList.add('hidden');
+                }
+            } catch(e) { alert("Erro de conexão."); }
+            btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; btn.disabled = false;
+        }
     </script>
 </body>
 </html>
