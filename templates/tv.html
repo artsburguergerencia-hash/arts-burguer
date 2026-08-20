@@ -127,6 +127,12 @@
         let ultimoPedidoProntoId = 0;
         let somAtivado = false;
         let ultimaCargaTV = "";
+        
+        // 🚨 MEMÓRIA DE VOZES DO NAVEGADOR 🚨
+        let vozesDisponiveis = [];
+        window.speechSynthesis.onvoiceschanged = () => {
+            vozesDisponiveis = window.speechSynthesis.getVoices();
+        };
 
         setInterval(() => {
             const agora = new Date();
@@ -137,11 +143,11 @@
             somAtivado = true;
             document.getElementById('tela-ativacao').classList.add('hidden');
             
-            // Um toque mudo só para desbloquear o áudio do navegador
             const som = document.getElementById('som-chamada');
             som.volume = 0; som.play().then(() => { som.pause(); som.currentTime = 0; som.volume = 1; }).catch(()=>{});
             
-            // Fala de boas-vindas mudinha para desbloquear a Voz Sintética
+            // Força o carregamento das vozes
+            vozesDisponiveis = window.speechSynthesis.getVoices();
             const msgInicial = new SpeechSynthesisUtterance("Sistema iniciado");
             msgInicial.volume = 0;
             window.speechSynthesis.speak(msgInicial);
@@ -149,24 +155,45 @@
             atualizarTV();
         }
 
-        // 🚨 FUNÇÃO ESTILO HOSPITAL: CAMPAINHA + VOZ SINTÉTICA 🚨
+        // 🚨 FUNÇÃO DE VOZ COM "CAÇADOR DE VOZ NATURAL" 🚨
         function chamarSenhaVoz(senha, nomeCompleto) {
             const som = document.getElementById('som-chamada');
             
-            // Toca o Ding-Dong
             som.currentTime = 0;
             som.play().catch(()=>{});
 
-            // Pega só o primeiro nome
             const primeiroNome = nomeCompleto ? nomeCompleto.split(' ')[0] : 'Cliente';
 
-            // Aguarda 1.5 segundos (tempo da campainha tocar) e fala a frase!
             setTimeout(() => {
-                // A frase que será falada. As vírgulas dão uma pausa natural na voz.
                 const frase = `Senha, ${senha}. ${primeiroNome}, seu pedido está pronto.`;
                 const msg = new SpeechSynthesisUtterance(frase);
                 msg.lang = 'pt-BR';
-                msg.rate = 0.9; // Deixa a voz um pouco mais calma e compreensível
+                msg.rate = 0.95; // Velocidade ligeiramente ajustada para soar mais humano
+                msg.pitch = 1.0; 
+
+                // Filtra apenas vozes em português
+                let vozesPT = vozesDisponiveis.filter(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR'));
+                
+                if (vozesPT.length > 0) {
+                    // O "Caçador": Procura por vozes nativas de alta qualidade (Google, Microsoft Edge Online, Apple)
+                    let vozNatural = vozesPT.find(v => 
+                        v.name.includes('Google') || 
+                        v.name.includes('Natural') || 
+                        v.name.includes('Premium') || 
+                        v.name.includes('Luciana') || 
+                        v.name.includes('Francisca') || 
+                        v.name.includes('Antonio') ||
+                        v.name.includes('Online')
+                    );
+                    
+                    // Se achar uma premium, usa ela. Se não, usa a primeira que o PC tiver.
+                    if (vozNatural) {
+                        msg.voice = vozNatural;
+                    } else {
+                        msg.voice = vozesPT[0];
+                    }
+                }
+
                 window.speechSynthesis.speak(msg);
             }, 1500); 
         }
@@ -192,10 +219,7 @@
                 if (prontos.length > 0) {
                     const maisRecente = prontos[0];
                     if (ultimoPedidoProntoId !== 0 && maisRecente.id > ultimoPedidoProntoId && somAtivado) {
-                        
-                        // 🚨 CHAMA A FUNÇÃO DE VOZ AQUI!
                         chamarSenhaVoz(maisRecente.senha_diaria, maisRecente.cliente_nome);
-
                     }
                     ultimoPedidoProntoId = Math.max(ultimoPedidoProntoId, maisRecente.id);
                 }
@@ -218,8 +242,6 @@
                     filaProntos.innerHTML = '';
                 } else {
                     const pDestaque = prontos[0];
-                    
-                    // 🚨 EXTRAI SÓ O PRIMEIRO NOME PARA APARECER GIGANTE NA TELA 🚨
                     const nomeVisual = pDestaque.cliente_nome ? pDestaque.cliente_nome.split(' ')[0] : 'Aguardando Retirada';
 
                     destaque.innerHTML = `
