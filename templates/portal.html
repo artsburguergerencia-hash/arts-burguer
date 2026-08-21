@@ -16,13 +16,16 @@
         }
         
         // Função para checar se é admin antes de tentar abrir o Gestão
-        function tentarAcessarGestao() {
-            if (cargoAtual === '1') {
-                window.location.href = '/gestao';
-            } else {
-                alert("⛔ Acesso Restrito! Apenas Administradores podem acessar o Backoffice.");
-            }
-        }
+        // Substitua a função tentarAcessarGestao no seu portal.html
+function tentarAcessarGestao() {
+    const cargoAtual = localStorage.getItem('funcionario_cargo');
+    if (cargoAtual === '1') {
+        // Abre o painel de gestão em uma nova aba exatamente igual aos outros módulos
+        window.open('/gestao', '_blank');
+    } else {
+        alert("⛔ Acesso Restrito! Apenas Administradores podem acessar o Backoffice.");
+    }
+}
     </script>
     
     <!-- CONFIGURAÇÃO DO TAILWIND PARA MODO ESCURO -->
