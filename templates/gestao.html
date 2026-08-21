@@ -563,7 +563,17 @@
                             <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Inscrição Estadual</label><input type="text" id="conf-ie" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
                             <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Telefone / WhatsApp</label><input type="text" id="conf-telefone" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
                             
-                            <div class="lg:col-span-1"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Horário de Func.</label><input type="text" id="conf-horario" placeholder="Ex: 18h às 23h" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
+                            <!-- SUBSTITUA O CAMPO DE TEXTO DO HORÁRIO POR ESTE BLOCO INTERATIVO -->
+<div class="lg:col-span-3 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Expediente Semanal (Dias e Horários)</label>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3" id="grade-dias-semana">
+        <!-- Gerado dinamicamente pelo JavaScript para cada dia -->
+    </div>
+    
+    <!-- Input oculto que armazena a string consolidada para salvar no banco -->
+    <input type="hidden" id="conf-horario">
+</div>
                             <div class="lg:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label><input type="text" id="conf-endereco" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
                         </div>
 
@@ -1544,7 +1554,7 @@
             }
         }
         
-        async function carregarConfiguracoesInit() {
+       async function carregarConfiguracoesInit() {
             try {
                 const res = await fetch('/api/gestao/configuracoes'); 
                 const conf = await res.json();
@@ -1556,7 +1566,33 @@
                 document.getElementById('conf-ie').value = conf.inscricao_estadual || ""; 
                 document.getElementById('conf-endereco').value = conf.endereco || "";
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
+                
+                // 🚨 LEITURA DOS DIAS DA SEMANA SALVOS PARA A NOVA GRADE 🚨
                 document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
+                if (conf.horario_funcionamento) {
+                    const partes = conf.horario_funcionamento.split(',');
+                    partes.forEach(p => {
+                        const [diaNome, resto] = p.split(':');
+                        if(diaNome && resto) {
+                            const diaLimpo = diaNome.trim();
+                            const chk = document.getElementById(`check-dia-${diaLimpo}`);
+                            if(chk) {
+                                if(resto.toLowerCase().includes('fechado')) {
+                                    chk.checked = false;
+                                    toggleDiaSemana(diaLimpo);
+                                } else {
+                                    chk.checked = true;
+                                    toggleDiaSemana(diaLimpo);
+                                    const horariosMatch = resto.match(/(\d{2}:\d{2})/g);
+                                    if(horariosMatch && horariosMatch.length >= 2) {
+                                        document.getElementById(`abertura-${diaLimpo}`).value = horariosMatch[0];
+                                        document.getElementById(`fechamento-${diaLimpo}`).value = horariosMatch[1];
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
                 
                 if(conf.logo_url && conf.logo_url !== 'None' && conf.logo_url !== '') {
                     document.getElementById('conf-logo-base64').value = conf.logo_url;
@@ -1588,7 +1624,7 @@
                 
                 listaCatCardapio = conf.categorias_cardapio ? conf.categorias_cardapio.split(',').filter(x => x.trim() !== "") : ["Burger Artesanal", "Bebidas"];
                 listaCatFornecedor = conf.categorias_fornecedor ? conf.categorias_fornecedor.split(',').filter(x => x.trim() !== "") : ["Carnes", "Embalagens"];
-                listaBeneficios = conf.planos_saude_opcoes ? conf.planos_sa_opcoes.split(',').filter(x => x.trim() !== "") : ["Nenhum"];
+                listaBeneficios = conf.planos_saude_opcoes ? conf.planos_saude_opcoes.split(',').filter(x => x.trim() !== "") : ["Nenhum"];
                 listaPagamentos = conf.formas_pagamento ? conf.formas_pagamento.split(',').filter(x => x.trim() !== "") : ["Pix", "Dinheiro"];
                 
                 renderTagsSetup('cardapio'); renderTagsSetup('fornecedor'); renderTagsSetup('beneficio'); renderTagsSetup('pagamento');
@@ -1611,11 +1647,23 @@
 
         async function salvarConfiguracoesLoja(e) {
             e.preventDefault(); 
+            
+            // 🚨 CONSOLIDA A GRADE DE DIAS E HORÁRIOS EM UMA ÚNICA STRING 🚨
+            let horariosConsolidados = diasDaSemanaOp.map(dia => {
+                const ativ = document.getElementById(`check-dia-${dia}`).checked;
+                if (!ativ) return `${dia}: Fechado`;
+                const ini = document.getElementById(`abertura-${dia}`).value || "18:00";
+                const fim = document.getElementById(`fechamento-${dia}`).value || "23:59";
+                return `${dia}: ${ini} às ${fim}`;
+            }).join(', ');
+            
+            document.getElementById('conf-horario').value = horariosConsolidados;
+
             const payload = { 
                 nome_empresa: document.getElementById('conf-nome').value, 
                 cnpj: document.getElementById('conf-cnpj').value, 
                 inscricao_estadual: document.getElementById('conf-ie').value,
-                horario_funcionamento: document.getElementById('conf-horario').value,
+                horario_funcionamento: horariosConsolidados, // Envia os dias e horários unidos para o banco
                 endereco: document.getElementById('conf-endereco').value, 
                 telefone: document.getElementById('conf-telefone').value, 
                 logo_url: document.getElementById('conf-logo-base64').value, 
@@ -3075,6 +3123,52 @@
             btn.innerHTML = "Salvar Alterações";
             btn.disabled = false;
         }
+        const diasDaSemanaOp = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
+        function renderizarGradeHorarios() {
+            const container = document.getElementById('grade-dias-semana');
+            if(!container) return;
+            
+            container.innerHTML = diasDaSemanaOp.map(dia => `
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-sm flex flex-col space-y-2">
+                    <label class="flex items-center text-xs font-black text-slate-700 dark:text-white cursor-pointer">
+                        <input type="checkbox" id="check-dia-${dia}" onchange="toggleDiaSemana('${dia}')" class="mr-2 w-4 h-4 accent-brand-500 rounded">
+                        ${dia}
+                    </label>
+                    <div class="flex items-center space-x-1">
+                        <input type="time" id="abertura-${dia}" disabled class="w-1/2 text-xs p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-mono outline-none">
+                        <span class="text-xs text-slate-400">às</span>
+                        <input type="time" id="fechamento-${dia}" disabled class="w-1/2 text-xs p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-mono outline-none">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleDiaSemana(dia) {
+            const ativo = document.getElementById(`check-dia-${dia}`).checked;
+            const inputAb = document.getElementById(`abertura-${dia}`);
+            const inputFech = document.getElementById(`fechamento-${dia}`);
+            
+            inputAb.disabled = !ativo;
+            inputFech.disabled = !ativo;
+            
+            if (ativo) {
+                inputAb.className = "w-1/2 text-xs p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-mono outline-none focus:border-brand-500";
+                inputFech.className = "w-1/2 text-xs p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-mono outline-none focus:border-brand-500";
+                if(!inputAb.value) inputAb.value = "18:00";
+                if(!inputFech.value) inputFech.value = "23:59";
+            } else {
+                inputAb.className = "w-1/2 text-xs p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-mono outline-none";
+                inputFech.className = "w-1/2 text-xs p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-mono outline-none";
+                inputAb.value = "";
+                inputFech.value = "";
+            }
+        }
+
+        // Executa a criação da grade assim que a página abrir
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizarGradeHorarios();
+        });
     </script>
 </body>
 </html>
