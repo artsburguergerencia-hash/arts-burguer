@@ -2402,17 +2402,18 @@ def consertar_banco(db: Session = Depends(get_db)):
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 1)
 # ==========================================
 
+# ==========================================
+# MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 1) - CORRIGIDO
+# ==========================================
+
 # 1. Atualizar Fornecedor
 @app.put("/api/fornecedores/{fornecedor_id}")
 def atualizar_fornecedor(fornecedor_id: int, dados: dict, db: Session = Depends(get_db)):
-    from models import FornecedorModel # Certifique-se que o nome do seu model está correto
     fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
-    if not fornecedor:
-        raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
+    if not fornecedor: raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
     
     for key, value in dados.items():
-        if hasattr(fornecedor, key):
-            setattr(fornecedor, key, value)
+        if hasattr(fornecedor, key): setattr(fornecedor, key, value)
             
     db.commit()
     return {"status": "sucesso", "mensagem": "Fornecedor atualizado!"}
@@ -2420,41 +2421,47 @@ def atualizar_fornecedor(fornecedor_id: int, dados: dict, db: Session = Depends(
 # 2. Excluir Fornecedor
 @app.delete("/api/fornecedores/{fornecedor_id}")
 def excluir_fornecedor(fornecedor_id: int, db: Session = Depends(get_db)):
-    from models import FornecedorModel
     fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
-    if not fornecedor:
-        raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
+    if not fornecedor: raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
         
     db.delete(fornecedor)
     db.commit()
-    return {"status": "sucesso", "mensagem": "Fornecedor excluído!"}
+    return {"status": "sucesso"}
 
 # 3. Atualizar Conta a Pagar
 @app.put("/api/contas_pagar/{conta_id}")
 def atualizar_conta(conta_id: int, dados: dict, db: Session = Depends(get_db)):
-    from models import ContaPagarModel # Certifique-se que o nome do seu model está correto
     conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
-    if not conta:
-        raise HTTPException(status_code=404, detail="Conta não encontrada")
+    if not conta: raise HTTPException(status_code=404, detail="Conta não encontrada")
     
     for key, value in dados.items():
-        if hasattr(conta, key):
-            setattr(conta, key, value)
+        if hasattr(conta, key): setattr(conta, key, value)
             
     db.commit()
-    return {"status": "sucesso", "mensagem": "Conta atualizada!"}
+    return {"status": "sucesso"}
 
 # 4. Excluir Conta a Pagar
 @app.delete("/api/contas_pagar/{conta_id}")
 def excluir_conta(conta_id: int, db: Session = Depends(get_db)):
-    from models import ContaPagarModel
     conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
-    if not conta:
-        raise HTTPException(status_code=404, detail="Conta não encontrada")
+    if not conta: raise HTTPException(status_code=404, detail="Conta não encontrada")
         
     db.delete(conta)
     db.commit()
-    return {"status": "sucesso", "mensagem": "Conta excluída!"}
+    return {"status": "sucesso"}
+
+# 5. Excluir Funcionário Definitivamente
+@app.delete("/api/gestao/funcionarios/hard-delete/{func_id}")
+def excluir_funcionario_definitivo(func_id: int, db: Session = Depends(get_db)):
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    if not func: raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+    
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    if rh: db.delete(rh)
+    
+    db.delete(func)
+    db.commit()
+    return {"status": "sucesso"}
 
 # ==========================================
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 2)
