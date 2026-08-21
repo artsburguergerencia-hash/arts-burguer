@@ -1859,24 +1859,38 @@ def abrir_mapa_cliente():
 # ==========================================
 
 @app.get("/api/gestao/configuracoes")
-def get_configuracoes(db: Session = Depends(get_db)):
+def ler_configuracoes(db: Session = Depends(get_db)):
     config = db.query(ConfiguracaoLojaModel).first()
     if not config:
-        return {}
-
-    return {
-        "nome_empresa": config.nome_empresa,
-        "telefone": config.telefone_contato,
-        "endereco": config.endereco_completo,
-        "horario_funcionamento": config.horario_funcionamento,
-        "logo_url": config.logo_url,
-        "aceita_retirada": config.aceita_retirada,
-        "aceita_delivery": config.aceita_delivery,
-        "formas_pagamento": config.formas_pagamento_online,
+        config = ConfiguracaoLojaModel(nome_empresa="Art's Burguer")
+        db.add(config)
+        db.commit()
+        db.refresh(config)
         
-        # 🚨 ADICIONE ESTAS DUAS LINHAS: 🚨
-        "fidelidade_ativo": getattr(config, 'fidelidade_ativo', True), 
-        "cashback_ativo": getattr(config, 'cashback_ativo', True)
+    # Retorna explicitamente um dicionário para o JavaScript nunca falhar ao ler
+    return {
+        "id": config.id,
+        "nome_empresa": config.nome_empresa or "Art's Burguer",
+        "cnpj": config.cnpj or "",
+        "inscricao_estadual": config.inscricao_estadual or "",
+        "horario_funcionamento": config.horario_funcionamento or "",
+        "endereco": config.endereco or "",
+        "telefone": config.telefone or "",
+        "logo_url": config.logo_url or "",
+        "aceita_delivery": bool(config.aceita_delivery),
+        "aceita_retirada": bool(config.aceita_retirada),
+        "aceite_automatico": bool(config.aceite_automatico),
+        "tempo_preparo": int(config.tempo_preparo or 30),
+        "formas_pagamento": config.formas_pagamento or "Pix,Dinheiro,Cartão",
+        "sistema_fidelidade": config.sistema_fidelidade or "CASHBACK",
+        "categorias_cardapio": config.categorias_cardapio or "Burger Artesanal,Bebidas,Porções",
+        "categorias_fornecedor": config.categorias_fornecedor or "Carnes,Hortifruti,Bebidas,Embalagens",
+        "planos_saude_opcoes": config.planos_saude_opcoes or "Nenhum",
+        "regra_acumulo": config.regra_acumulo or "POR_PEDIDO",
+        "fidelidade_ganho": float(config.fidelidade_ganho or 0.0),
+        "fidelidade_gasto_minimo": float(config.fidelidade_gasto_minimo or 0.0),
+        "fidelidade_resgate": float(config.fidelidade_resgate or 0.0),
+        "fidelidade_elegibilidade": config.fidelidade_elegibilidade or "TODOS"
     }
 
 
@@ -1890,21 +1904,16 @@ def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
             db.commit()
             db.refresh(config)
 
-        # Atualiza campo por campo com rastreio de alteração
         for key, value in dados.items():
             if hasattr(config, key):
                 setattr(config, key, value)
                 
-        # 🚨 FORÇA O SQLAlchemy A SALVAR NO BANCO DE DADOS 🚨
         db.add(config)
         db.commit()
         db.refresh(config)
-        
         return {"status": "sucesso"}
-        
     except Exception as e:
         db.rollback()
-        print(f"❌ ERRO CRÍTICO AO SALVAR NO BANCO: {str(e)}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/gestao/clientes")
