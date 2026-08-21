@@ -2037,17 +2037,31 @@ def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Sessi
         if not cliente:
             raise HTTPException(status_code=404, detail="Cliente não encontrado na base.")
         
-        if "nome" in dados: cliente.nome = dados["nome"]
-        if "telefone" in dados: cliente.telefone = dados["telefone"]
-        if "cpf" in dados: cliente.cpf = dados["cpf"]
-        if "cep" in dados: cliente.cep = dados["cep"]
-        if "endereco" in dados: cliente.endereco = dados["endereco"]
-        if "pontos" in dados: cliente.pontos = dados["pontos"]
-        if "cashback" in dados: cliente.cashback = dados["cashback"]
-        if "bloqueado" in dados: cliente.bloqueado = dados["bloqueado"]
+        if "nome" in dados: 
+            cliente.nome = dados["nome"]
+        if "telefone" in dados: 
+            cliente.telefone = dados["telefone"]
+            
+        # Blindagem de CPF Vazio
+        if "cpf" in dados: 
+            novo_cpf = str(dados["cpf"]).strip()
+            if novo_cpf != "": 
+                cliente.cpf = novo_cpf
+                
+        if "cep" in dados: 
+            cliente.cep = dados["cep"]
+        if "endereco" in dados: 
+            cliente.endereco = dados["endereco"]
+        if "pontos" in dados: 
+            cliente.pontos = int(dados["pontos"]) if dados["pontos"] is not None else 0
+        if "cashback" in dados: 
+            cliente.cashback = float(dados["cashback"]) if dados["cashback"] is not None else 0.0
+        if "bloqueado" in dados: 
+            cliente.bloqueado = bool(dados["bloqueado"])
         
         db.commit()
-        return {"mensagem": "Dossiê do cliente atualizado com sucesso!"}
+        db.refresh(cliente)
+        return {"status": "sucesso", "mensagem": "Dossiê do cliente atualizado com sucesso!"}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -2509,32 +2523,6 @@ def excluir_produto(produto_id: int, db: Session = Depends(get_db)):
     db.delete(produto)
     db.commit()
     return {"status": "sucesso", "mensagem": "Produto excluído permanentemente!"}
-
-# 3. Atualizar Dossiê do Cliente (CRM)
-@app.put("/api/gestao/clientes/{cliente_id}")
-def atualizar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
-    from models import ClienteModel
-    cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
-    if not cliente:
-        raise HTTPException(status_code=404, detail="Cliente não encontrado")
-    
-    if 'nome' in dados: cliente.nome = dados['nome']
-    if 'telefone' in dados: cliente.telefone = dados['telefone']
-    
-    # Blindagem de CPF Vazio
-    if 'cpf' in dados: 
-        novo_cpf = dados['cpf'].strip()
-        if novo_cpf != "": 
-            cliente.cpf = novo_cpf
-            
-    if 'cep' in dados: cliente.cep = dados['cep']
-    if 'endereco' in dados: cliente.endereco = dados['endereco']
-    if 'pontos' in dados: cliente.pontos = dados['pontos']
-    if 'cashback' in dados: cliente.cashback = dados['cashback']
-    if 'bloqueado' in dados: cliente.bloqueado = dados['bloqueado']
-    
-    db.commit()
-    return {"status": "sucesso", "mensagem": "CRM do cliente atualizado!"}
 
 # 4. Travar/Destravar Cliente Rápido
 @app.put("/api/gestao/clientes/{cliente_id}/bloqueio")
