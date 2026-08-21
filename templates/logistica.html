@@ -3,83 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central de Logística Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <title>Despacho e Logística | Art's Burguer</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { dark: { 950: '#0B0F19', 900: '#151A27', 800: '#1F2639' }, brand: { 500: '#ff4757' } } } } };
-        document.documentElement.classList.add('dark'); // Logística Premium sempre escura
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } };
+        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .card-enter { animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-dark-950 text-slate-100 flex flex-col h-screen overflow-hidden">
+<body class="bg-slate-50 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 flex flex-col h-screen overflow-hidden transition-colors duration-300">
 
-    <header class="bg-dark-900 border-b border-dark-800 h-24 flex items-center justify-between px-8 shadow-2xl shrink-0 z-20">
+    <header class="bg-white dark:bg-slate-900 h-20 flex items-center justify-between px-8 shadow-sm shrink-0 z-10 border-b border-slate-200 dark:border-slate-800 transition-colors">
         <div class="flex items-center">
-            <div id="header-logo-container" class="w-14 h-14 bg-brand-500 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30 overflow-hidden mr-5 border border-brand-400/50">
-                <i id="header-logo-letra" class="ph-bold ph-moped text-3xl text-white"></i>
+            <div id="header-logo-container" class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center mr-3 shadow-sm overflow-hidden text-white font-black text-xl">
+                <i id="header-logo-letra" class="ph-bold ph-moped"></i>
                 <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
             </div>
             <div>
-                <h1 class="text-2xl font-black tracking-tight text-white">Central de Expedição</h1>
-                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span> Monitoramento de Frota Ativo
-                </p>
+                <h1 class="text-xl font-black tracking-tight text-slate-800 dark:text-white">Central de Expedição</h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Gestão Logística</p>
             </div>
         </div>
         
-        <div class="flex items-center space-x-4">
-            <button onclick="buscarPedidosLogistica(true)" class="bg-dark-800 hover:bg-slate-800 border border-slate-700 text-white p-3.5 rounded-xl transition-colors shadow-sm">
-                <i class="ph-bold ph-arrows-clockwise text-xl text-brand-500"></i>
+        <div class="flex items-center space-x-3">
+            <div class="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg flex items-center border border-slate-200 dark:border-slate-700">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2"></div>
+                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Conectado</span>
+            </div>
+            <button onclick="toggleTheme()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-500 p-2 rounded-lg transition-colors">
+                <i id="theme-icon" class="ph-bold ph-moon text-lg"></i>
             </button>
-            <a href="/gestao" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 p-3.5 rounded-xl border border-red-500/20 transition-colors"><i class="ph-bold ph-sign-out text-xl"></i></a>
+            <button onclick="buscarPedidosLogistica(true)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-500 p-2 rounded-lg transition-colors">
+                <i class="ph-bold ph-arrows-clockwise text-lg"></i>
+            </button>
         </div>
     </header>
 
-    <main class="flex-1 flex overflow-hidden p-6 gap-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-dark-950">
-        
-        <!-- PRONTOS -->
-        <section class="flex-1 flex flex-col bg-dark-900 rounded-[2rem] border border-dark-800 shadow-2xl overflow-hidden relative">
-            <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent pointer-events-none"></div>
-            <div class="p-6 border-b border-dark-800 flex justify-between items-center shrink-0 z-10 bg-dark-900/80 backdrop-blur">
-                <h2 class="font-black text-xl text-white flex items-center gap-3"><i class="ph-fill ph-package text-amber-500 text-2xl"></i> Aguardando Saída</h2>
-                <span class="bg-amber-500 text-white px-4 py-1 rounded-xl font-black font-mono shadow-lg shadow-amber-500/20" id="badge-prontos">0</span>
+    <main class="flex-1 flex overflow-hidden p-6 space-x-6">
+        <section class="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+            <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
+                <h2 class="font-black text-lg text-slate-800 dark:text-white flex items-center tracking-tight"><i class="ph-fill ph-package text-amber-500 mr-2 text-xl"></i> Aguardando Saída</h2>
+                <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-3 py-1 rounded border border-slate-200 dark:border-slate-700 text-xs font-black" id="badge-prontos">0</span>
             </div>
-            <div class="flex-1 overflow-y-auto p-6 space-y-5 no-scrollbar relative z-10" id="lista-prontos"></div>
+            <div class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50 dark:bg-slate-950/50 no-scrollbar" id="lista-prontos"></div>
         </section>
 
-        <!-- EM ROTA -->
-        <section class="flex-1 flex flex-col bg-dark-900 rounded-[2rem] border border-dark-800 shadow-2xl overflow-hidden relative">
-            <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none"></div>
-            <div class="p-6 border-b border-dark-800 flex justify-between items-center shrink-0 z-10 bg-dark-900/80 backdrop-blur">
-                <h2 class="font-black text-xl text-white flex items-center gap-3"><i class="ph-fill ph-map-pin-line text-blue-500 text-2xl"></i> Em Rota de Entrega</h2>
-                <span class="bg-blue-600 text-white px-4 py-1 rounded-xl font-black font-mono shadow-lg shadow-blue-500/20" id="badge-rota">0</span>
+        <section class="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+            <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
+                <h2 class="font-black text-lg text-slate-800 dark:text-white flex items-center tracking-tight"><i class="ph-fill ph-map-pin-line text-blue-500 mr-2 text-xl"></i> Em Rota</h2>
+                <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-3 py-1 rounded border border-slate-200 dark:border-slate-700 text-xs font-black" id="badge-rota">0</span>
             </div>
-            <div class="flex-1 overflow-y-auto p-6 space-y-5 no-scrollbar relative z-10" id="lista-rota"></div>
+            <div class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50 dark:bg-slate-950/50 no-scrollbar" id="lista-rota"></div>
         </section>
-
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            buscarPedidosLogistica(true);
+            buscarPedidosLogistica();
             try {
-                const res = await fetch('/api/gestao/configuracoes'); const configLoja = await res.json();
+                const res = await fetch('/api/gestao/configuracoes'); 
+                const configLoja = await res.json();
                 if(configLoja.logo_url && configLoja.logo_url !== 'None') {
-                    document.getElementById('header-logo-img').src = configLoja.logo_url; 
-                    document.getElementById('header-logo-img').classList.remove('hidden');
-                    document.getElementById('header-logo-letra').classList.add('hidden'); 
-                    document.getElementById('header-logo-container').classList.remove('bg-brand-500'); 
-                    document.getElementById('header-logo-container').classList.add('bg-white');
+                    document.getElementById('header-logo-img').src = configLoja.logo_url; document.getElementById('header-logo-img').classList.remove('hidden');
+                    document.getElementById('header-logo-letra').classList.add('hidden'); document.getElementById('header-logo-container').classList.replace('bg-brand-500', 'bg-white');
                 }
             } catch(e) {}
         });
+
+        const themeIcon = document.getElementById('theme-icon');
+        if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light');
+                if(themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark');
+                if(themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+            }
+        }
 
         setInterval(() => buscarPedidosLogistica(false), 5000);
         let ultimaCargaLogistica = "";
@@ -88,140 +98,91 @@
             try {
                 const response = await fetch('/api/logistica/pedidos'); const dados = await response.json();
                 const jsonAtual = JSON.stringify(dados);
-                if (!forcar && jsonAtual === ultimaCargaLogistica) return; 
-                ultimaCargaLogistica = jsonAtual;
-                
+                if (!forcar && jsonAtual === ultimaCargaLogistica) return; ultimaCargaLogistica = jsonAtual;
                 renderizarProntos(dados.prontos || []); renderizarEmRota(dados.em_rota || []);
-                document.getElementById('badge-prontos').innerText = (dados.prontos || []).length;
-                document.getElementById('badge-rota').innerText = (dados.em_rota || []).length;
+                document.getElementById('badge-prontos').innerText = (dados.prontos || []).length; document.getElementById('badge-rota').innerText = (dados.em_rota || []).length;
             } catch (error) {}
         }
 
         function renderizarProntos(pedidos) {
             const container = document.getElementById('lista-prontos');
-            if (pedidos.length === 0) {
-                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-600"><i class="ph-fill ph-check-circle text-6xl mb-4"></i><p class="font-bold text-sm uppercase tracking-widest">Expedição Limpa</p></div>`;
-                return;
-            }
+            if (pedidos.length === 0) { container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-700 opacity-50"><i class="ph-fill ph-package text-4xl mb-2"></i><p class="font-bold text-xs uppercase tracking-widest">Limpo</p></div>`; return; }
 
             container.innerHTML = pedidos.map(p => {
                 const isRetirada = (p.tipo && p.tipo.includes('RETIRADA')) || (p.endereco && p.endereco.includes('Retirada'));
                 const endLimpo = p.endereco ? p.endereco.replace(/'/g, "\\'") : '';
-
                 return `
-                    <div class="card-enter bg-dark-800 border-l-4 ${isRetirada ? 'border-l-purple-500' : 'border-l-amber-500'} border border-dark-700 p-6 rounded-2xl shadow-lg relative overflow-hidden group">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <span class="bg-dark-950 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest mr-2 border border-dark-700">#${p.senha_diaria || p.id}</span>
-                                <span class="${isRetirada ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'} px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest">${isRetirada ? 'Retirada' : 'Delivery'}</span>
+                    <div class="card-enter bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-sm relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded text-[10px] font-black font-mono">#${p.senha_diaria || p.id}</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">${isRetirada ? 'Retirada' : 'Delivery'}</span>
+                        </div>
+                        <h3 class="font-black text-slate-800 dark:text-white text-sm mb-1">${p.cliente}</h3>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">${p.endereco}</p>
+                        
+                        ${isRetirada ? `
+                            <button onclick="concluirRetirada(${p.id}, this)" class="w-full bg-slate-900 dark:bg-brand-500 hover:bg-slate-800 text-white font-bold py-2 rounded-lg text-xs uppercase tracking-widest transition-colors"><i class="ph-bold ph-check mr-1"></i> Entregar no Balcão</button>
+                        ` : `
+                            <div class="grid grid-cols-2 gap-2 mb-2">
+                                <button onclick="copilotoDespacho(${p.id}, 'Uber', '${endLimpo}')" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-white font-bold py-2 rounded-lg text-[10px] uppercase tracking-widest transition-colors border border-slate-200 dark:border-slate-600">Uber Direct</button>
+                                <button onclick="copilotoDespacho(${p.id}, '99', '${endLimpo}')" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-white font-bold py-2 rounded-lg text-[10px] uppercase tracking-widest transition-colors border border-slate-200 dark:border-slate-600">99 Entrega</button>
                             </div>
-                        </div>
-                        <div class="mb-5">
-                            <h3 class="font-black text-white text-xl mb-1">${p.cliente}</h3>
-                            <p class="text-sm font-medium text-slate-400 flex items-start mt-2">
-                                <i class="ph-fill ph-map-pin text-brand-500 mr-2 mt-0.5 text-lg"></i> ${p.endereco}
-                            </p>
-                        </div>
-                        <div>
-                            ${isRetirada ? `
-                                <button onclick="concluirRetirada(${p.id}, this)" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl flex items-center justify-center transition-transform active:scale-95 text-xs uppercase tracking-widest shadow-lg shadow-purple-500/20">
-                                    <i class="ph-fill ph-check-circle mr-2 text-xl"></i> Cliente Retirou
-                                </button>
-                            ` : `
-                                <div class="space-y-3">
-                                    <div class="flex space-x-3">
-                                        <button onclick="copilotoDespacho(${p.id}, 'Uber', '${endLimpo}')" class="flex-1 bg-black hover:bg-slate-900 border border-slate-700 text-white font-black py-3 rounded-xl flex items-center justify-center transition-transform active:scale-95 text-xs uppercase tracking-widest shadow-md"><i class="ph-fill ph-car-profile mr-2 text-lg"></i> Uber</button>
-                                        <button onclick="copilotoDespacho(${p.id}, '99', '${endLimpo}')" class="flex-1 bg-[#FFD100] hover:bg-[#ffdf40] text-black font-black py-3 rounded-xl flex items-center justify-center transition-transform active:scale-95 text-xs uppercase tracking-widest shadow-md"><i class="ph-fill ph-car-profile mr-2 text-lg"></i> 99</button>
-                                    </div>
-                                    <button onclick="despacharMotoboyProprio(${p.id})" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl flex items-center justify-center transition-transform active:scale-95 text-xs uppercase tracking-widest shadow-lg shadow-amber-500/20"><i class="ph-fill ph-moped mr-2 text-xl"></i> Motoboy Próprio</button>
-                                    <button onclick="window.open('/motoboy?pedido=${p.senha_diaria || p.id}&end=${encodeURIComponent(endLimpo)}', '_blank')" class="w-full bg-dark-900 hover:bg-dark-950 text-slate-400 font-bold py-2 mt-2 rounded-xl flex items-center justify-center transition-colors text-[10px] uppercase tracking-widest border border-dark-700"><i class="ph-bold ph-qr-code mr-2"></i> Abrir Radar do Entregador</button>
-                                </div>
-                            `}
-                        </div>
+                            <div class="flex space-x-2">
+                                <button onclick="despacharMotoboyProprio(${p.id})" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm"><i class="ph-bold ph-moped mr-1"></i> Frota</button>
+                                <button onclick="window.open('/motoboy?pedido=${p.senha_diaria || p.id}&end=${encodeURIComponent(endLimpo)}', '_blank')" class="bg-slate-900 dark:bg-slate-600 text-white px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors" title="GPS Tracker"><i class="ph-bold ph-radar"></i></button>
+                            </div>
+                        `}
                     </div>`;
             }).join('');
         }
 
         function renderizarEmRota(pedidos) {
             const container = document.getElementById('lista-rota');
-            if (pedidos.length === 0) {
-                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-600 opacity-50"><i class="ph-fill ph-motorcycle text-6xl mb-4"></i><p class="font-bold text-sm uppercase tracking-widest">Nenhuma entrega ativa</p></div>`;
-                return;
-            }
+            if (pedidos.length === 0) { container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-700 opacity-50"><i class="ph-fill ph-motorcycle text-4xl mb-2"></i><p class="font-bold text-xs uppercase tracking-widest">Vazio</p></div>`; return; }
 
-            container.innerHTML = pedidos.map(p => {
-                const endLimpo = p.endereco ? p.endereco.replace(/'/g, "\\'") : '';
-                return `
-                <div class="card-enter bg-dark-800 text-white border-l-4 border-l-blue-500 border border-dark-700 p-6 rounded-2xl shadow-xl relative overflow-hidden">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <span class="bg-dark-950 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest mr-2 border border-dark-700">#${p.senha_diaria || p.id}</span>
-                            <span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest animate-pulse"><i class="ph-fill ph-motorcycle mr-1"></i> Em Movimento</span>
-                        </div>
+            container.innerHTML = pedidos.map(p => `
+                <div class="card-enter bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-500/30 p-4 rounded-xl shadow-sm relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded text-[10px] font-black font-mono">#${p.senha_diaria || p.id}</span>
                     </div>
-                    <div class="mb-6">
-                        <h3 class="font-black text-white text-xl mb-1">${p.cliente}</h3>
-                        <p class="text-sm font-medium text-slate-400 flex items-start mt-2"><i class="ph-fill ph-map-pin text-brand-500 mr-2 mt-0.5 text-lg"></i> ${p.endereco}</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button onclick="abrirGPS('${endLimpo}')" class="bg-dark-700 hover:bg-dark-600 text-white font-black py-4 px-5 rounded-xl flex items-center justify-center transition-transform active:scale-95 text-xs shadow-md border border-dark-600"><i class="ph-fill ph-navigation-arrow text-blue-400 text-xl"></i></button>
-                        <button onclick="marcarComoEntregue(${p.id}, this)" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl flex items-center justify-center transition-transform active:scale-95 text-xs uppercase tracking-widest shadow-lg shadow-blue-600/30"><i class="ph-bold ph-check-circle mr-2 text-xl"></i> Marcar Entregue</button>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        function abrirGPS(endereco) {
-            if(!endereco || endereco.includes('Retirada')) return alert("Endereço inválido.");
-            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco.replace('Endereço: ', '').trim())}`, '_blank');
+                    <h3 class="font-black text-slate-800 dark:text-white text-sm mb-1">${p.cliente}</h3>
+                    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">${p.endereco}</p>
+                    <button onclick="marcarComoEntregue(${p.id}, this)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-xs uppercase tracking-widest transition-colors shadow-sm"><i class="ph-bold ph-check mr-1"></i> Confirmar Entrega</button>
+                </div>`).join('');
         }
 
         async function copilotoDespacho(pedidoId, plataforma, enderecoFormatado) {
-            const endLimpo = enderecoFormatado.replace('Endereço: ', '').trim();
-            try { await navigator.clipboard.writeText(endLimpo); } catch(e) {}
-            if (plataforma === 'Uber') window.location.href = `uber://?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(endLimpo)}`;
+            const isUber = plataforma === 'Uber';
+            const enderecoLimpo = enderecoFormatado.replace('Endereço: ', '').trim();
+            try { await navigator.clipboard.writeText(enderecoLimpo); } catch(e) {}
+            if (isUber) window.location.href = `uber://?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(enderecoLimpo)}`;
             else { alert("Endereço copiado! A 99 vai abrir."); window.location.href = "taxis99://"; }
-
             setTimeout(async () => {
-                if(!confirm(`Já pediu a corrida na ${plataforma}?`)) return;
+                if(!confirm(`Corrida solicitada na ${plataforma}?`)) return;
                 try {
-                    const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nome_motoboy: `Parceiro (${plataforma})` })
-                    });
+                    const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome_motoboy: `App Parceiro (${plataforma})` }) });
                     if(res.ok) { ultimaCargaLogistica = ""; buscarPedidosLogistica(true); } 
                 } catch(e) {}
             }, 4000);
         }
 
         async function despacharMotoboyProprio(pedidoId) {
-            const nomeMotoboy = prompt("Nome do Motoboy:", "Motoboy Próprio");
-            if (!nomeMotoboy) return;
+            const nomeMotoboy = prompt("Nome do Entregador:", "Frota");
+            if (nomeMotoboy === null) return;
             try {
-                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome_motoboy: nomeMotoboy })
-                });
+                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/despachar`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome_motoboy: nomeMotoboy }) });
                 if(res.ok) { ultimaCargaLogistica = ""; buscarPedidosLogistica(true); } 
             } catch(e) {}
         }
 
         async function concluirRetirada(pedidoId, btn) {
-            if(!confirm("Confirmar que o cliente retirou o pedido?")) return;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i>';
-            try {
-                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' });
-                if(res.ok) { ultimaCargaLogistica = ""; buscarPedidosLogistica(true); } 
-            } catch(e) {}
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
+            try { const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' }); if(res.ok) { ultimaCargaLogistica = ""; buscarPedidosLogistica(true); } } catch(e) {}
         }
 
         async function marcarComoEntregue(pedidoId, btn) {
-            if(!confirm("Confirmar que foi entregue?")) return;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i>';
-            try {
-                const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' });
-                if(res.ok) { ultimaCargaLogistica = ""; buscarPedidosLogistica(true); } 
-            } catch(e) {}
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
+            try { const res = await fetch(`/api/logistica/pedidos/${pedidoId}/entregar`, { method: 'PUT' }); if(res.ok) { ultimaCargaLogistica = ""; buscarPedidosLogistica(true); } } catch(e) {}
         }
     </script>
 </body>
