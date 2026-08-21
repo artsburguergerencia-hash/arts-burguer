@@ -2871,23 +2871,23 @@
             };
 
             try {
-                // SE O ID FOR "novo", CHAMA A ROTA DE REGISTRAR, SE NÃO, CHAMA A DE EDITAR
                 if (id === 'novo') {
+                    // Rota de criação para novo cliente
                     const res = await fetch('/api/cliente/registrar', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    
                     if(res.ok) {
                         alertaPremium("Novo cliente cadastrado com sucesso!", "Sucesso", "sucesso");
                         document.getElementById('modal-editar-cliente').classList.replace('flex', 'hidden');
                         carregarClientesPainel();
                     } else {
-                        const erroData = await res.json();
-                        alertaPremium("Erro: " + erroData.detail, "Falha", "erro");
+                        const errData = await res.json();
+                        alertaPremium("Erro: " + errData.detail, "Falha", "erro");
                     }
                 } else {
+                    // 🚨 ROTA DE EDIÇÃO: GARANTA QUE O CAMINHO SEJA EXATAMENTE ESTE 🚨
                     const res = await fetch(`/api/gestao/clientes/${id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
@@ -2899,8 +2899,8 @@
                         document.getElementById('modal-editar-cliente').classList.replace('flex', 'hidden');
                         carregarClientesPainel();
                     } else {
-                        const erroData = await res.json();
-                        alertaPremium("Erro: " + erroData.detail, "Falha", "erro");
+                        const errData = await res.json();
+                        alertaPremium("Erro: " + errData.detail, "Falha", "erro");
                     }
                 }
             } catch(err) {
