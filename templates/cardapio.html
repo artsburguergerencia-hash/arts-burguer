@@ -1248,6 +1248,39 @@
             } catch(e) { alert("Erro de conexão."); }
             btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; btn.disabled = false;
         }
+        async function carregarLogoGlobal() {
+    try {
+        const res = await fetch('/api/gestao/configuracoes');
+        const config = await res.json();
+        
+        // Se houver uma URL de logo válida cadastrada no painel de Gestão
+        if (config.logo_url && config.logo_url.trim() !== '' && config.logo_url !== 'None' && config.logo_url !== 'null') {
+            // Procura por todas as variações de elementos de logo nas telas
+            const imagensLogo = document.querySelectorAll('#header-logo-img, #info-modal-img, #preview-logo-setup, #logo-empresa-login, #header-logo-img');
+            const letrasLogo = document.querySelectorAll('#header-logo-letra, #info-modal-icon, #icone-logo-setup, #splash-letra, #sidebar-letra');
+            
+            imagensLogo.forEach(img => {
+                if (img) {
+                    img.src = config.logo_url;
+                    img.classList.remove('hidden');
+                }
+            });
+            
+            letrasLogo.forEach(letra => {
+                if (letra) {
+                    letra.classList.add('hidden');
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Erro ao sincronizar logo global:", e);
+    }
+}
+
+// Chame essa função junto com o carregamento inicial da página
+document.addEventListener('DOMContentLoaded', () => {
+    carregarLogoGlobal();
+});
     </script>
 </body>
 </html>
