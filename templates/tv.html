@@ -22,8 +22,9 @@
         }
         .fade-slide-up { animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .btn-rechamar { transition: all 0.2s; cursor: pointer; }
+        .btn-rechamar { transition: all 0.2s ease-in-out; cursor: pointer; }
         .btn-rechamar:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .btn-rechamar:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-dark-950 text-slate-800 dark:text-slate-100 h-screen w-screen flex flex-col transition-colors duration-300">
@@ -62,9 +63,12 @@
     </header>
 
     <main class="flex-1 flex overflow-hidden p-8 gap-8 relative bg-slate-100 dark:bg-dark-950">
+        
         <div class="w-[35%] bg-white dark:bg-dark-900 rounded-[2.5rem] border border-slate-200 dark:border-dark-800 flex flex-col shadow-xl overflow-hidden transition-colors">
             <div class="bg-amber-500 py-6 text-center shrink-0 shadow-md z-10">
-                <h2 class="font-black text-3xl uppercase tracking-widest text-white flex items-center justify-center gap-3"><i class="ph-bold ph-cooking-pot text-4xl"></i> Preparando</h2>
+                <h2 class="font-black text-3xl uppercase tracking-widest text-white flex items-center justify-center gap-3">
+                    <i class="ph-bold ph-cooking-pot text-4xl"></i> Preparando
+                </h2>
             </div>
             <div class="flex-1 p-8 overflow-y-auto no-scrollbar bg-slate-50 dark:bg-dark-900/50 relative">
                 <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent pointer-events-none"></div>
@@ -74,18 +78,18 @@
 
         <div class="flex-1 bg-white dark:bg-dark-900 rounded-[2.5rem] border border-slate-200 dark:border-dark-800 flex flex-col shadow-xl overflow-hidden transition-colors">
             <div class="bg-emerald-500 py-6 text-center shrink-0 shadow-md z-10">
-                <h2 class="font-black text-3xl uppercase tracking-widest text-white flex items-center justify-center gap-3"><i class="ph-bold ph-check-circle text-4xl"></i> Retire Seu Pedido</h2>
+                <h2 class="font-black text-3xl uppercase tracking-widest text-white flex items-center justify-center gap-3">
+                    <i class="ph-bold ph-check-circle text-4xl"></i> Retire Seu Pedido
+                </h2>
             </div>
             
             <div class="flex-1 flex flex-col p-10 bg-slate-50 dark:bg-dark-900/50 relative">
                  <div class="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none"></div>
-
                 <div id="destaque-pronto" class="flex-[2] flex flex-col items-center justify-center mb-10 relative z-10"></div>
-
                 <div class="shrink-0 bg-white dark:bg-dark-800 p-8 rounded-3xl shadow-inner border border-slate-200 dark:border-dark-700 relative z-10">
                     <p class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6 flex items-center justify-between">
                         <span class="flex items-center gap-2"><i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Últimos Chamados:</span>
-                        <span class="text-[10px] text-emerald-500/50 animate-pulse">Toque na senha para chamar novamente</span>
+                        <span class="text-[10px] text-emerald-500/50 animate-pulse">Clique na senha para chamar novamente</span>
                     </p>
                     <div id="lista-pronto-fila" class="grid grid-cols-4 gap-5"></div>
                 </div>
@@ -96,18 +100,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const res = await fetch('/api/gestao/configuracoes'); const configLoja = await res.json();
+                const res = await fetch('/api/gestao/configuracoes'); 
+                const configLoja = await res.json();
                 if(configLoja.nome_empresa) document.getElementById('tv-nome-loja').innerText = configLoja.nome_empresa;
-                if(configLoja.logo_url && configLoja.logo_url !== 'None') {
-                    const img = document.getElementById('header-logo-img'); 
-                    img.src = configLoja.logo_url; img.classList.remove('hidden');
-                    document.getElementById('header-logo-letra').classList.add('hidden'); 
-                    document.getElementById('header-logo-container').classList.replace('bg-brand-500', 'bg-white');
-
-                    const imgStart = document.getElementById('start-logo-img'); 
-                    imgStart.src = configLoja.logo_url; imgStart.classList.remove('hidden');
-                    document.getElementById('start-logo-letra').classList.add('hidden'); 
-                    document.getElementById('start-logo-container').classList.replace('bg-brand-500', 'bg-white');
+                if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
+                    document.getElementById('header-logo-img').src = configLoja.logo_url; document.getElementById('header-logo-img').classList.remove('hidden');
+                    document.getElementById('header-logo-letra').classList.add('hidden'); document.getElementById('header-logo-container').classList.replace('bg-brand-500', 'bg-white');
+                    document.getElementById('start-logo-img').src = configLoja.logo_url; document.getElementById('start-logo-img').classList.remove('hidden');
+                    document.getElementById('start-logo-letra').classList.add('hidden'); document.getElementById('start-logo-container').classList.replace('bg-brand-500', 'bg-white');
                 }
             } catch(e) {}
         });
@@ -129,8 +129,9 @@
         let somAtivado = false;
         let ultimaCargaTV = "";
         let vozesDisponiveis = [];
-        let bloqueioRechamada = false; // 🚨 Trava a tela enquanto faz a rechamada!
-        
+        let timeoutDestaque = null;
+        let pDestaqueOriginal = null;
+
         window.speechSynthesis.onvoiceschanged = () => { vozesDisponiveis = window.speechSynthesis.getVoices(); };
 
         setInterval(() => {
@@ -144,14 +145,21 @@
             const som = document.getElementById('som-chamada');
             som.volume = 0; som.play().then(() => { som.pause(); som.currentTime = 0; som.volume = 1; }).catch(()=>{});
             vozesDisponiveis = window.speechSynthesis.getVoices();
-            const msgInicial = new SpeechSynthesisUtterance("Sistema iniciado");
-            msgInicial.volume = 0; window.speechSynthesis.speak(msgInicial);
             atualizarTV();
         }
 
-        // 🚨 FUNÇÃO DE VOZ COM DESTAQUE TEMPORÁRIO 🚨
-        function chamarSenhaVoz(senha, nomeCompleto, temporario = false) {
-            if (!somAtivado) return;
+        function renderizarDestaque(senha, nomeVisual) {
+            const destaque = document.getElementById('destaque-pronto');
+            destaque.innerHTML = `
+                <div onclick="chamarSenhaVoz('${senha}', '${nomeVisual}')" title="Clique para rechamar" class="btn-rechamar destaque-pulse fade-slide-up flex flex-col items-center justify-center group relative w-full h-full">
+                    <span class="text-[14rem] font-black text-emerald-500 leading-none tracking-tighter drop-shadow-md">${senha}</span>
+                    <span class="text-5xl font-black text-slate-800 dark:text-white mt-4 uppercase tracking-[0.2em] bg-emerald-100 dark:bg-emerald-500/20 px-8 py-3 rounded-full border-2 border-emerald-300 dark:border-emerald-500/50">${nomeVisual}</span>
+                    <span class="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity text-emerald-600 font-black tracking-widest uppercase flex items-center gap-2"><i class="ph-bold ph-speaker-high"></i> Clicar para rechamar</span>
+                </div>`;
+        }
+
+        function chamarSenhaVoz(senha, nomeCompleto) {
+            if (!somAtivado) return; 
             window.speechSynthesis.cancel();
             
             const som = document.getElementById('som-chamada');
@@ -159,34 +167,24 @@
 
             const primeiroNome = nomeCompleto ? nomeCompleto.split(' ')[0] : 'Cliente';
 
-            if(temporario) {
-                bloqueioRechamada = true; // Pausa as atualizações normais
-                const containerDestaque = document.getElementById('destaque-pronto');
-                
-                // Joga a senha rechamada pro meio da tela
-                containerDestaque.innerHTML = `
-                    <div class="destaque-pulse fade-slide-up flex flex-col items-center justify-center relative">
-                        <span class="absolute -top-10 text-emerald-500 font-black tracking-[0.3em] uppercase bg-emerald-500/10 px-6 py-2 rounded-full border border-emerald-500/30">Rechamada</span>
-                        <span class="text-[14rem] font-black text-emerald-500 leading-none tracking-tighter drop-shadow-md">${senha}</span>
-                        <span class="text-5xl font-black text-slate-800 dark:text-white mt-4 uppercase tracking-[0.2em] bg-emerald-100 dark:bg-emerald-500/20 px-8 py-3 rounded-full border-2 border-emerald-300 dark:border-emerald-500/50">${primeiroNome}</span>
-                    </div>`;
-                
-                // Destrava depois de 8 segundos para voltar ao normal
-                setTimeout(() => {
-                    bloqueioRechamada = false;
-                    ultimaCargaTV = ""; 
-                    atualizarTV();
-                }, 8000);
-            }
+            // COLOCA EM DESTAQUE TEMPORÁRIO
+            if(timeoutDestaque) clearTimeout(timeoutDestaque);
+            renderizarDestaque(senha, primeiroNome);
+
+            // VOLTA PARA O DESTAQUE ORIGINAL APÓS 6 SEGUNDOS
+            timeoutDestaque = setTimeout(() => {
+                if(pDestaqueOriginal) {
+                    renderizarDestaque(pDestaqueOriginal.senha_diaria, pDestaqueOriginal.cliente_nome ? pDestaqueOriginal.cliente_nome.split(' ')[0] : 'Cliente');
+                }
+            }, 6000);
 
             setTimeout(() => {
                 const frase = `Senha, ${senha}. ${primeiroNome}, seu pedido está pronto.`;
                 const msg = new SpeechSynthesisUtterance(frase);
                 msg.lang = 'pt-BR'; msg.rate = 0.95; msg.pitch = 1.0; 
-
                 let vozesPT = vozesDisponiveis.filter(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR'));
                 if (vozesPT.length > 0) {
-                    let vozNatural = vozesPT.find(v => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium') || v.name.includes('Online'));
+                    let vozNatural = vozesPT.find(v => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Luciana') || v.name.includes('Francisca'));
                     if (vozNatural) msg.voice = vozNatural; else msg.voice = vozesPT[0];
                 }
                 window.speechSynthesis.speak(msg);
@@ -194,8 +192,7 @@
         }
 
         async function atualizarTV() {
-            if(!somAtivado || bloqueioRechamada) return; // 🚨 Se tiver rechamada, não atualiza a tela agora!
-            
+            if(!somAtivado) return; 
             try {
                 const res = await fetch('/api/tv/pedidos'); const dados = await res.json();
                 
@@ -205,13 +202,12 @@
                 if (assinaturaAtual === ultimaCargaTV) return; ultimaCargaTV = assinaturaAtual;
                 
                 const emPreparo = dados.em_preparo || [];
-                let prontos = dados.prontos || [];
-                prontos = prontos.sort((a,b) => b.id - a.id);
+                let prontos = (dados.prontos || []).sort((a,b) => b.id - a.id);
 
                 if (prontos.length > 0) {
                     const maisRecente = prontos[0];
                     if (ultimoPedidoProntoId !== 0 && maisRecente.id > ultimoPedidoProntoId && somAtivado) {
-                        chamarSenhaVoz(maisRecente.senha_diaria, maisRecente.cliente_nome, false);
+                        chamarSenhaVoz(maisRecente.senha_diaria, maisRecente.cliente_nome);
                     }
                     ultimoPedidoProntoId = Math.max(ultimoPedidoProntoId, maisRecente.id);
                 }
@@ -220,38 +216,30 @@
                 if (emPreparo.length === 0) {
                     gridPreparo.innerHTML = '<div class="col-span-2 text-center text-slate-400 dark:text-slate-600 font-bold mt-20 text-xl">Nenhum pedido na chapa</div>';
                 } else {
-                    gridPreparo.innerHTML = emPreparo.map(p => `
-                        <div class="bg-white dark:bg-dark-800 border-2 border-slate-200 dark:border-dark-700 rounded-3xl flex items-center justify-center py-8 shadow-sm fade-slide-up">
-                            <span class="text-6xl font-black text-slate-700 dark:text-white tracking-tighter">${p.senha_diaria}</span>
-                        </div>`).join('');
+                    gridPreparo.innerHTML = emPreparo.map(p => `<div class="bg-white dark:bg-dark-800 border-2 border-slate-200 dark:border-dark-700 rounded-3xl flex items-center justify-center py-8 shadow-sm fade-slide-up"><span class="text-6xl font-black text-slate-700 dark:text-white tracking-tighter">${p.senha_diaria}</span></div>`).join('');
                 }
 
                 const destaque = document.getElementById('destaque-pronto');
                 const filaProntos = document.getElementById('lista-pronto-fila');
                 
                 if (prontos.length === 0) {
+                    pDestaqueOriginal = null;
                     destaque.innerHTML = `<div class="flex flex-col items-center justify-center opacity-50"><i class="ph-fill ph-check-circle text-8xl text-slate-300 dark:text-slate-700 mb-6"></i><span class="text-slate-400 dark:text-slate-500 text-3xl font-black uppercase tracking-widest">Balcão Livre</span></div>`;
                     filaProntos.innerHTML = '<div class="col-span-4 text-center text-slate-400 dark:text-slate-600 font-bold text-lg mt-4">Aguardando novos pedidos...</div>';
                 } else {
-                    const pDestaque = prontos[0];
-                    const nomeVisual = pDestaque.cliente_nome ? pDestaque.cliente_nome.split(' ')[0] : 'Cliente';
-                    const nomeSeguroDestaque = pDestaque.cliente_nome ? pDestaque.cliente_nome.replace(/'/g, "\\'") : '';
-
-                    destaque.innerHTML = `
-                        <div onclick="chamarSenhaVoz('${pDestaque.senha_diaria}', '${nomeSeguroDestaque}', true)" title="Clique para rechamar" class="btn-rechamar destaque-pulse fade-slide-up flex flex-col items-center justify-center group relative">
-                            <span class="text-[14rem] font-black text-emerald-500 leading-none tracking-tighter drop-shadow-md">${pDestaque.senha_diaria}</span>
-                            <span class="text-5xl font-black text-slate-800 dark:text-white mt-4 uppercase tracking-[0.2em] bg-emerald-100 dark:bg-emerald-500/20 px-8 py-3 rounded-full border-2 border-emerald-300 dark:border-emerald-500/50">${nomeVisual}</span>
-                            <span class="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity text-emerald-600 font-black tracking-widest uppercase flex items-center gap-2"><i class="ph-bold ph-speaker-high"></i> Clicar para rechamar</span>
-                        </div>`;
+                    pDestaqueOriginal = prontos[0];
+                    const nomeSeguroDestaque = pDestaqueOriginal.cliente_nome ? pDestaqueOriginal.cliente_nome.replace(/'/g, "\\'") : 'Cliente';
+                    
+                    // Só renderiza se não houver um destaque temporário rodando
+                    if(!timeoutDestaque) {
+                        renderizarDestaque(pDestaqueOriginal.senha_diaria, nomeSeguroDestaque.split(' ')[0]);
+                    }
 
                     const outrosProntos = prontos.slice(1, 9); 
                     if (outrosProntos.length > 0) {
                         filaProntos.innerHTML = outrosProntos.map(p => {
                             const nomeSeguroFila = p.cliente_nome ? p.cliente_nome.replace(/'/g, "\\'") : '';
-                            return `
-                            <div onclick="chamarSenhaVoz('${p.senha_diaria}', '${nomeSeguroFila}', true)" title="Chamar ${p.senha_diaria} novamente" class="btn-rechamar bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-center justify-center py-5 fade-slide-up hover:bg-emerald-100 dark:hover:bg-emerald-500/30">
-                                <span class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tracking-tighter">${p.senha_diaria}</span>
-                            </div>`;
+                            return `<div onclick="chamarSenhaVoz('${p.senha_diaria}', '${nomeSeguroFila}')" title="Chamar ${p.senha_diaria} novamente" class="btn-rechamar bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-center justify-center py-5 fade-slide-up hover:bg-emerald-100 dark:hover:bg-emerald-500/30"><span class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tracking-tighter">${p.senha_diaria}</span></div>`;
                         }).join('');
                     } else {
                         filaProntos.innerHTML = '<div class="col-span-4 text-slate-400 dark:text-slate-600 font-bold text-sm">Apenas o pedido acima pronto no momento.</div>';
