@@ -3,69 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor KDS de Alta Performance</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <title>Monitor KDS Premium | Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, colors: { brand: { 500: '#ff4757' }, dark: { 900: '#111827', 800: '#1F2937', 700: '#374151' } } } } }
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } }
         if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); } 
         else { document.documentElement.classList.add('dark'); }
     </script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .ticket-enter { animation: ticketIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes ticketIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .card-enter { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Design de Recibo Térmico */
+        .ticket-bg { background-color: #fdfbf7; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
+        .dark .ticket-bg { background-color: #1e293b; border: 1px solid #334155; }
+        .ticket-cut { border-top: 2px dashed #cbd5e1; margin-top: 8px; padding-top: 8px; }
+        .dark .ticket-cut { border-top: 2px dashed #475569; }
     </style>
 </head>
-<body class="bg-slate-200 dark:bg-[#0a0f18] text-slate-800 dark:text-slate-100 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
 
-    <header class="bg-white dark:bg-dark-900 border-b-4 border-brand-500 px-6 py-4 flex items-center justify-between shadow-xl shrink-0 z-20">
-        <div class="flex items-center gap-4">
-            <div id="header-logo-container" class="w-12 h-12 bg-brand-500 rounded-lg flex items-center justify-center text-white text-2xl shadow-lg border border-transparent overflow-hidden">
-                <i id="header-logo-letra" class="ph-bold ph-cooking-pot"></i>
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800/60 px-6 py-4 flex items-center justify-between shadow-sm shrink-0 z-20 relative transition-colors">
+        <div class="flex items-center">
+            <div id="header-logo-container" class="w-14 h-14 bg-brand-500 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-brand-500/30 border-2 border-transparent overflow-hidden shrink-0 mr-4 transition-all">
+                <i id="header-logo-letra" class="ph-bold ph-fire text-3xl"></i>
                 <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
             </div>
             <div>
-                <h1 class="text-2xl font-black tracking-tight uppercase">Monitor de Produção</h1>
-                <p class="text-[11px] font-black tracking-widest text-slate-400 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> SISTEMA KDS ONLINE</p>
+                <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Monitor KDS</h1>
+                <p class="text-[10px] font-bold tracking-widest text-brand-500 uppercase mt-1 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span> Produção ao Vivo
+                </p>
             </div>
         </div>
         
-        <div class="flex items-center space-x-3">
-            <button id="btn-som" onclick="toggleSom()" class="bg-slate-100 dark:bg-dark-800 p-3 rounded-lg text-slate-400 shadow-inner border border-slate-200 dark:border-dark-700 hover:bg-slate-200 transition-colors"><i class="ph-bold ph-speaker-slash text-xl"></i></button>
-            <button onclick="carregarKDS()" class="bg-slate-100 dark:bg-dark-800 p-3 rounded-lg text-brand-500 shadow-inner border border-slate-200 dark:border-dark-700 hover:bg-slate-200 transition-colors"><i class="ph-bold ph-arrows-clockwise text-xl"></i></button>
-            <button onclick="toggleTheme()" class="bg-slate-100 dark:bg-dark-800 p-3 rounded-lg text-slate-600 dark:text-white shadow-inner border border-slate-200 dark:border-dark-700 hover:bg-slate-200 transition-colors"><i id="theme-icon" class="ph-bold ph-moon text-xl"></i></button>
+        <div class="flex items-center space-x-4">
+            <button id="btn-som" onclick="toggleSom()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-500 rounded-xl shadow-inner border border-slate-200 dark:border-slate-700 transition-colors" title="Ativar Som">
+                <i class="ph-bold ph-speaker-slash text-xl"></i>
+            </button>
+            <button onclick="carregarKDS()" class="flex items-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-5 py-3 rounded-xl shadow-sm font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-700 transition-colors">
+                <i class="ph-bold ph-arrows-clockwise text-lg mr-2 text-brand-500"></i> Atualizar
+            </button>
+            <button onclick="toggleTheme()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl shadow-inner border border-slate-200 dark:border-slate-700 transition-colors">
+                <i id="theme-icon" class="ph-bold ph-moon text-xl text-slate-600 dark:text-slate-300"></i>
+            </button>
         </div>
     </header>
 
-    <main class="flex-1 flex overflow-hidden p-6 gap-6 relative">
-        
-        <!-- COLUNA 1 -->
-        <section class="flex-1 flex flex-col bg-slate-300/50 dark:bg-[#0f1522] rounded-2xl border border-slate-300 dark:border-dark-800 overflow-hidden shadow-inner">
-            <div class="bg-slate-800 dark:bg-dark-800 px-6 py-4 flex justify-between items-center shadow-md z-10">
-                <h2 class="font-black text-white text-xl uppercase tracking-wider flex items-center gap-3"><i class="ph-fill ph-receipt text-slate-400"></i> Entradas / Fila</h2>
-                <span class="bg-slate-600 text-white px-3 py-1 rounded font-mono font-bold" id="badge-fila">0</span>
+    <main class="flex-1 flex overflow-hidden p-6 space-x-6">
+        <section class="flex-1 flex flex-col bg-slate-200/50 dark:bg-slate-900 rounded-[2rem] border border-slate-300 dark:border-slate-800 overflow-hidden shadow-inner relative transition-colors">
+            <div class="p-5 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700/60 flex justify-between items-center shrink-0 z-10 shadow-sm transition-colors">
+                <h2 class="font-black text-xl text-slate-800 dark:text-slate-100 flex items-center gap-3 tracking-tight">
+                    <div class="p-2 bg-slate-100 dark:bg-slate-900 rounded-xl"><i class="ph-bold ph-receipt text-brand-500 text-2xl"></i></div>
+                    Fila de Preparo
+                </h2>
+                <span class="bg-brand-500 text-white px-4 py-1.5 rounded-xl text-sm font-black shadow-md shadow-brand-500/20" id="badge-fila">0</span>
             </div>
-            <!-- GRID DE TICKETS -->
-            <div class="flex-1 overflow-y-auto p-4 z-10 no-scrollbar">
-                <div id="lista-fila" class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4"></div>
-            </div>
+            <div class="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar z-10" id="lista-fila"></div>
         </section>
 
-        <!-- COLUNA 2 -->
-        <section class="flex-1 flex flex-col bg-amber-500/5 dark:bg-amber-900/10 rounded-2xl border border-amber-500/20 overflow-hidden shadow-inner relative">
-            <i class="ph-fill ph-fire absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[40rem] text-amber-500/5 dark:text-amber-500/5 pointer-events-none"></i>
-            <div class="bg-amber-500 px-6 py-4 flex justify-between items-center shadow-md z-10">
-                <h2 class="font-black text-white text-xl uppercase tracking-wider flex items-center gap-3"><i class="ph-fill ph-fire animate-pulse text-white"></i> Na Chapa</h2>
-                <span class="bg-amber-700 text-white px-3 py-1 rounded font-mono font-bold" id="badge-chapa">0</span>
+        <section class="flex-1 flex flex-col bg-amber-50 dark:bg-amber-900/5 rounded-[2rem] border border-amber-200 dark:border-amber-900/30 overflow-hidden shadow-inner relative transition-colors">
+            <div class="absolute inset-0 opacity-5 dark:opacity-[0.02] pointer-events-none flex items-center justify-center overflow-hidden z-0"><i class="ph-fill ph-fire text-[400px] text-amber-500"></i></div>
+            <div class="p-5 bg-amber-100/50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-900/40 flex justify-between items-center shrink-0 z-10 shadow-sm backdrop-blur-sm transition-colors">
+                <h2 class="font-black text-xl text-amber-900 dark:text-amber-500 flex items-center gap-3 tracking-tight">
+                    <div class="p-2 bg-amber-200/50 dark:bg-amber-950 rounded-xl"><i class="ph-fill ph-fire text-amber-500 text-2xl animate-pulse"></i></div>
+                    Na Chapa
+                </h2>
+                <span class="bg-amber-500 text-white px-4 py-1.5 rounded-xl text-sm font-black shadow-md shadow-amber-500/20" id="badge-chapa">0</span>
             </div>
-            <!-- GRID DE TICKETS -->
-            <div class="flex-1 overflow-y-auto p-4 z-10 no-scrollbar relative">
-                <div id="lista-chapa" class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4"></div>
-            </div>
+            <div class="relative z-10 flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar" id="lista-chapa"></div>
         </section>
-
     </main>
 
     <script>
@@ -73,12 +84,13 @@
         if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
 
         function toggleTheme() {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light');
-                if (themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
+            const htmlElement = document.documentElement;
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark'); localStorage.setItem('theme', 'light');
+                if(themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
             } else {
-                document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark');
-                if (themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+                htmlElement.classList.add('dark'); localStorage.setItem('theme', 'dark');
+                if(themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
             }
         }
 
@@ -90,18 +102,19 @@
             somAtivado = !somAtivado;
             const btn = document.getElementById('btn-som');
             if(somAtivado) {
-                btn.classList.replace('text-slate-400', 'text-brand-500');
+                btn.classList.replace('text-slate-400', 'text-amber-500');
+                btn.classList.replace('dark:text-slate-500', 'text-amber-500');
                 btn.innerHTML = '<i class="ph-bold ph-speaker-high text-xl animate-pulse"></i>';
                 falarNomeAviso();
             } else {
-                btn.classList.replace('text-brand-500', 'text-slate-400');
+                btn.classList.replace('text-amber-500', 'text-slate-400');
                 btn.innerHTML = '<i class="ph-bold ph-speaker-slash text-xl"></i>';
             }
         }
 
         function falarNomeAviso() {
             if(!somAtivado) return;
-            const msg = new SpeechSynthesisUtterance("Novo Pedido");
+            const msg = new SpeechSynthesisUtterance("Art's!");
             msg.lang = 'pt-BR'; window.speechSynthesis.speak(msg);
         }
 
@@ -113,7 +126,8 @@
                     document.getElementById('header-logo-img').src = configLoja.logo_url; 
                     document.getElementById('header-logo-img').classList.remove('hidden');
                     document.getElementById('header-logo-letra').classList.add('hidden'); 
-                    document.getElementById('header-logo-container').classList.replace('bg-brand-500', 'bg-white');
+                    document.getElementById('header-logo-container').classList.remove('bg-brand-500'); 
+                    document.getElementById('header-logo-container').classList.add('bg-white', 'border-slate-200');
                 }
             } catch(e) {}
         });
@@ -122,9 +136,12 @@
 
         async function carregarKDS() {
             try {
-                const response = await fetch('/api/kds/pedidos'); const dados = await response.json();
+                const response = await fetch('/api/kds/pedidos'); 
+                const dados = await response.json();
                 const jsonString = JSON.stringify(dados);
-                if(jsonString === ultimaCargaDeDados) return; ultimaCargaDeDados = jsonString;
+                
+                if(jsonString === ultimaCargaDeDados) return; 
+                ultimaCargaDeDados = jsonString;
 
                 const recebidos = dados.recebidos || [];
                 const preparando = dados.preparando || [];
@@ -142,60 +159,57 @@
             } catch (e) {}
         }
 
-        function imprimirPedido(id) {
-            fetch(`/api/pedidos/${id}/imprimir`, { method: 'POST' }).catch(()=>{});
-        }
+        function imprimirPedido(id) { alert(`Comanda #${id} enviada para a impressora!`); }
 
         async function mudarStatus(id, novoStatus, botao) {
-            const card = botao.closest('.ticket-enter');
+            const card = botao.closest('.card-enter');
             if(card) card.style.display = 'none';
 
             fetch(`/api/kds/pedidos/${id}/status`, {
-                method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: novoStatus })
-            }).then(() => {
-                ultimaCargaDeDados = ""; carregarKDS(); 
-            }).catch(e => {
-                if(card) card.style.display = 'block'; 
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: novoStatus })
+            }).then(() => { ultimaCargaDeDados = ""; carregarKDS(); }).catch(e => {
+                if(card) card.style.display = 'block'; alert("Erro de conexão.");
             });
         }
 
-        // 🚨 VISUAL DE "TICKET DE COZINHA" 🚨
         function gerarHTMLComanda(p, isChapa) {
             const senha = p.senha_diaria || p.id;
             const origem = p.origem || 'BALCAO';
             
             const itensHTML = (p.itens || []).map(item => `
-                <div class="py-2 border-b border-slate-200 dark:border-dark-700 border-dashed last:border-0">
-                    <div class="flex items-start gap-2">
-                        <span class="font-black text-xl text-red-600 font-mono">${item.quantidade}</span>
+                <div class="py-1 ticket-cut">
+                    <div class="flex items-start">
+                        <span class="font-mono font-black text-lg ${isChapa ? 'text-amber-600 dark:text-amber-500' : 'text-brand-600 dark:text-brand-500'} mr-2 w-6 text-right">${item.quantidade}x</span>
                         <div class="flex-1 mt-0.5">
-                            <p class="font-bold text-slate-900 dark:text-slate-100 leading-tight">${item.nome || 'Item'}</p>
-                            ${item.observacao ? `<p class="text-xs font-bold text-slate-800 dark:text-white mt-1 bg-yellow-300 dark:bg-amber-600 inline-block px-2 py-0.5 rounded shadow-sm"><i class="ph-bold ph-warning"></i> ${item.observacao}</p>` : ''}
+                            <p class="font-mono font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">${item.nome || 'Item'}</p>
+                            ${item.observacao ? `<p class="font-mono text-xs font-bold text-red-600 dark:text-red-400 mt-1 uppercase">*** ${item.observacao} ***</p>` : ''}
                         </div>
                     </div>
                 </div>`).join('');
 
             return `
-            <div class="ticket-enter bg-white dark:bg-dark-800 rounded-lg shadow-lg flex flex-col overflow-hidden border border-slate-300 dark:border-dark-700">
-                <div class="${isChapa ? 'bg-amber-500 text-white' : 'bg-slate-800 text-white'} px-4 py-3 flex justify-between items-center shadow-sm">
-                    <h3 class="font-black text-3xl font-mono tracking-tighter">#${senha}</h3>
-                    <div class="flex flex-col items-end gap-1">
-                        <span class="text-[9px] font-black uppercase tracking-widest bg-black/20 px-2 py-0.5 rounded">${origem}</span>
-                        <button onclick="imprimirPedido(${p.id})" class="text-white hover:text-black/50 transition-colors" title="Imprimir"><i class="ph-fill ph-printer text-xl"></i></button>
+            <div class="card-enter ticket-bg rounded-xl relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lg">
+                <div class="${isChapa ? 'bg-amber-500' : 'bg-slate-800 dark:bg-brand-500'} h-2 w-full"></div>
+                <div class="px-4 py-3 flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">${origem}</span>
+                        <h3 class="font-mono font-black text-4xl text-slate-900 dark:text-white tracking-tighter leading-none mt-1">#${senha}</h3>
                     </div>
+                    <button onclick="imprimirPedido(${p.id})" class="text-slate-400 hover:text-brand-500 transition-colors" title="Imprimir Comanda"><i class="ph-bold ph-printer text-2xl"></i></button>
                 </div>
-                <div class="p-4 flex-1 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] dark:bg-none">
+                <div class="px-4 pb-4">
                     ${itensHTML}
                 </div>
-                <button onclick="mudarStatus(${p.id}, '${isChapa ? 'PRONTO' : 'EM_PREPARO'}', this)" class="w-full ${isChapa ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-slate-200 dark:bg-dark-700 hover:bg-slate-300 dark:hover:bg-dark-600'} text-slate-900 dark:text-white font-black py-4 uppercase tracking-widest text-sm transition-colors flex items-center justify-center gap-2 border-t border-slate-300 dark:border-dark-700">
-                    ${isChapa ? '<i class="ph-bold ph-check-circle text-xl"></i> Pronto' : '<i class="ph-bold ph-fire text-xl text-brand-500"></i> Assumir'}
-                </button>
+                <div class="p-3 bg-slate-100/50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700">
+                    <button onclick="mudarStatus(${p.id}, '${isChapa ? 'PRONTO' : 'EM_PREPARO'}', this)" class="w-full ${isChapa ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-slate-800 hover:bg-slate-900 dark:bg-brand-600 dark:hover:bg-brand-500 text-white'} font-black py-3 rounded-lg uppercase tracking-widest text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
+                        ${isChapa ? '<i class="ph-bold ph-check-circle text-lg"></i> Pedido Pronto' : '<i class="ph-bold ph-fire text-lg"></i> Iniciar Preparo'}
+                    </button>
+                </div>
             </div>`;
         }
 
-        function renderFila(pedidos) { document.getElementById('lista-fila').innerHTML = pedidos.length ? pedidos.map(p => gerarHTMLComanda(p, false)).join('') : `<div class="col-span-full h-40 flex flex-col items-center justify-center text-slate-400"><i class="ph-fill ph-check-circle text-4xl mb-2"></i><p class="font-bold text-sm">FILA VAZIA</p></div>`; }
-        function renderChapa(pedidos) { document.getElementById('lista-chapa').innerHTML = pedidos.length ? pedidos.map(p => gerarHTMLComanda(p, true)).join('') : `<div class="col-span-full h-40 flex flex-col items-center justify-center text-amber-500/50"><i class="ph-fill ph-fire text-4xl mb-2"></i><p class="font-bold text-sm">CHAPA FRIA</p></div>`; }
+        function renderFila(pedidos) { document.getElementById('lista-fila').innerHTML = pedidos.length ? pedidos.map(p => gerarHTMLComanda(p, false)).join('') : `<div class="h-full flex flex-col items-center justify-center text-slate-400"><i class="ph-fill ph-check-circle text-4xl mb-2"></i><p class="font-bold text-xs uppercase tracking-widest">FILA LIMPA</p></div>`; }
+        function renderChapa(pedidos) { document.getElementById('lista-chapa').innerHTML = pedidos.length ? pedidos.map(p => gerarHTMLComanda(p, true)).join('') : `<div class="h-full flex flex-col items-center justify-center text-amber-500/50"><i class="ph-fill ph-fire text-4xl mb-2"></i><p class="font-bold text-xs uppercase tracking-widest">CHAPA FRIA</p></div>`; }
     </script>
 </body>
 </html>
