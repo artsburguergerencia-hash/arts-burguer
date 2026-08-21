@@ -113,6 +113,20 @@
         </button>
     </div>
 
+    <!-- TELA DE SUCESSO PREMIUM -->
+    <div id="tela-sucesso" class="fixed inset-0 bg-brand-500 z-[100] hidden flex-col items-center justify-center p-8 modal-enter">
+        <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-6 shadow-2xl animate-bounce">
+            <i class="ph-fill ph-check-circle text-6xl text-brand-500"></i>
+        </div>
+        <h2 class="text-4xl font-black text-white mb-2 tracking-tighter text-center">Pedido Confirmado!</h2>
+        <p class="text-lg font-bold text-white/90 mb-8 text-center" id="sucesso-msg-tipo">Sua comanda foi enviada para a cozinha.</p>
+        <div class="bg-white p-8 rounded-[2rem] shadow-2xl text-center w-full max-w-sm">
+            <p class="text-slate-400 text-sm font-black uppercase tracking-widest mb-1">Sua Senha</p>
+            <p id="sucesso-senha" class="font-black text-7xl text-slate-900 tracking-tighter mb-4">000</p>
+            <button onclick="irParaRastreio()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl uppercase tracking-widest text-xs active:scale-95 transition-transform shadow-lg"><i class="ph-bold ph-crosshair mr-2 text-lg"></i> Acompanhar Status</button>
+        </div>
+    </div>
+
     <!-- MODAL DE INFORMAÇÕES DA LOJA -->
     <div id="modal-info-loja" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4" onclick="document.getElementById('modal-info-loja').classList.replace('flex','hidden')">
         <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative text-center" onclick="event.stopPropagation()">
@@ -206,6 +220,10 @@
                     <div id="rastreio-progresso" class="bg-blue-500 h-full rounded-full transition-all duration-1000 w-0"></div>
                 </div>
                 <h3 class="text-center font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest text-sm mt-3" id="rastreio-status">BUSCANDO...</h3>
+            <!-- BOTAO DO MAPA (SÓ PARA DELIVERY SAINDO) -->
+                <button id="btn-rastreio-mapa" onclick="abrirMapaRastreio()" class="hidden w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 rounded-xl uppercase tracking-widest text-xs active:scale-95 transition-transform shadow-md">
+                    <i class="ph-bold ph-map-pin mr-2 text-lg"></i> Ver Motoboy no Mapa
+                </button>
             </div>
         </div>
     </div>
@@ -705,22 +723,58 @@
             }
         }
 
+        let configGlobal = { fidelidade_ativo: true, cashback_ativo: true };
+
         async function carregarConfiguracoes() {
             try {
                 const res = await fetch('/api/gestao/configuracoes'); 
                 const configLoja = await res.json();
-                
+                configGlobal = configLoja;
+
                 if(configLoja.nome_empresa) { 
                     const nomeEl = document.getElementById('nome-loja-header'); 
                     if(nomeEl) nomeEl.innerHTML = `${configLoja.nome_empresa} <i class="ph-bold ph-caret-down text-sm ml-0.5 text-slate-400"></i>`; 
                     document.getElementById('info-modal-nome').innerText = configLoja.nome_empresa;
                 }
 
+                if(configGlobal.fidelidade_ativo === false) {
+                    const barraFid = document.getElementById('barra-fidelidade');
+                    if(barraFid) barraFid.classList.add('hidden');
+                }
+                if(configGlobal.cashback_ativo === false) {
+                    const blocoCash = document.getElementById('bloco-cashback-header');
+                    if(blocoCash) blocoCash.style.display = 'none';
+                }
+
                 document.getElementById('info-modal-horario').innerText = configLoja.horario_funcionamento || "Não informado";
                 document.getElementById('info-modal-tel').innerText = configLoja.telefone || "Não informado";
                 document.getElementById('info-modal-end').innerText = configLoja.endereco || "Não informado";
-                
                 atualizarStatusAberto(configLoja.horario_funcionamento);
+
+                if(configLoja.logo_url && String(configLoja.logo_url).trim() !== '' && configLoja.logo_url !== 'None') {
+                    const img = document.getElementById('header-logo-img'); 
+                    if(img) {
+                        img.src = configLoja.logo_url; img.classList.remove('hidden');
+                        document.getElementById('header-logo-letra').classList.add('hidden'); 
+                        document.getElementById('header-logo-container').classList.replace('bg-brand-500', 'bg-white');
+                    }
+                }
+
+                if(configLoja.aceita_retirada === false) { document.getElementById('label-retirada').style.display = 'none'; document.querySelector('input[value="entrega"]').checked = true; toggleEndereco(true); }
+                if(configLoja.aceita_delivery === false) { document.getElementById('label-delivery').style.display = 'none'; document.querySelector('input[value="retirada"]').checked = true; toggleEndereco(false); }
+
+                const pgs = configLoja.formas_pagamento ? configLoja.formas_pagamento.split(',') : ['Dinheiro Físico', 'Pix', 'Cartão'];
+                const selectPg = document.getElementById('forma-pag-online');
+                if(selectPg) {
+                    selectPg.innerHTML = pgs.map(pg => {
+                        let icone = '💵'; let valLow = pg.toLowerCase(); let valorParaOBanco = pg.trim(); 
+                        if(valLow.includes('pix')) { icone = '⚡'; valorParaOBanco = 'pix'; } 
+                        else if(valLow.includes('crédito')||valLow.includes('credito')) { icone = '💳'; valorParaOBanco = 'credito'; }
+                        return `<option value="${valorParaOBanco}">${icone} ${pg.trim()}</option>`;
+                    }).join('');
+                }
+            } catch(e) {}
+        }
                 
                 // INJETANDO A LOGO NO CABEÇALHO E NO MODAL
                 if(configLoja.logo_url && String(configLoja.logo_url).trim() !== '' && configLoja.logo_url !== 'None') {
@@ -788,24 +842,48 @@
         }
 
         async function buscarRastreio() {
-            const busca = document.getElementById('input-rastreio').value.trim();
-            if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
+            let busca = document.getElementById('input-rastreio').value.trim();
+            busca = busca.replace('#', ''); 
+            if(!busca) { alert("Digite o número do pedido."); return; }
+            
             const btn = document.getElementById('btn-rastreio'); btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; btn.disabled = true;
             try {
                 const res = await fetch(`/api/rastreio/${busca}`);
                 if(res.ok) {
                     const data = await res.json();
-                    document.getElementById('rastreio-senha').innerText = data.senha; document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
-                    const bar = document.getElementById('rastreio-progresso'); bar.style.width = data.progresso + '%';
+                    document.getElementById('rastreio-senha').innerText = data.senha || data.id; 
+                    document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
+                    
+                    const bar = document.getElementById('rastreio-progresso'); 
+                    bar.style.width = data.progresso + '%';
                     if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
                     else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
                     else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
+                    
+                    const btnMapa = document.getElementById('btn-rastreio-mapa');
+                    const tipoPedido = localStorage.getItem('ultimo_pedido_tipo') || 'delivery';
+                    if (btnMapa) {
+                        if (data.progresso >= 90 && tipoPedido === 'delivery') btnMapa.classList.remove('hidden');
+                        else btnMapa.classList.add('hidden');
+                    }
                     document.getElementById('resultado-rastreio').classList.remove('hidden');
-                } else {
-                    alert("Ops! Nenhum pedido ativo encontrado."); document.getElementById('resultado-rastreio').classList.add('hidden');
-                }
+                } else { alert("Nenhum pedido ativo encontrado."); document.getElementById('resultado-rastreio').classList.add('hidden'); }
             } catch(e) { alert("Erro de conexão."); }
             btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; btn.disabled = false;
+        }
+
+        function irParaRastreio() {
+            document.getElementById('tela-sucesso').classList.add('hidden');
+            document.getElementById('tela-sucesso').classList.remove('flex');
+            const ultimaSenha = localStorage.getItem('ultima_senha_rastreio');
+            if(ultimaSenha) { document.getElementById('input-rastreio').value = ultimaSenha; }
+            abrirModalRastreio();
+            buscarRastreio(); 
+        }
+
+        function abrirMapaRastreio() {
+            const senha = document.getElementById('rastreio-senha').innerText;
+            if(senha && senha !== "000") { window.location.href = `/mapa?pedido=${senha}`; }
         }
 
         // ==========================================
@@ -1092,43 +1170,67 @@
 
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.replace('flex', 'hidden'); }
 
-        // 🚨 CHECKOUT BLINDADO E RESTAURADO PARA O MODELO QUE FUNCIONOU 🚨
         async function enviarPedidoNuvem(e) {
             e.preventDefault();
+
+            if(typeof configGlobal !== 'undefined' && configGlobal.fidelidade_ativo !== false && !clienteLogado) {
+                if(confirm("Deseja fazer um cadastro rápido antes de finalizar para ganhar Pontos e Cashback nesta compra?")) {
+                    fecharCarrinho(); abrirModalAuth(); alternarAbaAuth('cadastro'); return;
+                }
+            }
+
             const btn = document.getElementById('btn-enviar-pedido'); const txtOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i>'; btn.disabled = true;
 
-            let nome, tel, end, cliente_id, cpf;
-            const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked');
-            const isDelivery = radioEntrega ? radioEntrega.value === 'entrega' : false;
+            const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked'); const isDelivery = radioEntrega ? radioEntrega.value === 'entrega' : false;
+            const selBairro = document.getElementById('ped-bairro'); let end = isDelivery ? document.getElementById('ped-endereco').value : "Retirada Balcão";
+            if (isDelivery && selBairro && selBairro.value !== "0") end += ` (Bairro: ${selBairro.options[selBairro.selectedIndex].text})`;
+
+            let nome = clienteLogado ? clienteLogado.nome : document.getElementById('guest-nome').value.trim();
+            let tel = clienteLogado ? clienteLogado.telefone : document.getElementById('guest-tel').value.trim();
+            let cpf = clienteLogado ? document.getElementById('logado-cpf').value.replace(/\D/g, '') : document.getElementById('guest-cpf').value.replace(/\D/g, '');
             
-            const selBairro = document.getElementById('ped-bairro');
-            const nomeBairro = (isDelivery && selBairro && selBairro.value !== "0") ? selBairro.options[selBairro.selectedIndex].text : "";
-
-            if (clienteLogado) {
-                nome = clienteLogado.nome; 
-                tel = clienteLogado.telefone; 
-                end = isDelivery ? (document.getElementById('ped-endereco').value || clienteLogado.endereco_completo) : "Retirada Balcão";
-                cliente_id = clienteLogado.id; 
-                cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
-            } else {
-                nome = document.getElementById('guest-nome').value.trim(); 
-                tel = document.getElementById('guest-tel').value.trim();
-                end = isDelivery ? document.getElementById('ped-endereco').value.trim() : "Retirada Balcão";
-                cpf = document.getElementById('guest-cpf').value.replace(/\D/g, ''); 
-                cliente_id = null;
-                if (!nome || !tel || (isDelivery && !end)) { alert("⚠️ Preencha Nome, WhatsApp e Endereço."); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
-            }
-
+            if (!nome || !tel || (isDelivery && !document.getElementById('ped-endereco').value.trim())) { alert("⚠️ Preencha Nome, WhatsApp e Endereço."); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
             if (isDelivery && taxasEntrega.length > 0 && (!selBairro || selBairro.value === "0")) { alert("⚠️ Por favor, selecione o seu bairro de entrega."); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
-            if (isDelivery && nomeBairro) end += ` (Bairro: ${nomeBairro} - Taxa R$ ${valorFreteAtual.toFixed(2)})`;
+            if (isDelivery && selBairro && selBairro.value !== "0") end += ` - Taxa R$ ${valorFreteAtual.toFixed(2)}`;
+
+            localStorage.setItem('ultimo_pedido_tipo', isDelivery ? 'delivery' : 'retirada');
 
             const tipoPgto = document.getElementById('forma-pag-online').value;
-            if ((tipoPgto === 'pix' || tipoPgto === 'credito') && !cpf) {
-                alert("⚠️ O CPF é obrigatório para pagamento online via Pix ou Cartão.");
-                if(clienteLogado) document.getElementById('logado-cpf').focus(); else document.getElementById('guest-cpf').focus();
-                btn.innerHTML=txtOriginal; btn.disabled=false; return;
+            if ((tipoPgto === 'pix' || tipoPgto === 'credito') && !cpf) { alert("⚠️ O CPF é obrigatório para pagamento online via Pix/Cartão."); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
+
+            let itensFinais = carrinho.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, observacao: i.observacao || "" }));
+            if(cupomAplicado) itensFinais[0].observacao += ` | 🎫 Cupom Usado: ${cupomAplicado} (-R$ ${valorDescontoCupom.toFixed(2)})`;
+            const descontoFinalEnviado = valorDescontoCupom - valorFreteAtual;
+
+            const payload = { cliente_id: clienteLogado ? clienteLogado.id : null, nome_cliente: nome, telefone_cliente: tel, endereco_cliente: end, cpf: cpf, itens: itensFinais, usar_saldo_cashback: descontoFinalEnviado };
+
+            if (tipoPgto === 'credito') {
+                const numCartao = document.getElementById('cc-num').value.replace(/\D/g, ''); const nomeCartao = document.getElementById('cc-nome').value; const valCartao = document.getElementById('cc-val').value; const cvvCartao = document.getElementById('cc-cvv').value;
+                if(!numCartao || !nomeCartao || !valCartao || !cvvCartao) { alert("⚠️ Preencha o cartão!"); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
+                try {
+                    const mp = new MercadoPago('APP_USR-848cf42a-5349-4310-9ba5-b8c42f1ee022'); const metodos = await mp.getPaymentMethods({ bin: numCartao.substring(0, 6) }); if(metodos.results.length === 0) throw new Error();
+                    const tokenRes = await mp.createCardToken({ cardNumber: numCartao, cardholderName: nomeCartao, cardExpirationMonth: valCartao.split('/')[0], cardExpirationYear: valCartao.split('/')[1].length === 2 ? "20" + valCartao.split('/')[1] : valCartao.split('/')[1], securityCode: cvvCartao, identificationType: "CPF", identificationNumber: cpf.replace(/\D/g, '') });
+                    if(tokenRes.error) throw new Error();
+                    payload.token_cartao = tokenRes.id; payload.payment_method_id = metodos.results[0].id; payload.parcelas = document.getElementById('cc-parcelas').value;
+                } catch (e) { alert("⚠️ Erro no cartão de crédito."); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
             }
+
+            try {
+                const res = await fetch(`/api/pedidos/online?forma_pagamento=${tipoPgto}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (res.ok) {
+                    const data = await res.json();
+                    fecharCarrinho();
+                    const senha = data.senha_diaria || "OK";
+                    localStorage.setItem('ultima_senha_rastreio', senha);
+                    document.getElementById('sucesso-senha').innerText = senha;
+                    document.getElementById('sucesso-msg-tipo').innerText = isDelivery ? "Seu pedido chegará em breve!" : "Sua comanda foi para a cozinha.";
+                    document.getElementById('tela-sucesso').classList.remove('hidden'); document.getElementById('tela-sucesso').classList.add('flex');
+                    carrinho = []; atualizarContadores();
+                    if (data.status === "checkout_transparente") { setTimeout(()=> prompt("✅ SEU PIX FOI GERADO! Copie o código abaixo e pague no app:", data.copia_e_cola), 1000); } 
+                } else { let errData = {}; try { errData = await res.json(); } catch(e) {} alert("⚠️ Pedido recusado:\n" + (errData.detail || "Erro")); btn.disabled = false; btn.innerHTML = txtOriginal; }
+            } catch(e) { alert("Erro de rede."); btn.disabled = false; btn.innerHTML = txtOriginal; }
+        }
 
             // RESTAURANDO A CARGA EXATA DE DADOS QUE FUNCIONOU PARA OS PEDIDOS #183 E #184
             let itensFinais = carrinho.map(i => ({ 
@@ -1259,33 +1361,6 @@
                             </div>`;
                 }).join('');
             } catch(e) { listaHistorico.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Erro ao carregar histórico.</p>'; }
-        }
-
-        // 🚨 2. CORRIGE O RASTREIO PARA IGNORAR A HASHTAG (#) 🚨
-        async function buscarRastreio() {
-            let busca = document.getElementById('input-rastreio').value.trim();
-            busca = busca.replace('#', ''); // Arranca a hashtag se o cliente digitar!
-            if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
-            
-            const btn = document.getElementById('btn-rastreio'); btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; btn.disabled = true;
-            try {
-                const res = await fetch(`/api/rastreio/${busca}`);
-                if(res.ok) {
-                    const data = await res.json();
-                    document.getElementById('rastreio-senha').innerText = data.senha || data.id; 
-                    document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
-                    
-                    const bar = document.getElementById('rastreio-progresso'); 
-                    bar.style.width = data.progresso + '%';
-                    if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
-                    else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
-                    else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
-                    document.getElementById('resultado-rastreio').classList.remove('hidden');
-                } else {
-                    alert("Ops! Nenhum pedido ativo encontrado."); document.getElementById('resultado-rastreio').classList.add('hidden');
-                }
-            } catch(e) { alert("Erro de conexão."); }
-            btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; btn.disabled = false;
         }
     </script>
 </body>
