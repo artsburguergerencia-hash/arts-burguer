@@ -1859,15 +1859,25 @@ def abrir_mapa_cliente():
 # ==========================================
 
 @app.get("/api/gestao/configuracoes")
-def ler_configuracoes(db: Session = Depends(get_db)):
+def get_configuracoes(db: Session = Depends(get_db)):
     config = db.query(ConfiguracaoLojaModel).first()
     if not config:
-        config = ConfiguracaoLojaModel()
-        db.add(config)
-        db.commit()
-        db.refresh(config)
+        return {}
+
+    return {
+        "nome_empresa": config.nome_empresa,
+        "telefone": config.telefone_contato,
+        "endereco": config.endereco_completo,
+        "horario_funcionamento": config.horario_funcionamento,
+        "logo_url": config.logo_url,
+        "aceita_retirada": config.aceita_retirada,
+        "aceita_delivery": config.aceita_delivery,
+        "formas_pagamento": config.formas_pagamento_online,
         
-    return config
+        # 🚨 ADICIONE ESTAS DUAS LINHAS: 🚨
+        "fidelidade_ativo": getattr(config, 'fidelidade_ativo', True), 
+        "cashback_ativo": getattr(config, 'cashback_ativo', True)
+    }
 
 
 @app.put("/api/gestao/configuracoes")
@@ -2852,6 +2862,11 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
     
     db.commit()
     return {"status": "sucesso"}
+
+# =======================================================
+# ROTA DE RASTREIO (BUSCA DE PEDIDOS PELO CLIENTE)
+# =======================================================
+from fastapi.responses import JSONResponse
 
 @app.get("/api/rastreio/{busca}")
 def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
