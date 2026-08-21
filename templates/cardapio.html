@@ -117,37 +117,24 @@
     <div id="modal-info-loja" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4" onclick="document.getElementById('modal-info-loja').classList.replace('flex','hidden')">
         <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative text-center" onclick="event.stopPropagation()">
             <button onclick="document.getElementById('modal-info-loja').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
-            
-            <!-- LOGO INJETADA AQUI -->
             <div class="w-16 h-16 bg-brand-50 dark:bg-brand-500/10 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100 dark:border-brand-500/20 overflow-hidden" id="info-modal-logo-container">
                 <i class="ph-fill ph-storefront text-3xl" id="info-modal-icon"></i>
                 <img id="info-modal-img" src="" class="w-full h-full object-cover hidden">
             </div>
-
             <h2 class="text-2xl font-black text-slate-800 dark:text-white mb-1" id="info-modal-nome">Carregando...</h2>
             <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-500 dark:text-emerald-400 mb-6" id="info-modal-status-text">Calculando status...</p>
-            
             <div class="space-y-4 text-left border-t border-slate-200 dark:border-slate-800 pt-6">
                 <div class="flex items-start text-slate-600 dark:text-slate-300">
                     <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mr-4 shrink-0"><i class="ph-bold ph-clock text-xl"></i></div>
-                    <div>
-                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Horário de Funcionamento</p>
-                        <p class="text-sm font-medium leading-relaxed" id="info-modal-horario">Não informado</p>
-                    </div>
+                    <div><p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Horário de Funcionamento</p><p class="text-sm font-medium leading-relaxed" id="info-modal-horario">Não informado</p></div>
                 </div>
                 <div class="flex items-center text-slate-600 dark:text-slate-300">
                     <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mr-4 shrink-0"><i class="ph-bold ph-whatsapp-logo text-xl"></i></div>
-                    <div>
-                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Contato / WhatsApp</p>
-                        <p class="text-sm font-medium" id="info-modal-tel">Não informado</p>
-                    </div>
+                    <div><p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Contato / WhatsApp</p><p class="text-sm font-medium" id="info-modal-tel">Não informado</p></div>
                 </div>
                 <div class="flex items-center text-slate-600 dark:text-slate-300">
                     <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mr-4 shrink-0"><i class="ph-bold ph-map-pin text-xl"></i></div>
-                    <div>
-                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Localização</p>
-                        <p class="text-sm font-medium line-clamp-2" id="info-modal-end">Não informado</p>
-                    </div>
+                    <div><p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Localização</p><p class="text-sm font-medium line-clamp-2" id="info-modal-end">Não informado</p></div>
                 </div>
             </div>
         </div>
@@ -187,7 +174,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE RASTREIO -->
+    <!-- MODAL DE RASTREIO CORRIGIDO -->
     <div id="modal-rastreio" class="fixed inset-0 bg-slate-900/90 z-[90] hidden items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative text-center">
             <button onclick="document.getElementById('modal-rastreio').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
@@ -661,7 +648,6 @@
                         if (parteHoje.includes('fechado')) {
                             aberto = false;
                         } else {
-                            // Extrai os horários no formato 19:00 ou 19h
                             const times = parteHoje.match(/(\d{1,2})[h:]?(\d{2})?/g);
                             if (times && times.length >= 2) {
                                 let extractTime = (tStr) => {
@@ -678,7 +664,7 @@
                                 if (minInicio < minFim) {
                                     aberto = (minAgora >= minInicio && minAgora <= minFim);
                                 } else {
-                                    aberto = (minAgora >= minInicio || minAgora <= minFim); // Passou da meia noite
+                                    aberto = (minAgora >= minInicio || minAgora <= minFim); 
                                 }
                             }
                         }
@@ -722,7 +708,6 @@
                 
                 atualizarStatusAberto(configLoja.horario_funcionamento);
                 
-                // INJETANDO A LOGO NO CABEÇALHO E NO MODAL
                 if(configLoja.logo_url && String(configLoja.logo_url).trim() !== '' && configLoja.logo_url !== 'None') {
                     const letra = document.getElementById('header-logo-letra'); 
                     const img = document.getElementById('header-logo-img'); 
@@ -787,27 +772,6 @@
             document.getElementById('modal-rastreio').classList.remove('hidden'); document.getElementById('modal-rastreio').classList.add('flex'); 
         }
 
-        async function buscarRastreio() {
-            const busca = document.getElementById('input-rastreio').value.trim();
-            if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
-            const btn = document.getElementById('btn-rastreio'); btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; btn.disabled = true;
-            try {
-                const res = await fetch(`/api/rastreio/${busca}`);
-                if(res.ok) {
-                    const data = await res.json();
-                    document.getElementById('rastreio-senha').innerText = data.senha; document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
-                    const bar = document.getElementById('rastreio-progresso'); bar.style.width = data.progresso + '%';
-                    if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
-                    else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
-                    else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
-                    document.getElementById('resultado-rastreio').classList.remove('hidden');
-                } else {
-                    alert("Ops! Nenhum pedido ativo encontrado."); document.getElementById('resultado-rastreio').classList.add('hidden');
-                }
-            } catch(e) { alert("Erro de conexão."); }
-            btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; btn.disabled = false;
-        }
-
         // ==========================================
         // AUTH E PERFIL VIP BLINDADO
         // ==========================================
@@ -830,7 +794,6 @@
                     htmlAvatar = `<div class="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center font-black text-xs shrink-0">${inic}</div>`;
                 }
 
-                // MOSTRA O AVATAR E ESCONDE O BOTÃO "ENTRAR"
                 document.getElementById('area-auth').innerHTML = `
                     <button id="btn-instalar-app" onclick="instalarApp()" class="text-xs sm:text-sm bg-brand-500 hover:bg-brand-600 p-2 sm:px-4 sm:py-2 rounded-full font-black transition-all flex items-center text-white shadow-lg shadow-brand-500/40 animate-pulse" title="Instalar App">
                         <i class="ph-bold ph-download-simple sm:mr-2 text-lg"></i> <span class="hidden sm:inline">Instalar</span>
@@ -908,14 +871,24 @@
             } catch(err) { alert("Erro de conexão"); }
         }
 
+        // 🚨 CARDÁPIO DIGITAL INTEGRADO COM INFO VIP 🚨
         async function carregarCardapioDigital() {
             try {
+                const resConf = await fetch('/api/gestao/configuracoes');
+                const configLoja = await resConf.json();
+
                 const res = await fetch('/api/cardapio'); produtosServer = await res.json();
                 const categorias = [...new Set(produtosServer.map(p => p.categoria).filter(c => c && c.toUpperCase() !== 'INTEGRAÇÕES'))];
                 
-                document.getElementById('nav-categorias').innerHTML = categorias.map((c, i) => `
+                let navHtml = categorias.map((c, i) => `
                     <a href="#cat-${c.replace(/\s+/g, '-')}" class="shrink-0 px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-colors ${i===0 ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30 border-transparent' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-brand-500 dark:hover:text-white'}">${c}</a>
                 `).join('');
+
+                if(configLoja.sistema_fidelidade && configLoja.sistema_fidelidade !== 'DESATIVADO') {
+                    navHtml += `<button onclick="alert('Programa VIP: Faça login no menu superior para acumular ${configLoja.sistema_fidelidade} em suas compras!')" class="shrink-0 px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest text-brand-500 bg-brand-50 border border-brand-200 ml-2"><i class="ph-bold ph-info mr-1"></i> Benefícios</button>`;
+                }
+
+                document.getElementById('nav-categorias').innerHTML = navHtml;
 
                 document.getElementById('lista-produtos').innerHTML = categorias.map(cat => {
                     const prodsCat = produtosServer.filter(p => p.categoria === cat);
@@ -980,7 +953,7 @@
                             return `
                             <label class="flex items-center justify-between text-lg cursor-pointer p-5 bg-white dark:bg-slate-900 hover:border-brand-500 border-2 border-transparent dark:border-slate-700 rounded-xl shadow-sm transition-all group active:scale-95">
                                 <div class="flex items-center font-black text-slate-700 dark:text-slate-200 group-hover:text-brand-500">
-                                    <input type="${type}" name="grupo_${gIndex}" value="${i.nome}|${i.preco}" onchange="recalcularTotalModal()" class="mr-4 w-6 h-6 accent-brand-500 cursor-pointer">
+                                    <input type="${type}" name="grupo_${gIndex}" value="${i.nome}|${i.preco}" onchange="recalcularTotalModal()" class="mr-4 w-6 h-6 accent-brand-500 cursor-pointer" data-nome="${i.nome}" data-preco="${i.preco}">
                                     ${i.nome}
                                 </div>
                                 ${i.preco > 0 ? `<span class="text-brand-500 font-black bg-brand-50 dark:bg-brand-500/10 px-2 py-1 rounded-lg">+ R$ ${i.preco.toFixed(2).replace('.',',')}</span>` : `<span class="text-slate-400 text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">Incluso</span>`}
@@ -993,8 +966,12 @@
         }
 
         function recalcularTotalModal() {
-            let totalAdicionais = 0; document.querySelectorAll('#area-complementos input:checked').forEach(input => { totalAdicionais += parseFloat(input.dataset.preco); });
-            const totalGeral = produtoSendoMontado.preco_venda + totalAdicionais; document.getElementById('modal-prod-total-btn').innerText = totalGeral.toFixed(2).replace('.', ',');
+            let totalAdicionais = 0; 
+            document.querySelectorAll('#area-complementos input:checked').forEach(input => { 
+                totalAdicionais += parseFloat(input.dataset.preco || 0); 
+            });
+            const totalGeral = produtoSendoMontado.preco_venda + totalAdicionais; 
+            document.getElementById('modal-prod-total-btn').innerText = totalGeral.toFixed(2).replace('.', ',');
         }
 
         function fecharModalProduto() { document.getElementById('modal-produto').classList.add('hidden'); document.getElementById('modal-produto').classList.remove('flex'); }
@@ -1006,8 +983,8 @@
                 if(grupo.obrigatorio && selecionados.length < grupo.min) { alert(`⚠️ Obrigatório: Escolha pelo menos ${grupo.min} opção em "${grupo.nome}".`); inputsInvalidos = true; }
                 if(selecionados.length > grupo.max) { alert(`⚠️ Limite excedido: Máximo de ${grupo.max} opções em "${grupo.nome}".`); inputsInvalidos = true; }
                 selecionados.forEach(sel => {
-                    totalAdicionais += parseFloat(sel.dataset.preco);
-                    const precoAdd = parseFloat(sel.dataset.preco) > 0 ? `(+R$ ${parseFloat(sel.dataset.preco).toFixed(2)})` : '';
+                    totalAdicionais += parseFloat(sel.dataset.preco || 0);
+                    const precoAdd = parseFloat(sel.dataset.preco || 0) > 0 ? `(+R$ ${parseFloat(sel.dataset.preco).toFixed(2)})` : '';
                     strAdicionais.push(`-> ${sel.dataset.nome} ${precoAdd}`);
                 });
             });
@@ -1046,8 +1023,6 @@
 
         function atualizarContadores() {
             const subtotalLocal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
-            if(cupomAplicado) { const divDesc = document.getElementById('div-desconto'); if(divDesc) divDesc.classList.remove('hidden'); } else { const divDesc = document.getElementById('div-desconto'); if(divDesc) divDesc.classList.add('hidden'); }
-
             let final = subtotalLocal - valorDescontoCupom; if(final < 0) final = 0;
             const form = `R$ ${final.toFixed(2).replace('.', ',')}`;
             const carTotalFlu = document.getElementById('carrinho-total-flutuante'); if(carTotalFlu) carTotalFlu.innerText = form;
@@ -1092,7 +1067,6 @@
 
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.replace('flex', 'hidden'); }
 
-        // 🚨 CHECKOUT BLINDADO E RESTAURADO PARA O MODELO QUE FUNCIONOU 🚨
         async function enviarPedidoNuvem(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-enviar-pedido'); const txtOriginal = btn.innerHTML;
@@ -1130,7 +1104,6 @@
                 btn.innerHTML=txtOriginal; btn.disabled=false; return;
             }
 
-            // RESTAURANDO A CARGA EXATA DE DADOS QUE FUNCIONOU PARA OS PEDIDOS #183 E #184
             let itensFinais = carrinho.map(i => ({ 
                 produto_id: i.produto_id, 
                 quantidade: i.quantidade, 
@@ -1192,32 +1165,20 @@
                     else { 
                         alert("✅ Pedido enviado para a cozinha com sucesso! Acompanhe o preparo pelo Rastreio."); 
                     }
-                    
                     window.location.reload();
                 } else { 
-                    if (res.status === 500) {
-                        alert("⚠️ Erro Interno do Servidor (500)!\n\nIsso significa que o pedido chegou no servidor, mas o Python travou ao finalizar.\n\nMotivos comuns:\n1. Falta do Token do Mercado Pago (Se escolheu PIX/Cartão).\n2. Erro no disparo de WhatsApp.\n\nVerifique no Painel de Gestão se o pedido apareceu lá!");
-                        btn.disabled = false; btn.innerHTML = txtOriginal;
-                        return;
-                    }
-                    
                     let errData = {};
                     try { errData = await res.json(); } catch(e) {}
                     let mensagemErro = errData.detail || "Verifique os dados preenchidos.";
-                    if(Array.isArray(mensagemErro)) {
-                        mensagemErro = mensagemErro.map(e => `Campo '${e.loc[e.loc.length-1]}': ${e.msg}`).join('\n');
-                    }
-                    alert("⚠️ Pedido recusado pelo servidor:\n\n" + mensagemErro); 
+                    alert("⚠️ Pedido recusado:\n\n" + mensagemErro); 
                     btn.disabled = false; btn.innerHTML = txtOriginal; 
                 }
             } catch(e) { 
-                console.error(e);
-                alert("Ocorreu um erro de rede. Se o pedido descontou, avise a loja no WhatsApp."); 
+                alert("Ocorreu um erro de rede."); 
                 btn.disabled = false; btn.innerHTML = txtOriginal; 
             }
         }
 
-        // 🚨 1. RESTAURA O MODAL DO PERFIL E HISTÓRICO DE PEDIDOS 🚨
         async function abrirModalPerfil() {
             const nomeSeguro = clienteLogado.nome || "Visitante";
             document.getElementById('vip-nome').innerText = nomeSeguro;
@@ -1261,10 +1222,10 @@
             } catch(e) { listaHistorico.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Erro ao carregar histórico.</p>'; }
         }
 
-        // 🚨 2. CORRIGE O RASTREIO PARA IGNORAR A HASHTAG (#) 🚨
+        // 🚨 RASTREIO CORRIGIDO PARA ACEITAR COMANDAS E TELEFONES 🚨
         async function buscarRastreio() {
             let busca = document.getElementById('input-rastreio').value.trim();
-            busca = busca.replace('#', ''); // Arranca a hashtag se o cliente digitar!
+            busca = busca.replace('#', ''); 
             if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
             
             const btn = document.getElementById('btn-rastreio'); btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; btn.disabled = true;
