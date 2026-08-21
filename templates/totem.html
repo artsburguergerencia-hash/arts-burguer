@@ -25,13 +25,11 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Animações Premium */
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Efeito de Toque (Touch) */
         .touch-effect:active { transform: scale(0.96); transition: transform 0.1s; }
     </style>
 </head>
@@ -41,7 +39,6 @@
     <audio id="som-toque" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7846aa5003.mp3?filename=click-button-140881.mp3" preload="auto"></audio>
     <audio id="som-sucesso" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=success-1-6297.mp3" preload="auto"></audio>
 
-    <!-- 🚨 BOTÃO DE TEMA GLOBAL FLUTUANTE 🚨 -->
     <button onclick="toggleTheme()" class="absolute top-6 right-6 w-14 h-14 bg-white/30 dark:bg-slate-800/50 hover:bg-white/50 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-full flex items-center justify-center transition-colors shadow-2xl backdrop-blur-md z-[200] border border-white/50 dark:border-slate-600 touch-effect">
         <i id="theme-icon" class="ph-bold ph-moon text-2xl"></i>
     </button>
@@ -92,7 +89,6 @@
     <!-- TELA 2: CARDÁPIO PRINCIPAL -->
     <div id="tela-cardapio" class="hidden flex-1 h-full w-full bg-slate-50 dark:bg-[#0b1120] relative slide-up transition-colors duration-300">
         
-        <!-- Menu Lateral (Categorias) -->
         <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 shrink-0">
             <div class="p-6 bg-slate-950 flex flex-col items-center border-b border-slate-800">
                 <div class="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg mb-3 overflow-hidden border-2 border-slate-800">
@@ -114,7 +110,6 @@
             </button>
         </aside>
 
-        <!-- Grade de Produtos -->
         <main class="flex-1 flex flex-col h-full relative">
             <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-24 px-8 flex items-center justify-between shadow-sm shrink-0 transition-colors duration-300">
                 <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight" id="titulo-categoria">Nosso Cardápio</h2>
@@ -127,7 +122,6 @@
                 <div id="grid-produtos" class="grid grid-cols-2 xl:grid-cols-3 gap-6"></div>
             </div>
 
-            <!-- Resumo Carrinho Rodapé -->
             <div class="absolute bottom-0 w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.3)] p-6 z-10 flex justify-between items-center transition-colors duration-300">
                 <div>
                     <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Total do Pedido</p>
@@ -180,16 +174,13 @@
         </header>
 
         <div class="flex-1 flex overflow-hidden">
-            <!-- Lista de Itens -->
             <div class="flex-1 overflow-y-auto p-10 no-scrollbar bg-slate-50 dark:bg-[#0b1120] border-r border-slate-200 dark:border-slate-800 transition-colors duration-300">
                 <div id="lista-carrinho-totem" class="space-y-4"></div>
             </div>
             
-            <!-- Resumo e Pagamento -->
             <div class="w-[450px] bg-white dark:bg-slate-900 p-8 flex flex-col shadow-2xl shrink-0 z-10 transition-colors duration-300">
                 <h3 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Resumo do Pedido</h3>
                 
-                <!-- BLOCO DE CASHBACK -->
                 <div id="box-cashback-checkout" class="hidden mb-6 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 p-4 rounded-2xl shadow-sm transition-colors">
                     <p class="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1"><i class="ph-fill ph-star"></i> Saldo na Carteira</p>
                     <p class="text-2xl font-black text-emerald-500 mb-3" id="valor-cashback-tela">R$ 0,00</p>
@@ -243,18 +234,15 @@
     </div>
 
     <script>
-        // SCRIPT DE MODO ESCURO
         const themeIcon = document.getElementById('theme-icon');
         if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
 
         function toggleTheme() {
             if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
+                document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light');
                 if(themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
             } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
+                document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark');
                 if(themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
             }
         }
@@ -284,17 +272,12 @@
             try {
                 const res = await fetch('/api/gestao/configuracoes');
                 const config = await res.json();
-                
-                if(config.nome_empresa) {
-                    document.getElementById('nome-loja-totem').innerText = config.nome_empresa;
-                }
-
+                if(config.nome_empresa) document.getElementById('nome-loja-totem').innerText = config.nome_empresa;
                 if(config.logo_url && config.logo_url.trim() !== '') {
                     document.getElementById('splash-letra').classList.add('hidden');
                     document.getElementById('splash-logo').src = config.logo_url;
                     document.getElementById('splash-logo').classList.remove('hidden');
                     document.getElementById('splash-logo').parentElement.classList.remove('border-white', 'border-4');
-                    
                     document.getElementById('sidebar-letra').classList.add('hidden');
                     document.getElementById('sidebar-logo').src = config.logo_url;
                     document.getElementById('sidebar-logo').classList.remove('hidden');
@@ -311,9 +294,19 @@
             input.value = v;
         }
 
-        function iniciarAtendimento() {
+        async function iniciarAtendimento() {
             tocarClick();
             document.getElementById('tela-splash').classList.add('hidden');
+            
+            try {
+                const res = await fetch('/api/gestao/configuracoes'); 
+                const config = await res.json();
+                if (config.sistema_fidelidade === 'DESATIVADO') {
+                    pularFidelidade(false); 
+                    return;
+                }
+            } catch(e) {}
+
             document.getElementById('tela-fidelidade').classList.remove('hidden');
             document.getElementById('tela-fidelidade').classList.add('flex');
             document.getElementById('input-fidelidade-tel').value = '';
@@ -330,8 +323,8 @@
             const msg = document.getElementById('msg-fidelidade');
             
             if(telInput.length < 10) {
-                msg.innerHTML = "⚠️ Digite um WhatsApp válido com DDD.";
-                msg.className = "mt-6 text-sm font-bold px-4 py-3 rounded-xl border bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20 block";
+                msg.innerHTML = "⚠️ Digite um WhatsApp válido.";
+                msg.className = "mt-6 text-sm font-bold px-4 py-3 rounded-xl border bg-red-50 text-red-600 border-red-200 block";
                 return;
             }
 
@@ -342,8 +335,8 @@
                     const dados = await res.json();
                     clienteTotem = { telefone: telInput, nome: dados.nome, cashback: dados.cashback || 0 };
                     
-                    msg.innerHTML = `✅ Olá, <strong>${dados.nome.split(' ')[0]}</strong>! Bem-vindo de volta.`;
-                    msg.className = "mt-6 text-sm font-bold px-4 py-3 rounded-xl border bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 block";
+                    msg.innerHTML = `✅ Olá, <strong>${dados.nome.split(' ')[0]}</strong>!`;
+                    msg.className = "mt-6 text-sm font-bold px-4 py-3 rounded-xl border bg-emerald-50 text-emerald-600 border-emerald-200 block";
                     
                     document.getElementById('nome-cliente-sidebar').innerText = dados.nome.split(' ')[0];
                     document.getElementById('box-cliente-sidebar').classList.remove('hidden');
@@ -352,15 +345,14 @@
                         document.getElementById('box-cashback-checkout').classList.remove('hidden');
                         document.getElementById('valor-cashback-tela').innerText = `R$ ${clienteTotem.cashback.toFixed(2).replace('.',',')}`;
                     }
-
                     setTimeout(() => pularFidelidade(true), 1500); 
                 } else {
-                    clienteTotem = { telefone: telInput, nome: "Cliente Totem", cashback: 0 };
-                    pularFidelidade(true);
+                    msg.innerHTML = "⚠️ Cliente não encontrado. Deseja realizar um cadastro rápido?";
+                    msg.className = "mt-6 text-sm font-bold px-4 py-3 rounded-xl border bg-amber-50 text-amber-600 border-amber-200 block";
+                    btn.innerHTML = 'Continuar sem Cadastro <i class="ph-bold ph-arrow-right ml-2 text-2xl"></i>';
+                    btn.onclick = () => pularFidelidade(false);
                 }
-            } catch(e) {
-                pularFidelidade(true);
-            }
+            } catch(e) { pularFidelidade(false); }
         }
 
         function pularFidelidade(mantemDados = false) {
@@ -370,10 +362,8 @@
                 document.getElementById('box-cliente-sidebar').classList.add('hidden');
                 document.getElementById('box-cashback-checkout').classList.add('hidden');
             }
-            
             document.getElementById('tela-fidelidade').classList.add('hidden');
             document.getElementById('tela-fidelidade').classList.remove('flex');
-            
             document.getElementById('tela-cardapio').classList.remove('hidden');
             document.getElementById('tela-cardapio').classList.add('flex');
             carrinho = [];
@@ -408,7 +398,7 @@
                 `).join('');
 
                 if(categorias.length > 0) renderizarGrade(categorias[0]);
-            } catch(e) { console.log(e); }
+            } catch(e) {}
         }
 
         function renderizarGrade(categoria) {
@@ -449,7 +439,6 @@
             
             const imgEl = document.getElementById('modal-prod-img');
             imgEl.src = p.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
-            imgEl.onerror = function() { this.src = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop"; };
             
             const areaComp = document.getElementById('area-complementos');
             areaComp.innerHTML = '<div class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-4xl text-brand-500"></i></div>';
@@ -547,9 +536,6 @@
                 carrinho.forEach(i => { total += (i.preco * i.quantidade); qtd += i.quantidade; });
                 totalEl.innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
                 document.getElementById('totem-qtd-rodape').innerText = qtd;
-                
-                btn.classList.add('scale-105');
-                setTimeout(() => btn.classList.remove('scale-105'), 200);
             }
         }
 
@@ -564,21 +550,11 @@
             tocarClick();
             document.getElementById('tela-carrinho').classList.add('hidden');
             document.getElementById('tela-carrinho').classList.remove('flex');
-            
-            document.querySelectorAll('.btn-pag-totem').forEach(b => {
-                b.classList.remove('border-brand-500', 'bg-brand-50', 'dark:bg-brand-500/10', 'text-brand-600', 'dark:text-brand-400');
-                b.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-slate-50', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
-            });
-            document.getElementById('totem-forma-pagamento').value = "";
-            const btnF = document.getElementById('btn-finalizar-totem');
-            btnF.className = "w-full bg-slate-300 dark:bg-slate-800 text-slate-500 dark:text-slate-600 font-black py-6 rounded-2xl transition-all uppercase tracking-widest text-xl mt-8 pointer-events-none touch-effect";
-            btnF.innerText = "Escolha o Pagamento";
         }
 
         function renderizarListaCarrinho() {
             const container = document.getElementById('lista-carrinho-totem');
             let subtotal = 0;
-            
             if(carrinho.length === 0) { voltarParaCardapio(); return; }
 
             container.innerHTML = carrinho.map((item, index) => {
@@ -603,13 +579,9 @@
             let totalReal = subtotal;
             const chkBox = document.getElementById('check-usar-cashback');
             if(clienteTotem && clienteTotem.cashback > 0 && chkBox && chkBox.checked) {
-                if(totalReal >= clienteTotem.cashback) {
-                    totalReal -= clienteTotem.cashback;
-                } else {
-                    totalReal = 0;
-                }
+                if(totalReal >= clienteTotem.cashback) totalReal -= clienteTotem.cashback;
+                else totalReal = 0;
             }
-
             document.getElementById('checkout-total').innerText = `R$ ${totalReal.toFixed(2).replace('.',',')}`;
         }
 
@@ -633,7 +605,6 @@
                 }
             });
             document.getElementById('totem-forma-pagamento').value = forma;
-            
             const btn = document.getElementById('btn-finalizar-totem');
             btn.className = "w-full bg-brand-500 text-white font-black py-6 rounded-2xl shadow-[0_15px_40px_rgba(255,71,87,0.4)] transition-transform uppercase tracking-widest text-xl mt-8 touch-effect active:scale-95 flex items-center justify-center";
             btn.innerHTML = `Confirmar Pedido <i class="ph-bold ph-check-circle ml-3 text-2xl"></i>`;
@@ -650,9 +621,7 @@
 
             let descontoUsado = 0;
             const chkBox = document.getElementById('check-usar-cashback');
-            if(clienteTotem && clienteTotem.cashback > 0 && chkBox && chkBox.checked) {
-                descontoUsado = clienteTotem.cashback;
-            }
+            if(clienteTotem && clienteTotem.cashback > 0 && chkBox && chkBox.checked) descontoUsado = clienteTotem.cashback;
 
             const payload = {
                 nome_cliente: clienteTotem ? clienteTotem.nome : "Cliente Totem",
@@ -669,7 +638,6 @@
                 
                 if(res.ok) {
                     document.getElementById('som-sucesso').play().catch(()=>{});
-                    
                     document.getElementById('sucesso-senha').innerText = data.senha_diaria;
                     document.getElementById('tela-sucesso').classList.remove('hidden');
                     document.getElementById('tela-sucesso').classList.add('flex');
@@ -686,10 +654,8 @@
                             cancelarAtendimento(); 
                         }
                     }, 1000);
-
                 } else { alert("Aviso: " + data.detail); }
             } catch(e) { alert("Falha na Rede."); }
-            
             btn.innerHTML = "Finalizar Pedido";
             btn.disabled = false;
         }
