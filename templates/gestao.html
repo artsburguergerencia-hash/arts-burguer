@@ -1549,6 +1549,7 @@
                 const res = await fetch('/api/gestao/configuracoes'); 
                 const conf = await res.json();
                 
+                // 🚨 PREENCHIMENTO COMPLETO DE TODOS OS CAMPOS DO SETUP 🚨
                 document.getElementById('conf-nome').value = conf.nome_empresa || ""; 
                 document.getElementById('sidebar-nome-loja').innerText = conf.nome_empresa || "Art's Burguer";
                 document.getElementById('conf-cnpj').value = conf.cnpj || ""; 
@@ -1557,7 +1558,7 @@
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
                 document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
                 
-                if(conf.logo_url) {
+                if(conf.logo_url && conf.logo_url !== 'None' && conf.logo_url !== '') {
                     document.getElementById('conf-logo-base64').value = conf.logo_url;
                     document.getElementById('preview-logo-setup').src = conf.logo_url;
                     document.getElementById('preview-logo-setup').classList.remove('hidden');
@@ -1587,7 +1588,7 @@
                 
                 listaCatCardapio = conf.categorias_cardapio ? conf.categorias_cardapio.split(',').filter(x => x.trim() !== "") : ["Burger Artesanal", "Bebidas"];
                 listaCatFornecedor = conf.categorias_fornecedor ? conf.categorias_fornecedor.split(',').filter(x => x.trim() !== "") : ["Carnes", "Embalagens"];
-                listaBeneficios = conf.planos_saude_opcoes ? conf.planos_saude_opcoes.split(',').filter(x => x.trim() !== "") : ["Nenhum"];
+                listaBeneficios = conf.planos_saude_opcoes ? conf.planos_sa_opcoes.split(',').filter(x => x.trim() !== "") : ["Nenhum"];
                 listaPagamentos = conf.formas_pagamento ? conf.formas_pagamento.split(',').filter(x => x.trim() !== "") : ["Pix", "Dinheiro"];
                 
                 renderTagsSetup('cardapio'); renderTagsSetup('fornecedor'); renderTagsSetup('beneficio'); renderTagsSetup('pagamento');
