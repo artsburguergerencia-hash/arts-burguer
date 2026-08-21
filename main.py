@@ -1883,28 +1883,29 @@ def get_configuracoes(db: Session = Depends(get_db)):
 @app.put("/api/gestao/configuracoes")
 def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
     try:
-        # Busca a configuração no banco
         config = db.query(ConfiguracaoLojaModel).first()
-        
-        # Se não existir, cria a primeira
         if not config: 
             config = ConfiguracaoLojaModel()
             db.add(config)
             db.commit()
             db.refresh(config)
 
-        # O Laço Mágico
+        # Atualiza campo por campo com rastreio de alteração
         for key, value in dados.items():
             if hasattr(config, key):
                 setattr(config, key, value)
                 
+        # 🚨 FORÇA O SQLAlchemy A SALVAR NO BANCO DE DADOS 🚨
+        db.add(config)
         db.commit()
+        db.refresh(config)
+        
         return {"status": "sucesso"}
         
     except Exception as e:
         db.rollback()
+        print(f"❌ ERRO CRÍTICO AO SALVAR NO BANCO: {str(e)}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/api/gestao/clientes")
 def listar_clientes_gestao(db: Session = Depends(get_db)):
