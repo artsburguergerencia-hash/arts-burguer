@@ -2829,21 +2829,22 @@
                 };
 
                 // 2. Puxa o Histórico de Pedidos
-                document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold"><i class="ph-bold ph-spinner animate-spin"></i> Buscando...</td></tr>';
+                document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold"><i class="ph-bold ph-spinner animate-spin mr-1"></i> Buscando pedidos...</td></tr>';
                 document.getElementById('modal-editar-cliente').classList.replace('hidden', 'flex');
 
                 const resPed = await fetch(`/api/gestao/clientes/${id}/pedidos`);
                 const pedidos = await resPed.json();
                 
-                if (pedidos.length === 0) {
-                    document.getElementById('lista-historico-pedidos').innerHTML = '<tr><td class="p-4 text-center text-slate-400 font-bold">Nenhum pedido encontrado.</td></tr>';
+                const tbodyPed = document.getElementById('lista-historico-pedidos');
+                if (!pedidos || pedidos.length === 0) {
+                    tbodyPed.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">Nenhum pedido encontrado.</td></tr>';
                 } else {
-                    document.getElementById('lista-historico-pedidos').innerHTML = pedidos.map(p => `
-                        <tr class="border-b border-slate-100 last:border-0 hover:bg-white">
+                    tbodyPed.innerHTML = pedidos.map(p => `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                             <td class="p-3 font-bold text-slate-700">#${p.id}</td>
-                            <td class="p-3 font-mono text-slate-500">${p.data}</td>
-                            <td class="p-3 font-black text-emerald-500">R$ ${p.valor.toFixed(2).replace('.',',')}</td>
-                            <td class="p-3"><span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[9px] font-black uppercase">${p.status}</span></td>
+                            <td class="p-3 font-mono text-slate-500 text-xs">${p.data}</td>
+                            <td class="p-3 font-black text-emerald-600">R$ ${p.valor.toFixed(2).replace('.',',')}</td>
+                            <td class="p-3 text-right"><span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider">${p.status}</span></td>
                         </tr>
                     `).join('');
                 }
