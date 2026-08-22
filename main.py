@@ -2033,42 +2033,41 @@ def deletar_item_generico(tabela: str, item_id: int, db: Session = Depends(get_d
 @app.put("/api/gestao/clientes/{cliente_id}")
 def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
-        print(f"📥 Recebendo atualização para o cliente ID {cliente_id}: {dados}", flush=True)
-        
-        # Busca na tabela de clientes
-        cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+        # Usa a classe correta 'Cliente' definida no seu database.py
+        cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
         if not cliente:
-            print(f"❌ Cliente {cliente_id} não localizado no banco.", flush=True)
             raise HTTPException(status_code=404, detail="Cliente não encontrado na base.")
         
-        # Atualiza os campos presentes no dicionário de dados
-        if "nome" in dados:
+        if "nome" in dados and dados["nome"] is not None: 
             cliente.nome = str(dados["nome"])
-        if "telefone" in dados:
+        if "telefone" in dados and dados["telefone"] is not None: 
             cliente.telefone = str(dados["telefone"])
-        if "cpf" in dados:
-            novo_cpf = str(dados["cpf"]).strip()
-            if novo_cpf != "":
-                cliente.cpf = novo_cpf
-        if "cep" in dados:
-            cliente.cep = str(dados["cep"]) if dados["cep"] else ""
-        if "endereco" in dados:
-            cliente.endereco = str(dados["endereco"]) if dados["endereco"] else ""
-        if "pontos" in dados:
-            cliente.pontos = int(dados["pontos"]) if dados["pontos"] is not None else 0
-        if "cashback" in dados:
-            cliente.cashback = float(dados["cashback"]) if dados["cashback"] is not None else 0.0
-        if "bloqueado" in dados:
-            cliente.bloqueado = bool(dados["bloqueado"])
             
+        if "cpf" in dados: 
+            novo_cpf = str(dados["cpf"]).strip()
+            if novo_cpf != "": 
+                cliente.cpf = novo_cpf
+                
+        if "cep" in dados: 
+            cliente.cep = str(dados["cep"]) if dados["cep"] else ""
+        if "endereco" in dados: 
+            cliente.endereco = str(dados["endereco"]) if dados["endereco"] else ""
+            
+        if "pontos" in dados: 
+            cliente.pontos = int(dados["pontos"]) if dados["pontos"] is not None else 0
+        if "cashback" in dados: 
+            cliente.cashback = float(dados["cashback"]) if dados["cashback"] is not None else 0.0
+        if "bloqueado" in dados: 
+            cliente.bloqueado = bool(dados["bloqueado"])
+        
         db.commit()
         db.refresh(cliente)
-        print(f"✅ Dossiê do cliente {cliente_id} atualizado com sucesso!", flush=True)
-        return {"status": "sucesso", "mensagem": "Dossiê atualizado com sucesso!"}
+        return {"status": "sucesso", "mensagem": "Dossiê do cliente atualizado com sucesso!"}
         
+    except HTTPException as he:
+        raise he
     except Exception as e:
         db.rollback()
-        print(f"❌ ERRO CRÍTICO NO PUT /clientes/{cliente_id}: {str(e)}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/gestao/clientes/{cliente_id}/pedidos")
