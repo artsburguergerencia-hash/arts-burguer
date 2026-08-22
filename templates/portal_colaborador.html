@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Bloqueador de Cache -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <title>Meu RH | Art's Burguer</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- 🚨 MOTOR DE TEMA CLARO/ESCURO 🚨 -->
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .view { display: none; animation: slideUp 0.3s ease-out forwards; }
+        .view.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-slate-800 dark:text-slate-100 h-screen flex flex-col overflow-hidden bg-slate-900 transition-colors duration-300">
+
+    <!-- ============================================== -->
+    <!-- TELA DE LOGIN SEGURA -->
+    <!-- ============================================== -->
+    <div id="tela-login" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 transition-all duration-500">
+        <div class="w-full max-w-sm bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl text-center relative overflow-hidden border border-slate-200 dark:border-slate-700 transition-colors duration-300">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-blue-700"></div>
+            
+            <div class="w-24 h-24 bg-blue-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600 shadow-inner overflow-hidden border-2 border-white dark:border-slate-700">
+                <img id="logo-empresa-login" src="https://ui-avatars.com/api/?name=RH&background=2563eb&color=fff&size=150" class="w-full h-full object-cover">
+            </div>
+            
+            <h2 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight mb-2">Portal RH <span class="text-[10px] bg-red-500 text-white px-2 py-1 rounded-lg align-middle tracking-widest shadow-sm">V6.0</span></h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-8 leading-relaxed">Digite seu Usuário e Senha corporativos.</p>
+            
+            <form onsubmit="fazerLogin(event)" class="space-y-4">
+                <div class="text-left">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1">Usuário de Login</label>
+                    <input type="text" id="login-usuario" required placeholder="Ex: joao.silva" class="w-full px-5 py-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-center font-black text-lg text-slate-700 dark:text-white outline-none focus:border-blue-500 transition-colors">
+                </div>
+                <div class="text-left">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1">Sua Senha</label>
+                    <input type="password" id="login-senha" required placeholder="••••••••" class="w-full px-5 py-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-center font-black text-xl text-slate-700 dark:text-white outline-none focus:border-blue-500 transition-colors">
+                </div>
+                <div class="pt-4">
+                    <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg flex items-center justify-center">
+                        Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- CABEÇALHO -->
+    <!-- ============================================== -->
+    <header class="bg-blue-600 text-white p-6 rounded-b-3xl shadow-md shrink-0 relative overflow-hidden hidden" id="app-header">
+        <div class="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4 pointer-events-none"><i class="ph-fill ph-buildings text-[150px]"></i></div>
+        <div class="relative z-10 flex items-center justify-between">
+            <div class="flex items-center">
+                <img id="header-foto" src="https://ui-avatars.com/api/?name=C&background=ffffff&color=2563eb" class="w-12 h-12 rounded-full border-2 border-white/50 mr-3 object-cover shadow-sm bg-white">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-1">Bem-vindo(a),</p>
+                    <h1 class="text-xl font-black tracking-tight" id="user-nome">Colaborador</h1>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleTheme()" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border border-white/40 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors" title="Mudar Tema"><i id="theme-icon" class="ph-bold ph-moon text-lg"></i></button>
+                <button class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border border-white/40 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors" onclick="sair()" title="Sair da Conta"><i class="ph-bold ph-power text-lg"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================== -->
+    <!-- ÁREA PRINCIPAL -->
+    <!-- ============================================== -->
+    <main class="flex-1 overflow-y-auto no-scrollbar p-6 pb-28 hidden bg-slate-50 dark:bg-[#0b1120] transition-colors duration-300" id="app-main">
+
+        <!-- VIEW 1: PONTO -->
+        <div id="view-ponto" class="view active space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 text-center relative overflow-hidden transition-colors">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600"></div>
+                <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Relógio de Ponto Digital</h2>
+                <div class="text-5xl font-black text-slate-800 dark:text-white tracking-tighter my-6 font-mono" id="relogio-digital">00:00:00</div>
+                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 py-2 rounded-lg border border-slate-100 dark:border-slate-700 uppercase tracking-wider transition-colors" id="data-atual">Carregando data...</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="registrarPonto('entrada')" class="bg-emerald-500 hover:bg-emerald-600 text-white p-6 rounded-3xl shadow-lg transition-all active:scale-95 flex flex-col items-center justify-center">
+                    <i class="ph-bold ph-sign-in text-4xl mb-2"></i><span class="font-black uppercase tracking-wider text-sm">Entrar</span>
+                </button>
+                <button onclick="registrarPonto('saida')" class="bg-amber-500 hover:bg-amber-600 text-white p-6 rounded-3xl shadow-lg transition-all active:scale-95 flex flex-col items-center justify-center">
+                    <i class="ph-bold ph-sign-out text-4xl mb-2"></i><span class="font-black uppercase tracking-wider text-sm">Sair</span>
+                </button>
+            </div>
+            <div id="msg-ponto" class="text-center font-bold text-sm hidden py-4 rounded-xl shadow-sm border"></div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 p-6 rounded-3xl flex justify-between items-center shadow-sm mt-4 transition-colors">
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400 mb-1">Total Trabalhado (Mês)</p>
+                    <h3 class="text-3xl font-black text-blue-800 dark:text-blue-300" id="info-horas-trabalhadas">0h</h3>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400 mb-1">Dias Ponto</p>
+                    <h3 class="text-3xl font-black text-blue-800 dark:text-blue-300" id="info-dias-trabalhados">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: DESEMPENHO -->
+        <div id="view-desempenho" class="view space-y-6">
+            <div class="bg-slate-900 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4"><i class="ph-fill ph-trend-up text-[120px]"></i></div>
+                <div class="relative z-10">
+                    <h2 class="text-lg font-black tracking-tight mb-1 flex items-center"><i class="ph-fill ph-chart-bar text-brand-500 mr-2 text-2xl"></i> Meu Desempenho</h2>
+                    <p class="text-xs text-slate-400 font-medium mb-6">Acompanhe suas métricas mensais.</p>
+                    <div class="flex space-x-2">
+                        <input type="month" id="mes-desempenho" class="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 font-bold outline-none focus:border-brand-500 uppercase text-xs tracking-wider text-white" style="color-scheme: dark;">
+                        <button onclick="carregarMeuDesempenho()" id="btn-desempenho" class="bg-blue-600 hover:bg-blue-500 text-white px-5 rounded-xl font-bold transition-all shadow-md active:scale-95"><i class="ph-bold ph-magnifying-glass text-lg"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div id="card-comissao" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3"><i class="ph-bold ph-currency-circle-dollar text-lg"></i></div>
+                    <p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Comissões Bônus</p>
+                    <h4 class="text-2xl font-black text-emerald-500 dark:text-emerald-400" id="meu-res-comissao">R$ 0,00</h4>
+                </div>
+                
+                <div id="card-gorjeta" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3"><i class="ph-bold ph-coin text-lg"></i></div>
+                    <p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Gorjetas Extra</p>
+                    <h4 class="text-2xl font-black text-amber-500 dark:text-amber-400" id="meu-res-gorjeta">R$ 0,00</h4>
+                </div>
+
+                <div id="card-diarias" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3"><i class="ph-bold ph-moped text-lg"></i></div>
+                    <p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Taxas Entregas</p>
+                    <h4 class="text-2xl font-black text-blue-500 dark:text-blue-400" id="meu-res-diarias">R$ 0,00</h4>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center mb-3"><i class="ph-bold ph-clock-countdown text-lg"></i></div>
+                    <p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Atrasos / Faltas</p>
+                    <h4 class="text-2xl font-black text-red-500 dark:text-red-400" id="meu-res-faltas">0h</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: HOLERITE -->
+        <div id="view-holerite" class="view space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                <h2 class="text-lg font-black text-slate-800 dark:text-white mb-4 flex items-center"><i class="ph-fill ph-receipt text-blue-500 mr-2 text-2xl"></i> Meus Holerites</h2>
+                <div class="flex space-x-3">
+                    <input type="month" id="mes-holerite" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-slate-700 dark:text-white outline-none uppercase text-xs tracking-wider transition-colors">
+                    <button onclick="consultarHolerite()" id="btn-holerite" class="bg-slate-900 dark:bg-blue-600 text-white px-6 rounded-xl font-bold shadow-md"><i class="ph-bold ph-magnifying-glass text-lg"></i></button>
+                </div>
+            </div>
+
+            <!-- O CONTAINER DO PDF FOI FORÇADO A SER BRANCO PARA NÃO QUEBRAR A IMPRESSÃO -->
+            <div id="container-holerite-pdf" class="bg-white rounded-xl border border-slate-200 shadow-sm hidden overflow-hidden text-slate-800">
+                <div class="p-6 border-b border-slate-200 bg-slate-50">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="font-black text-lg text-slate-800 tracking-tight uppercase" id="hol-empresa-nome">CARREGANDO...</h2>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1" id="hol-empresa-cnpj">CNPJ: 00.000... | IE: ...</p>
+                            <p class="text-[10px] text-slate-500 font-medium mt-1" id="hol-empresa-end">Endereço da Empresa</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Mês Ref.</p>
+                            <p class="text-sm font-black text-slate-800 bg-white border border-slate-200 px-3 py-1 rounded-lg" id="hol-mes-ref">00/0000</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 text-xs shadow-sm mt-2">
+                        <p class="font-bold text-slate-500 uppercase tracking-wider mb-1">Colaborador: <span id="hol-nome-func" class="font-black text-blue-600 ml-1">Carregando...</span></p>
+                        <p class="font-bold text-slate-500 uppercase tracking-wider">Matrícula/ID: <span id="hol-mat-func" class="font-black text-slate-800 ml-1 font-mono">0000</span></p>
+                    </div>
+                </div>
+
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-slate-200 text-slate-500 text-[10px] uppercase font-black">
+                            <th class="py-3 px-4">Descrição</th><th class="py-3 px-4 text-right text-emerald-600">Proventos</th><th class="py-3 px-4 text-right text-red-500">Descontos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-holerite-body" class="font-bold text-slate-700"></tbody>
+                </table>
+
+                <div class="p-6 bg-slate-50 border-t border-slate-200">
+                    <div class="flex justify-between items-center mb-2 text-xs"><span class="font-bold text-slate-500 uppercase">Total Proventos</span><span class="font-black text-slate-800 text-sm" id="hol-total-prov">R$ 0,00</span></div>
+                    <div class="flex justify-between items-center mb-4 text-xs pb-4 border-b border-slate-200"><span class="font-bold text-slate-500 uppercase">Total Descontos</span><span class="font-black text-slate-800 text-sm" id="hol-total-desc">R$ 0,00</span></div>
+                    <div class="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-inner"><span class="font-black text-emerald-800 uppercase tracking-widest text-xs">Líquido a Receber</span><span class="font-black text-2xl text-emerald-600 tracking-tight" id="hol-liquido">R$ 0,00</span></div>
+                </div>
+            </div>
+
+            <button id="btn-baixar-pdf" onclick="baixarPDFHolerite()" class="w-full bg-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-black py-4 rounded-2xl shadow-xl hidden items-center justify-center uppercase tracking-widest text-sm transition-colors">
+                <i class="ph-bold ph-download-simple text-xl mr-2"></i> Baixar Documento (PDF)
+            </button>
+        </div>
+
+        <!-- VIEW 4: SOLICITAÇÕES E HISTÓRICO -->
+        <div id="view-solicitacoes" class="view space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-4 border-l-4 border-blue-500 pl-3">Solicitar Folga / Férias</h3>
+                <form onsubmit="pedirFerias(event)" class="space-y-4" id="form-ferias">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">O que deseja solicitar?</label>
+                        <select id="fe-tipo" onchange="mudarFormularioRH()" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white outline-none transition-colors">
+                            <option value="FOLGA">Dia de Folga</option>
+                            <option value="FERIAS">Período de Férias</option>
+                        </select>
+                    </div>
+
+                    <div id="container-datas-ferias" class="grid grid-cols-2 gap-3 hidden">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Data de Início</label>
+                            <input type="date" id="fe-inicio" onchange="calcularDiasQtd()" class="w-full px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm uppercase text-slate-800 dark:text-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Data de Retorno</label>
+                            <input type="date" id="fe-fim" onchange="calcularDiasQtd()" class="w-full px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm uppercase text-slate-800 dark:text-white transition-colors">
+                        </div>
+                    </div>
+
+                    <div id="container-data-folga" class="block">
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Qual o dia da Folga?</label>
+                        <input type="date" id="fe-dia-unico" onchange="calcularDiasQtd()" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm uppercase text-slate-800 dark:text-white transition-colors">
+                    </div>
+
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 p-3 rounded-xl flex justify-between items-center hidden transition-colors" id="box-qtd-dias">
+                        <span class="text-xs font-bold text-blue-800 dark:text-blue-400 uppercase tracking-widest">Total Solicitado:</span>
+                        <span class="font-black text-blue-600 dark:text-blue-300 text-lg" id="txt-qtd-dias">1 dia(s)</span>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg mt-2 uppercase tracking-widest text-sm transition-all active:scale-95">Registrar Pedido</button>
+                </form>
+            </div>
+
+            <!-- ENVIAR ATESTADO / OCORRÊNCIA -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-4 border-l-4 border-amber-500 pl-3">Justificar Falta / Atestado</h3>
+                <form onsubmit="enviarOcorrencia(event)" class="space-y-4" id="form-ocorrencia">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Tipo de Ocorrência</label>
+                        <select id="oc-tipo" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold outline-none text-sm focus:border-amber-500 text-slate-700 dark:text-white transition-colors">
+                            <option value="ATESTADO_MEDICO">Atestado Médico (Doença)</option>
+                            <option value="SAIDA_BANCO">Saída Pessoal (Banco/Outros)</option>
+                            <option value="FALTA_INJUSTIFICADA">Aviso de Falta Imprevista</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Data da Ocorrência</label>
+                        <input type="date" id="oc-data" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold outline-none text-sm focus:border-amber-500 text-slate-700 dark:text-white uppercase transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Motivo Detalhado</label>
+                        <input type="text" id="oc-motivo" required placeholder="Ex: Consulta dentista" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-medium outline-none text-sm focus:border-amber-500 text-slate-700 dark:text-white transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Link do Atestado (Drive) - Opcional</label>
+                        <input type="url" id="oc-anexo" placeholder="https://..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-medium outline-none text-sm focus:border-amber-500 text-slate-700 dark:text-white transition-colors">
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 text-white font-black py-4 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-widest shadow-md mt-2">
+                        Enviar para o RH
+                    </button>
+                </form>
+            </div>
+
+            <!-- HISTÓRICO DO COLABORADOR -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-4 border-l-4 border-slate-500 pl-3 flex justify-between items-center">
+                    Meu Histórico <button onclick="carregarMeuHistoricoPedidos()" class="text-[10px] bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:text-white transition-colors">Atualizar</button>
+                </h3>
+                <div id="lista-meu-historico" class="space-y-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
+                    <div class="text-center text-xs font-bold text-slate-400 py-4">Buscando histórico...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 5: MEU PERFIL (EDICAO) -->
+        <div id="view-perfil" class="view space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-6 border-l-4 border-emerald-500 pl-3">Editar Meu Perfil</h3>
+                <form onsubmit="atualizarMeuPerfil(event)" class="space-y-4">
+                    <div class="flex items-center justify-center mb-6">
+                        <div class="relative">
+                            <img id="perfil-foto-preview" src="https://ui-avatars.com/api/?name=U&background=f1f5f9" class="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-700 shadow-lg">
+                            <label class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer shadow-md border-2 border-white dark:border-slate-700 hover:bg-blue-700 transition-colors">
+                                <i class="ph-bold ph-camera"></i>
+                                <input type="file" accept="image/*" class="hidden" onchange="lerFotoPerfil(event)">
+                            </label>
+                            <input type="hidden" id="perfil-foto-base64">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Nome Completo</label>
+                        <input type="text" id="perfil-nome" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-emerald-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Telefone / WhatsApp</label>
+                        <input type="text" id="perfil-tel" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-emerald-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">E-mail Pessoal</label>
+                        <input type="email" id="perfil-email" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-emerald-500 transition-colors">
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="col-span-1">
+                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">CEP</label>
+                            <input type="text" id="perfil-cep" onblur="buscarCepPerfil(this.value)" class="w-full px-4 py-3 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-900/20 font-bold text-sm text-blue-600 dark:text-blue-400 outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Qtd. Filhos (< 14 Anos)</label>
+                            <input type="number" id="perfil-filhos" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm text-center text-slate-800 dark:text-white outline-none focus:border-emerald-500 transition-colors">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Endereço Completo</label>
+                        <input type="text" id="perfil-end" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-emerald-500 transition-colors">
+                    </div>
+
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-widest shadow-lg mt-6">
+                        Salvar Alterações
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================== -->
+    <!-- NAVEGAÇÃO INFERIOR ESTILO APP (5 BOTÕES) -->
+    <!-- ============================================== -->
+    <nav class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 h-[84px] fixed bottom-0 w-full flex justify-around items-center px-1 pb-4 pt-2 z-20 hidden shadow-[0_-5px_20px_rgba(0,0,0,0.05)] transition-colors duration-300" id="app-nav">
+        <button onclick="mudarView('view-ponto', this)" class="nav-btn active flex flex-col items-center p-2 text-blue-600 dark:text-blue-400 w-1/5 transition-colors"><i class="ph-fill ph-clock text-[22px] mb-1"></i><span class="text-[8px] font-black uppercase tracking-wider">Ponto</span></button>
+        <button onclick="mudarView('view-desempenho', this); carregarMeuDesempenho()" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/5 transition-colors"><i class="ph-fill ph-trend-up text-[22px] mb-1"></i><span class="text-[8px] font-black uppercase tracking-wider">Painel</span></button>
+        <button onclick="mudarView('view-holerite', this)" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/5 transition-colors"><i class="ph-fill ph-receipt text-[22px] mb-1"></i><span class="text-[8px] font-black uppercase tracking-wider">Holerite</span></button>
+        <button onclick="mudarView('view-solicitacoes', this); carregarMeuHistoricoPedidos()" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/5 transition-colors"><i class="ph-fill ph-calendar-blank text-[22px] mb-1"></i><span class="text-[8px] font-black uppercase tracking-wider">Folgas</span></button>
+        <button onclick="mudarView('view-perfil', this); carregarDadosDoMeuPerfil()" class="nav-btn flex flex-col items-center p-2 text-slate-400 w-1/5 transition-colors"><i class="ph-fill ph-user-circle text-[22px] mb-1"></i><span class="text-[8px] font-black uppercase tracking-wider">Perfil</span></button>
+    </nav>
+
+    <!-- ============================================== -->
+    <!-- MOTOR JAVASCRIPT DO APLICATIVO -->
+    <!-- ============================================== -->
+    <script>
+        // 🚨 TEMA E LOGO PÚBLICA 🚨
+        const themeIcon = document.getElementById('theme-icon');
+        if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if(themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if(themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+            }
+        }
+
+        async function carregarConfigLojaPublica() {
+            try {
+                const res = await fetch('/api/gestao/configuracoes');
+                const config = await res.json();
+                if(config.logo_url && config.logo_url.trim() !== '') {
+                    const img = document.getElementById('logo-empresa-login');
+                    if(img) img.src = config.logo_url;
+                }
+            } catch(e) {}
+        }
+
+        // Variável Global
+        let FUNC_ID = null;
+        let FUNC_NOME = "";
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => { 
+            carregarConfigLojaPublica();
+            const hoje = new Date();
+            const mesStr = (hoje.getMonth() + 1).toString().padStart(2, '0');
+            const dataPadrão = `${hoje.getFullYear()}-${mesStr}`;
+            document.getElementById('mes-desempenho').value = dataPadrão;
+            document.getElementById('mes-holerite').value = dataPadrão;
+        });
+
+        function atualizarRelogio() {
+            const agora = new Date();
+            document.getElementById('relogio-digital').innerText = agora.toLocaleTimeString('pt-BR', { hour12: false });
+            const opcoes = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('data-atual').innerText = agora.toLocaleDateString('pt-BR', opcoes);
+        }
+        setInterval(atualizarRelogio, 1000);
+        atualizarRelogio();
+
+        // Lógica Férias x Folga
+        function mudarFormularioRH() {
+            const tipo = document.getElementById('fe-tipo').value;
+            if (tipo === 'FOLGA') {
+                document.getElementById('container-data-folga').classList.remove('hidden');
+                document.getElementById('container-datas-ferias').classList.add('hidden');
+            } else {
+                document.getElementById('container-data-folga').classList.add('hidden');
+                document.getElementById('container-datas-ferias').classList.remove('hidden');
+                document.getElementById('container-datas-ferias').classList.add('grid');
+            }
+            calcularDiasQtd();
+        }
+
+        // Conta a quantidade de dias pedidos
+        function calcularDiasQtd() {
+            const tipo = document.getElementById('fe-tipo').value;
+            let qtd = 0;
+            
+            if (tipo === 'FOLGA') {
+                if(document.getElementById('fe-dia-unico').value) qtd = 1;
+            } else {
+                const i = new Date(document.getElementById('fe-inicio').value);
+                const f = new Date(document.getElementById('fe-fim').value);
+                if(i && f && f >= i) {
+                    const diffTempo = Math.abs(f - i);
+                    qtd = Math.ceil(diffTempo / (1000 * 60 * 60 * 24)) + 1;
+                }
+            }
+            
+            if(qtd > 0) {
+                document.getElementById('box-qtd-dias').classList.remove('hidden');
+                document.getElementById('txt-qtd-dias').innerText = `${qtd} dia(s)`;
+            } else {
+                document.getElementById('box-qtd-dias').classList.add('hidden');
+            }
+        }
+
+        // Login
+        async function fazerLogin(e) {
+            e.preventDefault();
+            const usuario = document.getElementById('login-usuario').value.trim();
+            const senha = document.getElementById('login-senha').value;
+            const btn = document.getElementById('btn-login');
+            
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i>'; 
+            btn.disabled = true;
+
+            try {
+                const resAuth = await fetch('/api/login', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ usuario: usuario, senha: senha })
+                });
+
+                if (!resAuth.ok) {
+                    alert("⛔ Usuário ou Senha incorretos!");
+                    btn.innerHTML = 'Acessar Meu RH <i class="ph-bold ph-arrow-right ml-2"></i>'; 
+                    btn.disabled = false;
+                    return;
+                }
+
+                const resFunc = await fetch('/api/gestao/funcionarios');
+                const funcionarios = await resFunc.json();
+                const meuPerfil = funcionarios.find(f => f.usuario === usuario);
+
+                if (meuPerfil) {
+                    FUNC_ID = meuPerfil.id;
+                    FUNC_NOME = meuPerfil.nome;
+                    
+                    document.getElementById('user-nome').innerText = FUNC_NOME.split(' ')[0];
+                    if (meuPerfil.foto_3x4) document.getElementById('header-foto').src = meuPerfil.foto_3x4;
+                    
+                    carregarMeuDesempenho();
+                    
+                    document.body.classList.remove('bg-slate-900');
+                    document.getElementById('tela-login').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('tela-login').style.display = 'none';
+                        document.getElementById('app-header').classList.remove('hidden');
+                        document.getElementById('app-main').classList.remove('hidden');
+                        document.getElementById('app-nav').classList.remove('hidden');
+                        document.getElementById('app-nav').classList.add('flex');
+                    }, 500);
+                }
+            } catch (err) { 
+                alert("❌ Falha de conexão."); 
+                btn.disabled = false; 
+            }
+        }
+
+        function sair() { if (confirm("Sair do Portal?")) { window.location.reload(); } }
+
+        function mudarView(idView, btnElement) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => { 
+                b.classList.remove('text-blue-600', 'dark:text-blue-400'); 
+                b.classList.add('text-slate-400'); 
+            });
+            document.getElementById(idView).classList.add('active');
+            btnElement.classList.remove('text-slate-400'); 
+            btnElement.classList.add('text-blue-600', 'dark:text-blue-400');
+        }
+
+        // Ponto
+        async function registrarPonto(tipo) {
+            const msgBox = document.getElementById('msg-ponto');
+            msgBox.classList.remove('hidden', 'bg-red-50', 'text-red-600', 'bg-emerald-50', 'text-emerald-600');
+            msgBox.innerHTML = '<i class="ph ph-spinner animate-spin mr-2"></i> Registrando...';
+            msgBox.classList.add('flex', 'items-center', 'justify-center', 'bg-slate-100', 'text-slate-500');
+            
+            try {
+                const res = await fetch('/api/gestao/ponto', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ funcionario_id: FUNC_ID, tipo: tipo }) });
+                const data = await res.json();
+                msgBox.classList.remove('bg-slate-100', 'text-slate-500');
+                if (res.ok) { 
+                    msgBox.classList.add('bg-emerald-50', 'text-emerald-600'); 
+                    msgBox.innerHTML = `✅ ${data.mensagem}`; 
+                    carregarMeuDesempenho(); 
+                } else { 
+                    msgBox.classList.add('bg-red-50', 'text-red-600'); 
+                    msgBox.innerHTML = `⚠️ ${data.detail}`; 
+                }
+            } catch(e) { msgBox.innerText = "❌ Erro de rede."; }
+        }
+
+        // Desempenho e Horas
+        async function carregarMeuDesempenho() {
+            const mes = document.getElementById('mes-desempenho').value;
+            if (!mes || !FUNC_ID) return;
+            try {
+                const res = await fetch(`/api/gestao/rh/colaborador/${FUNC_ID}/holerite/${mes}`);
+                const data = await res.json();
+                if (res.ok) {
+                    const fR = (v) => `R$ ${parseFloat(v).toFixed(2).replace('.', ',')}`;
+                    document.getElementById('meu-res-comissao').innerText = fR(data.proventos.comissoes);
+                    document.getElementById('meu-res-gorjeta').innerText = fR(data.proventos.gorjetas);
+                    document.getElementById('meu-res-diarias').innerText = fR(data.proventos.diarias);
+                    document.getElementById('meu-res-faltas').innerText = `${data.descontos.horas_quantidade}h`;
+                    
+                    document.getElementById('info-horas-trabalhadas').innerText = `${data.horas_trabalhadas_mes || 0}h`;
+                    document.getElementById('info-dias-trabalhados').innerText = `${data.dias_trabalhados || 0}`;
+
+                    const dossieR = await fetch(`/api/gestao/funcionarios/${FUNC_ID}/dossie`);
+                    const dossie = await dossieR.json();
+                    
+                    if(!dossie.recebe_comissao) document.getElementById('card-comissao').style.display = 'none';
+                    else document.getElementById('card-comissao').style.display = 'block';
+
+                    if(dossie.diaria_motoboy <= 0 && dossie.repasse_por_entrega <= 0) document.getElementById('card-diarias').style.display = 'none';
+                    else document.getElementById('card-diarias').style.display = 'block';
+                }
+            } catch (e) { }
+        }
+
+        // Holerite
+        async function consultarHolerite() {
+            const mes = document.getElementById('mes-holerite').value;
+            const btn = document.getElementById('btn-holerite');
+            if (!mes) return; btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i>';
+            try {
+                const res = await fetch(`/api/gestao/rh/colaborador/${FUNC_ID}/holerite/${mes}`);
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('hol-empresa-nome').innerText = data.empresa.nome || "SUA EMPRESA";
+                    document.getElementById('hol-empresa-cnpj').innerText = `CNPJ: ${data.empresa.cnpj || 'Não cadastrado'} | IE: ${data.empresa.inscricao_estadual || 'ISENTO'}`;
+                    document.getElementById('hol-empresa-end').innerText = data.empresa.endereco || "Endereço não cadastrado";
+                    document.getElementById('hol-mes-ref').innerText = `${mes.split('-').reverse().join('/')}`;
+                    document.getElementById('hol-nome-func').innerText = data.colaborador; document.getElementById('hol-mat-func').innerText = data.matricula || `000${FUNC_ID}`;
+                    const fM = (v) => `R$ ${parseFloat(v).toFixed(2).replace('.', ',')}`;
+                    let html = '';
+                    if (data.proventos.salario_base > 0) html += `<tr><td class="py-3 px-4 border-b border-slate-200">Salário Base</td><td class="py-3 px-4 border-b border-slate-200 text-right font-black text-slate-800">${fM(data.proventos.salario_base)}</td><td class="py-3 px-4 border-b border-slate-200"></td></tr>`;
+                    if (data.descontos.horas_nao_trabalhadas > 0) html += `<tr><td class="py-3 px-4 border-b border-slate-200 text-red-600 font-bold">Faltas (${data.descontos.horas_quantidade}h)</td><td class="py-3 px-4 border-b border-slate-200"></td><td class="py-3 px-4 border-b border-slate-200 text-right font-black text-red-500">${fM(data.descontos.horas_nao_trabalhadas)}</td></tr>`;
+                    document.getElementById('tabela-holerite-body').innerHTML = html || '<tr><td colspan="3" class="py-8 text-center text-slate-400">Nenhum lançamento.</td></tr>';
+                    document.getElementById('hol-total-prov').innerText = fM(data.totais.total_bruto); document.getElementById('hol-total-desc').innerText = fM(data.totais.total_descontos); document.getElementById('hol-liquido').innerText = fM(data.totais.liquido_a_pagar);
+                    document.getElementById('container-holerite-pdf').classList.remove('hidden'); document.getElementById('btn-baixar-pdf').classList.remove('hidden'); document.getElementById('btn-baixar-pdf').classList.add('flex');
+                } else alert("Holerite não encontrado.");
+            } catch (e) { } btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>';
+        }
+
+        function baixarPDFHolerite() {
+            const containerHtml = document.getElementById('container-holerite-pdf');
+            const mesArquivo = document.getElementById('mes-holerite').value;
+            const btnDownload = document.getElementById('btn-baixar-pdf');
+            btnDownload.innerHTML = '<i class="ph ph-spinner animate-spin text-xl mr-2"></i> Gerando Arquivo...';
+            
+            html2canvas(containerHtml, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => { 
+                const imgData = canvas.toDataURL('image/jpeg', 1.0); 
+                const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4'); 
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const margin = 10;
+                const pdfImgWidth = pdfWidth - (margin * 2);
+                const pdfImgHeight = (canvas.height * pdfImgWidth) / canvas.width;
+                pdf.addImage(imgData, 'JPEG', margin, margin, pdfImgWidth, pdfImgHeight); 
+                pdf.save(`Holerite_${mesArquivo}_ArtsBurguer.pdf`); 
+                btnDownload.innerHTML = '<i class="ph-bold ph-download-simple text-xl mr-2"></i> Baixar Documento (PDF)';
+            }); 
+        }
+
+        // Histórico de Férias e Pedidos
+        async function carregarMeuHistoricoPedidos() {
+            try {
+                const res = await fetch('/api/gestao/rh/solicitacoes');
+                const data = await res.json();
+                const meusPedidos = data.filter(d => d.funcionario === FUNC_NOME && d.categoria === "FERIAS_FOLGA");
+                const div = document.getElementById('lista-meu-historico');
+                
+                if(meusPedidos.length === 0) {
+                    div.innerHTML = '<div class="text-center text-xs font-bold text-slate-400 py-4">Nenhum histórico encontrado.</div>';
+                    return;
+                }
+
+                div.innerHTML = meusPedidos.map(p => {
+                    let corBadge = p.status === 'PENDENTE' ? 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400' : (p.status === 'APROVADO' ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400');
+                    return `
+                    <div class="border border-slate-100 dark:border-slate-700 p-4 rounded-xl flex justify-between items-center bg-slate-50 dark:bg-slate-900 transition-colors">
+                        <div>
+                            <p class="font-black text-sm text-slate-800 dark:text-white">${p.tipo_req === 'FOLGA' ? 'Dia de Folga' : 'Férias'}</p>
+                            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-widest">${p.data_inicio.split('-').reverse().join('/')} a ${p.data_fim.split('-').reverse().join('/')}</p>
+                        </div>
+                        <span class="${corBadge} px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 shadow-sm">${p.status}</span>
+                    </div>`;
+                }).join('');
+            } catch(e) {}
+        }
+
+        async function pedirFerias(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]'); btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true;
+            const tipo = document.getElementById('fe-tipo').value;
+            let dIni = tipo === "FOLGA" ? document.getElementById('fe-dia-unico').value : document.getElementById('fe-inicio').value;
+            let dFim = tipo === "FOLGA" ? document.getElementById('fe-dia-unico').value : document.getElementById('fe-fim').value;
+            
+            try {
+                const res = await fetch('/api/gestao/rh/ferias', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({funcionario_id: FUNC_ID, tipo: tipo, data_inicio: dIni, data_fim: dFim}) });
+                if (res.ok) { alert(`✅ Sua solicitação foi enviada!`); document.getElementById('form-ferias').reset(); carregarMeuHistoricoPedidos(); document.getElementById('box-qtd-dias').classList.add('hidden'); }
+            } catch (err) { alert("Sem conexão."); } btn.innerHTML = 'Registrar Pedido'; btn.disabled = false;
+        }
+        
+        async function enviarOcorrencia(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg mr-2"></i>'; btn.disabled = true;
+            const payload = {
+                funcionario_id: FUNC_ID, tipo: document.getElementById('oc-tipo').value, data_ocorrencia: document.getElementById('oc-data').value, 
+                motivo: document.getElementById('oc-motivo').value, horas_abonadas: 0, horas_descontadas: 0, anexo_url: document.getElementById('oc-anexo').value
+            };
+            try {
+                const res = await fetch('/api/gestao/rh/ocorrencias', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                if (res.ok) { alert("✅ Atestado enviado para o RH com sucesso!"); document.getElementById('form-ocorrencia').reset(); }
+            } catch (err) { alert("Sem conexão."); } btn.innerHTML = 'Enviar para o RH'; btn.disabled = false;
+        }
+
+        // --- MEU PERFIL (EDIÇÃO) ---
+        async function carregarDadosDoMeuPerfil() {
+            try {
+                const r = await fetch(`/api/gestao/funcionarios/${FUNC_ID}/dossie`);
+                const dados = await r.json();
+                
+                document.getElementById('perfil-nome').value = FUNC_NOME;
+                document.getElementById('perfil-tel').value = dados.telefone || ''; 
+                document.getElementById('perfil-email').value = dados.email || '';
+                document.getElementById('perfil-cep').value = dados.cep || '';
+                document.getElementById('perfil-end').value = dados.endereco_completo || '';
+                document.getElementById('perfil-filhos').value = dados.qtd_filhos_menores || 0;
+                
+                if(dados.foto_3x4) {
+                    document.getElementById('perfil-foto-preview').src = dados.foto_3x4;
+                    document.getElementById('perfil-foto-base64').value = dados.foto_3x4;
+                }
+            } catch(e) {}
+        }
+
+        function lerFotoPerfil(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    document.getElementById('perfil-foto-base64').value = reader.result;
+                    document.getElementById('perfil-foto-preview').src = reader.result;
+                    document.getElementById('header-foto').src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function buscarCepPerfil(cepVal) {
+            const cep = cepVal.replace(/\D/g, '');
+            if(cep.length === 8) {
+                const end = document.getElementById('perfil-end'); end.value = "Buscando...";
+                try {
+                    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const data = await res.json();
+                    end.value = data.erro ? "" : `${data.logradouro}, Bairro: ${data.bairro}, ${data.localidade} - ${data.uf}`;
+                } catch(e) { end.value = ""; }
+            }
+        }
+
+        async function atualizarMeuPerfil(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]'); btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
+            
+            const payload = {
+                nome: document.getElementById('perfil-nome').value,
+                telefone: document.getElementById('perfil-tel').value,
+                email: document.getElementById('perfil-email').value,
+                cep: document.getElementById('perfil-cep').value,
+                endereco_completo: document.getElementById('perfil-end').value,
+                qtd_filhos_menores: parseInt(document.getElementById('perfil-filhos').value) || 0,
+                foto_3x4: document.getElementById('perfil-foto-base64').value
+            };
+            
+            try {
+                await fetch(`/api/colaborador/${FUNC_ID}/perfil`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                alert("✅ Seu perfil foi atualizado com sucesso!");
+                FUNC_NOME = payload.nome; document.getElementById('user-nome').innerText = FUNC_NOME.split(' ')[0];
+            } catch(err) { alert("Erro ao salvar."); }
+            btn.innerHTML = 'Salvar Alterações';
+        }
+    </script>
+</body>
+</html>
