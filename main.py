@@ -2123,20 +2123,42 @@ def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Sessi
 @app.get("/api/gestao/clientes/{cliente_id}/pedidos")
 def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
     try:
-        cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
-        if not cliente: return []
+        # Busca o cliente para pegar o telefone e o ID
+        cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
+        if not cliente: 
+            return []
         
-        # Busca os últimos 10 pedidos do cliente pelo telefone
-        pedidos = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == cliente.telefone).order_by(PedidoModel.id.desc()).limit(10).all()
+        # Tenta buscar os pedidos tanto por cliente_id quanto pelo telefone (garantia dupla)
+        pedidos = db.query(PedidoModel).filter(
+            (PedidoModel.cliente_id == cliente_id) | 
+            (PedidoModel.telefone_cliente == cliente.telefone)
+        ).order_by(PedidoModel.id.desc()).limit(10).all()
         
-        return [{
-            "id": p.id,
-            "data": p.data_pedido.strftime("%d/%m/%Y %H:%M") if p.data_pedido else "N/A",
-            "valor": p.valor_total,
-            "status": p.status,
-            "pagamento": p.forma_pagamento
-        } for p in pedidos]
+        historico = []
+        for p in pedidos:
+            # Formata a data de forma segura
+            data_str = "N/A"
+            dt_pedido = getattr(p, 'data_pedido', getattr(p, 'data_hora', None))
+            if dt_pedido:
+                try:
+                    data_str = dt_pedido.strftime("%d/%m/%Y %H:%M") if hasattr(dt_pedido, 'strftime') else str(dt_pedido)[:16]
+                except:
+                    data_str = str(dt_pedido)
+
+            status_formatado = str(getattr(p, 'status', 'RECEBIDO')).split('.')[-1].upper()
+            total_valor = getattr(p, 'total_pago', getattr(p, 'valor_total', 0.0))
+            
+            historico.append({
+                "id": p.id,
+                "data": data_str,
+                "valor": float(total_valor),
+                "status": status_formatado,
+                "pagamento": str(getattr(p, 'forma_pagamento', 'PIX')).replace('_', ' ').upper()
+            })
+            
+        return historico
     except Exception as e:
+        print(f"❌ Erro ao buscar pedidos do cliente {cliente_id}: {e}", flush=True)
         return []
 
 @app.put("/api/gestao/clientes/{cliente_id}/editar")
