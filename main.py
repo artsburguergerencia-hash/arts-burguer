@@ -1981,7 +1981,57 @@ def pegar_modelo_banco(tabela: str):
     return None
 
 # ROTA PARA EDITAR (QUALQUER COISA)
+# ROTA PARA EDITAR (QUALQUER COISA, INCLUINDO CLIENTES DE FORMA SEGURA)
 @app.put("/api/gestao/{tabela}/{item_id}")
+def atualizar_item_generico(tabela: str, item_id: int, dados: dict, db: Session = Depends(get_db)):
+    try:
+        # Se for cliente, usa a classe correta 'Cliente' do database.py
+        if tabela == "clientes":
+            cliente = db.query(Cliente).filter(Cliente.id == item_id).first()
+            if not cliente: 
+                raise HTTPException(status_code=404, detail="Cliente não encontrado na base.")
+            
+            if "nome" in dados and dados["nome"] is not None: 
+                cliente.nome = str(dados["nome"])
+            if "telefone" in dados and dados["telefone"] is not None: 
+                cliente.telefone = str(dados["telefone"])
+            if "cpf" in dados: 
+                novo_cpf = str(dados["cpf"]).strip()
+                if novo_cpf != "": 
+                    cliente.cpf = novo_cpf
+            if "cep" in dados: 
+                cliente.cep = str(dados["cep"]) if dados["cep"] else ""
+            if "endereco" in dados: 
+                cliente.endereco = str(dados["endereco"]) if dados["endereco"] else ""
+            if "pontos" in dados: 
+                cliente.pontos = int(dados["pontos"]) if dados["pontos"] is not None else 0
+            if "cashback" in dados: 
+                cliente.cashback = float(dados["cashback"]) if dados["cashback"] is not None else 0.0
+            if "bloqueado" in dados: 
+                cliente.bloqueado = bool(dados["bloqueado"])
+                
+            db.commit()
+            db.refresh(cliente)
+            return {"status": "sucesso", "mensagem": "Dossiê do cliente atualizado com sucesso!"}
+
+        # Para as demais tabelas (insumos, fornecedores, etc.)
+        modelo = pegar_modelo_banco(tabela)
+        if not modelo: 
+            raise HTTPException(status_code=404, detail="Tabela não encontrada no Motor.")
+        
+        item = db.query(modelo).filter(modelo.id == item_id).first()
+        if not item: 
+            raise HTTPException(status_code=404, detail="Item não encontrado no banco.")
+        
+        for chave, valor in dados.items():
+            if hasattr(item, chave) and chave != "id":
+                setattr(item, chave, valor)
+                
+        db.commit()
+        return {"status": "ok", "mensagem": "Atualizado com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 def atualizar_item_generico(tabela: str, item_id: int, dados: dict, db: Session = Depends(get_db)):
     try:
         modelo = pegar_modelo_banco(tabela)
