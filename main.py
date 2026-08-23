@@ -2901,7 +2901,7 @@ class TaxaEntregaSchema(BaseModel):
 @app.get("/api/gestao/taxas")
 def listar_taxas(db: Session = Depends(get_db)):
     try:
-        # 🚨 MÁGICA: Força a criação da tabela no banco (Postgres/Render) caso não exista!
+        # 1. Garante que a tabela existe no banco
         TaxaEntregaModel.__table__.create(engine, checkfirst=True)
         return db.query(TaxaEntregaModel).all()
     except Exception as e:
@@ -2910,10 +2910,20 @@ def listar_taxas(db: Session = Depends(get_db)):
 
 @app.post("/api/gestao/taxas")
 def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
+    from fastapi import HTTPException
+    from sqlalchemy import text
     try:
-        # Garante que a tabela existe antes de inserir
+        # 1. Garante que a tabela existe na nuvem
         TaxaEntregaModel.__table__.create(engine, checkfirst=True)
         
+        # 2. Garante que a coluna "taxa" existe (se a tabela for velha)
+        try:
+            db.execute(text("ALTER TABLE taxas_entrega ADD COLUMN taxa FLOAT DEFAULT 0.0;"))
+            db.commit()
+        except:
+            db.rollback() # Ignora se a coluna já existir
+
+        # 3. Salva a taxa
         tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.bairro == dados.bairro).first()
         if tx:
             tx.taxa = dados.taxa
@@ -2922,12 +2932,15 @@ def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
             db.add(novo)
         db.commit()
         return {"status": "sucesso"}
+    
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=f"Erro interno no Banco de Dados: {str(e)}")
+        # Se algo der errado, envia o erro EXATO para a tela do Gestão
+        raise HTTPException(status_code=400, detail=f"Erro no banco de dados: {str(e)}")
 
 @app.delete("/api/gestao/taxas/{id}")
 def deletar_taxa(id: int, db: Session = Depends(get_db)):
+    from fastapi import HTTPException
     try:
         tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.id == id).first()
         if tx:
@@ -2936,7 +2949,7 @@ def deletar_taxa(id: int, db: Session = Depends(get_db)):
         return {"status": "sucesso"}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=f"Erro ao deletar taxa: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erro ao deletar: {str(e)}")
 
 # ==========================================
 # MÓDULO DE INTEGRAÇÕES (WEBHOOK IFOOD / 99FOOD)
