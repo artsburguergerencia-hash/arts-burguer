@@ -2900,26 +2900,43 @@ class TaxaEntregaSchema(BaseModel):
 
 @app.get("/api/gestao/taxas")
 def listar_taxas(db: Session = Depends(get_db)):
-    return db.query(TaxaEntregaModel).all()
+    try:
+        # 🚨 MÁGICA: Força a criação da tabela no banco (Postgres/Render) caso não exista!
+        TaxaEntregaModel.__table__.create(engine, checkfirst=True)
+        return db.query(TaxaEntregaModel).all()
+    except Exception as e:
+        print(f"Erro ao listar taxas: {e}")
+        return []
 
 @app.post("/api/gestao/taxas")
 def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
-    tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.bairro == dados.bairro).first()
-    if tx:
-        tx.taxa = dados.taxa
-    else:
-        novo = TaxaEntregaModel(bairro=dados.bairro, taxa=dados.taxa)
-        db.add(novo)
-    db.commit()
-    return {"status": "sucesso"}
+    try:
+        # Garante que a tabela existe antes de inserir
+        TaxaEntregaModel.__table__.create(engine, checkfirst=True)
+        
+        tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.bairro == dados.bairro).first()
+        if tx:
+            tx.taxa = dados.taxa
+        else:
+            novo = TaxaEntregaModel(bairro=dados.bairro, taxa=dados.taxa)
+            db.add(novo)
+        db.commit()
+        return {"status": "sucesso"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Erro interno no Banco de Dados: {str(e)}")
 
 @app.delete("/api/gestao/taxas/{id}")
 def deletar_taxa(id: int, db: Session = Depends(get_db)):
-    tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.id == id).first()
-    if tx:
-        db.delete(tx)
-        db.commit()
-    return {"status": "sucesso"}
+    try:
+        tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.id == id).first()
+        if tx:
+            db.delete(tx)
+            db.commit()
+        return {"status": "sucesso"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Erro ao deletar taxa: {str(e)}")
 
 # ==========================================
 # MÓDULO DE INTEGRAÇÕES (WEBHOOK IFOOD / 99FOOD)
