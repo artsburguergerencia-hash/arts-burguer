@@ -2887,23 +2887,18 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
 # ==========================================
 # MÓDULO DE LOGÍSTICA (TAXAS DE ENTREGA)
 # ==========================================
-class TaxaEntregaModel(Base):
-    __tablename__ = "taxas_entrega"
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
-    bairro = Column(String, unique=True, index=True)
-    taxa = Column(Float, default=0.0)
-
 class TaxaEntregaSchema(BaseModel):
     bairro: str
     taxa: float
 
 @app.get("/api/gestao/taxas")
 def listar_taxas(db: Session = Depends(get_db)):
+    # 🚨 Importa a tabela original do database.py para evitar conflitos
+    from database import TaxaEntregaModel 
     try:
-        # 1. Garante que a tabela existe no banco
-        TaxaEntregaModel.__table__.create(engine, checkfirst=True)
-        return db.query(TaxaEntregaModel).all()
+        # Força a criação na nuvem, caso falte
+        TaxaEntregaModel.__table__.create(db.get_bind(), checkfirst=True)
+        return db.query(TaxaEntregaModel).order_by(TaxaEntregaModel.bairro.asc()).all()
     except Exception as e:
         print(f"Erro ao listar taxas: {e}")
         return []
@@ -2911,19 +2906,10 @@ def listar_taxas(db: Session = Depends(get_db)):
 @app.post("/api/gestao/taxas")
 def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
     from fastapi import HTTPException
-    from sqlalchemy import text
+    from database import TaxaEntregaModel
     try:
-        # 1. Garante que a tabela existe na nuvem
-        TaxaEntregaModel.__table__.create(engine, checkfirst=True)
+        TaxaEntregaModel.__table__.create(db.get_bind(), checkfirst=True)
         
-        # 2. Garante que a coluna "taxa" existe (se a tabela for velha)
-        try:
-            db.execute(text("ALTER TABLE taxas_entrega ADD COLUMN taxa FLOAT DEFAULT 0.0;"))
-            db.commit()
-        except:
-            db.rollback() # Ignora se a coluna já existir
-
-        # 3. Salva a taxa
         tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.bairro == dados.bairro).first()
         if tx:
             tx.taxa = dados.taxa
@@ -2932,15 +2918,14 @@ def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
             db.add(novo)
         db.commit()
         return {"status": "sucesso"}
-    
     except Exception as e:
         db.rollback()
-        # Se algo der errado, envia o erro EXATO para a tela do Gestão
-        raise HTTPException(status_code=400, detail=f"Erro no banco de dados: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erro no banco DB: {str(e)}")
 
 @app.delete("/api/gestao/taxas/{id}")
 def deletar_taxa(id: int, db: Session = Depends(get_db)):
     from fastapi import HTTPException
+    from database import TaxaEntregaModel
     try:
         tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.id == id).first()
         if tx:
@@ -2949,7 +2934,7 @@ def deletar_taxa(id: int, db: Session = Depends(get_db)):
         return {"status": "sucesso"}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=f"Erro ao deletar: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erro DB: {str(e)}")
 
 # ==========================================
 # MÓDULO DE INTEGRAÇÕES (WEBHOOK IFOOD / 99FOOD)
