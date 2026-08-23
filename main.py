@@ -2891,19 +2891,17 @@ class TaxaEntregaSchema(BaseModel):
     bairro: str
     taxa: float
 
-@app.get("/api/gestao/taxas")
+@app.get("/api/taxas/listar")
 def listar_taxas(db: Session = Depends(get_db)):
-    # 🚨 Importa a tabela original do database.py para evitar conflitos
     from database import TaxaEntregaModel 
     try:
-        # Força a criação na nuvem, caso falte
         TaxaEntregaModel.__table__.create(db.get_bind(), checkfirst=True)
         return db.query(TaxaEntregaModel).order_by(TaxaEntregaModel.bairro.asc()).all()
     except Exception as e:
         print(f"Erro ao listar taxas: {e}")
         return []
 
-@app.post("/api/gestao/taxas")
+@app.post("/api/taxas/salvar")
 def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
     from fastapi import HTTPException
     from database import TaxaEntregaModel
@@ -2922,7 +2920,7 @@ def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=400, detail=f"Erro no banco DB: {str(e)}")
 
-@app.delete("/api/gestao/taxas/{id}")
+@app.delete("/api/taxas/{id}")
 def deletar_taxa(id: int, db: Session = Depends(get_db)):
     from fastapi import HTTPException
     from database import TaxaEntregaModel
