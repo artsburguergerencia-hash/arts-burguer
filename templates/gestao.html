@@ -2629,9 +2629,17 @@ function gerarStringDeHorarios() {
 
         async function excluirFornecedor(id) {
             if(confirm('Tem certeza? Apagar este fornecedor?')) {
-                await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
-                alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
-                carregarFornecedores();
+                try {
+                    const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
+                    if(res.ok) {
+                        alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
+                        carregarFornecedores();
+                    } else {
+                        alertaPremium("Erro ao tentar excluir o fornecedor no banco de dados.", "Falha", "erro");
+                    }
+                } catch(e) {
+                    alertaPremium("Erro de conexão.", "Erro", "erro");
+                }
             }
         }
 
