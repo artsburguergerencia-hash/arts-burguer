@@ -2391,10 +2391,11 @@ def consertar_banco(db: Session = Depends(get_db)):
 # ==========================================
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 1)
 # ==========================================
+from fastapi import Body
 
 # 1. Atualizar Fornecedor
 @app.put("/api/fornecedores/{fornecedor_id}")
-def atualizar_fornecedor(fornecedor_id: int, dados: dict, db: Session = Depends(get_db)):
+def atualizar_fornecedor(fornecedor_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
         from financeiro import FornecedorModel 
         fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
@@ -2415,24 +2416,29 @@ def atualizar_fornecedor(fornecedor_id: int, dados: dict, db: Session = Depends(
 @app.delete("/api/fornecedores/{fornecedor_id}")
 def excluir_fornecedor(fornecedor_id: int, db: Session = Depends(get_db)):
     try:
-        from financeiro import FornecedorModel
+        from financeiro import FornecedorModel, ContaPagarModel
         fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
         if not fornecedor:
             raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
             
-        db.delete(fornecedor)
+        # 1. Confirma manualmente se existem contas para evitar falsos positivos
+        contas = db.query(ContaPagarModel).filter(ContaPagarModel.fornecedor_id == fornecedor_id).count()
+        if contas > 0:
+            raise HTTPException(status_code=400, detail=f"Existem {contas} conta(s) vinculada(s) a este fornecedor.")
+            
+        # 2. Exclusão bruta direta no banco para furar o bloqueio ORM
+        db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).delete()
         db.commit()
         return {"status": "sucesso"}
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
-        # 🚨 Identifica se o erro é por causa de contas vinculadas
-        if "IntegrityError" in str(type(e)) or "Foreign Key" in str(e):
-            raise HTTPException(status_code=400, detail="Não é possível excluir: existem contas a pagar vinculadas a este fornecedor.")
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
 # 3. Atualizar Conta a Pagar
 @app.put("/api/contas_pagar/{conta_id}")
-def atualizar_conta(conta_id: int, dados: dict, db: Session = Depends(get_db)):
+def atualizar_conta(conta_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
         from financeiro import ContaPagarModel 
         conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
