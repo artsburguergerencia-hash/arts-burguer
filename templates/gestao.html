@@ -2623,8 +2623,11 @@ function gerarStringDeHorarios() {
                     alertaPremium("Fornecedor atualizado!", "Sucesso", "sucesso");
                     document.getElementById('modal-editar-fornecedor').classList.replace('flex', 'hidden');
                     carregarFornecedores();
-                } else { alertaPremium("Erro ao salvar.", "Falha", "erro"); }
-            } catch(err) { alertaPremium("Erro de comunicação.", "Falha", "erro"); }
+                } else { 
+                    const err = await res.json();
+                    alertaPremium(err.detail || "Erro ao salvar.", "Falha", "erro"); 
+                }
+            } catch(err) { alertaPremium("Erro de conexão com o servidor.", "Falha", "erro"); }
             btn.innerHTML = "Salvar Alterações";
         }
 
@@ -2636,10 +2639,11 @@ function gerarStringDeHorarios() {
                         alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
                         carregarFornecedores();
                     } else {
-                        alertaPremium("Erro ao tentar excluir o fornecedor no banco de dados.", "Falha", "erro");
+                        const err = await res.json();
+                        alertaPremium(err.detail || "Falha ao tentar excluir.", "Aviso", "erro");
                     }
                 } catch(e) {
-                    alertaPremium("Erro de conexão.", "Erro", "erro");
+                    alertaPremium("Erro de rede ao tentar excluir.", "Erro", "erro");
                 }
             }
         }
