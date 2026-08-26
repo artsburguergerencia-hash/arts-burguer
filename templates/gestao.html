@@ -1114,7 +1114,9 @@
             <p class="text-slate-500 text-sm font-medium mb-6 leading-relaxed" id="confirm-mensagem">Deseja apagar este item?</p>
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="document.getElementById('confirm-customizado').classList.replace('flex','hidden')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-black py-4 rounded-xl transition-colors uppercase tracking-widest text-xs">Cancelar</button>
-                <button id="btn-confirmar-acao" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs">Apagar</button>
+                
+                <!-- 🚨 O comando ONCLICK foi adicionado neste botão abaixo 🚨 -->
+                <button id="btn-confirmar-acao" onclick="executarConfirmacao()" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs">Apagar</button>
             </div>
         </div>
     </div>
@@ -1290,22 +1292,24 @@
         const nomesDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
         // MOTOR DE CONFIRMAÇÃO PREMIUM
+        // Variável na memória para guardar a ordem do clique
+        let acaoConfirmacaoAtual = null;
+
+        // MOTOR DE CONFIRMAÇÃO PREMIUM (BLINDADO)
         function confirmarExclusaoPremium(mensagem, callback) {
             document.getElementById('confirm-mensagem').innerText = mensagem;
-            const btnConfirmar = document.getElementById('btn-confirmar-acao');
-            
-            // Remove ações antigas do botão
-            const novoBtn = btnConfirmar.cloneNode(true);
-            btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
-            
-            novoBtn.addEventListener('click', () => {
-                document.getElementById('confirm-customizado').classList.replace('flex','hidden');
-                callback();
-            });
-            
+            acaoConfirmacaoAtual = callback; // Guarda o comando de excluir na memória
             document.getElementById('confirm-customizado').classList.replace('hidden', 'flex');
         }
-        
+
+        // Essa função é disparada pelo clique do botão vermelho
+        function executarConfirmacao() {
+            document.getElementById('confirm-customizado').classList.replace('flex', 'hidden');
+            if (typeof acaoConfirmacaoAtual === 'function') {
+                acaoConfirmacaoAtual(); // Roda a exclusão no banco
+                acaoConfirmacaoAtual = null; // Limpa a memória
+            }
+        }        
         // 🚨 NOVO MOTOR DE HORÁRIOS DA LOJA 🚨
 const diasSemanaSetup = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
