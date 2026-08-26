@@ -2584,17 +2584,18 @@ function gerarStringDeHorarios() {
                 if(res.ok) {
                     alertaPremium("Fornecedor cadastrado com sucesso!", "Parceiro Salvo", "sucesso");
                     document.getElementById('form-fornecedor').reset(); 
-                    carregarFornecedores(); 
+                    await carregarFornecedores(); 
                 } else {
                     const err = await res.json();
-                    alertaPremium("O banco de dados recusou o cadastro: " + (err.detail || "Erro interno."), "Erro", "erro");
+                    alertaPremium("O banco recusou: " + (err.detail || "Erro interno."), "Erro", "erro");
                 }
             } catch(e) {
                 alertaPremium("Falha na rede ou servidor offline.", "Erro de Conexão", "erro");
+            } finally {
+                // 🚨 O FINALLY garante que o botão sempre vai destravar no final!
+                btn.innerHTML = txtOriginal;
+                btn.disabled = false;
             }
-
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
         }
 
         // ==============================================================
