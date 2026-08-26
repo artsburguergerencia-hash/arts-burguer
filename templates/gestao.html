@@ -1298,7 +1298,16 @@
         // MOTOR DE CONFIRMAÇÃO PREMIUM (BLINDADO)
         function confirmarExclusaoPremium(mensagem, callback) {
             document.getElementById('confirm-mensagem').innerText = mensagem;
-            acaoConfirmacaoAtual = callback; // Guarda o comando de excluir na memória
+            const btnConfirmar = document.getElementById('btn-confirmar-acao');
+            
+            // Injeção direta da ação no botão: Impossível o navegador bloquear!
+            btnConfirmar.onclick = function() {
+                // 1. Esconde o modal
+                document.getElementById('confirm-customizado').classList.replace('flex', 'hidden');
+                // 2. Roda a função de exclusão
+                callback();
+            };
+            
             document.getElementById('confirm-customizado').classList.replace('hidden', 'flex');
         }
 
@@ -2779,13 +2788,21 @@ function gerarStringDeHorarios() {
         }
 
         async function excluirConta(id) {
-            if(confirm('Tem certeza? Apagar este lançamento do financeiro?')) {
-                await fetch(`/api/contas_pagar/${id}`, { method: 'DELETE' });
-                alertaPremium("Conta apagada com sucesso.", "Excluída", "sucesso");
-                carregarFinanceiro();
-            }
+            confirmarExclusaoPremium("Apagar este lançamento do financeiro?", async () => {
+                try {
+                    const res = await fetch(`/api/contas_pagar/${id}`, { method: 'DELETE' });
+                    if(res.ok) {
+                        alertaPremium("Conta apagada com sucesso.", "Excluída", "sucesso");
+                        carregarFinanceiro();
+                    } else {
+                        const err = await res.json();
+                        alertaPremium(err.detail || "Falha ao tentar excluir.", "Aviso", "erro");
+                    }
+                } catch(e) {
+                    alertaPremium("Erro de rede ao tentar excluir.", "Erro", "erro");
+                }
+            });
         }
-
         async function carregarClientesPainel() { 
             try {
                 const res = await fetch('/api/gestao/clientes'); 
