@@ -2650,7 +2650,7 @@ function gerarStringDeHorarios() {
         }
 
         async function excluirFornecedor(id) {
-            if(confirm('Tem certeza? Apagar este fornecedor?')) {
+            confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
                 try {
                     const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
                     if(res.ok) {
@@ -2663,7 +2663,7 @@ function gerarStringDeHorarios() {
                 } catch(e) {
                     alertaPremium("Erro de rede ao tentar excluir.", "Erro", "erro");
                 }
-            }
+            });
         }
 
         async function carregarFornecedoresParaSelect() { 
