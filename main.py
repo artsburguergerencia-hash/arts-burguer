@@ -1455,7 +1455,8 @@ def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
     try:
         fornecedor_id = conta.fornecedor_id
         if not fornecedor_id:
-            fornecedor = db.query(FornecedorModel).first()
+            # 🚨 CORREÇÃO: Busca especificamente a pasta "Diversos", e não o primeiro da lista
+            fornecedor = db.query(FornecedorModel).filter(FornecedorModel.nome_fantasia == "Diversos").first()
             if not fornecedor:
                 fornecedor = FornecedorModel(nome_fantasia="Diversos", categoria="Geral")
                 db.add(fornecedor)
