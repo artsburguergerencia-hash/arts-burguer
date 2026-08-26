@@ -1288,6 +1288,97 @@
         const diasSemana = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
         const nomesDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
+        // 🚨 NOVO MOTOR DE HORÁRIOS DA LOJA 🚨
+const diasSemanaSetup = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+function renderizarHorariosSetup() {
+    const container = document.getElementById('container-horarios-loja');
+    if(!container) return;
+    container.innerHTML = diasSemanaSetup.map(dia => `
+        <div class="bg-white border border-slate-200 p-3 rounded-xl shadow-sm flex flex-col items-center transition-colors">
+            <span class="font-black text-[10px] uppercase tracking-widest text-slate-600 mb-2">${dia}</span>
+            <label class="relative inline-flex items-center cursor-pointer mb-3">
+                <input type="checkbox" id="setup-aberto-${dia}" class="sr-only peer" onchange="toggleDiaAberto('${dia}')">
+                <div class="w-9 h-5 bg-red-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 shadow-sm"></div>
+            </label>
+            <div class="flex flex-col space-y-1 w-full">
+                <input type="time" id="setup-ini-${dia}" class="w-full border border-slate-200 rounded-lg px-1 py-1.5 text-xs text-center font-bold outline-none focus:border-brand-500 bg-slate-50 text-slate-700 disabled:opacity-40 disabled:bg-slate-100 transition-all" disabled>
+                <span class="text-slate-400 text-[9px] font-bold uppercase text-center">até</span>
+                <input type="time" id="setup-fim-${dia}" class="w-full border border-slate-200 rounded-lg px-1 py-1.5 text-xs text-center font-bold outline-none focus:border-brand-500 bg-slate-50 text-slate-700 disabled:opacity-40 disabled:bg-slate-100 transition-all" disabled>
+            </div>
+        </div>
+    `).join('');
+}
+
+function toggleDiaAberto(dia) {
+    const isAberto = document.getElementById(`setup-aberto-${dia}`).checked;
+    document.getElementById(`setup-ini-${dia}`).disabled = !isAberto;
+    document.getElementById(`setup-fim-${dia}`).disabled = !isAberto;
+    if(!isAberto) {
+        document.getElementById(`setup-ini-${dia}`).value = '';
+        document.getElementById(`setup-fim-${dia}`).value = '';
+    } else {
+        if(!document.getElementById(`setup-ini-${dia}`).value) document.getElementById(`setup-ini-${dia}`).value = '18:00';
+        if(!document.getElementById(`setup-fim-${dia}`).value) document.getElementById(`setup-fim-${dia}`).value = '23:59';
+    }
+}
+
+function popularHorariosDaString(horarioStr) {
+    renderizarHorariosSetup(); 
+    if (!horarioStr) horarioStr = ""; 
+    const partes = horarioStr.split(',');
+    
+    diasSemanaSetup.forEach(dia => {
+        const parteDia = partes.find(p => p.toLowerCase().includes(dia.toLowerCase()) || 
+                                         (dia === 'Terça' && p.toLowerCase().includes('terca')) ||
+                                         (dia === 'Sábado' && p.toLowerCase().includes('sabado')));
+        
+        const checkAberto = document.getElementById(`setup-aberto-${dia}`);
+        const inputIni = document.getElementById(`setup-ini-${dia}`);
+        const inputFim = document.getElementById(`setup-fim-${dia}`);
+        
+        if (parteDia) {
+            if (parteDia.toLowerCase().includes('fechado')) {
+                checkAberto.checked = false;
+            } else {
+                checkAberto.checked = true;
+                const times = parteDia.match(/(\d{1,2})[h:]?(\d{2})?/g);
+                if (times && times.length >= 2) {
+                    let formatTime = (tStr) => {
+                        let clean = tStr.replace('h', ':');
+                        if(!clean.includes(':')) clean += ':00';
+                        let [h, m] = clean.split(':');
+                        return `${h.padStart(2, '0')}:${(m || '00').padStart(2, '0')}`;
+                    };
+                    inputIni.value = formatTime(times[0]);
+                    inputFim.value = formatTime(times[1]);
+                } else {
+                    inputIni.value = '18:00';
+                    inputFim.value = '23:59';
+                }
+            }
+        } else {
+            checkAberto.checked = false; // Se n achar na string antiga, considera fechado
+        }
+        toggleDiaAberto(dia);
+    });
+}
+
+function gerarStringDeHorarios() {
+    let configDias = [];
+    diasSemanaSetup.forEach(dia => {
+        const isAberto = document.getElementById(`setup-aberto-${dia}`).checked;
+        if (isAberto) {
+            const ini = document.getElementById(`setup-ini-${dia}`).value || '18:00';
+            const fim = document.getElementById(`setup-fim-${dia}`).value || '23:59';
+            configDias.push(`${dia}: ${ini} às ${fim}`);
+        } else {
+            configDias.push(`${dia}: Fechado`);
+        }
+    });
+    return configDias.join(', ');
+}
+        
         document.addEventListener('DOMContentLoaded', async () => { 
             // CARREGA SEU NOME E AVATAR NO CANTO ESQUERDO
             const nomeUsuario = localStorage.getItem('funcionario_nome') || "Admin";
@@ -1563,7 +1654,7 @@
                 document.getElementById('conf-ie').value = conf.inscricao_estadual || ""; 
                 document.getElementById('conf-endereco').value = conf.endereco || "";
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
-                document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
+                popularHorariosDaString(conf.horario_funcionamento); 
                 
                 if(conf.logo_url) {
                     document.getElementById('conf-logo-base64').value = conf.logo_url;
@@ -1622,7 +1713,7 @@
                 nome_empresa: document.getElementById('conf-nome').value, 
                 cnpj: document.getElementById('conf-cnpj').value, 
                 inscricao_estadual: document.getElementById('conf-ie').value,
-                horario_funcionamento: document.getElementById('conf-horario').value,
+                horario_funcionamento: gerarStringDeHorarios(),
                 endereco: document.getElementById('conf-endereco').value, 
                 telefone: document.getElementById('conf-telefone').value, 
                 logo_url: document.getElementById('conf-logo-base64').value, 
