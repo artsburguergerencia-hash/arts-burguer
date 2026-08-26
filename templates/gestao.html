@@ -1104,7 +1104,7 @@
         </div>
     </div>
     
-    <!-- CONFIRMAÇÃO CUSTOMIZADA (Substitui o do Chrome) -->
+    <!-- CONFIRMAÇÃO CUSTOMIZADA (100% Blindada) -->
     <div id="confirm-customizado" class="fixed inset-0 bg-slate-900/80 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
             <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
@@ -1115,8 +1115,8 @@
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="document.getElementById('confirm-customizado').classList.replace('flex','hidden')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-black py-4 rounded-xl transition-colors uppercase tracking-widest text-xs">Cancelar</button>
                 
-                <!-- 🚨 O comando ONCLICK foi adicionado neste botão abaixo 🚨 -->
-                <button id="btn-confirmar-acao" onclick="executarConfirmacao()" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs">Apagar</button>
+                <!-- O botão agora está limpo! O JavaScript vai controlar ele sozinho -->
+                <button id="btn-confirmar-acao" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs">Apagar</button>
             </div>
         </div>
     </div>
