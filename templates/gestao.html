@@ -563,8 +563,16 @@
                             <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Inscrição Estadual</label><input type="text" id="conf-ie" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
                             <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Telefone / WhatsApp</label><input type="text" id="conf-telefone" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
                             
-                            <div class="lg:col-span-1"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Horário de Func.</label><input type="text" id="conf-horario" placeholder="Ex: 18h às 23h" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
-                            <div class="lg:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label><input type="text" id="conf-endereco" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
+                            <!-- Endereço agora ocupa a linha inteira (Fica mais bonito) -->
+<div class="lg:col-span-3"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label><input type="text" id="conf-endereco" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
+
+<!-- NOVO BLOCO DE HORÁRIOS VISUAIS -->
+<div class="lg:col-span-3 border-t border-slate-100 pt-6 mt-2">
+    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3"><i class="ph-fill ph-clock mr-1 text-brand-500"></i> Horários de Funcionamento</label>
+    <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3" id="container-horarios-loja">
+        <!-- O JavaScript vai injetar os 7 dias da semana automaticamente aqui -->
+    </div>
+</div>
                         </div>
 
                         <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 border-t border-slate-100 pt-10">
