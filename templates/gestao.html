@@ -563,17 +563,9 @@
                             <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Inscrição Estadual</label><input type="text" id="conf-ie" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
                             <div><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Telefone / WhatsApp</label><input type="text" id="conf-telefone" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
                             
-                            <!-- Endereço agora ocupa a linha inteira (Fica mais bonito) -->
-<div class="lg:col-span-3"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label><input type="text" id="conf-endereco" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
-
-<!-- NOVO BLOCO DE HORÁRIOS VISUAIS -->
-<div class="lg:col-span-3 border-t border-slate-100 pt-6 mt-2">
-    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3"><i class="ph-fill ph-clock mr-1 text-brand-500"></i> Horários de Funcionamento</label>
-    <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3" id="container-horarios-loja">
-        <!-- O JavaScript vai injetar os 7 dias da semana automaticamente aqui -->
-    </div>
-</div>
-</div>
+                            <div class="lg:col-span-1"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Horário de Func.</label><input type="text" id="conf-horario" placeholder="Ex: 18h às 23h" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
+                            <div class="lg:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label><input type="text" id="conf-endereco" class="w-full px-4 py-3.5 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 shadow-inner"></div>
+                        </div>
 
                         <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 border-t border-slate-100 pt-10">
                             <div class="bg-blue-50/50 border border-blue-100 p-8 rounded-[1.5rem]">
@@ -1104,18 +1096,17 @@
         </div>
     </div>
     
-    <!-- CONFIRMAÇÃO CUSTOMIZADA (Substitui o do Chrome) -->
-    <div id="confirm-customizado" class="fixed inset-0 bg-slate-900/80 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+    <!-- ALERTA CUSTOMIZADO -->
+    <div id="alerta-customizado" class="fixed inset-0 bg-slate-900/80 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
-            <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
-                <i class="ph-fill ph-warning-circle text-4xl"></i>
+            <div id="alerta-icone-bg" class="w-20 h-20 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
+                <i id="alerta-icone" class="ph-fill ph-bell-ringing text-4xl"></i>
             </div>
-            <h3 class="text-xl font-black text-slate-800 mb-2 tracking-tight">Tem certeza?</h3>
-            <p class="text-slate-500 text-sm font-medium mb-6 leading-relaxed" id="confirm-mensagem">Deseja apagar este item?</p>
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="document.getElementById('confirm-customizado').classList.replace('flex','hidden')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-black py-4 rounded-xl transition-colors uppercase tracking-widest text-xs">Cancelar</button>
-                <button id="btn-confirmar-acao" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs">Apagar</button>
-            </div>
+            <h3 class="text-xl font-black text-slate-800 mb-2 tracking-tight" id="alerta-titulo">Aviso do Sistema</h3>
+            <p class="text-slate-500 text-sm font-medium mb-6 leading-relaxed" id="alerta-mensagem">Mensagem...</p>
+            <button onclick="document.getElementById('alerta-customizado').classList.replace('flex','hidden')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs">
+                Entendi
+            </button>
         </div>
     </div>
 
@@ -1286,116 +1277,9 @@
         
         window.alert = function(msg) { alertaPremium(msg); };
 
-        // MOTOR DE CONFIRMAÇÃO PREMIUM
-        function confirmarExclusaoPremium(mensagem, callback) {
-            document.getElementById('confirm-mensagem').innerText = mensagem;
-            const btnConfirmar = document.getElementById('btn-confirmar-acao');
-            
-            // Remove ações antigas do botão
-            const novoBtn = btnConfirmar.cloneNode(true);
-            btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
-            
-            novoBtn.addEventListener('click', () => {
-                document.getElementById('confirm-customizado').classList.replace('flex','hidden');
-                callback();
-            });
-            
-            document.getElementById('confirm-customizado').classList.replace('hidden', 'flex');
-        }
-        
         const diasSemana = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
         const nomesDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
-        // 🚨 NOVO MOTOR DE HORÁRIOS DA LOJA 🚨
-        const diasSemanaSetup = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
-function renderizarHorariosSetup() {
-    const container = document.getElementById('container-horarios-loja');
-    if(!container) return;
-    container.innerHTML = diasSemanaSetup.map(dia => `
-        <div class="bg-white border border-slate-200 p-3 rounded-xl shadow-sm flex flex-col items-center transition-colors">
-            <span class="font-black text-[10px] uppercase tracking-widest text-slate-600 mb-2">${dia}</span>
-            <label class="relative inline-flex items-center cursor-pointer mb-3">
-                <input type="checkbox" id="setup-aberto-${dia}" class="sr-only peer" onchange="toggleDiaAberto('${dia}')">
-                <div class="w-9 h-5 bg-red-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 shadow-sm"></div>
-            </label>
-            <div class="flex flex-col space-y-1 w-full">
-                <input type="time" id="setup-ini-${dia}" class="w-full border border-slate-200 rounded-lg px-1 py-1.5 text-xs text-center font-bold outline-none focus:border-brand-500 bg-slate-50 text-slate-700 disabled:opacity-40 disabled:bg-slate-100 transition-all" disabled>
-                <span class="text-slate-400 text-[9px] font-bold uppercase text-center">até</span>
-                <input type="time" id="setup-fim-${dia}" class="w-full border border-slate-200 rounded-lg px-1 py-1.5 text-xs text-center font-bold outline-none focus:border-brand-500 bg-slate-50 text-slate-700 disabled:opacity-40 disabled:bg-slate-100 transition-all" disabled>
-            </div>
-        </div>
-    `).join('');
-}
-
-function toggleDiaAberto(dia) {
-    const isAberto = document.getElementById(`setup-aberto-${dia}`).checked;
-    document.getElementById(`setup-ini-${dia}`).disabled = !isAberto;
-    document.getElementById(`setup-fim-${dia}`).disabled = !isAberto;
-    if(!isAberto) {
-        document.getElementById(`setup-ini-${dia}`).value = '';
-        document.getElementById(`setup-fim-${dia}`).value = '';
-    } else {
-        if(!document.getElementById(`setup-ini-${dia}`).value) document.getElementById(`setup-ini-${dia}`).value = '18:00';
-        if(!document.getElementById(`setup-fim-${dia}`).value) document.getElementById(`setup-fim-${dia}`).value = '23:59';
-    }
-}
-
-function popularHorariosDaString(horarioStr) {
-    renderizarHorariosSetup(); 
-    if (!horarioStr) horarioStr = ""; 
-    const partes = horarioStr.split(',');
-    
-    diasSemanaSetup.forEach(dia => {
-        const parteDia = partes.find(p => p.toLowerCase().includes(dia.toLowerCase()) || 
-                                         (dia === 'Terça' && p.toLowerCase().includes('terca')) ||
-                                         (dia === 'Sábado' && p.toLowerCase().includes('sabado')));
-        
-        const checkAberto = document.getElementById(`setup-aberto-${dia}`);
-        const inputIni = document.getElementById(`setup-ini-${dia}`);
-        const inputFim = document.getElementById(`setup-fim-${dia}`);
-        
-        if (parteDia) {
-            if (parteDia.toLowerCase().includes('fechado')) {
-                checkAberto.checked = false;
-            } else {
-                checkAberto.checked = true;
-                const times = parteDia.match(/(\d{1,2})[h:]?(\d{2})?/g);
-                if (times && times.length >= 2) {
-                    let formatTime = (tStr) => {
-                        let clean = tStr.replace('h', ':');
-                        if(!clean.includes(':')) clean += ':00';
-                        let [h, m] = clean.split(':');
-                        return `${h.padStart(2, '0')}:${(m || '00').padStart(2, '0')}`;
-                    };
-                    inputIni.value = formatTime(times[0]);
-                    inputFim.value = formatTime(times[1]);
-                } else {
-                    inputIni.value = '18:00';
-                    inputFim.value = '23:59';
-                }
-            }
-        } else {
-            checkAberto.checked = false; // Se n achar na string antiga, considera fechado
-        }
-        toggleDiaAberto(dia);
-    });
-}
-
-function gerarStringDeHorarios() {
-    let configDias = [];
-    diasSemanaSetup.forEach(dia => {
-        const isAberto = document.getElementById(`setup-aberto-${dia}`).checked;
-        if (isAberto) {
-            const ini = document.getElementById(`setup-ini-${dia}`).value || '18:00';
-            const fim = document.getElementById(`setup-fim-${dia}`).value || '23:59';
-            configDias.push(`${dia}: ${ini} às ${fim}`);
-        } else {
-            configDias.push(`${dia}: Fechado`);
-        }
-    });
-    return configDias.join(', ');
-}
-        
         document.addEventListener('DOMContentLoaded', async () => { 
             // CARREGA SEU NOME E AVATAR NO CANTO ESQUERDO
             const nomeUsuario = localStorage.getItem('funcionario_nome') || "Admin";
@@ -1671,7 +1555,7 @@ function gerarStringDeHorarios() {
                 document.getElementById('conf-ie').value = conf.inscricao_estadual || ""; 
                 document.getElementById('conf-endereco').value = conf.endereco || "";
                 document.getElementById('conf-telefone').value = conf.telefone || ""; 
-                popularHorariosDaString(conf.horario_funcionamento); 
+                document.getElementById('conf-horario').value = conf.horario_funcionamento || ""; 
                 
                 if(conf.logo_url) {
                     document.getElementById('conf-logo-base64').value = conf.logo_url;
@@ -1730,7 +1614,7 @@ function gerarStringDeHorarios() {
                 nome_empresa: document.getElementById('conf-nome').value, 
                 cnpj: document.getElementById('conf-cnpj').value, 
                 inscricao_estadual: document.getElementById('conf-ie').value,
-                horario_funcionamento: gerarStringDeHorarios(),
+                horario_funcionamento: document.getElementById('conf-horario').value,
                 endereco: document.getElementById('conf-endereco').value, 
                 telefone: document.getElementById('conf-telefone').value, 
                 logo_url: document.getElementById('conf-logo-base64').value, 
@@ -2640,30 +2524,17 @@ function gerarStringDeHorarios() {
                     alertaPremium("Fornecedor atualizado!", "Sucesso", "sucesso");
                     document.getElementById('modal-editar-fornecedor').classList.replace('flex', 'hidden');
                     carregarFornecedores();
-                } else { 
-                    const err = await res.json();
-                    alertaPremium(err.detail || "Erro ao salvar.", "Falha", "erro"); 
-                }
-            } catch(err) { alertaPremium("Erro de conexão com o servidor.", "Falha", "erro"); }
+                } else { alertaPremium("Erro ao salvar.", "Falha", "erro"); }
+            } catch(err) { alertaPremium("Erro de comunicação.", "Falha", "erro"); }
             btn.innerHTML = "Salvar Alterações";
         }
 
-        {
-            async function excluirFornecedor(id) {
-            confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
-                try {
-                    const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
-                    if(res.ok) {
-                        alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
-                        carregarFornecedores();
-                    } else {
-                        const err = await res.json();
-                        alertaPremium(err.detail || "Falha ao tentar excluir.", "Aviso", "erro");
-                    }
-                } catch(e) {
-                    alertaPremium("Erro de rede ao tentar excluir.", "Erro", "erro");
-                }
-            });
+        async function excluirFornecedor(id) {
+            if(confirm('Tem certeza? Apagar este fornecedor?')) {
+                await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
+                alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
+                carregarFornecedores();
+            }
         }
 
         async function carregarFornecedoresParaSelect() { 
@@ -2774,21 +2645,12 @@ function gerarStringDeHorarios() {
             btn.innerHTML = "Salvar Conta";
         }
 
-        {
-            confirmarExclusaoPremium("Apagar este lançamento do financeiro?", async () => {
-                try {
-                    const res = await fetch(`/api/contas_pagar/${id}`, { method: 'DELETE' });
-                    if(res.ok) {
-                        alertaPremium("Conta apagada com sucesso.", "Excluída", "sucesso");
-                        carregarFinanceiro();
-                    } else {
-                        const err = await res.json();
-                        alertaPremium(err.detail || "Falha ao tentar excluir.", "Aviso", "erro");
-                    }
-                } catch(e) {
-                    alertaPremium("Erro de rede ao tentar excluir.", "Erro", "erro");
-                }
-            });
+        async function excluirConta(id) {
+            if(confirm('Tem certeza? Apagar este lançamento do financeiro?')) {
+                await fetch(`/api/contas_pagar/${id}`, { method: 'DELETE' });
+                alertaPremium("Conta apagada com sucesso.", "Excluída", "sucesso");
+                carregarFinanceiro();
+            }
         }
 
         async function carregarClientesPainel() { 
@@ -3112,80 +2974,41 @@ function gerarStringDeHorarios() {
 
         async function carregarTaxasEntrega() {
             try {
-                const res = await fetch('/api/taxas/listar');
+                const res = await fetch('/api/gestao/taxas');
                 const taxas = await res.json();
                 const tbody = document.getElementById('lista-taxas-entrega');
-                
-                if(!Array.isArray(taxas) || taxas.length === 0) {
+                if(taxas.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="3" class="text-center py-6 text-slate-400 font-bold">Nenhuma taxa cadastrada. O frete será único ou grátis.</td></tr>';
                     return;
                 }
-                
                 tbody.innerHTML = taxas.map(t => `
                     <tr class="border-b border-slate-50 hover:bg-slate-50">
                         <td class="py-3 px-6 font-bold text-slate-700">${t.bairro}</td>
                         <td class="py-3 px-6 font-black text-emerald-500">R$ ${t.taxa.toFixed(2).replace('.',',')}</td>
                         <td class="py-3 px-6 text-center">
-                            <button type="button" onclick="deletarTaxaEntrega(${t.id})" class="text-red-400 hover:text-red-600 bg-white border border-slate-200 p-2 rounded-lg shadow-sm"><i class="ph-bold ph-trash"></i></button>
+                            <button onclick="deletarTaxaEntrega(${t.id})" class="text-red-400 hover:text-red-600 bg-white border border-slate-200 p-2 rounded-lg shadow-sm"><i class="ph-bold ph-trash"></i></button>
                         </td>
                     </tr>
                 `).join('');
-            } catch(e) {
-                console.error("Erro ao carregar taxas", e);
-            }
+            } catch(e) {}
         }
 
         async function salvarTaxaEntrega() {
-            const btn = document.querySelector('button[onclick="salvarTaxaEntrega()"]');
-            const txtOriginal = btn.innerHTML;
-            
-            const bairroInput = document.getElementById('taxa-bairro');
-            const taxaInput = document.getElementById('taxa-valor');
-            
-            const bairro = bairroInput.value.trim();
-            const taxa = parseMoeda(taxaInput.value);
-            
+            const bairro = document.getElementById('taxa-bairro').value.trim();
+            const taxa = parseMoeda(document.getElementById('taxa-valor').value);
             if(!bairro) { alertaPremium("Digite o nome do bairro.", "Aviso", "erro"); return; }
-
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Salvando...';
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/api/taxas/salvar', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ bairro: bairro, taxa: taxa }) 
-                });
-                
-                if(res.ok) {
-                    bairroInput.value = '';
-                    taxaInput.value = '';
-                    alertaPremium("Taxa de entrega registrada!", "Logística", "sucesso");
-                    await carregarTaxasEntrega();
-                } else {
-                    const err = await res.json();
-                    alertaPremium("Erro do Servidor: " + (err.detail || "Falha ao salvar"), "Erro", "erro");
-                }
-            } catch(e) {
-                alertaPremium("Sem conexão com o servidor.", "Falha de Rede", "erro");
-            }
             
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
+            await fetch('/api/gestao/taxas', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({bairro, taxa}) });
+            document.getElementById('taxa-bairro').value = '';
+            document.getElementById('taxa-valor').value = '';
+            alertaPremium("Taxa de entrega registrada!", "Logística", "sucesso");
+            carregarTaxasEntrega();
         }
 
         async function deletarTaxaEntrega(id) {
             if(confirm("Remover esta taxa de entrega?")) {
-                try {
-                    const res = await fetch(`/api/taxas/${id}`, { method: 'DELETE' });
-                    if(res.ok) {
-                        carregarTaxasEntrega();
-                    } else {
-                        alertaPremium("Erro ao remover taxa.", "Erro", "erro");
-                    }
-                } catch(e) {
-                    alertaPremium("Erro de conexão.", "Erro", "erro");
-                }
+                await fetch(`/api/gestao/taxas/${id}`, { method: 'DELETE' });
+                carregarTaxasEntrega();
             }
         }
     </script>
