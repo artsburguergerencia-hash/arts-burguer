@@ -3076,38 +3076,82 @@ function gerarStringDeHorarios() {
                 const res = await fetch('/api/gestao/taxas');
                 const taxas = await res.json();
                 const tbody = document.getElementById('lista-taxas-entrega');
-                if(taxas.length === 0) {
+                
+                // Blindagem caso o servidor não responda um array válido
+                if(!Array.isArray(taxas) || taxas.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="3" class="text-center py-6 text-slate-400 font-bold">Nenhuma taxa cadastrada. O frete será único ou grátis.</td></tr>';
                     return;
                 }
+                
                 tbody.innerHTML = taxas.map(t => `
                     <tr class="border-b border-slate-50 hover:bg-slate-50">
                         <td class="py-3 px-6 font-bold text-slate-700">${t.bairro}</td>
                         <td class="py-3 px-6 font-black text-emerald-500">R$ ${t.taxa.toFixed(2).replace('.',',')}</td>
                         <td class="py-3 px-6 text-center">
-                            <button onclick="deletarTaxaEntrega(${t.id})" class="text-red-400 hover:text-red-600 bg-white border border-slate-200 p-2 rounded-lg shadow-sm"><i class="ph-bold ph-trash"></i></button>
+                            <!-- 🚨 Correção: type="button" adicionado para não recarregar a tela 🚨 -->
+                            <button type="button" onclick="deletarTaxaEntrega(${t.id})" class="text-red-400 hover:text-red-600 bg-white border border-slate-200 p-2 rounded-lg shadow-sm"><i class="ph-bold ph-trash"></i></button>
                         </td>
                     </tr>
                 `).join('');
-            } catch(e) {}
+            } catch(e) {
+                console.error("Erro ao carregar taxas", e);
+            }
         }
 
         async function salvarTaxaEntrega() {
-            const bairro = document.getElementById('taxa-bairro').value.trim();
-            const taxa = parseMoeda(document.getElementById('taxa-valor').value);
-            if(!bairro) { alertaPremium("Digite o nome do bairro.", "Aviso", "erro"); return; }
+            const btn = document.querySelector('button[onclick="salvarTaxaEntrega()"]');
+            const txtOriginal = btn.innerHTML;
             
-            await fetch('/api/gestao/taxas', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({bairro, taxa}) });
-            document.getElementById('taxa-bairro').value = '';
-            document.getElementById('taxa-valor').value = '';
-            alertaPremium("Taxa de entrega registrada!", "Logística", "sucesso");
-            carregarTaxasEntrega();
+            const bairroInput = document.getElementById('taxa-bairro');
+            const taxaInput = document.getElementById('taxa-valor');
+            
+            const bairro = bairroInput.value.trim();
+            const taxa = parseMoeda(taxaInput.value);
+            
+            if(!bairro) { alertaPremium("Digite o nome do bairro.", "Aviso", "erro"); return; }
+
+            // Trava o botão para não dar duplo clique
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Salvando...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/gestao/taxas', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ bairro: bairro, taxa: taxa }) 
+                });
+                
+                if(res.ok) {
+                    // SÓ limpa os campos se o banco confirmar que salvou
+                    bairroInput.value = '';
+                    taxaInput.value = '';
+                    alertaPremium("Taxa de entrega registrada!", "Logística", "sucesso");
+                    await carregarTaxasEntrega();
+                } else {
+                    // 🚨 Agora ele joga na tela o erro exato que o banco deu 🚨
+                    const err = await res.json();
+                    alertaPremium("Erro do Servidor: " + (err.detail || "Falha ao salvar"), "Erro", "erro");
+                }
+            } catch(e) {
+                alertaPremium("Sem conexão com o servidor.", "Falha de Rede", "erro");
+            }
+            
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
         }
 
         async function deletarTaxaEntrega(id) {
             if(confirm("Remover esta taxa de entrega?")) {
-                await fetch(`/api/gestao/taxas/${id}`, { method: 'DELETE' });
-                carregarTaxasEntrega();
+                try {
+                    const res = await fetch(`/api/gestao/taxas/${id}`, { method: 'DELETE' });
+                    if(res.ok) {
+                        carregarTaxasEntrega();
+                    } else {
+                        alertaPremium("Erro ao remover taxa.", "Erro", "erro");
+                    }
+                } catch(e) {
+                    alertaPremium("Erro de conexão.", "Erro", "erro");
+                }
             }
         }
     </script>
