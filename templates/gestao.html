@@ -2530,11 +2530,20 @@
         }
 
         async function excluirFornecedor(id) {
-            if(confirm('Tem certeza? Apagar este fornecedor?')) {
-                await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
-                alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
-                carregarFornecedores();
-            }
+            confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
+                try {
+                    const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
+                    if(res.ok) {
+                        alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
+                        carregarFornecedores();
+                    } else {
+                        const err = await res.json();
+                        alertaPremium(err.detail || "Falha ao tentar excluir.", "Aviso", "erro");
+                    }
+                } catch(e) {
+                    alertaPremium("Erro de rede ao tentar excluir.", "Erro", "erro");
+                }
+            });
         }
 
         async function carregarFornecedoresParaSelect() { 
