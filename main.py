@@ -2391,85 +2391,60 @@ def consertar_banco(db: Session = Depends(get_db)):
 # ==========================================
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 1)
 # ==========================================
-from fastapi import Body
 
 # 1. Atualizar Fornecedor
 @app.put("/api/fornecedores/{fornecedor_id}")
-def atualizar_fornecedor(fornecedor_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
-    try:
-        from financeiro import FornecedorModel 
-        fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
-        if not fornecedor:
-            raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
-        
-        for key, value in dados.items():
-            if hasattr(fornecedor, key):
-                setattr(fornecedor, key, value)
-                
-        db.commit()
-        return {"status": "sucesso", "mensagem": "Fornecedor atualizado!"}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+def atualizar_fornecedor(fornecedor_id: int, dados: dict, db: Session = Depends(get_db)):
+    from models import FornecedorModel # Certifique-se que o nome do seu model está correto
+    fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
+    if not fornecedor:
+        raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
+    
+    for key, value in dados.items():
+        if hasattr(fornecedor, key):
+            setattr(fornecedor, key, value)
+            
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Fornecedor atualizado!"}
 
 # 2. Excluir Fornecedor
 @app.delete("/api/fornecedores/{fornecedor_id}")
 def excluir_fornecedor(fornecedor_id: int, db: Session = Depends(get_db)):
-    try:
-        from financeiro import FornecedorModel, ContaPagarModel
-        fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
-        if not fornecedor:
-            raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
-            
-        # 1. Confirma manualmente se existem contas para evitar falsos positivos
-        contas = db.query(ContaPagarModel).filter(ContaPagarModel.fornecedor_id == fornecedor_id).count()
-        if contas > 0:
-            raise HTTPException(status_code=400, detail=f"Existem {contas} conta(s) vinculada(s) a este fornecedor.")
-            
-        # 2. Exclusão bruta direta no banco para furar o bloqueio ORM
-        db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).delete()
-        db.commit()
-        return {"status": "sucesso"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+    from models import FornecedorModel
+    fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
+    if not fornecedor:
+        raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
+        
+    db.delete(fornecedor)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Fornecedor excluído!"}
 
 # 3. Atualizar Conta a Pagar
 @app.put("/api/contas_pagar/{conta_id}")
-def atualizar_conta(conta_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
-    try:
-        from financeiro import ContaPagarModel 
-        conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
-        if not conta:
-            raise HTTPException(status_code=404, detail="Conta não encontrada")
-        
-        for key, value in dados.items():
-            if hasattr(conta, key):
-                setattr(conta, key, value)
-                
-        db.commit()
-        return {"status": "sucesso"}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+def atualizar_conta(conta_id: int, dados: dict, db: Session = Depends(get_db)):
+    from models import ContaPagarModel # Certifique-se que o nome do seu model está correto
+    conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
+    if not conta:
+        raise HTTPException(status_code=404, detail="Conta não encontrada")
+    
+    for key, value in dados.items():
+        if hasattr(conta, key):
+            setattr(conta, key, value)
+            
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Conta atualizada!"}
 
 # 4. Excluir Conta a Pagar
 @app.delete("/api/contas_pagar/{conta_id}")
 def excluir_conta(conta_id: int, db: Session = Depends(get_db)):
-    try:
-        from financeiro import ContaPagarModel
-        conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
-        if not conta:
-            raise HTTPException(status_code=404, detail="Conta não encontrada")
-            
-        db.delete(conta)
-        db.commit()
-        return {"status": "sucesso"}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+    from models import ContaPagarModel
+    conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
+    if not conta:
+        raise HTTPException(status_code=404, detail="Conta não encontrada")
+        
+    db.delete(conta)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Conta excluída!"}
 
 # ==========================================
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 2)
@@ -2912,52 +2887,39 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
 # ==========================================
 # MÓDULO DE LOGÍSTICA (TAXAS DE ENTREGA)
 # ==========================================
+class TaxaEntregaModel(Base):
+    __tablename__ = "taxas_entrega"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    bairro = Column(String, unique=True, index=True)
+    taxa = Column(Float, default=0.0)
+
 class TaxaEntregaSchema(BaseModel):
     bairro: str
     taxa: float
 
-@app.get("/api/taxas/listar")
+@app.get("/api/gestao/taxas")
 def listar_taxas(db: Session = Depends(get_db)):
-    from database import TaxaEntregaModel 
-    try:
-        TaxaEntregaModel.__table__.create(db.get_bind(), checkfirst=True)
-        return db.query(TaxaEntregaModel).order_by(TaxaEntregaModel.bairro.asc()).all()
-    except Exception as e:
-        print(f"Erro ao listar taxas: {e}")
-        return []
+    return db.query(TaxaEntregaModel).all()
 
-@app.post("/api/taxas/salvar")
+@app.post("/api/gestao/taxas")
 def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
-    from fastapi import HTTPException
-    from database import TaxaEntregaModel
-    try:
-        TaxaEntregaModel.__table__.create(db.get_bind(), checkfirst=True)
-        
-        tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.bairro == dados.bairro).first()
-        if tx:
-            tx.taxa = dados.taxa
-        else:
-            novo = TaxaEntregaModel(bairro=dados.bairro, taxa=dados.taxa)
-            db.add(novo)
-        db.commit()
-        return {"status": "sucesso"}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=f"Erro no banco DB: {str(e)}")
+    tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.bairro == dados.bairro).first()
+    if tx:
+        tx.taxa = dados.taxa
+    else:
+        novo = TaxaEntregaModel(bairro=dados.bairro, taxa=dados.taxa)
+        db.add(novo)
+    db.commit()
+    return {"status": "sucesso"}
 
-@app.delete("/api/taxas/{id}")
+@app.delete("/api/gestao/taxas/{id}")
 def deletar_taxa(id: int, db: Session = Depends(get_db)):
-    from fastapi import HTTPException
-    from database import TaxaEntregaModel
-    try:
-        tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.id == id).first()
-        if tx:
-            db.delete(tx)
-            db.commit()
-        return {"status": "sucesso"}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=f"Erro DB: {str(e)}")
+    tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.id == id).first()
+    if tx:
+        db.delete(tx)
+        db.commit()
+    return {"status": "sucesso"}
 
 # ==========================================
 # MÓDULO DE INTEGRAÇÕES (WEBHOOK IFOOD / 99FOOD)
