@@ -2395,57 +2395,75 @@ def consertar_banco(db: Session = Depends(get_db)):
 # 1. Atualizar Fornecedor
 @app.put("/api/fornecedores/{fornecedor_id}")
 def atualizar_fornecedor(fornecedor_id: int, dados: dict, db: Session = Depends(get_db)):
-    # 🚨 Correção: Puxando do financeiro.py e não de models
-    from financeiro import FornecedorModel 
-    fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
-    if not fornecedor:
-        raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
-    
-    for key, value in dados.items():
-        if hasattr(fornecedor, key):
-            setattr(fornecedor, key, value)
-            
-    db.commit()
-    return {"status": "sucesso", "mensagem": "Fornecedor atualizado!"}
+    try:
+        from financeiro import FornecedorModel 
+        fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
+        if not fornecedor:
+            raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
+        
+        for key, value in dados.items():
+            if hasattr(fornecedor, key):
+                setattr(fornecedor, key, value)
+                
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Fornecedor atualizado!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 # 2. Excluir Fornecedor
 @app.delete("/api/fornecedores/{fornecedor_id}")
 def excluir_fornecedor(fornecedor_id: int, db: Session = Depends(get_db)):
-    from financeiro import FornecedorModel
-    fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
-    if not fornecedor:
-        raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
-        
-    db.delete(fornecedor)
-    db.commit()
-    return {"status": "sucesso", "mensagem": "Fornecedor excluído!"}
+    try:
+        from financeiro import FornecedorModel
+        fornecedor = db.query(FornecedorModel).filter(FornecedorModel.id == fornecedor_id).first()
+        if not fornecedor:
+            raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
+            
+        db.delete(fornecedor)
+        db.commit()
+        return {"status": "sucesso"}
+    except Exception as e:
+        db.rollback()
+        # 🚨 Identifica se o erro é por causa de contas vinculadas
+        if "IntegrityError" in str(type(e)) or "Foreign Key" in str(e):
+            raise HTTPException(status_code=400, detail="Não é possível excluir: existem contas a pagar vinculadas a este fornecedor.")
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
 # 3. Atualizar Conta a Pagar
 @app.put("/api/contas_pagar/{conta_id}")
 def atualizar_conta(conta_id: int, dados: dict, db: Session = Depends(get_db)):
-    from financeiro import ContaPagarModel 
-    conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
-    if not conta:
-        raise HTTPException(status_code=404, detail="Conta não encontrada")
-    
-    for key, value in dados.items():
-        if hasattr(conta, key):
-            setattr(conta, key, value)
-            
-    db.commit()
-    return {"status": "sucesso", "mensagem": "Conta atualizada!"}
+    try:
+        from financeiro import ContaPagarModel 
+        conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
+        if not conta:
+            raise HTTPException(status_code=404, detail="Conta não encontrada")
+        
+        for key, value in dados.items():
+            if hasattr(conta, key):
+                setattr(conta, key, value)
+                
+        db.commit()
+        return {"status": "sucesso"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 # 4. Excluir Conta a Pagar
 @app.delete("/api/contas_pagar/{conta_id}")
 def excluir_conta(conta_id: int, db: Session = Depends(get_db)):
-    from financeiro import ContaPagarModel
-    conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
-    if not conta:
-        raise HTTPException(status_code=404, detail="Conta não encontrada")
-        
-    db.delete(conta)
-    db.commit()
-    return {"status": "sucesso", "mensagem": "Conta excluída!"}
+    try:
+        from financeiro import ContaPagarModel
+        conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
+        if not conta:
+            raise HTTPException(status_code=404, detail="Conta não encontrada")
+            
+        db.delete(conta)
+        db.commit()
+        return {"status": "sucesso"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ==========================================
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 2)
