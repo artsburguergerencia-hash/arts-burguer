@@ -1306,7 +1306,7 @@
         const diasSemana = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
         const nomesDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
         // 🚨 NOVO MOTOR DE HORÁRIOS DA LOJA 🚨
-const diasSemanaSetup = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        const diasSemanaSetup = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
 function renderizarHorariosSetup() {
     const container = document.getElementById('container-horarios-loja');
@@ -2649,6 +2649,7 @@ function gerarStringDeHorarios() {
         }
 
         {
+            async function excluirFornecedor(id) {
             confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
                 try {
                     const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
