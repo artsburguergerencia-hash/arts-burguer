@@ -1922,7 +1922,8 @@ def listar_clientes_gestao(db: Session = Depends(get_db)):
                 "cpf": c.get("cpf", ""),
                 "cep": c.get("cep", ""),
                 "endereco": c.get("endereco", ""),
-                "data_nascimento": c.get("data_nascimento", "") # <--- AGORA PUXANDO O ANIVERSÁRIO!
+                "data_nascimento": c.get("data_nascimento", ""), # <--- Não esqueça dessa vírgula aqui!
+                "foto": c.get("foto", "") # <--- NOVA LINHA DA FOTO AQUI!
             })
             
         return lista_blindada
@@ -2043,15 +2044,14 @@ def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
         cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
         if not cliente: return []
         
-        # Busca pelo ID do cliente e usa as colunas corretas do PedidoModel
         pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).order_by(PedidoModel.id.desc()).limit(10).all()
         
         return [{
             "id": p.id,
-            "data": p.data_hora.strftime("%d/%m/%Y %H:%M") if p.data_hora else "N/A",
-            "valor": p.total_pago,
-            "status": str(p.status).split('.')[-1].upper(),
-            "pagamento": p.forma_pagamento or "Balcão"
+            "data": getattr(p, "data_hora", None).strftime("%d/%m/%Y %H:%M") if getattr(p, "data_hora", None) else "N/A",
+            "valor": getattr(p, "total_pago", 0.0),
+            "status": str(getattr(p, "status", "N/A")).split('.')[-1].upper(),
+            "pagamento": getattr(p, "forma_pagamento", "Balcão")
         } for p in pedidos]
     except Exception as e:
         print(f"Erro no histórico: {e}")
@@ -2091,6 +2091,11 @@ def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
     
     if not cliente: 
         raise HTTPException(status_code=404)
+        
+    # Desvincula os pedidos antes de apagar (Evita o Erro 500 de chave estrangeira)
+    pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).all()
+    for p in pedidos:
+        p.cliente_id = None
         
     db.delete(cliente)
     db.commit()
