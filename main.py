@@ -2009,6 +2009,15 @@ def deletar_item_generico(tabela: str, item_id: int, db: Session = Depends(get_d
         modelo = pegar_modelo_banco(tabela)
         if not modelo: raise HTTPException(status_code=404)
         
+        # --- 🚨 BLINDAGEM MÁXIMA PARA EXCLUSÃO DE CLIENTES 🚨 ---
+        if tabela == "clientes":
+            # 1. Desvincula os pedidos do cliente (Não apaga as vendas da loja, só remove o dono)
+            db.query(PedidoModel).filter(PedidoModel.cliente_id == item_id).update({"cliente_id": None})
+            # 2. Apaga a carteira de fidelidade (A causa raiz do Erro 500)
+            from sqlalchemy import text
+            db.execute(text("DELETE FROM fidelidade_pontos WHERE cliente_id = :id"), {"id": item_id})
+        # --------------------------------------------------------
+        
         db.query(modelo).filter(modelo.id == item_id).delete()
         db.commit()
         return {"status": "ok", "mensagem": "Apagado com sucesso!"}
