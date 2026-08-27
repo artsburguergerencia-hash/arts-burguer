@@ -382,7 +382,6 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
 # ==========================================
 # ROTAS DE CLIENTES
 # ==========================================
-
 @app.post("/api/cliente/registrar")
 def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db)):
     try:
@@ -396,11 +395,15 @@ def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db
             raise HTTPException(status_code=400, detail="Este telefone já está cadastrado. Faça o login.")
 
         # Cria o novo cliente capturando todos os campos novos do Cardápio (incluindo número e foto)
+        # Tratamento rigoroso do CPF para evitar erro de duplicidade com vazio
+        cpf_recebido = dados.get("cpf", "").strip()
+        cpf_final = cpf_recebido if cpf_recebido != "" else None
+
         novo_cliente = Cliente(
             nome=dados.get("nome", "Cliente Visitante"),
             telefone=telefone_cliente,
             senha=dados.get("senha", ""),
-            cpf=dados.get("cpf", ""),
+            cpf=cpf_final, # <-- Correção aqui
             data_nascimento=dados.get("data_nascimento", ""),
             cep=dados.get("cep", ""),
             endereco=dados.get("endereco", ""),
@@ -1958,7 +1961,8 @@ def pegar_modelo_banco(tabela: str):
     if tabela == "fornecedores": return FornecedorModel
     if tabela == "financeiro": return ContaPagarModel
     if tabela == "funcionarios": return FuncionarioModel
-    if tabela == "cupons": return CupomModel 
+    if tabela == "cupons": return CupomModel
+    if tabela == "clientes": return ClienteModel # <-- ADICIONE ESTA LINHA
     return None
 
 # ROTA PARA EDITAR (QUALQUER COISA)
@@ -2039,17 +2043,18 @@ def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
         cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
         if not cliente: return []
         
-        # Busca os últimos 10 pedidos do cliente pelo telefone
-        pedidos = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == cliente.telefone).order_by(PedidoModel.id.desc()).limit(10).all()
+        # Busca pelo ID do cliente e usa as colunas corretas do PedidoModel
+        pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).order_by(PedidoModel.id.desc()).limit(10).all()
         
         return [{
             "id": p.id,
-            "data": p.data_pedido.strftime("%d/%m/%Y %H:%M") if p.data_pedido else "N/A",
-            "valor": p.valor_total,
-            "status": p.status,
-            "pagamento": p.forma_pagamento
+            "data": p.data_hora.strftime("%d/%m/%Y %H:%M") if p.data_hora else "N/A",
+            "valor": p.total_pago,
+            "status": str(p.status).split('.')[-1].upper(),
+            "pagamento": p.forma_pagamento or "Balcão"
         } for p in pedidos]
     except Exception as e:
+        print(f"Erro no histórico: {e}")
         return []
 
 @app.put("/api/gestao/clientes/{cliente_id}/editar")
