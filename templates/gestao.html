@@ -1121,6 +1121,20 @@
         </div>
     </div>
 
+    <!-- ALERTA PREMIUM CUSTOMIZADO (CORREÇÃO DE CRASH) -->
+    <div id="alerta-customizado" class="fixed inset-0 bg-slate-900/80 z-[250] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative border border-slate-200 dark:border-slate-800">
+            <div id="alerta-icone-bg" class="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white dark:border-slate-800 shadow-md">
+                <i id="alerta-icone" class="ph-fill ph-bell-ringing text-4xl"></i>
+            </div>
+            <h3 id="alerta-titulo" class="text-xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">Aviso do Sistema</h3>
+            <p id="alerta-mensagem" class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-6 leading-relaxed">Sua mensagem aqui.</p>
+            <button type="button" onclick="document.getElementById('alerta-customizado').classList.replace('flex','hidden')" class="w-full bg-slate-900 dark:bg-brand-500 hover:bg-slate-800 dark:hover:bg-brand-600 text-white font-black py-4 rounded-xl transition-transform active:scale-95 uppercase tracking-widest text-xs shadow-lg">
+                OK, Entendi
+            </button>
+        </div>
+    </div>
+
     <!-- MODAL DE EDIÇÃO DE FORNECEDOR -->
     <div id="modal-editar-fornecedor" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-lg rounded-[2rem] p-8 shadow-2xl relative">
