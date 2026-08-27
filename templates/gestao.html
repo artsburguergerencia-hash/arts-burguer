@@ -2882,7 +2882,7 @@ function gerarStringDeHorarios() {
                         if(x.data_nascimento.includes('-')) niverFormatado = x.data_nascimento.split('-').reverse().join('/');
                         else niverFormatado = x.data_nascimento;
                     }
-                    
+
                     // Renderiza foto ou iniciais
                     let avatar = x.foto ? `<img src="${x.foto}" class="w-10 h-10 rounded-full object-cover mr-3 border border-slate-200 shadow-sm shrink-0">` : `<div class="w-10 h-10 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center font-black text-sm mr-3 border border-brand-100 shrink-0">${x.nome.charAt(0).toUpperCase()}</div>`;
 
@@ -2916,9 +2916,24 @@ function gerarStringDeHorarios() {
                             </button>
                         </td>
                     </tr>`;
-                }).join('');
+                }).join(''); 
+            } catch(e) {
+                document.getElementById('lista-clientes-painel').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500 font-bold">Erro: ${e.message}</td></tr>`;
+            }
+        }
 
         // DISPARADOR DE MARKETING NO WHATSAPP
+        function enviarPromoWhatsApp(nome, telefone) {
+            let numero = telefone.replace(/\D/g, ''); 
+            if(numero.length === 10 || numero.length === 11) {
+                numero = "55" + numero; 
+            }
+            const primeiroNome = nome.split(' ')[0];
+            const mensagem = `Fala ${primeiroNome}! 🎉 Vimos que seu aniversário está chegando! Para comemorar, preparamos um presente especial pra você. Acesse nosso cardápio online e use o cupom NIVER15 para ganhar desconto no seu pedido de hoje! 🍔🍟`;
+            const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+        }
+
         function alternarBloqueioCliente(id, estaBloqueado) {
             const acao = estaBloqueado ? "Desbloquear" : "Bloquear";
             confirmarExclusaoPremium(`Deseja ${acao} o acesso deste cliente?`, async () => {
