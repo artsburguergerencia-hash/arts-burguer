@@ -2087,19 +2087,29 @@ def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
 
 @app.delete("/api/gestao/clientes/{cliente_id}")
 def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
-    cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
-    
-    if not cliente: 
-        raise HTTPException(status_code=404)
+    try:
+        cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
+        if not cliente: 
+            raise HTTPException(status_code=404)
+            
+        # 1. Desvincula todos os pedidos (mantém o financeiro da loja intacto, mas anônimo)
+        pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).all()
+        for p in pedidos:
+            p.cliente_id = None
+            
+        # 2. O SEGREDO: Destrói a carteira de fidelidade amarrada ao cliente (Resolve o Erro 500!)
+        from sqlalchemy import text
+        db.execute(text("DELETE FROM fidelidade_pontos WHERE cliente_id = :id"), {"id": cliente_id})
         
-    # Desvincula os pedidos antes de apagar (Evita o Erro 500 de chave estrangeira)
-    pedidos = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_id).all()
-    for p in pedidos:
-        p.cliente_id = None
+        # 3. Agora sim, apaga o cliente com segurança
+        db.delete(cliente)
+        db.commit()
+        return {"status": "sucesso"}
         
-    db.delete(cliente)
-    db.commit()
-    return {"status": "sucesso"}
+    except Exception as e:
+        db.rollback()
+        print(f"Erro Crítico ao deletar cliente: {e}", flush=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ==========================================
