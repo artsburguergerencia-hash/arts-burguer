@@ -3143,15 +3143,20 @@ function gerarStringDeHorarios() {
         }
         
         // ==========================================
-        // LOGÍSTICA E TAXAS DE ENTREGA
+        // LOGÍSTICA E TAXAS DE ENTREGA (BLINDADO ANTI-CACHE)
         // ==========================================
         document.addEventListener('DOMContentLoaded', carregarTaxasEntrega);
 
         async function carregarTaxasEntrega() {
             try {
-                const res = await fetch('/api/taxas/listar');
-                const taxas = await res.json();
                 const tbody = document.getElementById('lista-taxas-entrega');
+                // Efeito visual de carregamento
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-6 text-brand-500 font-black uppercase tracking-widest"><i class="ph-bold ph-spinner animate-spin text-xl mr-2"></i> Atualizando...</td></tr>';
+                
+                // CACHE BUSTER: Força a busca real no banco
+                const urlTimestamp = '/api/taxas/listar?v=' + new Date().getTime();
+                const res = await fetch(urlTimestamp, { cache: 'no-store' });
+                const taxas = await res.json();
                 
                 if(!Array.isArray(taxas) || taxas.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="3" class="text-center py-6 text-slate-400 font-bold">Nenhuma taxa cadastrada. O frete será único ou grátis.</td></tr>';
@@ -3169,6 +3174,7 @@ function gerarStringDeHorarios() {
                 `).join('');
             } catch(e) {
                 console.error("Erro ao carregar taxas", e);
+                document.getElementById('lista-taxas-entrega').innerHTML = '<tr><td colspan="3" class="text-center py-6 text-red-500 font-bold">Erro ao atualizar a tabela.</td></tr>';
             }
         }
 
@@ -3198,7 +3204,9 @@ function gerarStringDeHorarios() {
                     bairroInput.value = '';
                     taxaInput.value = '';
                     alertaPremium("Taxa de entrega registrada!", "Logística", "sucesso");
-                    await carregarTaxasEntrega();
+                    
+                    // 🚨 DELAY DE SEGURANÇA: Dá 1 segundo pro banco de dados respirar
+                    setTimeout(() => { carregarTaxasEntrega(); }, 1000);
                 } else {
                     const err = await res.json();
                     alertaPremium("Erro do Servidor: " + (err.detail || "Falha ao salvar"), "Erro", "erro");
@@ -3212,18 +3220,23 @@ function gerarStringDeHorarios() {
         }
 
         async function deletarTaxaEntrega(id) {
-            if(confirm("Remover esta taxa de entrega?")) {
+            // Usa o nosso pop-up bonitão e global ao invés do aviso feio do Chrome!
+            confirmarExclusaoPremium("Remover esta taxa de entrega?", async () => {
+                document.getElementById('lista-taxas-entrega').innerHTML = '<tr><td colspan="3" class="text-center py-6 text-red-500 font-black uppercase tracking-widest"><i class="ph-bold ph-spinner animate-spin text-xl mb-2"></i><br>Apagando...</td></tr>';
                 try {
                     const res = await fetch(`/api/taxas/${id}`, { method: 'DELETE' });
                     if(res.ok) {
-                        carregarTaxasEntrega();
+                        // 🚨 DELAY DE SEGURANÇA
+                        setTimeout(() => { carregarTaxasEntrega(); }, 1000);
                     } else {
                         alertaPremium("Erro ao remover taxa.", "Erro", "erro");
+                        carregarTaxasEntrega();
                     }
                 } catch(e) {
                     alertaPremium("Erro de conexão.", "Erro", "erro");
+                    carregarTaxasEntrega();
                 }
-            }
+            });
         }
     </script>
     <script>
