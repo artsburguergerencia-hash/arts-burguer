@@ -2603,7 +2603,7 @@ function gerarStringDeHorarios() {
             e.preventDefault(); 
             const btn = e.target.querySelector('button[type="submit"]');
             const txtOriginal = btn.innerHTML;
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando na nuvem...";
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
             btn.disabled = true;
 
             const payload = { 
@@ -2623,7 +2623,10 @@ function gerarStringDeHorarios() {
                 if(res.ok) {
                     alertaPremium("Fornecedor cadastrado com sucesso!", "Parceiro Salvo", "sucesso");
                     document.getElementById('form-fornecedor').reset(); 
-                    await carregarFornecedores(); 
+                    
+                    // 🚨 O SEGREDO: Dá tempo do banco de dados respirar antes de atualizar a tabela
+                    setTimeout(() => { carregarFornecedores(); }, 600);
+                    
                 } else {
                     const err = await res.json();
                     alertaPremium("O banco recusou o cadastro: " + (err.detail || "Erro interno."), "Erro", "erro");
@@ -2662,7 +2665,7 @@ function gerarStringDeHorarios() {
             const id = document.getElementById('edit-forn-id').value;
             const btn = e.target.querySelector('button[type="submit"]');
             const txtOriginal = btn.innerHTML;
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Atualizando...";
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
             btn.disabled = true;
 
             const payload = {
@@ -2677,25 +2680,29 @@ function gerarStringDeHorarios() {
                 if(res.ok) {
                     alertaPremium("Fornecedor atualizado!", "Sucesso", "sucesso");
                     document.getElementById('modal-editar-fornecedor').classList.replace('flex', 'hidden');
-                    await carregarFornecedores();
+                    
+                    // 🚨 O SEGREDO: Delay de segurança
+                    setTimeout(() => { carregarFornecedores(); }, 600);
+                    
                 } else { 
                     const err = await res.json();
                     alertaPremium(err.detail || "Erro ao salvar.", "Falha", "erro"); 
                 }
-            } catch(err) { alertaPremium("Erro de conexão com o servidor.", "Falha", "erro"); }
+            } catch(err) { alertaPremium("Erro de conexão.", "Falha", "erro"); }
             finally {
                 btn.innerHTML = txtOriginal;
                 btn.disabled = false;
             }
-        }
-
-        async function excluirFornecedor(id) {
+        }async function excluirFornecedor(id) {
             confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
                 try {
                     const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
                     if(res.ok) {
                         alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
-                        await carregarFornecedores();
+                        
+                        // 🚨 O SEGREDO: Delay de segurança
+                        setTimeout(() => { carregarFornecedores(); }, 600);
+                        
                     } else {
                         const err = await res.json();
                         alertaPremium(err.detail || "Falha ao tentar excluir.", "Aviso", "erro");
