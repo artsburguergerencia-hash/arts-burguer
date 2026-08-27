@@ -2563,23 +2563,13 @@ function gerarStringDeHorarios() {
         async function carregarFornecedores() { 
             try {
                 const tbody = document.getElementById('lista-fornecedores');
-                // 🚨 EFEITO VISUAL: Mostra imediatamente que a tela está trabalhando
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-brand-500 font-black uppercase tracking-widest"><i class="ph-bold ph-spinner animate-spin text-2xl mb-2"></i><br>Atualizando tabela em tempo real...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-brand-500 font-black uppercase tracking-widest"><i class="ph-bold ph-spinner animate-spin text-2xl mb-2"></i><br>Buscando dados no banco...</td></tr>';
                 
-                // CACHE BUSTER SUPREMO: Força a nuvem a buscar dados novos agora!
-                const timestamp = new Date().getTime();
-                const res = await fetch('/api/gestao/fornecedores?v=' + timestamp, { 
-                    method: 'GET',
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
-                }); 
+                const res = await fetch('/api/gestao/fornecedores?t=' + new Date().getTime(), { cache: 'no-store' }); 
                 const dados = await res.json(); 
                 
                 if (dados.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">Nenhum fornecedor cadastrado.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">Nenhum fornecedor encontrado.</td></tr>';
                     return;
                 }
                 
@@ -2594,7 +2584,6 @@ function gerarStringDeHorarios() {
                     </td>
                 </tr>`).join(''); 
             } catch (e) {
-                console.error("Erro ao carregar lista de fornecedores", e);
                 document.getElementById('lista-fornecedores').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-red-500 font-bold">Erro ao atualizar a tabela.</td></tr>';
             }
         }
@@ -2621,18 +2610,19 @@ function gerarStringDeHorarios() {
                 }); 
                 
                 if(res.ok) {
-                    alertaPremium("Fornecedor cadastrado com sucesso!", "Parceiro Salvo", "sucesso");
                     document.getElementById('form-fornecedor').reset(); 
+                    alertaPremium("Fornecedor cadastrado com sucesso!", "Parceiro Salvo", "sucesso");
                     
-                    // 🚨 O SEGREDO: Dá tempo do banco de dados respirar antes de atualizar a tabela
-                    setTimeout(() => { carregarFornecedores(); }, 600);
-                    
+                    // 🚨 O SEGREDO MÁXIMO: Trava o código por 1.5 segundos antes de pedir a lista!
+                    btn.innerHTML = "<i class='ph-bold ph-arrows-clockwise animate-spin mr-2'></i> Sincronizando...";
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    await carregarFornecedores(); 
                 } else {
                     const err = await res.json();
-                    alertaPremium("O banco recusou o cadastro: " + (err.detail || "Erro interno."), "Erro", "erro");
+                    alertaPremium("O banco recusou: " + (err.detail || "Erro interno."), "Erro", "erro");
                 }
             } catch(err) {
-                alertaPremium("Falha na rede ou servidor offline.", "Erro de Conexão", "erro");
+                alertaPremium("Falha na rede.", "Erro", "erro");
             } finally {
                 btn.innerHTML = txtOriginal;
                 btn.disabled = false;
@@ -2678,12 +2668,12 @@ function gerarStringDeHorarios() {
             try {
                 const res = await fetch(`/api/fornecedores/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if(res.ok) {
-                    alertaPremium("Fornecedor atualizado!", "Sucesso", "sucesso");
                     document.getElementById('modal-editar-fornecedor').classList.replace('flex', 'hidden');
+                    alertaPremium("Fornecedor atualizado!", "Sucesso", "sucesso");
                     
-                    // 🚨 O SEGREDO: Delay de segurança
-                    setTimeout(() => { carregarFornecedores(); }, 600);
-                    
+                    // 🚨 Congela por 1.5 segundos
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    await carregarFornecedores();
                 } else { 
                     const err = await res.json();
                     alertaPremium(err.detail || "Erro ao salvar.", "Falha", "erro"); 
@@ -2693,30 +2683,37 @@ function gerarStringDeHorarios() {
                 btn.innerHTML = txtOriginal;
                 btn.disabled = false;
             }
-        }async function excluirFornecedor(id) {
-            confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
-                try {
-                    const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
-                    if(res.ok) {
-                        alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
-                        
-                        // 🚨 O SEGREDO: Delay de segurança
-                        setTimeout(() => { carregarFornecedores(); }, 600);
-                        
-                    } else {
-                        const err = await res.json();
-                        alertaPremium(err.detail || "Falha ao tentar excluir.", "Aviso", "erro");
-                    }
-                } catch(e) {
-                    alertaPremium("Erro de rede ao tentar excluir.", "Erro", "erro");
-                }
-            });
         }
 
         async function carregarFornecedoresParaSelect() { 
             const res = await fetch('/api/gestao/fornecedores'); 
             const dados = await res.json(); 
             document.getElementById('fin-fornecedor').innerHTML = '<option value="">-- Sem vínculo / Custo Solto --</option>' + dados.map(x => `<option value="${x.id}">${x.nome_fantasia}</option>`).join(''); 
+        }
+
+        async function excluirFornecedor(id) {
+            confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
+                try {
+                    // Coloca a tabela em modo de carregamento IMEDIATAMENTE para você ver que funcionou
+                    document.getElementById('lista-fornecedores').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-red-500 font-black uppercase tracking-widest"><i class="ph-bold ph-spinner animate-spin text-2xl mb-2"></i><br>Apagando e Sincronizando...</td></tr>';
+
+                    const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
+                    if(res.ok) {
+                        alertaPremium("Fornecedor apagado com sucesso.", "Excluído", "sucesso");
+                        
+                        // 🚨 Congela por 1.5 segundos para o banco apagar do disco
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        await carregarFornecedores();
+                    } else {
+                        const err = await res.json();
+                        alertaPremium(err.detail || "Falha ao tentar excluir.", "Aviso", "erro");
+                        await carregarFornecedores(); // Restaura a tabela se der erro
+                    }
+                } catch(e) {
+                    alertaPremium("Erro de rede ao tentar excluir.", "Erro", "erro");
+                    await carregarFornecedores();
+                }
+            });
         }
 
         async function lancarConta(e) { 
