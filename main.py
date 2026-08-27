@@ -2915,7 +2915,6 @@ class TaxaEntregaSchema(BaseModel):
 def listar_taxas(db: Session = Depends(get_db)):
     from database import TaxaEntregaModel 
     try:
-        TaxaEntregaModel.__table__.create(db.get_bind(), checkfirst=True)
         return db.query(TaxaEntregaModel).order_by(TaxaEntregaModel.bairro.asc()).all()
     except Exception as e:
         print(f"Erro ao listar taxas: {e}")
@@ -2926,8 +2925,6 @@ def criar_taxa(dados: TaxaEntregaSchema, db: Session = Depends(get_db)):
     from fastapi import HTTPException
     from database import TaxaEntregaModel
     try:
-        TaxaEntregaModel.__table__.create(db.get_bind(), checkfirst=True)
-        
         tx = db.query(TaxaEntregaModel).filter(TaxaEntregaModel.bairro == dados.bairro).first()
         if tx:
             tx.taxa = dados.taxa
