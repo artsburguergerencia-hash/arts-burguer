@@ -2564,7 +2564,7 @@ function gerarStringDeHorarios() {
             e.preventDefault(); 
             const btn = e.target.querySelector('button[type="submit"]');
             const txtOriginal = btn.innerHTML;
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando na nuvem...";
             btn.disabled = true;
 
             const payload = { 
@@ -2604,16 +2604,23 @@ function gerarStringDeHorarios() {
         async function carregarFornecedores() { 
             try {
                 const tbody = document.getElementById('lista-fornecedores');
-                // EFEITO VISUAL: Mostra que a tabela está buscando dados frescos
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-brand-500 font-black uppercase tracking-widest"><i class="ph-bold ph-spinner animate-spin text-xl mr-2"></i> Atualizando tabela...</td></tr>';
+                // 🚨 EFEITO VISUAL: Mostra imediatamente que a tela está trabalhando
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-brand-500 font-black uppercase tracking-widest"><i class="ph-bold ph-spinner animate-spin text-2xl mb-2"></i><br>Atualizando tabela em tempo real...</td></tr>';
                 
-                // CACHE BUSTER: A variável '?v=' na URL força o navegador a não usar memória velha
-                const urlBuster = '/api/gestao/fornecedores?v=' + new Date().getTime();
-                const res = await fetch(urlBuster, { cache: 'no-store' }); 
+                // CACHE BUSTER SUPREMO: Força a nuvem a buscar dados novos agora!
+                const timestamp = new Date().getTime();
+                const res = await fetch('/api/gestao/fornecedores?v=' + timestamp, { 
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                }); 
                 const dados = await res.json(); 
                 
                 if (dados.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">Nenhum fornecedor encontrado.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">Nenhum fornecedor cadastrado.</td></tr>';
                     return;
                 }
                 
@@ -2628,35 +2635,18 @@ function gerarStringDeHorarios() {
                     </td>
                 </tr>`).join(''); 
             } catch (e) {
-                console.error("Erro ao carregar lista", e);
+                console.error("Erro ao carregar lista de fornecedores", e);
                 document.getElementById('lista-fornecedores').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-red-500 font-bold">Erro ao atualizar a tabela.</td></tr>';
             }
-        }
-        
-        async function abrirModalEditarFornecedor(id) {
-            try {
-                const res = await fetch('/api/gestao/fornecedores');
-                const fornecedores = await res.json();
-                const f = fornecedores.find(x => x.id === id);
-                if(!f) return;
-
-                document.getElementById('edit-forn-id').value = f.id;
-                document.getElementById('edit-forn-nome').value = f.nome_fantasia;
-                document.getElementById('edit-forn-cnpj').value = f.cnpj || "";
-                document.getElementById('edit-forn-contato').value = f.contato || "";
-                
-                carregarCategoriasSelect('edit-forn-cat', listaCatFornecedor);
-                setTimeout(() => { document.getElementById('edit-forn-cat').value = f.categoria; }, 100);
-
-                document.getElementById('modal-editar-fornecedor').classList.replace('hidden', 'flex');
-            } catch(e) { alertaPremium("Erro ao carregar dados.", "Erro", "erro"); }
         }
 
         async function salvarEdicaoFornecedor(e) {
             e.preventDefault();
             const id = document.getElementById('edit-forn-id').value;
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Atualizando...";
+            btn.disabled = true;
 
             const payload = {
                 nome_fantasia: document.getElementById('edit-forn-nome').value,
@@ -2676,7 +2666,31 @@ function gerarStringDeHorarios() {
                     alertaPremium(err.detail || "Erro ao salvar.", "Falha", "erro"); 
                 }
             } catch(err) { alertaPremium("Erro de conexão com o servidor.", "Falha", "erro"); }
-            btn.innerHTML = "Salvar Alterações";
+            finally {
+                btn.innerHTML = txtOriginal;
+                btn.disabled = false;
+            }
+        }
+
+        async function abrirModalEditarFornecedor(id) {
+            try {
+                // Traz os dados frescos também pro modal de edição
+                const urlBuster = '/api/gestao/fornecedores?v=' + new Date().getTime();
+                const res = await fetch(urlBuster, { cache: 'no-store' });
+                const fornecedores = await res.json();
+                const f = fornecedores.find(x => x.id === id);
+                if(!f) return;
+
+                document.getElementById('edit-forn-id').value = f.id;
+                document.getElementById('edit-forn-nome').value = f.nome_fantasia;
+                document.getElementById('edit-forn-cnpj').value = f.cnpj || "";
+                document.getElementById('edit-forn-contato').value = f.contato || "";
+                
+                carregarCategoriasSelect('edit-forn-cat', listaCatFornecedor);
+                setTimeout(() => { document.getElementById('edit-forn-cat').value = f.categoria; }, 100);
+
+                document.getElementById('modal-editar-fornecedor').classList.replace('hidden', 'flex');
+            } catch(e) { alertaPremium("Erro ao carregar dados.", "Erro", "erro"); }
         }
         
         async function excluirFornecedor(id) {
