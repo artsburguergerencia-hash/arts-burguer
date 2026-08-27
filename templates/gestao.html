@@ -2879,16 +2879,22 @@ function gerarStringDeHorarios() {
                 tbody.innerHTML = clientes.map(x => {
                     let niverFormatado = "-";
                     if(x.data_nascimento) {
-                        if(x.data_nascimento.includes('-')) {
-                            niverFormatado = x.data_nascimento.split('-').reverse().join('/');
-                        } else {
-                            niverFormatado = x.data_nascimento;
-                        }
+                        if(x.data_nascimento.includes('-')) niverFormatado = x.data_nascimento.split('-').reverse().join('/');
+                        else niverFormatado = x.data_nascimento;
                     }
+                    
+                    // Renderiza foto ou iniciais
+                    let avatar = x.foto ? `<img src="${x.foto}" class="w-10 h-10 rounded-full object-cover mr-3 border border-slate-200 shadow-sm shrink-0">` : `<div class="w-10 h-10 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center font-black text-sm mr-3 border border-brand-100 shrink-0">${x.nome.charAt(0).toUpperCase()}</div>`;
 
                     return `
                     <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors ${x.bloqueado ? 'bg-red-50/30' : ''}">
-                        <td class="py-4 px-6 font-black text-slate-800">${x.nome}<br><span class="text-xs font-mono font-medium text-slate-400">${x.telefone}</span></td>
+                        <td class="py-4 px-6 flex items-center">
+                            ${avatar}
+                            <div>
+                                <span class="font-black text-slate-800">${x.nome}</span><br>
+                                <span class="text-xs font-mono font-medium text-slate-400">${x.telefone}</span>
+                            </div>
+                        </td>
                         <td class="py-4 px-6 text-center font-bold text-slate-500">${niverFormatado !== '-' ? '🎂 ' + niverFormatado : '-'}</td>
                         <td class="py-4 px-6 text-center">
                             <span class="bg-slate-100 border border-slate-200 px-2 py-1 rounded text-slate-600 font-black text-xs mr-1">${x.pontos} Pts</span>
@@ -2897,32 +2903,41 @@ function gerarStringDeHorarios() {
                         <td class="py-4 px-6 flex justify-center space-x-2">
                             <button onclick="abrirModalEditarCliente(${x.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm" title="Editar Dossiê"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
                             
-                            <!-- BOTÃO DO WHATSAPP CORRIGIDO E DESTACADO -->
-                            <button onclick="enviarPromoWhatsApp('${x.nome}', '${x.telefone}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-md active:scale-95 flex items-center" title="Enviar Promo de Aniversário">
+                            <button onclick="enviarPromoWhatsApp('${x.nome}', '${x.telefone}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-md active:scale-95 flex items-center" title="WhatsApp">
                                 <i class="ph-bold ph-whatsapp-logo text-base"></i>
                             </button>
                             
-                            <button onclick="if(confirm('Alterar bloqueio automático para este cliente?')){fetch('/api/gestao/clientes/${x.id}/bloqueio', {method:'PUT'}).then(carregarClientesPainel)}" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm active:scale-95" title="${x.bloqueado ? 'Desbloquear' : 'Travar'}">
+                            <button onclick="alternarBloqueioCliente(${x.id}, ${x.bloqueado})" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm active:scale-95" title="${x.bloqueado ? 'Desbloquear' : 'Travar'}">
                                 <i class="ph-bold ${x.bloqueado ? 'ph-lock-open' : 'ph-lock-key'} text-sm"></i>
+                            </button>
+                            
+                            <button onclick="excluirCliente(${x.id})" class="bg-white border border-slate-200 hover:bg-red-500 hover:text-white text-red-400 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm active:scale-95" title="Excluir Cliente">
+                                <i class="ph-bold ph-trash text-sm"></i>
                             </button>
                         </td>
                     </tr>`;
-                }).join(''); 
-            } catch(e) {
-                document.getElementById('lista-clientes-painel').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500 font-bold">Erro: ${e.message}</td></tr>`;
-            }
-        }
+                }).join('');
 
         // DISPARADOR DE MARKETING NO WHATSAPP
-        function enviarPromoWhatsApp(nome, telefone) {
-            let numero = telefone.replace(/\D/g, ''); 
-            if(numero.length === 10 || numero.length === 11) {
-                numero = "55" + numero; 
-            }
-            const primeiroNome = nome.split(' ')[0];
-            const mensagem = `Fala ${primeiroNome}! 🎉 Vimos que seu aniversário está chegando! Para comemorar, preparamos um presente especial pra você. Acesse nosso cardápio online e use o cupom NIVER15 para ganhar desconto no seu pedido de hoje! 🍔🍟`;
-            const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
-            window.open(url, '_blank');
+        function alternarBloqueioCliente(id, estaBloqueado) {
+            const acao = estaBloqueado ? "Desbloquear" : "Bloquear";
+            confirmarExclusaoPremium(`Deseja ${acao} o acesso deste cliente?`, async () => {
+                await fetch(`/api/gestao/clientes/${id}/bloqueio`, {method:'PUT'});
+                alertaPremium(`Cliente ${acao.toLowerCase()}o com sucesso!`, "Status Alterado", "sucesso");
+                carregarClientesPainel();
+            });
+        }
+
+        function excluirCliente(id) {
+            confirmarExclusaoPremium("Deseja apagar este cliente permanentemente? O histórico será perdido.", async () => {
+                const res = await fetch(`/api/gestao/clientes/${id}`, {method:'DELETE'});
+                if(res.ok) {
+                    alertaPremium("Cliente excluído da base de dados.", "Operação Concluída", "sucesso");
+                    carregarClientesPainel();
+                } else {
+                    alertaPremium("Não foi possível excluir o cliente.", "Erro", "erro");
+                }
+            });
         }
 
         // --- FUNÇÕES DE EDIÇÃO MANUAL DE CLIENTES (CRM) ---
