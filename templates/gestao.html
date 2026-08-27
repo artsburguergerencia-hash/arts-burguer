@@ -2685,12 +2685,6 @@ function gerarStringDeHorarios() {
             }
         }
 
-        async function carregarFornecedoresParaSelect() { 
-            const res = await fetch('/api/gestao/fornecedores'); 
-            const dados = await res.json(); 
-            document.getElementById('fin-fornecedor').innerHTML = '<option value="">-- Sem vínculo / Custo Solto --</option>' + dados.map(x => `<option value="${x.id}">${x.nome_fantasia}</option>`).join(''); 
-        }
-
         async function excluirFornecedor(id) {
             confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
                 try {
@@ -2714,6 +2708,12 @@ function gerarStringDeHorarios() {
                     await carregarFornecedores();
                 }
             });
+        }
+
+        async function carregarFornecedoresParaSelect() { 
+            const res = await fetch('/api/gestao/fornecedores'); 
+            const dados = await res.json(); 
+            document.getElementById('fin-fornecedor').innerHTML = '<option value="">-- Sem vínculo / Custo Solto --</option>' + dados.map(x => `<option value="${x.id}">${x.nome_fantasia}</option>`).join(''); 
         }
 
         async function lancarConta(e) { 
