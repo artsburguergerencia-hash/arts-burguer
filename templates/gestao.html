@@ -2560,45 +2560,10 @@ function gerarStringDeHorarios() {
             btn.innerHTML = "Atualizar Estoque";
         }
 
-        async function cadastrarFornecedor(e) { 
-            e.preventDefault(); 
-            const btn = e.target.querySelector('button[type="submit"]');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando na nuvem...";
-            btn.disabled = true;
-
-            const payload = { 
-                nome_fantasia: document.getElementById('forn-nome').value, 
-                cnpj: document.getElementById('forn-cnpj').value, 
-                categoria: document.getElementById('forn-cat').value, 
-                contato: document.getElementById('forn-contato').value 
-            }; 
-            
-            try {
-                const res = await fetch('/api/gestao/fornecedores', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify(payload) 
-                }); 
-                
-                if(res.ok) {
-                    alertaPremium("Fornecedor cadastrado com sucesso!", "Parceiro Salvo", "sucesso");
-                    document.getElementById('form-fornecedor').reset(); 
-                    await carregarFornecedores(); 
-                } else {
-                    const err = await res.json();
-                    alertaPremium("O banco recusou o cadastro: " + (err.detail || "Erro interno."), "Erro", "erro");
-                }
-            } catch(err) {
-                alertaPremium("Falha na rede ou servidor offline.", "Erro de Conexão", "erro");
-            } finally {
-                btn.innerHTML = txtOriginal;
-                btn.disabled = false;
-            }
-        }
+        
         
         // ==============================================================
-        // MÓDULO DE FORNECEDORES (COM EDIÇÃO E EXCLUSÃO BLINDADAS)
+        // MÓDULO DE FORNECEDORES (V7 - TOTALMENTE BLINDADO ANTI-CACHE)
         // ==============================================================
 
         async function carregarFornecedores() { 
@@ -2640,6 +2605,64 @@ function gerarStringDeHorarios() {
             }
         }
 
+        async function cadastrarFornecedor(e) { 
+            e.preventDefault(); 
+            const btn = e.target.querySelector('button[type="submit"]');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando na nuvem...";
+            btn.disabled = true;
+
+            const payload = { 
+                nome_fantasia: document.getElementById('forn-nome').value, 
+                cnpj: document.getElementById('forn-cnpj').value, 
+                categoria: document.getElementById('forn-cat').value, 
+                contato: document.getElementById('forn-contato').value 
+            }; 
+            
+            try {
+                const res = await fetch('/api/gestao/fornecedores', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                }); 
+                
+                if(res.ok) {
+                    alertaPremium("Fornecedor cadastrado com sucesso!", "Parceiro Salvo", "sucesso");
+                    document.getElementById('form-fornecedor').reset(); 
+                    await carregarFornecedores(); 
+                } else {
+                    const err = await res.json();
+                    alertaPremium("O banco recusou o cadastro: " + (err.detail || "Erro interno."), "Erro", "erro");
+                }
+            } catch(err) {
+                alertaPremium("Falha na rede ou servidor offline.", "Erro de Conexão", "erro");
+            } finally {
+                btn.innerHTML = txtOriginal;
+                btn.disabled = false;
+            }
+        }
+
+        async function abrirModalEditarFornecedor(id) {
+            try {
+                // Traz os dados frescos também pro modal de edição
+                const urlBuster = '/api/gestao/fornecedores?v=' + new Date().getTime();
+                const res = await fetch(urlBuster, { cache: 'no-store' });
+                const fornecedores = await res.json();
+                const f = fornecedores.find(x => x.id === id);
+                if(!f) return;
+
+                document.getElementById('edit-forn-id').value = f.id;
+                document.getElementById('edit-forn-nome').value = f.nome_fantasia;
+                document.getElementById('edit-forn-cnpj').value = f.cnpj || "";
+                document.getElementById('edit-forn-contato').value = f.contato || "";
+                
+                carregarCategoriasSelect('edit-forn-cat', listaCatFornecedor);
+                setTimeout(() => { document.getElementById('edit-forn-cat').value = f.categoria; }, 100);
+
+                document.getElementById('modal-editar-fornecedor').classList.replace('hidden', 'flex');
+            } catch(e) { alertaPremium("Erro ao carregar dados.", "Erro", "erro"); }
+        }
+
         async function salvarEdicaoFornecedor(e) {
             e.preventDefault();
             const id = document.getElementById('edit-forn-id').value;
@@ -2672,28 +2695,7 @@ function gerarStringDeHorarios() {
             }
         }
 
-        async function abrirModalEditarFornecedor(id) {
-            try {
-                // Traz os dados frescos também pro modal de edição
-                const urlBuster = '/api/gestao/fornecedores?v=' + new Date().getTime();
-                const res = await fetch(urlBuster, { cache: 'no-store' });
-                const fornecedores = await res.json();
-                const f = fornecedores.find(x => x.id === id);
-                if(!f) return;
-
-                document.getElementById('edit-forn-id').value = f.id;
-                document.getElementById('edit-forn-nome').value = f.nome_fantasia;
-                document.getElementById('edit-forn-cnpj').value = f.cnpj || "";
-                document.getElementById('edit-forn-contato').value = f.contato || "";
-                
-                carregarCategoriasSelect('edit-forn-cat', listaCatFornecedor);
-                setTimeout(() => { document.getElementById('edit-forn-cat').value = f.categoria; }, 100);
-
-                document.getElementById('modal-editar-fornecedor').classList.replace('hidden', 'flex');
-            } catch(e) { alertaPremium("Erro ao carregar dados.", "Erro", "erro"); }
-        }
-        
-        async function excluirFornecedor(id) {
+        {
             confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
                 try {
                     const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
