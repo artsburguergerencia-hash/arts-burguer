@@ -3178,20 +3178,25 @@ function gerarStringDeHorarios() {
             }
         }
 
-        async function salvarTaxaEntrega() {
-            const btn = document.querySelector('button[onclick="salvarTaxaEntrega()"]');
-            const txtOriginal = btn.innerHTML;
-            
+        {
             const bairroInput = document.getElementById('taxa-bairro');
             const taxaInput = document.getElementById('taxa-valor');
             
             const bairro = bairroInput.value.trim();
             const taxa = parseMoeda(taxaInput.value);
             
-            if(!bairro) { alertaPremium("Digite o nome do bairro.", "Aviso", "erro"); return; }
+            if(!bairro) { 
+                alert("Por favor, digite o nome do bairro."); 
+                return; 
+            }
 
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Salvando...';
-            btn.disabled = true;
+            const btn = document.querySelector('button[onclick="salvarTaxaEntrega()"]') || event?.target;
+            let txtOriginal = "Cadastrar Taxa";
+            if (btn) {
+                txtOriginal = btn.innerHTML;
+                btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Salvando...';
+                btn.disabled = true;
+            }
 
             try {
                 const res = await fetch('/api/taxas/salvar', { 
@@ -3203,20 +3208,20 @@ function gerarStringDeHorarios() {
                 if(res.ok) {
                     bairroInput.value = '';
                     taxaInput.value = '';
-                    alertaPremium("Taxa de entrega registrada!", "Logística", "sucesso");
-                    
-                    // 🚨 DELAY DE SEGURANÇA: Dá 1 segundo pro banco de dados respirar
-                    setTimeout(() => { carregarTaxasEntrega(); }, 1000);
+                    // Recarrega a tabela imediatamente sem travar
+                    await carregarTaxasEntrega();
                 } else {
                     const err = await res.json();
-                    alertaPremium("Erro do Servidor: " + (err.detail || "Falha ao salvar"), "Erro", "erro");
+                    alert("Erro do Servidor: " + (err.detail || "Falha ao salvar"));
                 }
             } catch(e) {
-                alertaPremium("Sem conexão com o servidor.", "Falha de Rede", "erro");
+                alert("Sem conexão com o servidor.");
+            } finally {
+                if (btn) {
+                    btn.innerHTML = txtOriginal;
+                    btn.disabled = false;
+                }
             }
-            
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
         }
 
         async function deletarTaxaEntrega(id) {
