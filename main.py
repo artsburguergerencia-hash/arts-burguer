@@ -2589,20 +2589,48 @@ def atualizar_insumo(insumo_id: int, dados: dict, db: Session = Depends(get_db))
     db.commit()
     return {"status": "sucesso", "mensagem": "Insumo atualizado!"}
 
-# 6. Atualizar Colaborador (Nome e Matrícula)
+# 6. Atualizar Colaborador (Nome, Matrícula e Senha)
 @app.put("/api/gestao/funcionarios/{func_id}")
 def atualizar_funcionario_basico(func_id: int, dados: dict, db: Session = Depends(get_db)):
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
     if not func:
         raise HTTPException(status_code=404, detail="Funcionário não encontrado")
         
-    if 'nome' in dados: 
+    if 'nome' in dados and dados['nome']: 
         func.nome = dados['nome']
     if 'matricula' in dados: 
         func.matricula_cracha = dados['matricula']
         
+    # --- NOVO: Suporte para resetar a senha ---
+    if 'senha' in dados and dados['senha'].strip() != "":
+        func.senha_hash = pwd_context.hash(dados['senha'].strip())
+        
     db.commit()
     return {"status": "sucesso", "mensagem": "Colaborador atualizado!"}
+
+# 7. Exclusão Definitiva do Colaborador do Banco de Dados
+@app.delete("/api/gestao/funcionarios/{func_id}/excluir")
+def excluir_funcionario_definitivo(func_id: int, db: Session = Depends(get_db)):
+    try:
+        func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+        if not func: 
+            raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
+        if func.id == 1 or func.usuario == "admin": 
+            raise HTTPException(status_code=403, detail="O Administrador Supremo não pode ser excluído.")
+            
+        # Apaga os vínculos para evitar erro 500 no banco de dados
+        db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).delete()
+        db.query(PontoModel).filter(PontoModel.funcionario_id == func_id).delete()
+        db.query(OcorrenciaRHModel).filter(OcorrenciaRHModel.funcionario_id == func_id).delete()
+        db.query(SolicitacaoFeriasModel).filter(SolicitacaoFeriasModel.funcionario_id == func_id).delete()
+        
+        # Apaga o funcionário
+        db.delete(func)
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Funcionário apagado do sistema."}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ==========================================
 # MÁQUINA DE VENDAS: CUPONS E PROMOÇÕES
