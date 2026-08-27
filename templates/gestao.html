@@ -2695,7 +2695,7 @@ function gerarStringDeHorarios() {
             }
         }
 
-        {
+        async function excluirFornecedor(id) {
             confirmarExclusaoPremium("Apagar este fornecedor do sistema?", async () => {
                 try {
                     const res = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
