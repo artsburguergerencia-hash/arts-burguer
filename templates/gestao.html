@@ -2002,8 +2002,11 @@ function gerarStringDeHorarios() {
                         badgeStatus = '<span class="bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Falta LGPD/Form.</span>';
                     } else if(f.status_admissao === 'ATIVO') {
                         badgeStatus = '<span class="bg-green-100 text-green-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest"><i class="ph-bold ph-check mr-1"></i> Contrato Ativo</span>';
-                    } else {
+                    } else if(f.status_admissao === 'DEMITIDO') {
                         badgeStatus = '<span class="bg-red-100 text-red-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Demitido</span>';
+                    } else {
+                        // Mostra Azul em vez de Vermelho para quem não tem dados de RH
+                        badgeStatus = '<span class="bg-blue-100 text-blue-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Ativo (Sem RH)</span>';
                     }
                     
                     let acaoAdmin = '';
@@ -2016,9 +2019,9 @@ function gerarStringDeHorarios() {
                             <button onclick="excluirFuncionarioDefinitivo(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Apagar do Banco de Dados"><i class="ph-bold ph-trash text-base"></i></button>
                         </div>`;
                     } else {
-                        // Se estiver ATIVO ou PENDENTE
+                        // Se estiver ATIVO, PENDENTE ou SEM RH
                         let btnDemitir = '';
-                        // Aqui está a proteção correta: Protege apenas quem TEM CARGO DE ADMIN de ser demitido acidentalmente
+                        // Protege apenas quem TEM CARGO DE ADMIN de ser demitido acidentalmente
                         if (f.permissoes === 'total') {
                             btnDemitir = '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-2 flex items-center">Admin</span>';
                         } else {
