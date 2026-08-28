@@ -33,6 +33,25 @@
         } else {
             document.documentElement.classList.add('dark');
         }
+
+        // 🚨 FUNÇÃO GLOBAL DE EDIÇÃO DO COLABORADOR (Garante que nunca dê Erro 404/ReferenceError) 🚨
+        window.abrirModalEditarColaborador = function(id, nome, matricula, cargo_id) {
+            document.getElementById('edit-colab-id').value = id;
+            document.getElementById('edit-colab-nome').value = nome;
+            document.getElementById('edit-colab-mat').value = (matricula && matricula !== 'null') ? matricula : '';
+            
+            const selectCargo = document.getElementById('edit-colab-cargo');
+            if(selectCargo && cargo_id) {
+                selectCargo.value = cargo_id;
+            }
+            
+            const inputSenha = document.getElementById('edit-colab-senha');
+            if(inputSenha) {
+                inputSenha.value = ''; 
+            }
+            
+            document.getElementById('modal-editar-colaborador').classList.replace('hidden', 'flex');
+        };
     </script>
     
     <style>
