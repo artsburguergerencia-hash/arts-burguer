@@ -1218,16 +1218,23 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Completo</label>
                     <input type="text" id="edit-colab-nome" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Matrícula (Ex: 0001)</label>
-                    <input type="text" id="edit-colab-mat" placeholder="0000" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-mono font-bold outline-none focus:border-brand-500">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Matrícula</label>
+                        <input type="text" id="edit-colab-mat" placeholder="0000" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-mono font-bold outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Cargo Oficial</label>
+                        <select id="edit-colab-cargo" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold text-blue-600 outline-none focus:border-brand-500"></select>
+                    </div>
                 </div>
-                <!-- NOVO CAMPO: RESET DE SENHA -->
+
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nova Senha (Opcional)</label>
                     <input type="password" id="edit-colab-senha" placeholder="Digite apenas para resetar" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
                 </div>
-                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">Salvar Alterações</button>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-4 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">Salvar Alterações</button>
             </form>
         </div>
     </div>
@@ -1901,7 +1908,9 @@ function gerarStringDeHorarios() {
             try {
                 const res = await fetch('/api/gestao/cargos'); 
                 const cargos = await res.json();
-                document.getElementById('rh-cargo').innerHTML = cargos.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+                const htmlOptions = cargos.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+                document.getElementById('rh-cargo').innerHTML = htmlOptions;
+                document.getElementById('edit-colab-cargo').innerHTML = htmlOptions; // Puxa os cargos também pro modal de edição
             } catch(e) {}
         }
         
@@ -2042,7 +2051,7 @@ function gerarStringDeHorarios() {
 
                         acaoAdmin = `
                         <div class="flex space-x-1 justify-center">
-                            <button onclick="abrirModalEditarColaborador(${f.id}, '${f.nome}', '${f.matricula || ''}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar / Resetar Senha"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                            <button onclick="abrirModalEditarColaborador(${f.id}, '${f.nome}', '${f.matricula || ''}', ${f.cargo_id})" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar Dados e Senha"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
                             <button onclick="abrirDossie(${f.id}, '${f.nome}', '${f.matricula}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm">Dossiê</button>
                             ${btnDemitir}
                         </div>`;
@@ -3375,10 +3384,12 @@ function gerarStringDeHorarios() {
         }
     }
 
-    function abrirModalEditarColaborador(id, nome, matricula) {
+    unction abrirModalEditarColaborador(id, nome, matricula, cargo_id) {
             document.getElementById('edit-colab-id').value = id;
             document.getElementById('edit-colab-nome').value = nome;
             document.getElementById('edit-colab-mat').value = (matricula && matricula !== 'null') ? matricula : '';
+            document.getElementById('edit-colab-cargo').value = cargo_id; // Deixa o cargo atual selecionado
+            document.getElementById('edit-colab-senha').value = ''; // Sempre abre com a senha vazia
             document.getElementById('modal-editar-colaborador').classList.replace('hidden', 'flex');
         }
 
@@ -3387,7 +3398,8 @@ function gerarStringDeHorarios() {
             const id = document.getElementById('edit-colab-id').value;
             const nome = document.getElementById('edit-colab-nome').value;
             const matricula = document.getElementById('edit-colab-mat').value;
-            const senha = document.getElementById('edit-colab-senha').value; // Captura a nova senha
+            const cargo = document.getElementById('edit-colab-cargo').value;
+            const senha = document.getElementById('edit-colab-senha').value; 
             
             const btn = e.target.querySelector('button[type="submit"]');
             btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
@@ -3397,12 +3409,11 @@ function gerarStringDeHorarios() {
                 const res = await fetch(`/api/gestao/funcionarios/${id}`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ nome: nome, matricula: matricula, senha: senha })
+                    body: JSON.stringify({ nome: nome, matricula: matricula, cargo_id: cargo, senha: senha })
                 });
                 
                 if(res.ok) {
-                    alertaPremium("Dados atualizados com sucesso!", "Sucesso", "sucesso");
-                    document.getElementById('edit-colab-senha').value = ''; // Limpa a senha
+                    alertaPremium("Dados e cargo atualizados com sucesso!", "Sucesso", "sucesso");
                     document.getElementById('modal-editar-colaborador').classList.replace('flex', 'hidden');
                     carregarColaboradores();
                     
