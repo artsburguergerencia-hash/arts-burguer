@@ -1222,6 +1222,11 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Matrícula (Ex: 0001)</label>
                     <input type="text" id="edit-colab-mat" placeholder="0000" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-mono font-bold outline-none focus:border-brand-500">
                 </div>
+                <!-- NOVO CAMPO: RESET DE SENHA -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nova Senha (Opcional)</label>
+                    <input type="password" id="edit-colab-senha" placeholder="Digite apenas para resetar" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
+                </div>
                 <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">Salvar Alterações</button>
             </form>
         </div>
@@ -2002,21 +2007,26 @@ function gerarStringDeHorarios() {
                     }
                     
                     let acaoAdmin = '';
-                    if (f.permissoes === 'total') {
+                    // REGRA CORRIGIDA: Usa o ID 1 ou nome admin para proteger o dono do sistema
+                    if (f.id === 1 || f.usuario === 'admin') {
                         acaoAdmin = '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Acesso Supremo</span>';
                     } else if (f.status_admissao === 'DEMITIDO') {
-                        acaoAdmin = `<button onclick="readmitirColaborador(${f.id})" class="text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm"><i class="ph-bold ph-arrow-counter-clockwise mr-1"></i> Readmitir</button>`;
+                        acaoAdmin = `
+                        <div class="flex space-x-1 justify-center">
+                            <button onclick="readmitirColaborador(${f.id})" class="text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Readmitir Usuário"><i class="ph-bold ph-arrow-counter-clockwise mr-1"></i> Readmitir</button>
+                            <button onclick="excluirFuncionarioDefinitivo(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Apagar do Banco de Dados"><i class="ph-bold ph-trash text-base"></i></button>
+                        </div>`;
                     } else {
                         acaoAdmin = `
                         <div class="flex space-x-1 justify-center">
-                            <button onclick="abrirModalEditarColaborador(${f.id}, '${f.nome}', '${f.matricula || ''}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar Nome/Matrícula"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                            <button onclick="abrirModalEditarColaborador(${f.id}, '${f.nome}', '${f.matricula || ''}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar / Resetar Senha"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
                             <button onclick="abrirDossie(${f.id}, '${f.nome}', '${f.matricula}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm">Dossiê</button>
-                            <button onclick="demitirColaborador(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
+                            <button onclick="demitirColaborador(${f.id})" class="text-amber-500 bg-white border border-amber-200 hover:bg-amber-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Demitir e Revogar Acesso"><i class="ph-bold ph-user-minus text-base"></i></button>
                         </div>`;
                     }
                     
                     let pontoHtml = '';
-                    if(f.status_admissao === 'ATIVO' && f.permissoes !== 'total') {
+                    if(f.status_admissao === 'ATIVO' && f.id !== 1 && f.usuario !== 'admin') {
                         if(!f.ponto_entrada) {
                             pontoHtml = `<button onclick="baterPontoRH(${f.id}, 'entrada')" class="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-widest px-3 py-2 rounded-xl font-black shadow-md transition-all active:scale-95">Bater Entrada</button>`;
                         } else if(!f.ponto_saida) {
@@ -2026,9 +2036,9 @@ function gerarStringDeHorarios() {
                         }
                     }
                     
-                    let avatar = f.foto_3x4 ? `<img src="${f.foto_3x4}" class="w-12 h-12 rounded-2xl object-cover mr-4 border border-slate-200 shadow-sm">` : `<div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center font-black text-xl mr-4 border border-slate-200 shadow-sm">${f.nome.charAt(0)}</div>`;
+                    let avatar = f.foto_3x4 ? `<img src="${f.foto_3x4}" class="w-12 h-12 rounded-2xl object-cover mr-4 border border-slate-200 shadow-sm">` : `<div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center font-black text-xl mr-4 border border-slate-200 shadow-sm">${f.nome.charAt(0).toUpperCase()}</div>`;
 
-                    return `<tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors ${f.status_admissao==='DEMITIDO'?'opacity-50 grayscale':''}">
+                    return `<tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors ${f.status_admissao==='DEMITIDO'?'opacity-60 grayscale':''}">
                         <td class="py-4 px-6 flex items-center">
                             ${avatar} 
                             <div>
@@ -2044,7 +2054,23 @@ function gerarStringDeHorarios() {
                         <td class="py-4 px-6 text-center align-middle">${acaoAdmin}</td>
                     </tr>`;
                 }).join('');
-            } catch(e) {}
+            } catch(e) { console.log(e); }
+        }
+
+        // Função Nova: Excluir do Banco de Dados
+        function excluirFuncionarioDefinitivo(id) {
+            confirmarExclusaoPremium("ATENÇÃO: Apagar este funcionário excluirá permanentemente o dossiê, holerites e registros de ponto dele. Deseja continuar?", async () => {
+                try {
+                    const res = await fetch(`/api/gestao/funcionarios/${id}/excluir`, { method: 'DELETE' });
+                    if(res.ok) {
+                        alertaPremium("Funcionário apagado da base de dados.", "Operação Concluída", "sucesso");
+                        carregarColaboradores();
+                    } else {
+                        const err = await res.json();
+                        alertaPremium("Erro: " + err.detail, "Aviso", "erro");
+                    }
+                } catch (e) { alertaPremium("Erro de conexão.", "Erro", "erro"); }
+            });
         }
         
         async function baterPontoRH(id, tipo) { 
@@ -3322,6 +3348,7 @@ function gerarStringDeHorarios() {
             const id = document.getElementById('edit-colab-id').value;
             const nome = document.getElementById('edit-colab-nome').value;
             const matricula = document.getElementById('edit-colab-mat').value;
+            const senha = document.getElementById('edit-colab-senha').value; // Captura a nova senha
             
             const btn = e.target.querySelector('button[type="submit"]');
             btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
@@ -3331,15 +3358,15 @@ function gerarStringDeHorarios() {
                 const res = await fetch(`/api/gestao/funcionarios/${id}`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ nome: nome, matricula: matricula })
+                    body: JSON.stringify({ nome: nome, matricula: matricula, senha: senha })
                 });
                 
                 if(res.ok) {
-                    alertaPremium("Dados atualizados!", "Sucesso", "sucesso");
+                    alertaPremium("Dados atualizados com sucesso!", "Sucesso", "sucesso");
+                    document.getElementById('edit-colab-senha').value = ''; // Limpa a senha
                     document.getElementById('modal-editar-colaborador').classList.replace('flex', 'hidden');
                     carregarColaboradores();
                     
-                    // SE O USUÁRIO EDITAR A SI PRÓPRIO, ATUALIZA A SESSÃO E O NOME NA TELA
                     const nomeSessao = localStorage.getItem('funcionario_nome');
                     if (document.getElementById('nome-admin-lateral').innerText === nomeSessao) {
                          localStorage.setItem('funcionario_nome', nome);
