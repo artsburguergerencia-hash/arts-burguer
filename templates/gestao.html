@@ -2023,8 +2023,7 @@ function gerarStringDeHorarios() {
                     // BOTÃO DE EDIÇÃO BLINDADO
                     const nomeSeguro = f.nome ? f.nome.replace(/'/g, "\\'") : '';
                     const matSegura = f.matricula ? f.matricula.replace(/'/g, "\\'") : '';
-                    const btnEditar = `<button onclick="abrirModalEditarColaborador(${f.id}, '${nomeSeguro}', '${matSegura}', ${f.cargo_id})" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar Dados e Senha"><i class="ph-bold ph-pencil-simple text-sm"></i></button>`;
-
+                    const btnEditar = `<button onclick="abrirModalEditarColaborador(${f.id}, '${nomeSeguro}', '${matSegura}', ${f.cargo_id || null})" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar Dados e Senha"><i class="ph-bold ph-pencil-simple text-sm"></i></button>`;
                     // Se estiver DEMITIDO
                     if (f.status_admissao === 'DEMITIDO') {
                         let btnExcluir = '';
@@ -3388,7 +3387,7 @@ function gerarStringDeHorarios() {
         }
     }
 
-    unction abrirModalEditarColaborador(id, nome, matricula, cargo_id) {
+    function abrirModalEditarColaborador(id, nome, matricula, cargo_id) {
             document.getElementById('edit-colab-id').value = id;
             document.getElementById('edit-colab-nome').value = nome;
             document.getElementById('edit-colab-mat').value = (matricula && matricula !== 'null') ? matricula : '';
