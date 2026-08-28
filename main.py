@@ -2949,33 +2949,41 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
 
 @app.get("/api/rastreio/{busca}")
 def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
-    hoje = datetime.utcnow().date()
+    busca_limpa = busca.replace("#", "").strip()
     pedido = None
     
-    if busca.isdigit() and len(busca) <= 4:
-        pedido = db.query(PedidoModel).filter(PedidoModel.data_pedido == hoje, PedidoModel.senha_diaria == int(busca)).first()
+    if busca_limpa.isdigit():
+        num = int(busca_limpa)
+        # Procura primariamente pela senha diária e secundariamente pelo ID do pedido
+        pedido = db.query(PedidoModel).filter(
+            (PedidoModel.senha_diaria == num) | (PedidoModel.id == num)
+        ).order_by(desc(PedidoModel.id)).first()
     else:
-        telefone = busca.replace("-", "").replace(" ", "").replace("(", "").replace(")", "")
+        telefone = busca_limpa.replace("-", "").replace(" ", "").replace("(", "").replace(")", "")
         pedido = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == telefone).order_by(desc(PedidoModel.id)).first()
         
     if not pedido:
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")
         
-    status_atual = str(pedido.status).split('.')[-1].upper()
+    status_raw = str(pedido.status) if pedido.status else "RECEBIDO"
+    status_atual = status_raw.split('.')[-1].upper()
     
     progresso = 20 # Recebido
-    if status_atual == "EM_PREPARO": progresso = 50
+    if status_atual in ["EM_PREPARO", "PREPARANDO"]: progresso = 50
     elif status_atual in ["PRONTO", "SAIU_PARA_ENTREGA"]: progresso = 80
-    elif status_atual == "ENTREGUE": progresso = 100
+    elif status_atual in ["ENTREGUE", "FINALIZADO"]: progresso = 100
     elif status_atual == "CANCELADO": progresso = 0
+    
+    # Identifica o total pago com segurança baseada no que seu modelo usa
+    val_total = getattr(pedido, 'total_pago', getattr(pedido, 'valor_total', 0.0))
     
     return {
         "id": pedido.id,
         "senha": getattr(pedido, 'senha_diaria', pedido.id),
         "status": status_atual,
         "progresso": progresso,
-        "tipo": str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', ''))).split('.')[-1].upper(),
-        "total": pedido.total_pago
+        "tipo": str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', 'BALCAO'))).split('.')[-1].upper(),
+        "total": val_total
     }
 
 # ==========================================
