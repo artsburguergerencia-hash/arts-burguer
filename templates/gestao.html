@@ -2007,26 +2007,34 @@ function gerarStringDeHorarios() {
                     }
                     
                     let acaoAdmin = '';
-                    // REGRA CORRIGIDA: Usa o ID 1 ou nome admin para proteger o dono do sistema
-                    if (f.id === 1 || f.usuario === 'admin') {
-                        acaoAdmin = '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Acesso Supremo</span>';
-                    } else if (f.status_admissao === 'DEMITIDO') {
+                    
+                    // Se estiver DEMITIDO, libera Readmitir e Excluir para todos
+                    if (f.status_admissao === 'DEMITIDO') {
                         acaoAdmin = `
                         <div class="flex space-x-1 justify-center">
                             <button onclick="readmitirColaborador(${f.id})" class="text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Readmitir Usuário"><i class="ph-bold ph-arrow-counter-clockwise mr-1"></i> Readmitir</button>
                             <button onclick="excluirFuncionarioDefinitivo(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Apagar do Banco de Dados"><i class="ph-bold ph-trash text-base"></i></button>
                         </div>`;
                     } else {
+                        // Se estiver ATIVO ou PENDENTE
+                        let btnDemitir = '';
+                        // Aqui está a proteção correta: Protege apenas quem TEM CARGO DE ADMIN de ser demitido acidentalmente
+                        if (f.permissoes === 'total') {
+                            btnDemitir = '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-2 flex items-center">Admin</span>';
+                        } else {
+                            btnDemitir = `<button onclick="demitirColaborador(${f.id})" class="text-amber-500 bg-white border border-amber-200 hover:bg-amber-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Demitir e Revogar Acesso"><i class="ph-bold ph-user-minus text-base"></i></button>`;
+                        }
+
                         acaoAdmin = `
                         <div class="flex space-x-1 justify-center">
                             <button onclick="abrirModalEditarColaborador(${f.id}, '${f.nome}', '${f.matricula || ''}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm" title="Editar / Resetar Senha"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
                             <button onclick="abrirDossie(${f.id}, '${f.nome}', '${f.matricula}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white px-3 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-colors shadow-sm">Dossiê</button>
-                            <button onclick="demitirColaborador(${f.id})" class="text-amber-500 bg-white border border-amber-200 hover:bg-amber-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Demitir e Revogar Acesso"><i class="ph-bold ph-user-minus text-base"></i></button>
+                            ${btnDemitir}
                         </div>`;
                     }
                     
                     let pontoHtml = '';
-                    if(f.status_admissao === 'ATIVO' && f.id !== 1 && f.usuario !== 'admin') {
+                    if(f.status_admissao === 'ATIVO' && f.permissoes !== 'total') {
                         if(!f.ponto_entrada) {
                             pontoHtml = `<button onclick="baterPontoRH(${f.id}, 'entrada')" class="bg-slate-900 hover:bg-slate-800 text-white text-[10px] uppercase tracking-widest px-3 py-2 rounded-xl font-black shadow-md transition-all active:scale-95">Bater Entrada</button>`;
                         } else if(!f.ponto_saida) {
