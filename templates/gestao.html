@@ -1991,12 +1991,15 @@ function gerarStringDeHorarios() {
                 const dados = await res.json();
                 const tbody = document.getElementById('lista-colaboradores');
                 
-                if (dados.length === 0) { 
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400 font-medium">Nenhum funcionário na base de dados.</td></tr>'; 
+                // Filtra o "Admin de Resgate" ou "ID 1" para ele não poluir a tela
+                const dadosFiltrados = dados.filter(f => f.usuario !== 'admin' && f.id !== 1);
+                
+                if (dadosFiltrados.length === 0) { 
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400 font-medium">Nenhum funcionário extra na base de dados.</td></tr>'; 
                     return; 
                 }
 
-                tbody.innerHTML = dados.map(f => {
+                tbody.innerHTML = dadosFiltrados.map(f => {
                     let badgeStatus = '';
                     if(f.status_admissao === 'PENDENTE_PREENCHIMENTO') {
                         badgeStatus = '<span class="bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Falta LGPD/Form.</span>';
@@ -2005,13 +2008,11 @@ function gerarStringDeHorarios() {
                     } else if(f.status_admissao === 'DEMITIDO') {
                         badgeStatus = '<span class="bg-red-100 text-red-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Demitido</span>';
                     } else {
-                        // Mostra Azul em vez de Vermelho para quem não tem dados de RH
                         badgeStatus = '<span class="bg-blue-100 text-blue-700 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">Ativo (Sem RH)</span>';
                     }
                     
                     let acaoAdmin = '';
                     
-                    // Se estiver DEMITIDO, libera Readmitir e Excluir para todos
                     if (f.status_admissao === 'DEMITIDO') {
                         acaoAdmin = `
                         <div class="flex space-x-1 justify-center">
@@ -2019,13 +2020,15 @@ function gerarStringDeHorarios() {
                             <button onclick="excluirFuncionarioDefinitivo(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Apagar do Banco de Dados"><i class="ph-bold ph-trash text-base"></i></button>
                         </div>`;
                     } else {
-                        // Se estiver ATIVO, PENDENTE ou SEM RH
                         let btnDemitir = '';
-                        // Protege apenas quem TEM CARGO DE ADMIN de ser demitido acidentalmente
                         if (f.permissoes === 'total') {
-                            btnDemitir = '<span class="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-2 flex items-center">Admin</span>';
+                            // Se for admin "comum", não exibe a lixeira, mas permite demitir para perder o acesso
+                            btnDemitir = `<button onclick="demitirColaborador(${f.id})" class="text-amber-500 bg-white border border-amber-200 hover:bg-amber-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Revogar Acesso"><i class="ph-bold ph-user-minus text-base"></i></button>`;
                         } else {
-                            btnDemitir = `<button onclick="demitirColaborador(${f.id})" class="text-amber-500 bg-white border border-amber-200 hover:bg-amber-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Demitir e Revogar Acesso"><i class="ph-bold ph-user-minus text-base"></i></button>`;
+                            btnDemitir = `
+                            <button onclick="demitirColaborador(${f.id})" class="text-amber-500 bg-white border border-amber-200 hover:bg-amber-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Demitir e Revogar Acesso"><i class="ph-bold ph-user-minus text-base"></i></button>
+                            <button onclick="excluirFuncionarioDefinitivo(${f.id})" class="text-red-500 bg-white border border-red-200 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl transition-colors shadow-sm" title="Apagar Definitivamente"><i class="ph-bold ph-trash text-base"></i></button>
+                            `;
                         }
 
                         acaoAdmin = `
@@ -2049,7 +2052,8 @@ function gerarStringDeHorarios() {
                     
                     let avatar = f.foto_3x4 ? `<img src="${f.foto_3x4}" class="w-12 h-12 rounded-2xl object-cover mr-4 border border-slate-200 shadow-sm">` : `<div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center font-black text-xl mr-4 border border-slate-200 shadow-sm">${f.nome.charAt(0).toUpperCase()}</div>`;
 
-                    return `<tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors ${f.status_admissao==='DEMITIDO'?'opacity-60 grayscale':''}">
+                    // Remove a classe "grayscale" e "opacity-60" que deixava os botões cinzas/desativados no Demitido
+                    return `<tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
                         <td class="py-4 px-6 flex items-center">
                             ${avatar} 
                             <div>
