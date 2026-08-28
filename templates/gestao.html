@@ -2119,12 +2119,18 @@ function gerarStringDeHorarios() {
         }
 
         async function readmitirColaborador(id) {
-            const senha_nova = prompt("Colaborador Readmitido! Digite uma nova senha temporária para ele acessar o portal:");
-            if(senha_nova) {
-                try {
-                    const res = await fetch(`/api/gestao/funcionarios/${id}/readmitir?senha_nova=${senha_nova}`, { method: 'PUT' });
-                    if(res.ok) { alertaPremium("Funcionário readmitido com sucesso!", "Sucesso", "sucesso"); carregarColaboradores(); }
-                } catch(e) { alertaPremium("Erro de conexão.", "Erro", "erro"); }
+            // Readmite automaticamente gerando a senha padrão 123456, sem popup feio do navegador!
+            try {
+                const res = await fetch(`/api/gestao/funcionarios/${id}/readmitir?senha_nova=123456`, { method: 'PUT' });
+                
+                if(res.ok) { 
+                    alertaPremium("O colaborador foi readmitido!\n\nA senha de acesso temporária dele é: 123456\n(Para alterar, clique no botão azul de editar).", "Contrato Reativado", "sucesso"); 
+                    carregarColaboradores(); 
+                } else {
+                    alertaPremium("Falha ao tentar readmitir o funcionário.", "Erro", "erro");
+                }
+            } catch(e) { 
+                alertaPremium("Erro de conexão com o servidor.", "Erro", "erro"); 
             }
         }
 
