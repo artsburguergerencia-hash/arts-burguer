@@ -3387,12 +3387,24 @@ function gerarStringDeHorarios() {
         }
     }
 
-    function abrirModalEditarColaborador(id, nome, matricula, cargo_id) {
+    // 🚨 FUNÇÕES DO MODAL DE EDIÇÃO DO COLABORADOR 🚨
+        function abrirModalEditarColaborador(id, nome, matricula, cargo_id) {
             document.getElementById('edit-colab-id').value = id;
             document.getElementById('edit-colab-nome').value = nome;
             document.getElementById('edit-colab-mat').value = (matricula && matricula !== 'null') ? matricula : '';
-            document.getElementById('edit-colab-cargo').value = cargo_id; // Deixa o cargo atual selecionado
-            document.getElementById('edit-colab-senha').value = ''; // Sempre abre com a senha vazia
+            
+            // Só altera o cargo se o select existir na tela (proteção extra)
+            const selectCargo = document.getElementById('edit-colab-cargo');
+            if(selectCargo && cargo_id) {
+                selectCargo.value = cargo_id;
+            }
+            
+            // Limpa a senha sempre que abre para não confundir o RH
+            const inputSenha = document.getElementById('edit-colab-senha');
+            if(inputSenha) {
+                inputSenha.value = ''; 
+            }
+            
             document.getElementById('modal-editar-colaborador').classList.replace('hidden', 'flex');
         }
 
@@ -3401,10 +3413,16 @@ function gerarStringDeHorarios() {
             const id = document.getElementById('edit-colab-id').value;
             const nome = document.getElementById('edit-colab-nome').value;
             const matricula = document.getElementById('edit-colab-mat').value;
-            const cargo = document.getElementById('edit-colab-cargo').value;
-            const senha = document.getElementById('edit-colab-senha').value; 
+            
+            // Puxa o cargo e a senha da tela com segurança
+            const cargoEl = document.getElementById('edit-colab-cargo');
+            const senhaEl = document.getElementById('edit-colab-senha');
+            
+            const cargo = cargoEl ? cargoEl.value : null;
+            const senha = senhaEl ? senhaEl.value : null; 
             
             const btn = e.target.querySelector('button[type="submit"]');
+            const txtOriginal = btn.innerHTML;
             btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
             btn.disabled = true;
             
@@ -3416,10 +3434,11 @@ function gerarStringDeHorarios() {
                 });
                 
                 if(res.ok) {
-                    alertaPremium("Dados e cargo atualizados com sucesso!", "Sucesso", "sucesso");
+                    alertaPremium("Dados atualizados com sucesso!", "Sucesso", "sucesso");
                     document.getElementById('modal-editar-colaborador').classList.replace('flex', 'hidden');
-                    carregarColaboradores();
+                    carregarColaboradores(); // Recarrega a tabela imediatamente
                     
+                    // Se estiver editando a si mesmo, atualiza o nome no menu esquerdo
                     const nomeSessao = localStorage.getItem('funcionario_nome');
                     if (document.getElementById('nome-admin-lateral').innerText === nomeSessao) {
                          localStorage.setItem('funcionario_nome', nome);
@@ -3427,13 +3446,14 @@ function gerarStringDeHorarios() {
                          document.getElementById('avatar-admin-lateral').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=ff4757&color=fff`;
                     }
                 } else {
-                    alertaPremium("Erro ao atualizar funcionário.", "Erro", "erro");
+                    alertaPremium("Erro ao atualizar funcionário no banco de dados.", "Erro", "erro");
                 }
             } catch(err) {
                 alertaPremium("Erro de conexão.", "Erro", "erro");
             }
-            btn.innerHTML = "Salvar Alterações";
+            btn.innerHTML = txtOriginal;
             btn.disabled = false;
+        }
         }
     </script>
 </body>
