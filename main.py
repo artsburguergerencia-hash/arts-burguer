@@ -826,6 +826,7 @@ def listar_funcionarios_rh(db: Session = Depends(get_db)):
             "nome": f.nome, 
             "usuario": f.usuario,
             "cargo": cargo.nome if cargo else "Sem Cargo", 
+            "permissoes": cargo.permissoes if cargo else "basico", # <--- A MÁGICA ESTÁ AQUI
             "cargo_id": f.cargo_id,
             "matricula": f.matricula_cracha,
             "status_admissao": rh.status_admissao if rh else "DESCONHECIDO",
