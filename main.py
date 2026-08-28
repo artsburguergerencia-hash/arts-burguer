@@ -1035,21 +1035,31 @@ def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
     if rh: 
         rh.status_admissao = "DEMITIDO"
+    else:
+        # Cria a ficha RH caso o funcionário tenha sido criado de forma avulsa
+        novo_rh = InfoRHModel(funcionario_id=func_id, status_admissao="DEMITIDO")
+        db.add(novo_rh)
         
     func.senha_hash = "REVOGADO" 
     db.commit()
     
     return {"status": "sucesso", "mensagem": "Acesso revogado com sucesso."}
 
+
 @app.put("/api/gestao/funcionarios/{func_id}/readmitir")
 def readmitir_funcionario(func_id: int, senha_nova: str = Query(...), db: Session = Depends(get_db)):
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
-    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
-    
-    if not func or not rh: 
+    if not func: 
         raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
         
-    rh.status_admissao = "ATIVO"
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    if rh:
+        rh.status_admissao = "ATIVO"
+    else:
+        # Cria a ficha RH caso não exista
+        novo_rh = InfoRHModel(funcionario_id=func_id, status_admissao="ATIVO")
+        db.add(novo_rh)
+
     func.senha_hash = pwd_context.hash(senha_nova)
     db.commit()
     
