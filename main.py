@@ -2611,16 +2611,20 @@ def atualizar_funcionario_basico(func_id: int, dados: dict, db: Session = Depend
         func.nome = dados['nome']
     if 'matricula' in dados: 
         func.matricula_cracha = dados['matricula']
-    
-    # --- NOVO: Suporte para atualizar o cargo ---
-    if 'cargo_id' in dados and dados['cargo_id']:
-        func.cargo_id = int(dados['cargo_id'])
+        
+    # --- Atualização Blindada do Cargo ---
+    if 'cargo_id' in dados and dados['cargo_id'] is not None:
+        try:
+            func.cargo_id = int(dados['cargo_id'])
+        except ValueError:
+            pass
         
     # --- Suporte para resetar a senha ---
-    if 'senha' in dados and dados['senha'].strip() != "":
+    if 'senha' in dados and dados['senha'] and dados['senha'].strip() != "":
         func.senha_hash = pwd_context.hash(dados['senha'].strip())
         
     db.commit()
+    db.refresh(func)
     return {"status": "sucesso", "mensagem": "Colaborador atualizado!"}
 
 # 7. Exclusão Definitiva do Colaborador do Banco de Dados
