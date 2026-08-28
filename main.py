@@ -2600,7 +2600,7 @@ def atualizar_insumo(insumo_id: int, dados: dict, db: Session = Depends(get_db))
     db.commit()
     return {"status": "sucesso", "mensagem": "Insumo atualizado!"}
 
-# 6. Atualizar Colaborador (Nome, Matrícula e Senha)
+# 6. Atualizar Colaborador (Nome, Matrícula, Senha e Cargo)
 @app.put("/api/gestao/funcionarios/{func_id}")
 def atualizar_funcionario_basico(func_id: int, dados: dict, db: Session = Depends(get_db)):
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
@@ -2611,8 +2611,12 @@ def atualizar_funcionario_basico(func_id: int, dados: dict, db: Session = Depend
         func.nome = dados['nome']
     if 'matricula' in dados: 
         func.matricula_cracha = dados['matricula']
+    
+    # --- NOVO: Suporte para atualizar o cargo ---
+    if 'cargo_id' in dados and dados['cargo_id']:
+        func.cargo_id = int(dados['cargo_id'])
         
-    # --- NOVO: Suporte para resetar a senha ---
+    # --- Suporte para resetar a senha ---
     if 'senha' in dados and dados['senha'].strip() != "":
         func.senha_hash = pwd_context.hash(dados['senha'].strip())
         
