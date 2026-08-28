@@ -2954,7 +2954,7 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
     
     if busca_limpa.isdigit():
         num = int(busca_limpa)
-        # Procura primariamente pela senha diária e secundariamente pelo ID do pedido
+        # Busca tanto pela senha do dia quanto pelo ID direto do pedido
         pedido = db.query(PedidoModel).filter(
             (PedidoModel.senha_diaria == num) | (PedidoModel.id == num)
         ).order_by(desc(PedidoModel.id)).first()
@@ -2974,7 +2974,6 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
     elif status_atual in ["ENTREGUE", "FINALIZADO"]: progresso = 100
     elif status_atual == "CANCELADO": progresso = 0
     
-    # Identifica o total pago com segurança baseada no que seu modelo usa
     val_total = getattr(pedido, 'total_pago', getattr(pedido, 'valor_total', 0.0))
     
     return {
