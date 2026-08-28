@@ -280,10 +280,21 @@
             }, 120000); 
         });
 
+        let sistemaFidelidadeAtivo = true; // Variável global de controle
+
+        let sistemaFidelidadeAtivo = true; // Variável global de controle
+
         async function carregarConfigLojaTotem() {
             try {
                 const res = await fetch('/api/gestao/configuracoes');
                 const config = await res.json();
+                
+                // Se a fidelidade estiver desativada, marca como false
+                if (config.sistema_fidelidade && config.sistema_fidelidade === "DESATIVADO") {
+                    sistemaFidelidadeAtivo = false;
+                } else {
+                    sistemaFidelidadeAtivo = true;
+                }
                 
                 if(config.nome_empresa) {
                     document.getElementById('nome-loja-totem').innerText = config.nome_empresa;
@@ -314,6 +325,14 @@
         function iniciarAtendimento() {
             tocarClick();
             document.getElementById('tela-splash').classList.add('hidden');
+            
+            // 🚨 SE A FIDELIDADE ESTIVER DESATIVADA, PULA DIRETO PARA O CARDÁPIO! 🚨
+            if (!sistemaFidelidadeAtivo) {
+                pularFidelidade(false);
+                return;
+            }
+
+            // Caso contrário, abre a tela de fidelidade normalmente
             document.getElementById('tela-fidelidade').classList.remove('hidden');
             document.getElementById('tela-fidelidade').classList.add('flex');
             document.getElementById('input-fidelidade-tel').value = '';
@@ -355,10 +374,18 @@
 
                     setTimeout(() => pularFidelidade(true), 1500); 
                 } else {
-                    clienteTotem = { telefone: telInput, nome: "Cliente Totem", cashback: 0 };
-                    pularFidelidade(true);
+                    // Cliente não encontrado: Pergunta se deseja o cadastro rápido
+                    btn.innerHTML = 'Continuar <i class="ph-bold ph-arrow-right ml-2 text-2xl"></i>';
+                    if (confirm("WhatsApp não cadastrado. Deseja realizar seu cadastro rápido agora para acumular vantagens?")) {
+                        abrirModalCadastroTotem(telInput);
+                    } else {
+                        clienteTotem = { telefone: telInput, nome: "Cliente Totem", cashback: 0 };
+                        pularFidelidade(true);
+                    }
                 }
             } catch(e) {
+                btn.innerHTML = 'Continuar <i class="ph-bold ph-arrow-right ml-2 text-2xl"></i>';
+                clienteTotem = { telefone: telInput, nome: "Cliente Totem", cashback: 0 };
                 pularFidelidade(true);
             }
         }
@@ -692,6 +719,70 @@
             
             btn.innerHTML = "Finalizar Pedido";
             btn.disabled = false;
+        }
+    </script>
+    <script>
+        // 🚨 FUNÇÕES DE CADASTRO RÁPIDO DO CLIENTE NO TOTEM 🚨
+        function abrirModalCadastroTotem(telefone) {
+            let modal = document.getElementById('modal-cadastro-totem');
+            if(!modal) {
+                const div = document.createElement('div');
+                div.id = 'modal-cadastro-totem';
+                div.className = 'fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[110] flex items-center justify-center p-4 fade-in';
+                div.innerHTML = `
+                    <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md border-t-8 border-brand-500">
+                        <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-2">Cadastro Rápido</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-6">Preencha abaixo para participar do nosso Clube de Vantagens.</p>
+                        <form onsubmit="salvarNovoClienteTotem(event, '${telefone}')" class="space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Seu Nome Completo</label>
+                                <input type="text" id="cad-totem-nome" required class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-white outline-none focus:border-brand-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Data de Nascimento (Opcional)</label>
+                                <input type="date" id="cad-totem-nasc" class="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-white outline-none focus:border-brand-500 uppercase">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                <button type="button" onclick="document.getElementById('modal-cadastro-totem').remove(); pularFidelidade(true);" class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black py-3.5 rounded-xl uppercase tracking-widest text-xs">Pular</button>
+                                <button type="submit" class="bg-brand-500 text-white font-black py-3.5 rounded-xl uppercase tracking-widest text-xs shadow-lg">Cadastrar</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+                document.body.appendChild(div);
+            } else {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        async function salvarNovoClienteTotem(e, telefone) {
+            e.preventDefault();
+            const nome = document.getElementById('cad-totem-nome').value;
+            const nascimento = document.getElementById('cad-totem-nasc').value;
+
+            try {
+                const res = await fetch('/api/cliente/registrar', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ nome: nome, telefone: telefone, data_nascimento: nascimento })
+                });
+
+                if(res.ok) {
+                    clienteTotem = { telefone: telefone, nome: nome, cashback: 0 };
+                    const modalCad = document.getElementById('modal-cadastro-totem');
+                    if(modalCad) modalCad.remove();
+                    
+                    document.getElementById('nome-cliente-sidebar').innerText = nome.split(' ')[0];
+                    document.getElementById('box-cliente-sidebar').classList.remove('hidden');
+                    
+                    pularFidelidade(true);
+                } else {
+                    alert("Erro ao realizar cadastro.");
+                }
+            } catch(err) {
+                alert("Erro de conexão ao cadastrar.");
+            }
         }
     </script>
 </body>
