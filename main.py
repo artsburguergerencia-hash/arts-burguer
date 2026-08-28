@@ -2626,8 +2626,6 @@ def excluir_funcionario_definitivo(func_id: int, db: Session = Depends(get_db)):
         func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
         if not func: 
             raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
-        if func.id == 1 or func.usuario == "admin": 
-            raise HTTPException(status_code=403, detail="O Administrador Supremo não pode ser excluído.")
             
         # Apaga os vínculos para evitar erro 500 no banco de dados
         db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).delete()
