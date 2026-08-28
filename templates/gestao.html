@@ -2089,11 +2089,21 @@ function gerarStringDeHorarios() {
             carregarColaboradores(); 
         }
         
-        async function demitirColaborador(id) { 
-            if(confirm("⚠️ ATENÇÃO CORPORATIVA: Demitir funcionário? O acesso será revogado imediatamente e os relatórios preservados para auditoria.")) { 
-                await fetch(`/api/gestao/funcionarios/${id}`, { method: 'DELETE' }); 
-                carregarColaboradores(); 
-            } 
+        function demitirColaborador(id) { 
+            confirmarExclusaoPremium("Demitir funcionário? O acesso será revogado imediatamente e os relatórios preservados.", async () => {
+                try {
+                    const res = await fetch(`/api/gestao/funcionarios/${id}`, { method: 'DELETE' }); 
+                    if(res.ok) {
+                        alertaPremium("Funcionário demitido. O acesso foi bloqueado.", "Acesso Revogado", "sucesso");
+                        carregarColaboradores(); 
+                    } else {
+                        const err = await res.json();
+                        alertaPremium("Erro: " + err.detail, "Aviso", "erro");
+                    }
+                } catch(e) {
+                    alertaPremium("Erro de rede.", "Erro", "erro");
+                }
+            });
         }
 
         async function readmitirColaborador(id) {
