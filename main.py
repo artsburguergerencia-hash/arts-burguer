@@ -2986,9 +2986,10 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
             "tipo": "BALCAO",
             "total": val_total
         }
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        print(f"ERRO NO RASTREIO: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ==========================================
 # MÓDULO DE LOGÍSTICA (TAXAS DE ENTREGA)
