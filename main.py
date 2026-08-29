@@ -1847,12 +1847,33 @@ def atualizar_gps_motoboy(dados: CoordenadasGPS):
     }
     return {"status": "ok"}
 
+# ==========================================
+# ROTA ÚNICA E DEFINITIVA DO GPS DO MOTOBOY
+# ==========================================
 @app.get("/api/logistica/gps/{pedido_id}")
-def obter_gps_motoboy(pedido_id: int):
-    # O mapa do cliente pergunta onde o motoboy está
-    if pedido_id in rastreio_ao_vivo:
-        return {"status": "online", "posicao": rastreio_ao_vivo[pedido_id]}
-    return {"status": "offline"}
+def buscar_posicao_motoboy(pedido_id: int):
+    """ A tela do cliente (mapa) pede a posição da moto pra cá a cada 5 segundos """
+    try:
+        # Usa o dicionário principal da sua aplicação
+        posicao = POSICOES_MOTOBOYS_AO_VIVO.get(pedido_id)
+        
+        if posicao:
+            # Retorna exatamente a estrutura que o JavaScript do mapa.html exige
+            return {
+                "status": "online", 
+                "posicao": {
+                    "lat": float(posicao["lat"]), 
+                    "lng": float(posicao["lng"])
+                }
+            }
+        else:
+            # Se a moto ainda não conectou, avisa o mapa para continuar rodando o "Conectando..." sem dar erro
+            return {"status": "aguardando_sinal", "posicao": None}
+            
+    except Exception as e:
+        print(f"Erro ao processar GPS para o pedido {pedido_id}: {e}")
+        # Proteção contra Erro 500
+        return {"status": "aguardando_sinal", "posicao": None}
 
 # ------------------------------------------
 # ROTAS VISUAIS DO RASTREIO
@@ -2947,24 +2968,30 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
     db.commit()
     return {"status": "sucesso"}
 
+# ==========================================
+# 1. ROTA DE RASTREIO 100% BLINDADA
+# ==========================================
 @app.get("/api/rastreio/{busca}")
 def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
     try:
-        busca_limpa = busca.replace("#", "").strip()
+        # Extrai apenas os números da busca
+        busca_limpa = "".join(filter(str.isdigit, busca))
         pedido = None
         
-        if busca_limpa.isdigit():
+        if busca_limpa:
             num = int(busca_limpa)
             pedido = db.query(PedidoModel).filter(PedidoModel.id == num).first()
-        else:
-            telefone = busca_limpa.replace("-", "").replace(" ", "").replace("(", "").replace(")", "")
+        
+        # Se não achou pelo ID, tenta pelo telefone
+        if not pedido:
+            telefone = busca.replace("-", "").replace(" ", "").replace("(", "").replace(")", "").replace("+", "")
             pedido = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == telefone).order_by(desc(PedidoModel.id)).first()
             
         if not pedido:
             raise HTTPException(status_code=404, detail="Pedido não encontrado.")
             
-        status_raw = str(getattr(pedido, 'status', 'RECEBIDO'))
-        status_atual = status_raw.split('.')[-1].upper()
+        status_raw = str(getattr(pedido, 'status', 'RECEBIDO')).upper()
+        status_atual = status_raw.split('.')[-1]
         
         progresso = 20
         if status_atual in ["EM_PREPARO", "PREPARANDO"]: progresso = 50
@@ -2972,11 +2999,16 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
         elif status_atual in ["ENTREGUE", "FINALIZADO"]: progresso = 100
         elif status_atual == "CANCELADO": progresso = 0
         
+        # Converte valores financeiros com segurança contra vírgulas ou textos nulos
         val_total = 0.0
         for col in ['total_pago', 'valor_total', 'total', 'valor']:
-            if hasattr(pedido, col) and getattr(pedido, col) is not None:
-                val_total = float(getattr(pedido, col))
-                break
+            val = getattr(pedido, col, None)
+            if val is not None:
+                try:
+                    val_total = float(str(val).replace(',', '.'))
+                    break
+                except ValueError:
+                    pass
                 
         return {
             "id": pedido.id,
@@ -2989,7 +3021,8 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
     except HTTPException as he:
         raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Erro no Rastreio: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno no servidor")
 
 # ==========================================
 # MÓDULO DE LOGÍSTICA (TAXAS DE ENTREGA)
@@ -3575,17 +3608,6 @@ def atualizar_posicao_motoboy(pedido_id: int, payload: dict):
         return {"ok": False, "erro": "Coordenadas não enviadas"}
     except Exception as e:
         return {"ok": False, "erro": str(e)}
-
-@app.get("/api/logistica/gps/{pedido_id}")
-def buscar_posicao_motoboy(pedido_id: int):
-    """ A tela do cliente pede a posição da moto pra cá a cada 5 segundos """
-    posicao = POSICOES_MOTOBOYS_AO_VIVO.get(pedido_id)
-    
-    if posicao:
-        return {"status": "online", "posicao": {"lat": posicao["lat"], "lng": posicao["lng"]}}
-    else:
-        # Se não tiver posição na memória, avisa o mapa que está aguardando sinal
-        return {"status": "aguardando_sinal", "posicao": None}
         
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
