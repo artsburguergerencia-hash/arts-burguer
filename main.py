@@ -2949,41 +2949,53 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
 
 @app.get("/api/rastreio/{busca}")
 def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
-    busca_limpa = busca.replace("#", "").strip()
-    pedido = None
-    
-    if busca_limpa.isdigit():
-        num = int(busca_limpa)
-        # Busca tanto pela senha do dia quanto pelo ID direto do pedido
-        pedido = db.query(PedidoModel).filter(
-            (PedidoModel.senha_diaria == num) | (PedidoModel.id == num)
-        ).order_by(desc(PedidoModel.id)).first()
-    else:
-        telefone = busca_limpa.replace("-", "").replace(" ", "").replace("(", "").replace(")", "")
-        pedido = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == telefone).order_by(desc(PedidoModel.id)).first()
+    try:
+        busca_limpa = busca.replace("#", "").strip()
+        pedido = None
         
-    if not pedido:
-        raise HTTPException(status_code=404, detail="Pedido não encontrado.")
+        if busca_limpa.isdigit():
+            num = int(busca_limpa)
+            pedido = db.query(PedidoModel).filter(
+                (PedidoModel.senha_diaria == num) | (PedidoModel.id == num)
+            ).order_by(desc(PedidoModel.id)).first()
+        else:
+            telefone = busca_limpa.replace("-", "").replace(" ", "").replace("(", "").replace(")", "")
+            pedido = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == telefone).order_by(desc(PedidoModel.id)).first()
+            
+        if not pedido:
+            raise HTTPException(status_code=404, detail="Pedido não encontrado.")
+            
+        status_raw = str(getattr(pedido, 'status', 'RECEBIDO'))
+        status_atual = status_raw.split('.')[-1].upper()
         
-    status_raw = str(pedido.status) if pedido.status else "RECEBIDO"
-    status_atual = status_raw.split('.')[-1].upper()
-    
-    progresso = 20 # Recebido
-    if status_atual in ["EM_PREPARO", "PREPARANDO"]: progresso = 50
-    elif status_atual in ["PRONTO", "SAIU_PARA_ENTREGA"]: progresso = 80
-    elif status_atual in ["ENTREGUE", "FINALIZADO"]: progresso = 100
-    elif status_atual == "CANCELADO": progresso = 0
-    
-    val_total = getattr(pedido, 'total_pago', getattr(pedido, 'valor_total', 0.0))
-    
-    return {
-        "id": pedido.id,
-        "senha": getattr(pedido, 'senha_diaria', pedido.id),
-        "status": status_atual,
-        "progresso": progresso,
-        "tipo": str(getattr(pedido, 'tipo_pedido', getattr(pedido, 'tipo', 'BALCAO'))).split('.')[-1].upper(),
-        "total": val_total
-    }
+        progresso = 20
+        if status_atual in ["EM_PREPARO", "PREPARANDO"]: progresso = 50
+        elif status_atual in ["PRONTO", "SAIU_PARA_ENTREGA"]: progresso = 80
+        elif status_atual in ["ENTREGUE", "FINALIZADO"]: progresso = 100
+        elif status_atual == "CANCELADO": progresso = 0
+        
+        # Pega o valor total independentemente de como a coluna se chama no banco
+        val_total = 0.0
+        for col in ['total_pago', 'valor_total', 'total', 'valor']:
+            if hasattr(pedido, col) and getattr(pedido, col) is not None:
+                val_total = float(getattr(pedido, col))
+                break
+                
+        senha_val = getattr(pedido, 'senha_diaria', None)
+        if senha_val is None:
+            senha_val = getattr(pedido, 'id', 0)
+            
+        return {
+            "id": pedido.id,
+            "senha": senha_val,
+            "status": status_atual,
+            "progresso": progresso,
+            "tipo": "BALCAO",
+            "total": val_total
+        }
+    except Exception as e:
+        print(f"ERRO NO RASTREIO: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
 # ==========================================
 # MÓDULO DE LOGÍSTICA (TAXAS DE ENTREGA)
