@@ -1575,15 +1575,16 @@
         }
 
         // ==============================================================
-        // 🚨 MOTORES DE BUSCA DE CEP UNIFICADOS (SACOLA E PERFIL) 🚨
+        // 🚨 MOTORES DE BUSCA DE CEP (TOLERANTE A FALHAS) 🚨
         // ==============================================================
         
-        // 1. Busca de CEP para o Carrinho (Checkout)
+        // 1. Busca de CEP para o Carrinho
         window.buscarCepCheckout = async function(cep) {
             const cepLimpo = cep.replace(/\D/g, '');
             if (cepLimpo.length === 8) {
                 const ruaField = document.getElementById('ped-rua');
                 const numField = document.getElementById('ped-num');
+                const valorAntigo = ruaField.value; // Salva pra não apagar!
                 
                 ruaField.value = "Buscando...";
                 try {
@@ -1591,16 +1592,16 @@
                     const data = await res.json();
                     if (!data.erro) {
                         ruaField.value = `${data.logradouro}, ${data.bairro}`;
-                        if(numField) numField.focus(); // Pula o cursor pro número!
+                        if(numField) numField.focus(); 
                     } else {
-                        ruaField.value = ""; 
-                        alertaPremium("CEP não localizado.", "Atenção", "erro");
+                        ruaField.value = valorAntigo; // Devolve o que estava escrito
+                        alertaPremium("CEP não encontrado. Pode digitar a rua manualmente.", "Aviso", "info");
                     }
-                } catch(e) { ruaField.value = ""; }
+                } catch(e) { ruaField.value = valorAntigo; }
             }
         };
 
-        // 2. Busca de CEP para "Meus Dados" e "Criar Conta"
+        // 2. Busca de CEP para Perfil e Cadastro
         window.buscarCep = async function(cep, tipo) {
             const cepLimpo = cep.replace(/\D/g, '');
             if (cepLimpo.length === 8) {
@@ -1615,8 +1616,8 @@
                     numField = document.getElementById('cad-num');
                 }
 
+                const valorAntigo = ruaField ? ruaField.value : "";
                 if (ruaField) ruaField.value = "Buscando...";
-                if (bairroField) bairroField.value = "Buscando...";
 
                 try {
                     const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
@@ -1629,15 +1630,13 @@
                             ruaField.value = data.logradouro;
                             if (bairroField) bairroField.value = data.bairro;
                         }
-                        if (numField) numField.focus(); // Pula o cursor pro número!
+                        if (numField) numField.focus(); 
                     } else {
-                        if (ruaField) ruaField.value = "";
-                        if (bairroField) bairroField.value = "";
-                        alertaPremium("CEP não localizado. Verifique se digitou corretamente.", "Atenção", "erro");
+                        if (ruaField) ruaField.value = valorAntigo; // Devolve o que estava escrito
+                        alertaPremium("CEP não encontrado nos Correios. Pode digitar manualmente.", "Aviso", "info");
                     }
                 } catch(e) { 
-                    if (ruaField) ruaField.value = "";
-                    if (bairroField) bairroField.value = "";
+                    if (ruaField) ruaField.value = valorAntigo; 
                 }
             }
         };
