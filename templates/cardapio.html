@@ -2,6 +2,7 @@
 <html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cardápio Digital | Art's Burguer</title>
 
@@ -735,19 +736,20 @@
             try {
                 const res = await fetch(`/api/cliente/${clienteLogado.id}/perfil`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 if(res.ok) {
-                    alert("Seus dados foram atualizados com sucesso!");
-                    clienteLogado.nome = payload.nome;
-                    clienteLogado.telefone = payload.telefone;
-                    
-                    // 🚨 Salva os campos fragmentados no cache local para a sacola ler com perfeição!
-                    clienteLogado.cep = cepDigitado;
-                    clienteLogado.endereco = ruaDigitada;
-                    clienteLogado.numero = numDigitado;
-                    clienteLogado.complemento = compDigitado;
-                    clienteLogado.endereco_completo = endFinalBanco;
-                    
-                    if(payload.foto) clienteLogado.foto = payload.foto;
-                    localStorage.setItem('arts_cliente', JSON.stringify(clienteLogado));
+                alert("Seus dados foram atualizados com sucesso!");
+                
+                // 🚨 CORREÇÃO: Força as variáveis separadas pro cache
+                clienteLogado.nome = payload.nome;
+                clienteLogado.telefone = payload.telefone;
+                clienteLogado.cep = payload.cep;
+                clienteLogado.endereco = payload.endereco;
+                clienteLogado.numero = payload.numero;
+                clienteLogado.complemento = payload.complemento;
+                clienteLogado.endereco_completo = `${payload.endereco}, ${payload.numero} (${payload.complemento})`;
+                
+                if(payload.foto) clienteLogado.foto = payload.foto;
+                localStorage.setItem('arts_cliente', JSON.stringify(clienteLogado));
+                // ... resto do seu código
                     
                     document.getElementById('modal-editar-perfil').classList.replace('flex', 'hidden');
                     verificarSessao(); 
@@ -1402,7 +1404,7 @@
             const selBairro = document.getElementById('ped-bairro');
             const nomeBairro = (isDelivery && selBairro && selBairro.value !== "0") ? selBairro.options[selBairro.selectedIndex].text : "";
 
-            // Lógica Unificada de Endereço
+           // 🚨 Lógica Unificada de Endereço (Corrigida)
             let endLimpo = "";
             if (isDelivery) {
                 const cep = document.getElementById('ped-cep').value;
@@ -1415,9 +1417,9 @@
                     btn.innerHTML = txtOriginal; btn.disabled = false; return;
                 }
                 
-                endLimpo = `${rua}, Nº ${num}`;
+                // Formatação limpa que o Ponto de Venda/Motoboy consegue ler:
+                endLimpo = `${rua}, ${num}`;
                 if (comp) endLimpo += ` (${comp})`;
-                if (cep) endLimpo += ` - CEP: ${cep}`;
             } else {
                 endLimpo = "Retirada Balcão";
             }
@@ -1425,10 +1427,12 @@
             if (clienteLogado) {
                 nome = clienteLogado.nome; 
                 tel = clienteLogado.telefone; 
-                end = endLimpo;
+                // 🚨 O PULO DO GATO: Se for delivery, usa o que tá na tela. Se for balcão, ignora.
+                end = isDelivery ? endLimpo : "Retirada Balcão"; 
                 cliente_id = clienteLogado.id; 
                 cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
             } else {
+// ... resto do seu código igual
                 nome = document.getElementById('guest-nome').value.trim(); 
                 tel = document.getElementById('guest-tel').value.trim();
                 end = endLimpo;
