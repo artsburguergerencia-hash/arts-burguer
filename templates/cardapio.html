@@ -823,63 +823,39 @@
 
         async function buscarRastreio() {
             let busca = document.getElementById('input-rastreio').value.trim();
-            busca = busca.replace('#', ''); 
+            busca = busca.replace('#', '');
             if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
-            
-            const btn = document.getElementById('btn-rastreio'); 
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; 
+
+            const btn = document.getElementById('btn-rastreio');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>';
             btn.disabled = true;
-            
+
             try {
                 const res = await fetch(`/api/rastreio/${busca}`);
-                
+
                 if(res.ok) {
                     const data = await res.json();
-                    
-                    // Atualiza os textos com segurança (só se existirem no HTML)
-                    const elSenha = document.getElementById('rastreio-senha');
-                    if(elSenha) elSenha.innerText = data.senha || data.id; 
-                    
-                    const elStatus = document.getElementById('rastreio-status');
-                    if(elStatus) elStatus.innerText = (data.status || "RECEBIDO").replace(/_/g, ' ');
-                    
-                    const bar = document.getElementById('rastreio-progresso'); 
-                    if(bar) {
-                        bar.style.width = (data.progresso || 20) + '%';
-                        if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
-                        else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
-                        else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
-                    }
 
-                    // Tenta atualizar a linha do tempo (se o HTML da linha do tempo existir)
+                    document.getElementById('rastreio-senha').innerText = data.senha || data.id;
+                    document.getElementById('rastreio-status').innerText = (data.status || "RECEBIDO").replace(/_/g, ' ');
+
                     const statusU = (data.status || "").toUpperCase();
                     const activeStep = (id) => { const el = document.querySelector(`#${id} .step-icon`); if(el) el.className = "w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-xs shrink-0 transition-colors mr-3 step-icon shadow-md shadow-blue-500/30"; };
                     const resetStep = (id) => { const el = document.querySelector(`#${id} .step-icon`); if(el) el.className = "w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-400 flex items-center justify-center font-black text-xs shrink-0 transition-colors mr-3 step-icon"; };
-                    
+
                     resetStep('step-recebido'); resetStep('step-preparo'); resetStep('step-pronto'); resetStep('step-entrega');
-                    
-                    if (statusU.includes("RECEBIDO") || data.progresso <= 20) { activeStep('step-recebido'); } 
-                    else if (statusU.includes("PREPARO") || data.progresso === 50) { activeStep('step-recebido'); activeStep('step-preparo'); } 
-                    else if (statusU.includes("PRONTO") || data.progresso === 80) { activeStep('step-recebido'); activeStep('step-preparo'); activeStep('step-pronto'); } 
+
+                    if (statusU.includes("RECEBIDO") || data.progresso <= 20) { activeStep('step-recebido'); }
+                    else if (statusU.includes("PREPARO") || data.progresso === 50) { activeStep('step-recebido'); activeStep('step-preparo'); }
+                    else if (statusU.includes("PRONTO") || data.progresso === 80) { activeStep('step-recebido'); activeStep('step-preparo'); activeStep('step-pronto'); }
                     else if (statusU.includes("SAIU") || statusU.includes("ENTREGA") || data.progresso > 80) { activeStep('step-recebido'); activeStep('step-preparo'); activeStep('step-pronto'); activeStep('step-entrega'); }
 
-                    // Cria e exibe o botão do Mapa GPS com segurança
                     let containerMapa = document.getElementById('link-mapa-rastreio');
-                    const resultadoBox = document.getElementById('resultado-rastreio');
-                    
-                    if (!containerMapa && resultadoBox) {
-                        containerMapa = document.createElement('div');
-                        containerMapa.id = 'link-mapa-rastreio';
-                        containerMapa.className = 'mt-4';
-                        resultadoBox.appendChild(containerMapa);
-                    }
-
-                    if (containerMapa) {
+                    if(containerMapa) {
                         if (statusU.includes("SAIU") || statusU.includes("ENTREGA") || data.progresso >= 80) {
                             containerMapa.innerHTML = `
                                 <a href="/mapa?pedido=${data.senha || data.id}" target="_blank" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-xl flex items-center justify-center shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs animate-pulse">
-                                    <i class="ph-bold ph-map-pin-line text-lg mr-2"></i> Ver Motoboy no Mapa
+                                    <i class="ph-bold ph-map-pin-line text-lg mr-2"></i> Acompanhar Motoboy no Mapa
                                 </a>
                             `;
                             containerMapa.classList.remove('hidden');
@@ -888,17 +864,15 @@
                         }
                     }
 
-                    if(resultadoBox) resultadoBox.classList.remove('hidden');
+                    document.getElementById('resultado-rastreio').classList.remove('hidden');
                 } else {
-                    alert("Ops! Nenhum pedido encontrado com este número."); 
-                    const resBox = document.getElementById('resultado-rastreio');
-                    if(resBox) resBox.classList.add('hidden');
+                    alert("Ops! Nenhum pedido encontrado com este número.");
+                    document.getElementById('resultado-rastreio').classList.add('hidden');
                 }
-            } catch(err) { 
-                console.error("Erro capturado no rastreio:", err);
-                alert("Erro de conexão ao buscar pedido."); 
+            } catch(err) {
+                alert("Erro de conexão ao buscar pedido.");
             }
-            btn.innerHTML = txtOriginal || '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; 
+            btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>';
             btn.disabled = false;
         }
 
