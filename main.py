@@ -2955,9 +2955,7 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
         
         if busca_limpa.isdigit():
             num = int(busca_limpa)
-            pedido = db.query(PedidoModel).filter(
-                (PedidoModel.senha_diaria == num) | (PedidoModel.id == num)
-            ).order_by(desc(PedidoModel.id)).first()
+            pedido = db.query(PedidoModel).filter(PedidoModel.id == num).first()
         else:
             telefone = busca_limpa.replace("-", "").replace(" ", "").replace("(", "").replace(")", "")
             pedido = db.query(PedidoModel).filter(PedidoModel.telefone_cliente == telefone).order_by(desc(PedidoModel.id)).first()
@@ -2974,20 +2972,15 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
         elif status_atual in ["ENTREGUE", "FINALIZADO"]: progresso = 100
         elif status_atual == "CANCELADO": progresso = 0
         
-        # Pega o valor total independentemente de como a coluna se chama no banco
         val_total = 0.0
         for col in ['total_pago', 'valor_total', 'total', 'valor']:
             if hasattr(pedido, col) and getattr(pedido, col) is not None:
                 val_total = float(getattr(pedido, col))
                 break
                 
-        senha_val = getattr(pedido, 'senha_diaria', None)
-        if senha_val is None:
-            senha_val = getattr(pedido, 'id', 0)
-            
         return {
             "id": pedido.id,
-            "senha": senha_val,
+            "senha": pedido.id,
             "status": status_atual,
             "progresso": progresso,
             "tipo": "BALCAO",
