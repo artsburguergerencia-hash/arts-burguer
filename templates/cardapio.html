@@ -747,7 +747,14 @@
                     alert("Seus dados foram atualizados com sucesso!");
                     clienteLogado.nome = payload.nome;
                     clienteLogado.telefone = payload.telefone;
+                    
+                    // 🚨 SALVANDO OS CAMPOS SEPARADOS NO CACHE LOCAL 🚨
+                    clienteLogado.cep = payload.cep;
+                    clienteLogado.endereco = payload.endereco;
+                    clienteLogado.numero = payload.numero;
+                    clienteLogado.complemento = payload.complemento;
                     clienteLogado.endereco_completo = `${payload.endereco}, ${payload.numero} (${payload.complemento})`;
+                    
                     if(payload.foto) clienteLogado.foto = payload.foto;
                     localStorage.setItem('arts_cliente', JSON.stringify(clienteLogado));
                     
@@ -1340,12 +1347,39 @@
                 </div>
             `).join('');
             
-            // Lógica nova de preenchimento de endereço inteligente
+            // 🚨 EXTRATOR INTELIGENTE DE ENDEREÇOS ANTIGOS 🚨
             if(clienteLogado && document.getElementById('ped-rua').value === "") {
-                document.getElementById('ped-cep').value = clienteLogado.cep || "";
-                document.getElementById('ped-rua').value = clienteLogado.endereco || clienteLogado.endereco_completo || "";
-                document.getElementById('ped-num').value = clienteLogado.numero || "";
-                document.getElementById('ped-comp').value = clienteLogado.complemento || "";
+                let cepStr = clienteLogado.cep || "";
+                let ruaStr = clienteLogado.endereco || clienteLogado.endereco_completo || "";
+                let numStr = clienteLogado.numero || "";
+                let compStr = clienteLogado.complemento || "";
+
+                // Se o cliente só tem a string gigante antiga (ex: "Rua Aluísio Azevedo, Veneza, 380 (Casa)")
+                if (!numStr && ruaStr && ruaStr.includes(',')) {
+                    let partes = ruaStr.split(',');
+                    let ultimaParte = partes.pop().trim(); // Arranca a última parte ("380 (Casa)")
+                    
+                    let matchNum = ultimaParte.match(/(\d+)/); // Procura os números ("380")
+                    if (matchNum) {
+                        numStr = matchNum[0];
+                        ruaStr = partes.join(',').trim(); // O resto volta a ser Rua e Bairro ("Rua Aluísio Azevedo, Veneza")
+                        
+                        let matchComp = ultimaParte.match(/\((.*?)\)/); // Procura parênteses ("Casa")
+                        if (matchComp) {
+                            compStr = matchComp[1].trim();
+                        } else {
+                            let partsTraco = ultimaParte.split('-');
+                            if(partsTraco.length > 1) {
+                                compStr = partsTraco[1].trim();
+                            }
+                        }
+                    }
+                }
+
+                document.getElementById('ped-cep').value = cepStr;
+                document.getElementById('ped-rua').value = ruaStr;
+                document.getElementById('ped-num').value = numStr;
+                document.getElementById('ped-comp').value = compStr;
             }
 
             document.getElementById('modal-carrinho').classList.replace('hidden', 'flex');
