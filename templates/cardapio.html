@@ -839,7 +839,7 @@
 
         async function buscarRastreio() {
             let busca = document.getElementById('input-rastreio').value.trim();
-            busca = busca.replace('#', ''); // Ignora a hashtag se o cliente digitar
+            busca = busca.replace('#', ''); 
             if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
             
             const btn = document.getElementById('btn-rastreio'); 
@@ -851,16 +851,16 @@
                 if(res.ok) {
                     const data = await res.json();
                     document.getElementById('rastreio-senha').innerText = data.senha || data.id; 
-                    document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
+                    document.getElementById('rastreio-status').innerText = (data.status || "RECEBIDO").replace(/_/g, ' ');
                     
                     const bar = document.getElementById('rastreio-progresso'); 
-                    bar.style.width = data.progresso + '%';
-                    
-                    if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
-                    else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
-                    else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
+                    if(bar) {
+                        bar.style.width = (data.progresso || 20) + '%';
+                        if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
+                        else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
+                        else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
+                    }
 
-                    // --- BOTÃO DINÂMICO DO MAPA DO MOTOBOY ---
                     let containerMapa = document.getElementById('link-mapa-rastreio');
                     if (!containerMapa) {
                         containerMapa = document.createElement('div');
@@ -880,15 +880,15 @@
                     } else {
                         containerMapa.classList.add('hidden');
                     }
-                    // ----------------------------------------
 
                     document.getElementById('resultado-rastreio').classList.remove('hidden');
                 } else {
                     alert("Ops! Nenhum pedido ativo encontrado."); 
                     document.getElementById('resultado-rastreio').classList.add('hidden');
                 }
-            } catch(e) { 
-                alert("Erro de conexão."); 
+            } catch(err) { 
+                console.error("Erro capturado no rastreio:", err);
+                alert("Erro de conexão ao buscar pedido."); 
             }
             btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; 
             btn.disabled = false;
