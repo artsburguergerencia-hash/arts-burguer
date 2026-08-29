@@ -391,7 +391,7 @@
                     </div>
 
                     <div id="box-endereco" class="space-y-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl transition-all">
-                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Bairro de Entrega</label>
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Bairro de Entrega (Para a Taxa)</label>
                         <div class="relative mb-2">
                             <select id="ped-bairro" onchange="calcularFrete()" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-bold outline-none focus:border-brand-500 appearance-none">
                                 <option value="0">Carregando...</option>
@@ -399,10 +399,17 @@
                             <i class="ph-bold ph-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                         </div>
 
-                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Rua, Número e Complemento</label>
-                        <input type="text" id="ped-endereco" placeholder="Ex: Rua Brasil, 123" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-medium outline-none focus:border-brand-500 mb-2">
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 mt-4">Endereço de Entrega</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <input type="text" id="ped-cep" placeholder="CEP" onblur="buscarCepCheckout(this.value)" class="col-span-1 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-brand-600 dark:text-brand-400 font-bold rounded-xl text-sm outline-none focus:border-brand-500 text-center">
+                            <input type="text" id="ped-rua" placeholder="Rua e Bairro" class="col-span-2 px-4 py-3 bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-medium outline-none focus:border-brand-500 transition-colors">
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 mt-2">
+                            <input type="text" id="ped-num" placeholder="Nº" class="col-span-1 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-bold outline-none focus:border-brand-500 text-center">
+                            <input type="text" id="ped-comp" placeholder="Complemento (Ex: Casa 2)" class="col-span-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-medium outline-none focus:border-brand-500">
+                        </div>
                         
-                        <div class="flex justify-between items-center text-sm font-bold text-slate-500 dark:text-slate-400 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 hidden" id="box-frete">
+                        <div class="flex justify-between items-center text-sm font-bold text-slate-500 dark:text-slate-400 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 hidden" id="box-frete">
                             <span class="uppercase tracking-widest text-[10px]">Taxa de Entrega:</span>
                             <span id="valor-frete" class="text-brand-500 dark:text-brand-400 font-black">+ R$ 0,00</span>
                         </div>
@@ -471,6 +478,44 @@
         </div>
     </div>
 
+    <!-- 🚨 NOVO: ALERTA PREMIUM CUSTOMIZADO (Substitui os alertas do Chrome) 🚨 -->
+    <div id="alerta-customizado" class="fixed inset-0 bg-slate-900/80 z-[250] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative border border-slate-200 dark:border-slate-800">
+            <div id="alerta-icone-bg" class="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white dark:border-slate-800 shadow-md">
+                <i id="alerta-icone" class="ph-fill ph-bell-ringing text-4xl"></i>
+            </div>
+            <h3 id="alerta-titulo" class="text-xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">Aviso</h3>
+            <p id="alerta-mensagem" class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-6 leading-relaxed">Sua mensagem aqui.</p>
+            <button type="button" onclick="fecharAlertaPremium()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-xl transition-transform active:scale-95 uppercase tracking-widest text-xs shadow-lg">
+                OK, Entendi
+            </button>
+        </div>
+    </div>
+
+    <!-- 🚨 NOVO: TELA PROFISSIONAL DE PAGAMENTO PIX 🚨 -->
+    <div id="modal-pix" class="fixed inset-0 bg-slate-900/90 z-[250] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl relative border border-slate-200 dark:border-slate-800">
+            <div class="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white dark:border-slate-800 shadow-md">
+                <i class="ph-fill ph-check-circle text-4xl"></i>
+            </div>
+            <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">Pedido <span id="pix-pedido-num" class="text-brand-500"></span> Gerado!</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-6 leading-relaxed">Copie o código PIX abaixo e pague no aplicativo do seu banco para liberar o preparo na cozinha.</p>
+            
+            <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-6 relative group overflow-hidden">
+                <p id="pix-codigo-texto" class="text-[10px] font-mono text-slate-600 dark:text-slate-400 break-all select-all"></p>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-3">
+                <button type="button" onclick="copiarPixPremium()" id="btn-copiar-pix" class="w-full bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl transition-colors active:scale-95 uppercase tracking-widest text-xs shadow-lg flex items-center justify-center">
+                    <i class="ph-bold ph-copy mr-2 text-lg"></i> Copiar Código PIX
+                </button>
+                <button type="button" onclick="window.location.reload()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl transition-colors active:scale-95 uppercase tracking-widest text-xs shadow-lg">
+                    Já paguei, Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <!-- ============================================== -->
     <!-- MOTOR JAVASCRIPT PRINCIPAL -->
     <!-- ============================================== -->
@@ -504,6 +549,80 @@
             carregarCardapioDigital();
             carregarTaxasEntrega(); 
         });
+
+        // 🚨 SUBSTITUI TODOS OS ALERTS NATIVOS DO NAVEGADOR PELO SISTEMA PREMIUM 🚨
+        let alertaCallbackGlobal = null;
+        function alertaPremium(mensagem, titulo = "Aviso da Loja", tipo = "info", callback = null) {
+            document.getElementById('alerta-titulo').innerText = titulo;
+            document.getElementById('alerta-mensagem').innerText = mensagem;
+            
+            const icone = document.getElementById('alerta-icone');
+            const bg = document.getElementById('alerta-icone-bg');
+            
+            if(tipo === 'sucesso') {
+                icone.className = "ph-fill ph-check-circle text-4xl";
+                bg.className = "w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white dark:border-slate-800 shadow-md";
+            } else if (tipo === 'erro') {
+                icone.className = "ph-fill ph-warning-circle text-4xl";
+                bg.className = "w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white dark:border-slate-800 shadow-md";
+            } else {
+                icone.className = "ph-fill ph-bell-ringing text-4xl";
+                bg.className = "w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white dark:border-slate-800 shadow-md";
+            }
+            
+            alertaCallbackGlobal = callback;
+            document.getElementById('alerta-customizado').classList.replace('hidden', 'flex');
+        }
+
+        function fecharAlertaPremium() {
+            document.getElementById('alerta-customizado').classList.replace('flex', 'hidden');
+            if (typeof alertaCallbackGlobal === 'function') {
+                alertaCallbackGlobal();
+                alertaCallbackGlobal = null;
+            }
+        }
+        
+        window.alert = function(msg) { alertaPremium(msg); }; // Mágica que intercepta todos os alerts antigos!
+
+        // Função do Botão Copiar PIX
+        async function copiarPixPremium() {
+            const codigo = document.getElementById('pix-codigo-texto').innerText;
+            try {
+                await navigator.clipboard.writeText(codigo);
+                const btn = document.getElementById('btn-copiar-pix');
+                const txtOriginal = btn.innerHTML;
+                btn.innerHTML = '<i class="ph-bold ph-check mr-2 text-lg"></i> Copiado!';
+                btn.classList.replace('bg-slate-900', 'bg-emerald-500');
+                btn.classList.replace('dark:bg-white', 'dark:bg-emerald-500');
+                btn.classList.replace('dark:text-slate-900', 'dark:text-white');
+                setTimeout(() => {
+                    btn.innerHTML = txtOriginal;
+                    btn.classList.replace('bg-emerald-500', 'bg-slate-900');
+                    btn.classList.replace('dark:bg-emerald-500', 'dark:bg-white');
+                    btn.classList.replace('dark:text-white', 'dark:text-slate-900');
+                }, 2000);
+            } catch(e) { alert("Pix Copiado com Sucesso!"); }
+        }
+
+        // Função de Buscar CEP dentro do Checkout
+        async function buscarCepCheckout(cep) {
+            const cepLimpo = cep.replace(/\D/g, '');
+            if (cepLimpo.length === 8) {
+                const ruaField = document.getElementById('ped-rua');
+                ruaField.value = "Buscando...";
+                try {
+                    const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+                    const data = await res.json();
+                    if (!data.erro) {
+                        ruaField.value = `${data.logradouro}, ${data.bairro}`;
+                        document.getElementById('ped-num').focus();
+                    } else {
+                        ruaField.value = ""; alert("CEP não localizado.");
+                    }
+                } catch(e) { ruaField.value = ""; }
+            }
+        }
+        
 
         // ==========================
         // SISTEMA DE EDIÇÃO DE PERFIL E FOTO
@@ -619,11 +738,12 @@
 
         async function carregarTaxasEntrega() {
             try {
-                const res = await fetch('/api/gestao/taxas'); taxasEntrega = await res.json();
+                const res = await fetch('/api/taxas/listar'); // Rota corrigida!
+                taxasEntrega = await res.json();
                 const sel = document.getElementById('ped-bairro');
                 if(sel) {
                     if(taxasEntrega.length === 0) sel.innerHTML = '<option value="0">Frete Único / Grátis</option>';
-                    else sel.innerHTML = '<option value="0">Selecione seu bairro...</option>' + taxasEntrega.map(t => `<option value="${t.taxa}">${t.bairro}</option>`).join('');
+                    else sel.innerHTML = '<option value="0">Selecione seu bairro de entrega...</option>' + taxasEntrega.map(t => `<option value="${t.taxa}">${t.bairro}</option>`).join('');
                 }
             } catch(e) {}
         }
@@ -1177,8 +1297,12 @@
                 </div>
             `).join('');
             
-            if(clienteLogado && document.getElementById('ped-endereco').value === "") {
-                document.getElementById('ped-endereco').value = clienteLogado.endereco_completo || "";
+            // Lógica nova de preenchimento de endereço inteligente
+            if(clienteLogado && document.getElementById('ped-rua').value === "") {
+                document.getElementById('ped-cep').value = clienteLogado.cep || "";
+                document.getElementById('ped-rua').value = clienteLogado.endereco || clienteLogado.endereco_completo || "";
+                document.getElementById('ped-num').value = clienteLogado.numero || "";
+                document.getElementById('ped-comp').value = clienteLogado.complemento || "";
             }
 
             document.getElementById('modal-carrinho').classList.replace('hidden', 'flex');
@@ -1186,7 +1310,6 @@
 
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.replace('flex', 'hidden'); }
 
-        // 🚨 CHECKOUT BLINDADO E RESTAURADO PARA O MODELO QUE FUNCIONOU 🚨
         async function enviarPedidoNuvem(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-enviar-pedido'); const txtOriginal = btn.innerHTML;
@@ -1199,32 +1322,51 @@
             const selBairro = document.getElementById('ped-bairro');
             const nomeBairro = (isDelivery && selBairro && selBairro.value !== "0") ? selBairro.options[selBairro.selectedIndex].text : "";
 
+            // Lógica Unificada de Endereço
+            let endLimpo = "";
+            if (isDelivery) {
+                const cep = document.getElementById('ped-cep').value;
+                const rua = document.getElementById('ped-rua').value;
+                const num = document.getElementById('ped-num').value;
+                const comp = document.getElementById('ped-comp').value;
+                
+                if (!rua || !num) {
+                    alertaPremium("⚠️ Preencha a Rua e o Número do endereço para a entrega.", "Atenção", "erro");
+                    btn.innerHTML = txtOriginal; btn.disabled = false; return;
+                }
+                
+                endLimpo = `${rua}, Nº ${num}`;
+                if (comp) endLimpo += ` (${comp})`;
+                if (cep) endLimpo += ` - CEP: ${cep}`;
+            } else {
+                endLimpo = "Retirada Balcão";
+            }
+
             if (clienteLogado) {
                 nome = clienteLogado.nome; 
                 tel = clienteLogado.telefone; 
-                end = isDelivery ? (document.getElementById('ped-endereco').value || clienteLogado.endereco_completo) : "Retirada Balcão";
+                end = endLimpo;
                 cliente_id = clienteLogado.id; 
                 cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
             } else {
                 nome = document.getElementById('guest-nome').value.trim(); 
                 tel = document.getElementById('guest-tel').value.trim();
-                end = isDelivery ? document.getElementById('ped-endereco').value.trim() : "Retirada Balcão";
+                end = endLimpo;
                 cpf = document.getElementById('guest-cpf').value.replace(/\D/g, ''); 
                 cliente_id = null;
-                if (!nome || !tel || (isDelivery && !end)) { alert("⚠️ Preencha Nome, WhatsApp e Endereço."); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
+                if (!nome || !tel) { alertaPremium("⚠️ Preencha seu Nome e WhatsApp.", "Atenção", "erro"); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
             }
 
-            if (isDelivery && taxasEntrega.length > 0 && (!selBairro || selBairro.value === "0")) { alert("⚠️ Por favor, selecione o seu bairro de entrega."); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
+            if (isDelivery && taxasEntrega.length > 0 && (!selBairro || selBairro.value === "0")) { alertaPremium("⚠️ Por favor, selecione o seu bairro de entrega na tabela.", "Atenção", "erro"); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
             if (isDelivery && nomeBairro) end += ` (Bairro: ${nomeBairro} - Taxa R$ ${valorFreteAtual.toFixed(2)})`;
 
             const tipoPgto = document.getElementById('forma-pag-online').value;
             if ((tipoPgto === 'pix' || tipoPgto === 'credito') && !cpf) {
-                alert("⚠️ O CPF é obrigatório para pagamento online via Pix ou Cartão.");
+                alertaPremium("⚠️ O CPF é obrigatório para garantir o seu pagamento online via Pix ou Cartão.", "Atenção", "erro");
                 if(clienteLogado) document.getElementById('logado-cpf').focus(); else document.getElementById('guest-cpf').focus();
                 btn.innerHTML=txtOriginal; btn.disabled=false; return;
             }
 
-            // RESTAURANDO A CARGA EXATA DE DADOS QUE FUNCIONOU PARA OS PEDIDOS #183 E #184
             let itensFinais = carrinho.map(i => ({ 
                 produto_id: i.produto_id, 
                 quantidade: i.quantidade, 
@@ -1248,7 +1390,7 @@
                 const numCartao = document.getElementById('cc-num').value.replace(/\D/g, ''); const nomeCartao = document.getElementById('cc-nome').value;
                 const valCartao = document.getElementById('cc-val').value; const cvvCartao = document.getElementById('cc-cvv').value;
 
-                if(!numCartao || !nomeCartao || !valCartao || !cvvCartao) { alert("⚠️ Preencha todos os dados do cartão!"); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
+                if(!numCartao || !nomeCartao || !valCartao || !cvvCartao) { alertaPremium("⚠️ Preencha todos os dados do cartão de crédito!", "Atenção", "erro"); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
 
                 try {
                     const mp = new MercadoPago('APP_USR-848cf42a-5349-4310-9ba5-b8c42f1ee022'); 
@@ -1263,7 +1405,7 @@
 
                     if(tokenRes.error) throw new Error();
                     payload.token_cartao = tokenRes.id; payload.payment_method_id = metodos.results[0].id; payload.parcelas = document.getElementById('cc-parcelas').value;
-                } catch (e) { alert("⚠️ Erro: Dados do cartão de crédito inválidos."); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
+                } catch (e) { alertaPremium("⚠️ Dados do cartão de crédito inválidos.", "Erro", "erro"); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
             }
 
             try {
@@ -1277,36 +1419,33 @@
                     let data = {};
                     try { data = await res.json(); } catch(jsonErr) {}
 
+                    const numPed = data.senha_diaria || data.pedido_id || data.id || "000";
+
                     if (data.status === "checkout_transparente") { 
-                        prompt("✅ SEU PIX FOI GERADO!\n\nCopie o código abaixo e pague no app do seu banco:", data.copia_e_cola); 
-                    } 
-                    else if (tipoPgto === 'credito') { 
-                        alert("✅ PAGAMENTO APROVADO!\nSeu pedido foi para a cozinha com sucesso."); 
+                        // ABRE O NOVO MODAL DE PIX!
+                        document.getElementById('pix-pedido-num').innerText = numPed;
+                        document.getElementById('pix-codigo-texto').innerText = data.copia_e_cola;
+                        document.getElementById('modal-pix').classList.replace('hidden', 'flex');
                     } 
                     else { 
-                        alert("✅ Pedido enviado para a cozinha com sucesso! Acompanhe o preparo pelo Rastreio."); 
+                        // MENSAGEM CUSTOMIZADA COM O NÚMERO DO PEDIDO PARA O CLIENTE
+                        const txtSucesso = tipoPgto === 'credito' ? 
+                            `O Pagamento foi aprovado!\nSeu pedido #${numPed} já foi para a cozinha. Acompanhe a entrega na tela de Rastreio.` : 
+                            `Seu pedido #${numPed} foi recebido pela cozinha com sucesso!\nAcompanhe o preparo pela tela de Rastreio.`;
+                        
+                        alertaPremium(txtSucesso, "Pedido Confirmado! 🎉", "sucesso", () => {
+                            window.location.reload();
+                        });
                     }
-                    
-                    window.location.reload();
                 } else { 
-                    if (res.status === 500) {
-                        alert("⚠️ Erro Interno do Servidor (500)!\n\nIsso significa que o pedido chegou no servidor, mas o Python travou ao finalizar.\n\nMotivos comuns:\n1. Falta do Token do Mercado Pago (Se escolheu PIX/Cartão).\n2. Erro no disparo de WhatsApp.\n\nVerifique no Painel de Gestão se o pedido apareceu lá!");
-                        btn.disabled = false; btn.innerHTML = txtOriginal;
-                        return;
-                    }
-                    
                     let errData = {};
                     try { errData = await res.json(); } catch(e) {}
                     let mensagemErro = errData.detail || "Verifique os dados preenchidos.";
-                    if(Array.isArray(mensagemErro)) {
-                        mensagemErro = mensagemErro.map(e => `Campo '${e.loc[e.loc.length-1]}': ${e.msg}`).join('\n');
-                    }
-                    alert("⚠️ Pedido recusado pelo servidor:\n\n" + mensagemErro); 
+                    alertaPremium("Pedido recusado:\n" + mensagemErro, "Falha na Transação", "erro"); 
                     btn.disabled = false; btn.innerHTML = txtOriginal; 
                 }
             } catch(e) { 
-                console.error(e);
-                alert("Ocorreu um erro de rede. Se o pedido descontou, avise a loja no WhatsApp."); 
+                alertaPremium("Ocorreu um erro de rede. Se o pedido descontou, avise a loja no WhatsApp.", "Erro", "erro"); 
                 btn.disabled = false; btn.innerHTML = txtOriginal; 
             }
         }
