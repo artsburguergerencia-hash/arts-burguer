@@ -622,6 +622,49 @@
                 } catch(e) { ruaField.value = ""; }
             }
         }
+
+        // 🚨 FUNÇÃO DE BUSCA DE CEP PARA CADASTRO E EDIÇÃO DE PERFIL 🚨
+        async function buscarCep(cep, tipo) {
+            const cepLimpo = cep.replace(/\D/g, '');
+            if (cepLimpo.length === 8) {
+                let ruaField, bairroField, numField;
+
+                if (tipo === 'edit') {
+                    ruaField = document.getElementById('edit-perf-end');
+                    numField = document.getElementById('edit-perf-num');
+                } else if (tipo === 'reg') {
+                    ruaField = document.getElementById('cad-rua');
+                    bairroField = document.getElementById('cad-bairro');
+                    numField = document.getElementById('cad-num');
+                }
+
+                if (ruaField) ruaField.value = "Buscando...";
+                if (bairroField) bairroField.value = "Buscando...";
+
+                try {
+                    const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+                    const data = await res.json();
+                    
+                    if (!data.erro) {
+                        if (tipo === 'edit') {
+                            ruaField.value = `${data.logradouro}, ${data.bairro}`;
+                        } else if (tipo === 'reg') {
+                            ruaField.value = data.logradouro;
+                            if (bairroField) bairroField.value = data.bairro;
+                        }
+                        // Pula o cursor direto para o campo do número para agilizar!
+                        if (numField) numField.focus(); 
+                    } else {
+                        if (ruaField) ruaField.value = "";
+                        if (bairroField) bairroField.value = "";
+                        alertaPremium("CEP não localizado. Verifique se digitou corretamente.", "Atenção", "erro");
+                    }
+                } catch(e) { 
+                    if (ruaField) ruaField.value = "";
+                    if (bairroField) bairroField.value = "";
+                }
+            }
+        }
         
 
         // ==========================
