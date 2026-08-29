@@ -848,6 +848,7 @@
             
             try {
                 const res = await fetch(`/api/rastreio/${busca}`);
+                
                 if(res.ok) {
                     const data = await res.json();
                     document.getElementById('rastreio-senha').innerText = data.senha || data.id; 
@@ -883,12 +884,13 @@
 
                     document.getElementById('resultado-rastreio').classList.remove('hidden');
                 } else {
-                    alert("Ops! Nenhum pedido ativo encontrado."); 
+                    // SE O PEDIDO NÃO EXISTIR (404), AVISA O CLIENTE COM CLAREZA
+                    alert("Ops! Nenhum pedido encontrado com este número. Verifique se digitou correto."); 
                     document.getElementById('resultado-rastreio').classList.add('hidden');
                 }
             } catch(err) { 
                 console.error("Erro capturado no rastreio:", err);
-                alert("Erro de conexão ao buscar pedido."); 
+                alert("Erro de conexão com o servidor."); 
             }
             btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; 
             btn.disabled = false;
