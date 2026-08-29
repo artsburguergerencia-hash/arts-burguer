@@ -403,10 +403,13 @@ def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db
             nome=dados.get("nome", "Cliente Visitante"),
             telefone=telefone_cliente,
             senha=dados.get("senha", ""),
-            cpf=cpf_final, # <-- Correção aqui
+            cpf=cpf_final,
             data_nascimento=dados.get("data_nascimento", ""),
             cep=dados.get("cep", ""),
-            endereco=dados.get("endereco", ""),
+            
+            # 🚨 CORREÇÃO 1: Amarra o 'logradouro' ao 'endereco'
+            endereco=dados.get("endereco", dados.get("logradouro", "")),
+            
             numero=dados.get("numero", ""),
             bairro=dados.get("bairro", ""),
             complemento=dados.get("complemento", ""),
@@ -467,6 +470,14 @@ def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db
             "cpf": getattr(cliente, 'cpf', ''),
             "foto": getattr(cliente, 'foto', ''),
             "endereco_completo": endereco_formatado,
+            
+            # 🚨 CORREÇÃO 2: Envia os campos desmembrados para o Cache (localStorage)
+            "cep": getattr(cliente, 'cep', ''),
+            "endereco": getattr(cliente, 'endereco', ''),
+            "numero": getattr(cliente, 'numero', ''),
+            "bairro": getattr(cliente, 'bairro', ''),
+            "complemento": getattr(cliente, 'complemento', ''),
+            
             "pontos": getattr(cliente, 'pontos', 0),
             "cashback": getattr(cliente, 'cashback', 0.0)
         }
@@ -2962,7 +2973,11 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
     if hasattr(c, 'cep'): c.cep = dados.cep
     c.endereco = dados.endereco
     if hasattr(c, 'numero'): c.numero = dados.numero
-    if hasattr(c, 'bairro'): c.bairro = dados.bairro
+    
+    # 🚨 CORREÇÃO 3: Só atualiza o bairro se ele vier preenchido
+    if hasattr(c, 'bairro') and dados.bairro: 
+        c.bairro = dados.bairro
+        
     if hasattr(c, 'complemento'): c.complemento = dados.complemento
     
     if dados.senha and dados.senha.strip() != "":
