@@ -711,13 +711,23 @@
             const btn = document.getElementById('btn-salvar-perfil');
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>';
             
+            const cepDigitado = document.getElementById('edit-perf-cep').value;
+            const ruaDigitada = document.getElementById('edit-perf-end').value;
+            const numDigitado = document.getElementById('edit-perf-num').value;
+            const compDigitado = document.getElementById('edit-perf-comp').value;
+
+            // Monta a string segura para o banco de dados (Python) não perder nada
+            let endFinalBanco = `${ruaDigitada}, ${numDigitado}`;
+            if (compDigitado) endFinalBanco += ` (${compDigitado})`;
+            if (cepDigitado) endFinalBanco += ` - CEP: ${cepDigitado}`;
+
             const payload = {
                 nome: document.getElementById('edit-perf-nome').value,
                 telefone: document.getElementById('edit-perf-tel').value.replace(/\D/g, ''),
-                cep: document.getElementById('edit-perf-cep').value,
-                endereco: document.getElementById('edit-perf-end').value,
-                numero: document.getElementById('edit-perf-num').value,
-                complemento: document.getElementById('edit-perf-comp').value,
+                cep: cepDigitado,
+                endereco: endFinalBanco, // Enviado montado para a nuvem
+                numero: numDigitado,
+                complemento: compDigitado,
                 senha: document.getElementById('edit-perf-senha').value,
                 foto: document.getElementById('edit-perf-foto-base64').value
             };
@@ -729,12 +739,12 @@
                     clienteLogado.nome = payload.nome;
                     clienteLogado.telefone = payload.telefone;
                     
-                    // 🚨 SALVANDO OS CAMPOS SEPARADOS NO CACHE LOCAL 🚨
-                    clienteLogado.cep = payload.cep;
-                    clienteLogado.endereco = payload.endereco;
-                    clienteLogado.numero = payload.numero;
-                    clienteLogado.complemento = payload.complemento;
-                    clienteLogado.endereco_completo = `${payload.endereco}, ${payload.numero} (${payload.complemento})`;
+                    // 🚨 Salva os campos fragmentados no cache local para a sacola ler com perfeição!
+                    clienteLogado.cep = cepDigitado;
+                    clienteLogado.endereco = ruaDigitada;
+                    clienteLogado.numero = numDigitado;
+                    clienteLogado.complemento = compDigitado;
+                    clienteLogado.endereco_completo = endFinalBanco;
                     
                     if(payload.foto) clienteLogado.foto = payload.foto;
                     localStorage.setItem('arts_cliente', JSON.stringify(clienteLogado));
@@ -1328,34 +1338,46 @@
                 </div>
             `).join('');
             
-            // 🚨 EXTRATOR INTELIGENTE DE ENDEREÇOS ANTIGOS 🚨
-            if(clienteLogado && document.getElementById('ped-rua').value === "") {
+            // 🚨 EXTRATOR INTELIGENTE DEFINITIVO 🚨
+            if (clienteLogado && document.getElementById('ped-rua').value === "") {
                 let cepStr = clienteLogado.cep || "";
-                let ruaStr = clienteLogado.endereco || clienteLogado.endereco_completo || "";
+                let ruaStr = clienteLogado.endereco || "";
                 let numStr = clienteLogado.numero || "";
                 let compStr = clienteLogado.complemento || "";
 
-                // Se o cliente só tem a string gigante antiga (ex: "Rua Aluísio Azevedo, Veneza, 380 (Casa)")
-                if (!numStr && ruaStr && ruaStr.includes(',')) {
-                    let partes = ruaStr.split(',');
-                    let ultimaParte = partes.pop().trim(); // Arranca a última parte ("380 (Casa)")
+                // Se logou em outro aparelho e a API só devolveu a frase inteira "Rua X, 123 (Casa) - CEP: 000"
+                if (!ruaStr && clienteLogado.endereco_completo) {
+                    let endCompleto = clienteLogado.endereco_completo; 
                     
-                    let matchNum = ultimaParte.match(/(\d+)/); // Procura os números ("380")
-                    if (matchNum) {
-                        numStr = matchNum[0];
-                        ruaStr = partes.join(',').trim(); // O resto volta a ser Rua e Bairro ("Rua Aluísio Azevedo, Veneza")
-                        
-                        let matchComp = ultimaParte.match(/\((.*?)\)/); // Procura parênteses ("Casa")
-                        if (matchComp) {
-                            compStr = matchComp[1].trim();
+                    const matchCep = endCompleto.match(/(?:CEP:\s*)?(\d{5}-?\d{3})/i);
+                    if (matchCep) {
+                        cepStr = matchCep[1].trim();
+                        endCompleto = endCompleto.replace(matchCep[0], '').replace(/-\s*$/, '').trim();
+                    }
+
+                    const matchComp = endCompleto.match(/\((.*?)\)/);
+                    if (matchComp) {
+                        compStr = matchComp[1].trim();
+                        endCompleto = endCompleto.replace(/\(.*?\)/, '').trim(); 
+                    }
+
+                    let partes = endCompleto.split(',');
+                    if (partes.length > 1) {
+                        let ultimaParte = partes.pop().trim(); 
+                        let matchNum = ultimaParte.match(/(\d+)/);
+                        if (matchNum) {
+                            numStr = matchNum[0];
+                            ruaStr = partes.join(',').trim();
                         } else {
-                            let partsTraco = ultimaParte.split('-');
-                            if(partsTraco.length > 1) {
-                                compStr = partsTraco[1].trim();
-                            }
+                            ruaStr = endCompleto; 
                         }
+                    } else {
+                        ruaStr = endCompleto;
                     }
                 }
+
+                // Limpeza de vírgulas sobrando
+                if (ruaStr.startsWith(',')) ruaStr = ruaStr.substring(1).trim();
 
                 document.getElementById('ped-cep').value = cepStr;
                 document.getElementById('ped-rua').value = ruaStr;
