@@ -1453,9 +1453,20 @@ function gerarStringDeHorarios() {
         document.addEventListener('DOMContentLoaded', async () => { 
             // CARREGA SEU NOME E AVATAR NO CANTO ESQUERDO
             const nomeUsuario = localStorage.getItem('funcionario_nome') || "Admin";
+            const fotoUsuario = localStorage.getItem('funcionario_foto'); // Tenta puxar a foto real do login
+            
             document.getElementById('nome-admin-lateral').innerText = nomeUsuario;
-            document.getElementById('avatar-admin-lateral').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nomeUsuario)}&background=ff4757&color=fff`;
+            
+            const avatarImg = document.getElementById('avatar-admin-lateral');
+            // Se tiver foto real no cache, carrega ela. Se não, gera as iniciais.
+            if (fotoUsuario && fotoUsuario !== 'null' && fotoUsuario.trim() !== '') {
+                avatarImg.src = fotoUsuario;
+                avatarImg.classList.add('object-cover'); // Garante que a foto fique redonda e sem distorcer
+            } else {
+                avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nomeUsuario)}&background=ff4757&color=fff`;
+            }
 
+            // O RESTO DO SEU CÓDIGO CONTINUA INTACTO AQUI:
             await carregarConfiguracoesInit(); 
             await carregarFornecedoresParaSelect();
             await carregarInsumosParaSelect();
@@ -3462,7 +3473,11 @@ function gerarStringDeHorarios() {
                     if (document.getElementById('nome-admin-lateral').innerText === nomeSessao) {
                          localStorage.setItem('funcionario_nome', nome);
                          document.getElementById('nome-admin-lateral').innerText = nome;
-                         document.getElementById('avatar-admin-lateral').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=ff4757&color=fff`;
+                         
+                         const fotoCache = localStorage.getItem('funcionario_foto');
+                         if (!fotoCache || fotoCache === 'null') {
+                             document.getElementById('avatar-admin-lateral').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=ff4757&color=fff`;
+                         }
                     }
                 } else {
                     alertaPremium("Erro ao atualizar funcionário no banco de dados.", "Erro", "erro");
