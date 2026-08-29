@@ -187,30 +187,20 @@
         </div>
     </div>
 
-    <!-- MODAL DE RASTREIO -->
+    <!-- MODAL DE RASTREIO ÚNICO E LIMPO -->
     <div id="modal-rastreio" class="fixed inset-0 bg-slate-900/90 z-[90] hidden items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative text-center">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-[2rem] p-8 shadow-2xl relative text-center">
             <button onclick="document.getElementById('modal-rastreio').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
             <div class="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-crosshair text-4xl"></i></div>
-            <h2 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Rastrear Pedido</h2>
-            <div class="flex space-x-2 my-6">
-                <input type="text" id="input-rastreio" placeholder="Telefone ou Senha" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-center font-black outline-none focus:border-blue-500 tracking-widest">
-                <button onclick="buscarRastreio()" id="btn-rastreio" class="bg-blue-600 text-white px-5 rounded-xl font-black hover:bg-blue-500 transition-colors shadow-sm"><i class="ph-bold ph-magnifying-glass text-lg"></i></button>
-            </div>
-            <!-- MODAL DE RASTREIO ETAPA POR ETAPA -->
-    <div id="modal-rastreio" class="fixed inset-0 bg-slate-900/90 z-[90] hidden items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-[2rem] p-8 shadow-2xl relative">
-            <button onclick="document.getElementById('modal-rastreio').classList.replace('flex','hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-brand-500"><i class="ph-bold ph-x text-xl"></i></button>
-            <div class="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-crosshair text-4xl"></i></div>
-            <h2 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight text-center mb-6">Rastrear Pedido</h2>
-            
+            <h2 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight mb-6">Rastrear Pedido</h2>
+
             <div class="flex space-x-2 mb-6">
-                <input type="text" id="input-rastreio" placeholder="Número do Pedido ou Senha" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-center font-black outline-none focus:border-blue-500 tracking-widest">
+                <input type="text" id="input-rastreio" placeholder="Número ou Senha" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-center font-black outline-none focus:blue-500 tracking-widest">
                 <button onclick="buscarRastreio()" id="btn-rastreio" class="bg-blue-600 text-white px-5 rounded-xl font-black hover:bg-blue-500 transition-colors shadow-sm"><i class="ph-bold ph-magnifying-glass text-lg"></i></button>
             </div>
 
             <!-- RESULTADO DETALHADO ETAPA POR ETAPA -->
-            <div id="resultado-rastreio" class="hidden bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 relative overflow-hidden">
+            <div id="resultado-rastreio" class="hidden bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-left relative overflow-hidden">
                 <div class="flex justify-between items-center mb-6 border-b border-slate-200 dark:border-slate-800 pb-3">
                     <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Comanda / Pedido</span>
                     <span class="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">#<span id="rastreio-senha">000</span></span>
@@ -218,45 +208,39 @@
 
                 <!-- LINHA DO TEMPO DAS ETAPAS -->
                 <div class="space-y-4 mb-6 relative before:absolute before:top-2 before:bottom-2 before:left-4 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700">
-                    <!-- Etapa 1 -->
                     <div class="flex items-center relative z-10" id="step-recebido">
                         <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center font-black text-xs shrink-0 transition-colors mr-3 step-icon"><i class="ph-bold ph-check"></i></div>
                         <div>
                             <p class="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">1. Pedido Recebido</p>
-                            <p class="text-[10px] text-slate-400">Aguardando confirmação da cozinha</p>
+                            <p class="text-[10px] text-slate-400">Aguardando confirmação</p>
                         </div>
                     </div>
-                    <!-- Etapa 2 -->
                     <div class="flex items-center relative z-10" id="step-preparo">
                         <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center font-black text-xs shrink-0 transition-colors mr-3 step-icon"><i class="ph-bold ph-cooking-pot"></i></div>
                         <div>
                             <p class="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">2. Em Preparo</p>
-                            <p class="text-[10px] text-slate-400">Seu lanche está sendo montado</p>
+                            <p class="text-[10px] text-slate-400">Seu pedido está sendo montado</p>
                         </div>
                     </div>
-                    <!-- Etapa 3 -->
                     <div class="flex items-center relative z-10" id="step-pronto">
                         <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center font-black text-xs shrink-0 transition-colors mr-3 step-icon"><i class="ph-bold ph-package"></i></div>
                         <div>
                             <p class="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">3. Pronto / Despacho</p>
-                            <p class="text-[10px] text-slate-400">Separando para entrega ou retirada</p>
+                            <p class="text-[10px] text-slate-400">Separando para entrega</p>
                         </div>
                     </div>
-                    <!-- Etapa 4 -->
                     <div class="flex items-center relative z-10" id="step-entrega">
                         <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center font-black text-xs shrink-0 transition-colors mr-3 step-icon"><i class="ph-bold ph-moped"></i></div>
                         <div>
                             <p class="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">4. Saiu para Entrega</p>
-                            <p class="text-[10px] text-slate-400">Entregador a caminho do endereço</p>
+                            <p class="text-[10px] text-slate-400">A caminho do seu endereço</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- BOTÃO DO MAPA DO MOTOBOY (APARECE SÓ QUANDO SAI PARA ENTREGA) -->
-                <div id="link-mapa-rastreio" class="hidden"></div>
+                <!-- Botão do Mapa GPS -->
+                <div id="link-mapa-rastreio" class="hidden mt-4 pt-4 border-t border-slate-200 dark:border-slate-800"></div>
             </div>
-        </div>
-    </div>
         </div>
     </div>
 
