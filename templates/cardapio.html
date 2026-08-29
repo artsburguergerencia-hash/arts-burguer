@@ -604,25 +604,6 @@
             } catch(e) { alert("Pix Copiado com Sucesso!"); }
         }
 
-        // Função de Buscar CEP dentro do Checkout
-        async function buscarCepCheckout(cep) {
-            const cepLimpo = cep.replace(/\D/g, '');
-            if (cepLimpo.length === 8) {
-                const ruaField = document.getElementById('ped-rua');
-                ruaField.value = "Buscando...";
-                try {
-                    const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-                    const data = await res.json();
-                    if (!data.erro) {
-                        ruaField.value = `${data.logradouro}, ${data.bairro}`;
-                        document.getElementById('ped-num').focus();
-                    } else {
-                        ruaField.value = ""; alert("CEP não localizado.");
-                    }
-                } catch(e) { ruaField.value = ""; }
-            }
-        }
-
         // 🚨 FUNÇÃO DE BUSCA DE CEP PARA CADASTRO E EDIÇÃO DE PERFIL 🚨
         async function buscarCep(cep, tipo) {
             const cepLimpo = cep.replace(/\D/g, '');
