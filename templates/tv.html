@@ -107,6 +107,18 @@
     </main>
 
     <script>
+        // Variáveis Globais da TV
+        let ultimoPedidoProntoId = 0;
+        let somAtivado = false;
+        let ultimaCargaTV = "";
+        let vozesDisponiveis = [];
+        
+        // 🚨 Variáveis da Rechamada 🚨
+        let rechamadaEmAndamento = false;
+        let timeoutRetorno = null;
+
+        window.speechSynthesis.onvoiceschanged = () => { vozesDisponiveis = window.speechSynthesis.getVoices(); };
+
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const res = await fetch('/api/gestao/configuracoes'); 
@@ -143,12 +155,6 @@
             }
         }
 
-        let ultimoPedidoProntoId = 0;
-        let somAtivado = false;
-        let ultimaCargaTV = "";
-        let vozesDisponiveis = [];
-        window.speechSynthesis.onvoiceschanged = () => { vozesDisponiveis = window.speechSynthesis.getVoices(); };
-
         setInterval(() => {
             const agora = new Date();
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
@@ -165,16 +171,38 @@
             atualizarTV();
         }
 
-        function chamarSenhaVoz(senha, nomeCompleto) {
-            if (!somAtivado) return; // Segurança extra
+        // 🚨 FUNÇÃO DE CHAMADA ATUALIZADA (COM DESTAQUE FORÇADO) 🚨
+        function chamarSenhaVoz(senha, nomeCompleto, forcarDestaque = false) {
+            if (!somAtivado) return; 
             
-            // Para as falas anteriores (se o usuário clicar rápido várias vezes)
+            // Para as falas anteriores e limpa o timer se a pessoa clicar várias vezes
             window.speechSynthesis.cancel();
+            if (timeoutRetorno) clearTimeout(timeoutRetorno);
             
             const som = document.getElementById('som-chamada');
             som.currentTime = 0; som.play().catch(()=>{});
 
             const primeiroNome = nomeCompleto ? nomeCompleto.split(' ')[0] : 'Cliente';
+
+            // SE FOR UM CLIQUE MANUAL (RECHAMADA)
+            if (forcarDestaque) {
+                rechamadaEmAndamento = true; // Trava a tela
+                
+                const destaque = document.getElementById('destaque-pronto');
+                destaque.innerHTML = `
+                    <div class="btn-rechamar destaque-pulse fade-slide-up flex flex-col items-center justify-center group relative">
+                        <span class="text-[14rem] font-black text-emerald-500 leading-none tracking-tighter drop-shadow-md">${senha}</span>
+                        <span class="text-5xl font-black text-slate-800 dark:text-white mt-4 uppercase tracking-[0.2em] bg-emerald-100 dark:bg-emerald-500/20 px-8 py-3 rounded-full border-2 border-emerald-300 dark:border-emerald-500/50">${primeiroNome}</span>
+                        <span class="absolute -bottom-10 text-emerald-600 font-black tracking-widest uppercase flex items-center gap-2"><i class="ph-bold ph-arrows-clockwise animate-spin"></i> Rechamando...</span>
+                    </div>`;
+                
+                // Retorna ao normal após 8 segundos (tempo para o áudio falar tudo)
+                timeoutRetorno = setTimeout(() => {
+                    rechamadaEmAndamento = false; // Destrava a tela
+                    ultimaCargaTV = ""; // Força o refresh limpar a rechamada
+                    atualizarTV();
+                }, 8000); 
+            }
 
             setTimeout(() => {
                 const frase = `Senha, ${senha}. ${primeiroNome}, seu pedido está pronto.`;
@@ -192,27 +220,33 @@
 
         async function atualizarTV() {
             if(!somAtivado) return; 
+            
+            // 🚨 TRAVA DE SEGURANÇA: Aborta a atualização se estiver no meio de uma rechamada visual
+            if (rechamadaEmAndamento) return; 
+
             try {
                 const res = await fetch('/api/tv/pedidos'); const dados = await res.json();
                 
                 const idsPreparo = (dados.em_preparo || []).map(p => p.id).sort().join(',');
                 const idsProntos = (dados.prontos || []).map(p => p.id).sort().join(',');
                 const assinaturaAtual = idsPreparo + "|" + idsProntos;
+                
                 if (assinaturaAtual === ultimaCargaTV) return; ultimaCargaTV = assinaturaAtual;
                 
                 const emPreparo = dados.em_preparo || [];
                 let prontos = dados.prontos || [];
                 prontos = prontos.sort((a,b) => b.id - a.id);
 
+                // Disparo de Áudio Automático para Novos Pedidos Prontos
                 if (prontos.length > 0) {
                     const maisRecente = prontos[0];
                     if (ultimoPedidoProntoId !== 0 && maisRecente.id > ultimoPedidoProntoId && somAtivado) {
-                        chamarSenhaVoz(maisRecente.senha_diaria, maisRecente.cliente_nome);
+                        chamarSenhaVoz(maisRecente.senha_diaria, maisRecente.cliente_nome, false); // Força=false (Chamada Automática)
                     }
                     ultimoPedidoProntoId = Math.max(ultimoPedidoProntoId, maisRecente.id);
                 }
 
-                // RENDENRIZA FILA DE PREPARO
+                // RENDERIZA FILA DE PREPARO
                 const gridPreparo = document.getElementById('lista-preparo');
                 if (emPreparo.length === 0) {
                     gridPreparo.innerHTML = '<div class="col-span-2 text-center text-slate-400 dark:text-slate-600 font-bold mt-20 text-xl">Nenhum pedido na chapa</div>';
@@ -233,13 +267,11 @@
                 } else {
                     const pDestaque = prontos[0];
                     const nomeVisual = pDestaque.cliente_nome ? pDestaque.cliente_nome.split(' ')[0] : 'Cliente';
-                    
-                    // Tratamento seguro do nome para a função JS (remove aspas que quebrariam o clique)
                     const nomeSeguroDestaque = pDestaque.cliente_nome ? pDestaque.cliente_nome.replace(/'/g, "\\'") : '';
 
-                    // 🚨 NÚMERO GIGANTE AGORA É CLICÁVEL (RECHAMADA) 🚨
+                    // 🚨 ONCLICK ATUALIZADO PARA PASSAR "TRUE" NO FORÇAR DESTAQUE 🚨
                     destaque.innerHTML = `
-                        <div onclick="chamarSenhaVoz('${pDestaque.senha_diaria}', '${nomeSeguroDestaque}')" title="Clique para rechamar" class="btn-rechamar destaque-pulse fade-slide-up flex flex-col items-center justify-center group relative">
+                        <div onclick="chamarSenhaVoz('${pDestaque.senha_diaria}', '${nomeSeguroDestaque}', true)" title="Clique para rechamar" class="btn-rechamar destaque-pulse fade-slide-up flex flex-col items-center justify-center group relative">
                             <span class="text-[14rem] font-black text-emerald-500 leading-none tracking-tighter drop-shadow-md">${pDestaque.senha_diaria}</span>
                             <span class="text-5xl font-black text-slate-800 dark:text-white mt-4 uppercase tracking-[0.2em] bg-emerald-100 dark:bg-emerald-500/20 px-8 py-3 rounded-full border-2 border-emerald-300 dark:border-emerald-500/50">${nomeVisual}</span>
                             <span class="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity text-emerald-600 font-black tracking-widest uppercase flex items-center gap-2"><i class="ph-bold ph-speaker-high"></i> Clicar para rechamar</span>
@@ -249,9 +281,9 @@
                     if (outrosProntos.length > 0) {
                         filaProntos.innerHTML = outrosProntos.map(p => {
                             const nomeSeguroFila = p.cliente_nome ? p.cliente_nome.replace(/'/g, "\\'") : '';
-                            // 🚨 CAIXAS PEQUENAS AGORA TAMBÉM SÃO CLICÁVEIS 🚨
+                            // 🚨 ONCLICK ATUALIZADO AQUI TAMBÉM 🚨
                             return `
-                            <div onclick="chamarSenhaVoz('${p.senha_diaria}', '${nomeSeguroFila}')" title="Chamar ${p.senha_diaria} novamente" class="btn-rechamar bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-center justify-center py-5 fade-slide-up hover:bg-emerald-100 dark:hover:bg-emerald-500/30">
+                            <div onclick="chamarSenhaVoz('${p.senha_diaria}', '${nomeSeguroFila}', true)" title="Chamar ${p.senha_diaria} novamente" class="btn-rechamar bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-center justify-center py-5 fade-slide-up hover:bg-emerald-100 dark:hover:bg-emerald-500/30">
                                 <span class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tracking-tighter">${p.senha_diaria}</span>
                             </div>`;
                         }).join('');
