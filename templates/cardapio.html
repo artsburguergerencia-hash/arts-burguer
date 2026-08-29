@@ -838,24 +838,60 @@
         }
 
         async function buscarRastreio() {
-            const busca = document.getElementById('input-rastreio').value.trim();
+            let busca = document.getElementById('input-rastreio').value.trim();
+            busca = busca.replace('#', ''); // Ignora a hashtag se o cliente digitar
             if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
-            const btn = document.getElementById('btn-rastreio'); btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; btn.disabled = true;
+            
+            const btn = document.getElementById('btn-rastreio'); 
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; 
+            btn.disabled = true;
+            
             try {
                 const res = await fetch(`/api/rastreio/${busca}`);
                 if(res.ok) {
                     const data = await res.json();
-                    document.getElementById('rastreio-senha').innerText = data.senha; document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
-                    const bar = document.getElementById('rastreio-progresso'); bar.style.width = data.progresso + '%';
+                    document.getElementById('rastreio-senha').innerText = data.senha || data.id; 
+                    document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
+                    
+                    const bar = document.getElementById('rastreio-progresso'); 
+                    bar.style.width = data.progresso + '%';
+                    
                     if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
                     else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
                     else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
+
+                    // --- BOTÃO DINÂMICO DO MAPA DO MOTOBOY ---
+                    let containerMapa = document.getElementById('link-mapa-rastreio');
+                    if (!containerMapa) {
+                        containerMapa = document.createElement('div');
+                        containerMapa.id = 'link-mapa-rastreio';
+                        containerMapa.className = 'mt-4';
+                        document.getElementById('resultado-rastreio').appendChild(containerMapa);
+                    }
+
+                    const statusU = (data.status || "").toUpperCase();
+                    if (statusU.includes("SAIU") || statusU.includes("ENTREGA") || data.progresso >= 80) {
+                        containerMapa.innerHTML = `
+                            <a href="/mapa?pedido=${data.senha || data.id}" target="_blank" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-3.5 rounded-xl flex items-center justify-center shadow-lg transition-transform active:scale-95 uppercase tracking-widest text-xs animate-pulse">
+                                <i class="ph-bold ph-map-pin-line text-lg mr-2"></i> Acompanhar Motoboy no Mapa ao Vivo
+                            </a>
+                        `;
+                        containerMapa.classList.remove('hidden');
+                    } else {
+                        containerMapa.classList.add('hidden');
+                    }
+                    // ----------------------------------------
+
                     document.getElementById('resultado-rastreio').classList.remove('hidden');
                 } else {
-                    alert("Ops! Nenhum pedido ativo encontrado."); document.getElementById('resultado-rastreio').classList.add('hidden');
+                    alert("Ops! Nenhum pedido ativo encontrado."); 
+                    document.getElementById('resultado-rastreio').classList.add('hidden');
                 }
-            } catch(e) { alert("Erro de conexão."); }
-            btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; btn.disabled = false;
+            } catch(e) { 
+                alert("Erro de conexão."); 
+            }
+            btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; 
+            btn.disabled = false;
         }
 
         // ==========================================
@@ -1309,33 +1345,6 @@
                             </div>`;
                 }).join('');
             } catch(e) { listaHistorico.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Erro ao carregar histórico.</p>'; }
-        }
-
-        // 🚨 2. CORRIGE O RASTREIO PARA IGNORAR A HASHTAG (#) 🚨
-        async function buscarRastreio() {
-            let busca = document.getElementById('input-rastreio').value.trim();
-            busca = busca.replace('#', ''); // Arranca a hashtag se o cliente digitar!
-            if(!busca) { alert("Digite o número do celular ou a senha da comanda."); return; }
-            
-            const btn = document.getElementById('btn-rastreio'); btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; btn.disabled = true;
-            try {
-                const res = await fetch(`/api/rastreio/${busca}`);
-                if(res.ok) {
-                    const data = await res.json();
-                    document.getElementById('rastreio-senha').innerText = data.senha || data.id; 
-                    document.getElementById('rastreio-status').innerText = data.status.replace(/_/g, ' ');
-                    
-                    const bar = document.getElementById('rastreio-progresso'); 
-                    bar.style.width = data.progresso + '%';
-                    if(data.progresso === 100) bar.className = "bg-emerald-500 h-full rounded-full transition-all duration-1000";
-                    else if(data.progresso === 0) bar.className = "bg-red-500 h-full rounded-full transition-all duration-1000";
-                    else bar.className = "bg-blue-500 h-full rounded-full transition-all duration-1000";
-                    document.getElementById('resultado-rastreio').classList.remove('hidden');
-                } else {
-                    alert("Ops! Nenhum pedido ativo encontrado."); document.getElementById('resultado-rastreio').classList.add('hidden');
-                }
-            } catch(e) { alert("Erro de conexão."); }
-            btn.innerHTML = '<i class="ph-bold ph-magnifying-glass text-lg"></i>'; btn.disabled = false;
         }
     </script>
 </body>
