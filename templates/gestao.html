@@ -2031,6 +2031,17 @@ function gerarStringDeHorarios() {
                 const dados = await res.json();
                 const tbody = document.getElementById('lista-colaboradores');
                 
+                // 🚨 AUTO-CURA DO AVATAR: Puxa a foto do banco e injeta no menu lateral 🚨
+                const nomeSessao = localStorage.getItem('funcionario_nome');
+                const meuPerfil = dados.find(f => f.nome === nomeSessao);
+                if (meuPerfil && meuPerfil.foto_3x4) {
+                    const imgLateral = document.getElementById('avatar-admin-lateral');
+                    imgLateral.src = meuPerfil.foto_3x4;
+                    imgLateral.classList.add('object-cover');
+                    localStorage.setItem('funcionario_foto', meuPerfil.foto_3x4); // Salva no cache para as próximas vezes
+                }
+                // -------------------------------------------------------------------------
+
                 if (dados.length === 0) { 
                     tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400 font-medium">Nenhum funcionário na base de dados.</td></tr>'; 
                     return; 
