@@ -1848,17 +1848,36 @@ def atualizar_gps_motoboy(dados: CoordenadasGPS):
     return {"status": "ok"}
 
 # ==========================================
-# ROTA ÚNICA E DEFINITIVA DO GPS DO MOTOBOY
+# ROTA DE GPS DO MOTOBOY (TEMPO REAL CORRIGIDO)
 # ==========================================
 @app.get("/api/logistica/gps/{pedido_id}")
-def buscar_posicao_motoboy(pedido_id: int):
+def buscar_posicao_motoboy(pedido_id: int, db: Session = Depends(get_db)):
     """ A tela do cliente (mapa) pede a posição da moto pra cá a cada 5 segundos """
     try:
-        # Tenta pegar a posição real enviada pelo App do Entregador
-        posicao = POSICOES_MOTOBOYS_AO_VIVO.get(pedido_id)
+        # 1. Resolve o conflito: Acha o pedido real (seja pelo ID do banco ou pela Senha da comanda)
+        pedido = db.query(PedidoModel).filter(
+            (PedidoModel.id == pedido_id) | (PedidoModel.senha_diaria == pedido_id)
+        ).order_by(desc(PedidoModel.id)).first()
         
+        if not pedido:
+            return {"status": "aguardando_sinal", "posicao": None}
+            
+        real_id = pedido.id
+
+        # 2. Tenta pegar a posição na Memória RAM (se o App enviar via Socket/Ao Vivo)
+        posicao = POSICOES_MOTOBOYS_AO_VIVO.get(real_id)
+        if not posicao:
+            posicao = POSICOES_MOTOBOYS_AO_VIVO.get(pedido_id)
+
+        # 3. Tenta pegar a posição no Banco de Dados (se o App gravar direto na tabela)
+        if not posicao:
+            lat_db = getattr(pedido, 'entregador_lat', None)
+            lng_db = getattr(pedido, 'entregador_lng', None)
+            if lat_db and lng_db and float(lat_db) != 0.0:
+                posicao = {"lat": lat_db, "lng": lng_db}
+
+        # 4. Envia o sinal exato para o mapa se mexer!
         if posicao:
-            # Se tiver o sinal real da moto, manda para o mapa!
             return {
                 "status": "online", 
                 "posicao": {
@@ -1867,24 +1886,12 @@ def buscar_posicao_motoboy(pedido_id: int):
                 }
             }
         else:
-            # MODO DE SEGURANÇA/TESTE: Se o app do motoboy estiver desligado,
-            # o mapa abre mesmo assim em uma localização padrão (Fazenda Rio Grande) 
-            # para não travar a tela do cliente no "Conectando..."
-            return {
-                "status": "online",
-                "posicao": {
-                    "lat": -25.6600, 
-                    "lng": -49.3100
-                }
-            }
+            # Se o App do Motoboy ainda não mandou a coordenada, mostra a tela "Buscando Satélite" corretamente
+            return {"status": "aguardando_sinal", "posicao": None}
             
     except Exception as e:
-        print(f"Erro ao processar GPS para o pedido {pedido_id}: {e}")
-        # Se der qualquer erro, destrava o mapa do mesmo jeito
-        return {
-            "status": "online",
-            "posicao": {"lat": -25.6600, "lng": -49.3100}
-        }
+        print(f"Erro ao processar GPS: {e}")
+        return {"status": "aguardando_sinal", "posicao": None}
 
 # ------------------------------------------
 # ROTAS VISUAIS DO RASTREIO
