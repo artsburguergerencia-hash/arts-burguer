@@ -2975,9 +2975,8 @@ def atualizar_perfil_cliente(cliente_id: int, dados: AtualizarPerfilCliente, db:
     if hasattr(c, 'numero'): c.numero = dados.numero
     
     # 🚨 CORREÇÃO 3: Só atualiza o bairro se ele vier preenchido
-    if hasattr(c, 'bairro') and dados.bairro: 
-        c.bairro = dados.bairro
-        
+    if hasattr(c, 'bairro') and dados.bairro: c.bairro = dados.bairro
+    
     if hasattr(c, 'complemento'): c.complemento = dados.complemento
     
     if dados.senha and dados.senha.strip() != "":
