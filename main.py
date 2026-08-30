@@ -2557,10 +2557,25 @@ def excluir_conta(conta_id: int, db: Session = Depends(get_db)):
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 2)
 # ==========================================
 
+# 🚨 NOVA ROTA: Busca os ingredientes atuais do lanche para mostrar na tela de edição
+@app.get("/api/gestao/produto/{produto_id}/fichas")
+def obter_fichas_produto(produto_id: int, db: Session = Depends(get_db)):
+    fichas = db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).all()
+    resultado = []
+    for f in fichas:
+        insumo = db.query(InsumoModel).filter(InsumoModel.id == f.insumo_id).first()
+        if insumo:
+            resultado.append({
+                "insumo_id": f.insumo_id,
+                "quantidade": f.quantidade_necessaria,
+                "nome": insumo.nome
+            })
+    return resultado
+
 # 1. Atualizar Produto (Cardápio)
 @app.put("/api/gestao/produto/{produto_id}")
 def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db)):
-    from models import ProdutoModel
+    from database import ProdutoModel, FichaTecnicaModel
     produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
     if not produto:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
@@ -2574,9 +2589,21 @@ def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db
     
     # O frontend manda como "preco", mas o banco salva como "preco_venda"
     if 'preco' in dados: produto.preco_venda = dados['preco']
+    
+    # 🚨 O PULO DO GATO: Atualiza a Ficha Técnica
+    if 'fichas' in dados:
+        # 1. Apaga as fichas antigas para não duplicar
+        db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).delete()
+        # 2. Insere a nova lista de ingredientes que veio da tela
+        for f in dados['fichas']:
+            db.add(FichaTecnicaModel(
+                produto_id=produto_id, 
+                insumo_id=f["insumo_id"], 
+                quantidade_necessaria=f["quantidade"]
+            ))
         
     db.commit()
-    return {"status": "sucesso", "mensagem": "Produto atualizado!"}
+    return {"status": "sucesso", "mensagem": "Produto e Ficha atualizados!"}
 
 # 2. Excluir Produto Definitivamente
 @app.delete("/api/gestao/produto/{produto_id}")
