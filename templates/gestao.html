@@ -91,8 +91,10 @@
             <button onclick="abrirAba('aba-cardapio', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-list-magnifying-glass text-xl mr-3"></i> Produtos & Ficha
             </button>
-            <button onclick="abrirAba('aba-estoque', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
+            <button onclick="abrirAba('aba-estoque', this); dispararPopupEstoqueBaixo('aba');" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-package text-xl mr-3"></i> Estoque Mínimo
+                <!-- 🚨 BOLINHA VERMELHA DO MENU LATERAL -->
+                <span id="badge-estoque-lateral" class="ml-auto bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm hidden animate-pulse">0</span>
             </button>
             <button onclick="abrirAba('aba-financeiro', this)" class="menu-item w-full flex items-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-xl transition-all">
                 <i class="ph ph-invoice text-xl mr-3"></i> Financeiro
@@ -171,9 +173,37 @@
         <!-- HEADER -->
         <header class="bg-white dark:bg-slate-900 h-20 px-8 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-0 z-10 transition-colors duration-300">
             <h2 id="titulo-painel" class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Painel de Gestão Corporativa</h2>
-            <button onclick="toggleTheme()" class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-colors mr-4 shadow-inner border border-slate-200 dark:border-slate-700">
-                <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
-            </button>
+            
+            <!-- 🚨 ENVELOPE PARA OS DOIS BOTÕES FICAREM JUNTOS NA DIREITA -->
+            <div class="flex items-center">
+                
+                <!-- 🚨 INÍCIO DO SININHO DE NOTIFICAÇÕES 🚨 -->
+                <div class="relative mr-4" id="container-sininho">
+                    <button onclick="togglePainelNotificacoes()" class="p-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-brand-500 transition-colors relative shadow-sm">
+                        <i class="ph-bold ph-bell text-xl"></i>
+                        <span id="badge-sino" class="absolute -top-1 -right-1 flex h-4 w-4 hidden">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[9px] text-white font-black items-center justify-center" id="badge-sino-count">0</span>
+                        </span>
+                    </button>
+                    
+                    <div id="painel-notificacoes" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all">
+                        <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800">
+                            <h4 class="font-black text-slate-800 dark:text-white text-sm">Notificações</h4>
+                            <button onclick="limparNotificacoes()" class="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors">Limpar Tudo</button>
+                        </div>
+                        <div id="lista-notificacoes" class="max-h-80 overflow-y-auto no-scrollbar bg-white dark:bg-slate-900">
+                            <p class="text-center text-slate-400 text-xs py-6 font-bold">Sem novidades por aqui. Tudo limpo!</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 🚨 FIM DO SININHO 🚨 -->
+
+                <!-- BOTÃO TEMA DARK/LIGHT (Mantido) -->
+                <button onclick="toggleTheme()" class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-inner border border-slate-200 dark:border-slate-700">
+                    <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
+                </button>
+            </div>
         </header>
 
         <div class="p-8 max-w-7xl mx-auto pb-24">
@@ -1502,6 +1532,14 @@ function gerarStringDeHorarios() {
             await carregarCargosParaRH();
             renderizarEscalaUI();
             carregarCaixaEntradaRH();
+
+            // 🚨 ACIONADORES DE ESTOQUE E NOTIFICAÇÃO 🚨
+            // Liga a bolinha lateral e manda os alertas pro sininho
+            checarAlertasEstoque(); 
+            
+            // Faz o Popup "agressivo" pular na sua tela avisando que logou
+            dispararPopupEstoqueBaixo('login'); 
+            // 🚨 FIM DA INJEÇÃO 🚨
             
             const hoje = new Date();
             const mesStr = (hoje.getMonth() + 1).toString().padStart(2, '0');
@@ -2701,7 +2739,10 @@ function gerarStringDeHorarios() {
             try {
                 const res = await fetch('/api/gestao/insumos'); 
                 insumosGlobais = await res.json(); 
-                filtrarEstoque(); // Renderiza a tabela aplicando os filtros atuais
+                filtrarEstoque(); 
+                
+                // 🚨 ATUALIZA A BOLINHA E O SINO SEMPRE QUE O ESTOQUE FOR MEXIDO
+                checarAlertasEstoque(); 
             } catch(e) {
                 document.getElementById('lista-estoque').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-red-500 font-bold">Erro ao carregar estoque.</td></tr>';
             }
@@ -3608,6 +3649,85 @@ function gerarStringDeHorarios() {
             }
             btn.innerHTML = txtOriginal;
             btn.disabled = false;
+        }
+
+        // ==========================================
+        // SISTEMA PREMIUM: SININHO + POPUP DE ESTOQUE
+        // ==========================================
+        let notificacoes = [];
+        let popupEstoqueMostradoLogin = false;
+        let popupEstoqueMostradoAba = false;
+
+        // 1. SININHO
+        function togglePainelNotificacoes() { document.getElementById('painel-notificacoes').classList.toggle('hidden'); }
+
+        function adicionarNotificacao(titulo, mensagem, tipo = 'info') {
+            const jaExiste = notificacoes.find(n => n.mensagem === mensagem);
+            if(jaExiste) return;
+
+            const icones = { 'erro': 'ph-warning-circle text-red-500 bg-red-50', 'sucesso': 'ph-check-circle text-emerald-500 bg-emerald-50', 'info': 'ph-info text-blue-500 bg-blue-50' };
+            notificacoes.unshift({ titulo, mensagem, icone: icones[tipo] || icones['info'] });
+            atualizarBadgeSino(); renderizarNotificacoes();
+        }
+
+        function renderizarNotificacoes() {
+            const lista = document.getElementById('lista-notificacoes');
+            if (notificacoes.length === 0) { lista.innerHTML = '<p class="text-center text-slate-400 text-xs py-6 font-bold">Sem novidades por aqui. Tudo limpo!</p>'; return; }
+            lista.innerHTML = notificacoes.map(n => `
+                <div class="p-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-start">
+                    <div class="w-8 h-8 rounded-full ${n.icone.split(' ')[2]} flex items-center justify-center shrink-0 mr-3 mt-1"><i class="ph-fill ${n.icone.split(' ')[0]} ${n.icone.split(' ')[1]} text-lg"></i></div>
+                    <div><h5 class="text-xs font-black text-slate-800 dark:text-white mb-0.5">${n.titulo}</h5><p class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">${n.mensagem.replace(/\n/g, '<br>')}</p></div>
+                </div>
+            `).join('');
+        }
+
+        function atualizarBadgeSino() {
+            const badge = document.getElementById('badge-sino');
+            if (notificacoes.length > 0) { document.getElementById('badge-sino-count').innerText = notificacoes.length; badge.classList.remove('hidden'); } 
+            else { badge.classList.add('hidden'); }
+        }
+
+        function limparNotificacoes() { notificacoes = []; atualizarBadgeSino(); renderizarNotificacoes(); document.getElementById('painel-notificacoes').classList.add('hidden'); }
+
+        // 2. BOLINHA LATERAL E DISPARO PRO SINO
+        async function checarAlertasEstoque() {
+            try {
+                const res = await fetch('/api/gestao/insumos');
+                const insumos = await res.json();
+                const itensCriticos = insumos.filter(x => x.quantidade_atual <= x.quantidade_minima);
+                
+                const badgeLateral = document.getElementById('badge-estoque-lateral');
+                if (badgeLateral) {
+                    if (itensCriticos.length > 0) {
+                        badgeLateral.innerText = itensCriticos.length;
+                        badgeLateral.classList.remove('hidden');
+                        
+                        const listaTexto = itensCriticos.map(x => `${x.nome} (Restam: ${x.quantidade_atual})`).join('\n');
+                        adicionarNotificacao("Alerta de Estoque Baixo", `Você tem ${itensCriticos.length} item(ns) em nível crítico:\n${listaTexto}\nReabasteça em breve!`, "erro");
+                    } else { badgeLateral.classList.add('hidden'); }
+                }
+            } catch (e) { console.error("Erro no alerta de estoque"); }
+        }
+
+        // 3. O POPUP "AGRESSIVO" (TRAVADO COM ANTI-SPAM)
+        async function dispararPopupEstoqueBaixo(origem) {
+            if (origem === 'login' && popupEstoqueMostradoLogin) return;
+            if (origem === 'aba' && popupEstoqueMostradoAba) return;
+
+            try {
+                const res = await fetch('/api/gestao/insumos');
+                const insumos = await res.json();
+                const itensCriticos = insumos.filter(x => x.quantidade_atual <= x.quantidade_minima);
+
+                if (itensCriticos.length > 0) {
+                    const listaTexto = itensCriticos.map(x => `• ${x.nome} (Restam: ${x.quantidade_atual})`).join('\n');
+                    const mensagem = `Você tem ${itensCriticos.length} item(ns) em nível crítico:\n\n${listaTexto}\n\nReabasteça para não pausar suas vendas.`;
+                    alertaPremium(mensagem, "Alerta de Estoque Baixo! ⚠️", "erro");
+
+                    if (origem === 'login') popupEstoqueMostradoLogin = true;
+                    if (origem === 'aba') popupEstoqueMostradoAba = true;
+                }
+            } catch(e) {}
         }
         
     </script>
