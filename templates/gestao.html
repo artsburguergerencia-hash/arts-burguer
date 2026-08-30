@@ -1037,6 +1037,18 @@
                     </div>
                 </div>
                 
+                <!-- 🚨 INJEÇÃO DA FICHA TÉCNICA NO MODAL DE EDIÇÃO 🚨 -->
+                <div class="border-t border-slate-100 dark:border-slate-700 pt-4 mt-4">
+                    <label class="font-bold text-sm text-slate-500 uppercase tracking-widest mb-2 block">Ficha Técnica (Ingredientes)</label>
+                    <div class="flex space-x-2">
+                        <select id="edit-select-insumo" class="flex-1 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></select>
+                        <input type="number" id="edit-input-qtd-insumo" step="0.01" placeholder="Quantidade" class="w-24 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                        <button type="button" onclick="adicionarIngredienteEdicao()" class="bg-slate-900 text-white px-5 rounded-xl font-black hover:bg-slate-800 transition-colors">+</button>
+                    </div>
+                    <ul id="lista-ingredientes-edit" class="mt-4 space-y-2 text-slate-800 max-h-40 overflow-y-auto pr-2 no-scrollbar"></ul>
+                </div>
+                <!-- 🚨 FIM DA INJEÇÃO 🚨 -->
+
                 <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">
                     Salvar Alterações
                 </button>
@@ -2383,7 +2395,11 @@ function gerarStringDeHorarios() {
         async function carregarInsumosParaSelect() { 
             const res = await fetch('/api/gestao/insumos'); 
             const insumos = await res.json(); 
-            document.getElementById('select-insumo').innerHTML = '<option value="">-- Buscar Insumo --</option>' + insumos.map(x => `<option value="${x.id}">${x.nome} (${x.unidade})</option>`).join(''); 
+            const options = '<option value="">-- Buscar Insumo --</option>' + insumos.map(x => `<option value="${x.id}">${x.nome} (${x.unidade})</option>`).join('');
+            
+            document.getElementById('select-insumo').innerHTML = options; 
+            const editSelect = document.getElementById('edit-select-insumo');
+            if(editSelect) editSelect.innerHTML = options;
         }
 
         function adicionarIngredienteNaLista() { 
@@ -2517,12 +2533,44 @@ function gerarStringDeHorarios() {
                     document.getElementById('label-status-prod').innerText = e.target.checked ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
                 };
 
+                // 🚨 NOVO: Busca os ingredientes atuais no banco de dados
+                const resFichas = await fetch(`/api/gestao/produto/${id}/fichas`);
+                if(resFichas.ok) {
+                    ingredientesFichaEdit = await resFichas.json();
+                } else {
+                    ingredientesFichaEdit = [];
+                }
+                renderizarIngredientesEdicao();
+                // 🚨 FIM DA INJEÇÃO
+
                 document.getElementById('modal-editar-produto').classList.replace('hidden', 'flex');
             } catch(e) {
                 alertaPremium("Erro ao carregar dados do produto.", "Erro", "erro");
             }
         }
 
+        function adicionarIngredienteEdicao() {
+            const select = document.getElementById('edit-select-insumo'); 
+            const inputQtd = parseFloat(document.getElementById('edit-input-qtd-insumo').value); 
+            const insumoId = parseInt(select.value); 
+            
+            if(insumoId && inputQtd > 0) { 
+                ingredientesFichaEdit.push({ insumo_id: insumoId, quantidade: inputQtd, nome: select.options[select.selectedIndex].text }); 
+                renderizarIngredientesEdicao();
+                document.getElementById('edit-input-qtd-insumo').value = ''; 
+                select.value = ''; 
+            }
+        }
+
+        function renderizarIngredientesEdicao() {
+            document.getElementById('lista-ingredientes-edit').innerHTML = ingredientesFichaEdit.map((x, i) => `
+                <li class="flex justify-between items-center bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl text-sm shadow-sm">
+                    <span class="font-bold text-slate-700">${x.nome} <span class="text-brand-500 ml-2">Qtd: ${x.quantidade}</span></span>
+                    <button type="button" onclick="ingredientesFichaEdit.splice(${i}, 1); renderizarIngredientesEdicao()" class="text-red-400 hover:text-red-600"><i class="ph-bold ph-trash text-lg"></i></button>
+                </li>
+            `).join(''); 
+        }
+        
         async function salvarEdicaoProduto(e) {
             e.preventDefault();
             const id = document.getElementById('edit-prod-id').value;
@@ -2536,7 +2584,9 @@ function gerarStringDeHorarios() {
                 descricao: document.getElementById('edit-prod-desc').value,
                 imagem_url: document.getElementById('edit-prod-img').value,
                 categoria: document.getElementById('edit-prod-categoria').value,
-                ativo: document.getElementById('edit-prod-ativo').checked
+                ativo: document.getElementById('edit-prod-ativo').checked,
+                // 🚨 O PULO DO GATO: Enviando os ingredientes para o Python!
+                fichas: ingredientesFichaEdit 
             };
 
             try {
@@ -2547,7 +2597,7 @@ function gerarStringDeHorarios() {
                 });
                 
                 if(res.ok) {
-                    alertaPremium("Produto atualizado e sincronizado com o Cardápio e PDV!", "Edição Salva", "sucesso");
+                    alertaPremium("Produto e Ficha Técnica atualizados com sucesso!", "Edição Salva", "sucesso");
                     document.getElementById('modal-editar-produto').classList.replace('flex', 'hidden');
                     carregarCardapio();
                 } else {
@@ -3412,6 +3462,7 @@ function gerarStringDeHorarios() {
         }
     </script>
     <script>
+    let ingredientesFichaEdit = [];
     const htmlElement = document.documentElement;
     const themeIcon = document.getElementById('theme-icon');
     if (htmlElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
