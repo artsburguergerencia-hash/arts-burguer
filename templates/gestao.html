@@ -386,10 +386,36 @@
                 </div>
                 
                 <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-                    <h3 class="text-lg font-black mb-4 flex justify-between items-center">
-                        Cardápio Atual 
-                        <button onclick="carregarCardapio()" class="text-[10px] font-bold bg-slate-100 text-slate-500 uppercase tracking-widest px-3 py-2 rounded-lg hover:bg-slate-200">Atualizar</button>
-                    </h3>
+    <!-- 🚨 BARRA DE PESQUISA E FILTROS DO CARDÁPIO 🚨 -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+        <h3 class="text-lg font-black text-slate-800 shrink-0">Cardápio Atual</h3>
+        
+        <div class="flex flex-col md:flex-row gap-3 w-full md:justify-end items-center">
+            <!-- Pesquisa por Nome -->
+            <div class="relative w-full md:w-56">
+                <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                <input type="text" id="busca-cardapio" onkeyup="filtrarCardapio()" placeholder="Pesquisar lanche..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500 transition-colors">
+            </div>
+            
+            <!-- 🚨 NOVO: Filtro de Ordem (Preço, A-Z) -->
+            <select id="filtro-cardapio-ordem" onchange="filtrarCardapio()" class="w-full md:w-40 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-colors">
+                <option value="padrao">Cadastro</option>
+                <option value="menor_preco">Menor Preço</option>
+                <option value="maior_preco">Maior Preço</option>
+                <option value="az">Letra A-Z</option>
+            </select>
+
+            <!-- Filtro de Categoria -->
+            <select id="filtro-cardapio-categoria" onchange="filtrarCardapio()" class="w-full md:w-48 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-colors">
+                <option value="todas">Todas as Categorias</option>
+            </select>
+
+            <!-- Botão Atualizar -->
+            <button onclick="carregarCardapio()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm shrink-0">
+                Atualizar
+            </button>
+        </div>
+    </div>
                     <table class="w-full text-left text-sm">
                         <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-100">
                             <th class="py-4 px-6">Produto</th>
@@ -2521,45 +2547,97 @@ function gerarStringDeHorarios() {
             btn.disabled = false;
         }
 
-       async function carregarCardapio() { 
-            try {
-                const res = await fetch('/api/cardapio'); 
-                const produtos = await res.json(); 
-                
-                const tbody = document.getElementById('lista-cardapio');
-                
-                if (produtos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-6 text-slate-400 font-bold">Nenhum produto cadastrado.</td></tr>';
-                    return;
-                }
-                
-                tbody.innerHTML = produtos.map(x => {
-                    // Se a coluna ativo for false ou 0, mostra pausado
-                    const isAtivo = x.ativo !== false && x.ativo !== 0; 
-                    const badgeStatus = isAtivo ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ml-2">Ativo</span>' : '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ml-2">Pausado</span>';
+       // ==========================================
+        // MOTOR DO CARDÁPIO (BUSCA E FILTRO)
+        // ==========================================
+        let produtosGlobais = []; // Memória para o filtro rápido
 
-                    return `
-                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors ${!isAtivo ? 'opacity-60 bg-slate-50/50' : ''}">
-                        <td class="py-4 px-6 font-bold text-slate-800 flex items-center">
-                            <div class="w-10 h-10 rounded-lg bg-slate-200 mr-3 overflow-hidden shrink-0 border border-slate-300">
-                                ${x.imagem_url ? `<img src="${x.imagem_url}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-slate-400"><i class="ph-bold ph-image"></i></div>`}
-                            </div>
-                            <div>
-                                ${x.nome} ${badgeStatus}
-                                <br> <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded inline-block mt-1">${x.categoria}</span>
-                            </div>
-                        </td>
-                        <td class="py-4 px-6 font-black text-emerald-500 text-lg">R$ ${x.preco_venda.toFixed(2).replace('.', ',')}</td>
-                        <td class="py-4 px-6 text-center space-x-2">
-                            <button onclick="abrirModalEditarProduto(${x.id})" class="text-blue-600 bg-blue-50 border border-blue-100 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-pencil-simple text-sm"></i></button> 
-                            <button onclick="abrirModalCriarGrupo(${x.id}, '${x.nome}')" class="text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-colors shadow-sm">Extras</button> 
-                            <button onclick="if(confirm('Tem certeza? Isso apagará o lanche permanentemente!')){fetch('/api/gestao/produto/${x.id}', {method: 'DELETE'}).then(carregarCardapio)}" class="text-red-400 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
-                        </td>
-                    </tr>`;
-                }).join(''); 
+        async function carregarCardapio() {
+            try {
+                const res = await fetch('/api/cardapio');
+                produtosGlobais = await res.json();
+
+                // 1. Extrai todas as categorias que existem no banco e cria as opções no Select
+                const selectCategoria = document.getElementById('filtro-cardapio-categoria');
+                const categoriasUnicas = [...new Set(produtosGlobais.map(p => p.categoria).filter(c => c))].sort();
+                
+                // Salva a categoria atual para não resetar o filtro quando você editar um produto
+                const categoriaAtual = selectCategoria.value; 
+                
+                selectCategoria.innerHTML = '<option value="todas">Todas as Categorias</option>' + 
+                    categoriasUnicas.map(c => `<option value="${c}">${c}</option>`).join('');
+                
+                if (categoriasUnicas.includes(categoriaAtual)) { selectCategoria.value = categoriaAtual; }
+
+                // 2. Chama a função que filtra e desenha na tela
+                filtrarCardapio();
             } catch (err) {
                 document.getElementById('lista-cardapio').innerHTML = '<tr><td colspan="3" class="text-center py-6 text-red-500 font-bold">Erro ao carregar cardápio.</td></tr>';
             }
+        }
+
+        // 🚨 FUNÇÃO NOVA: Aplica os filtros digitados e a Ordem
+        function filtrarCardapio() {
+            const termoBusca = document.getElementById('busca-cardapio').value.toLowerCase();
+            const categoriaFiltro = document.getElementById('filtro-cardapio-categoria').value;
+            const ordemFiltro = document.getElementById('filtro-cardapio-ordem').value;
+
+            // 1. Filtra Categoria e Texto
+            let produtosFiltrados = produtosGlobais.filter(x => {
+                const passaBusca = x.nome.toLowerCase().includes(termoBusca) || (x.descricao || '').toLowerCase().includes(termoBusca);
+                const passaCategoria = (categoriaFiltro === 'todas') || (x.categoria === categoriaFiltro);
+                return passaBusca && passaCategoria;
+            });
+
+            // 2. 🚨 ORDENA a lista
+            if (ordemFiltro === 'menor_preco') {
+                produtosFiltrados.sort((a, b) => a.preco_venda - b.preco_venda);
+            } else if (ordemFiltro === 'maior_preco') {
+                produtosFiltrados.sort((a, b) => b.preco_venda - a.preco_venda);
+            } else if (ordemFiltro === 'az') {
+                produtosFiltrados.sort((a, b) => a.nome.localeCompare(b.nome));
+            }
+
+            // Manda desenhar na tela
+            renderizarTabelaCardapio(produtosFiltrados);
+        }
+
+        // 🚨 FUNÇÃO NOVA: Desenha os dados mantendo o seu estilo original
+        function renderizarTabelaCardapio(dados) {
+            const tbody = document.getElementById('lista-cardapio');
+            
+            if(dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-400 font-bold">Nenhum produto encontrado.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = dados.map(x => {
+                // Se a coluna ativo for false ou 0, mostra pausado
+                const isAtivo = x.ativo !== false && x.ativo !== 0; 
+                const badgeStatus = isAtivo ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ml-2">Ativo</span>' : '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ml-2">Pausado</span>';
+
+                // Trata nomes com aspas simples para não quebrar o botão de Extras
+                const nomeSeguro = x.nome.replace(/'/g, "\\'");
+
+                return `
+                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors ${!isAtivo ? 'opacity-60 bg-slate-50/50' : ''}">
+                    <td class="py-4 px-6 font-bold text-slate-800 flex items-center">
+                        <div class="w-10 h-10 rounded-lg bg-slate-200 mr-3 overflow-hidden shrink-0 border border-slate-300">
+                            ${x.imagem_url ? `<img src="${x.imagem_url}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-slate-400"><i class="ph-bold ph-image"></i></div>`}
+                        </div>
+                        <div>
+                            ${x.nome} ${badgeStatus}
+                            <br> <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded inline-block mt-1">${x.categoria || 'Sem Categoria'}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6 font-black text-emerald-500 text-lg">R$ ${x.preco_venda.toFixed(2).replace('.', ',')}</td>
+                    <td class="py-4 px-6 text-center space-x-2">
+                        <button onclick="abrirModalEditarProduto(${x.id})" class="text-blue-600 bg-blue-50 border border-blue-100 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-pencil-simple text-sm"></i></button> 
+                        <button onclick="abrirModalCriarGrupo(${x.id}, '${nomeSeguro}')" class="text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-colors shadow-sm">Extras</button> 
+                        <button onclick="if(confirm('Tem certeza? Isso apagará o lanche permanentemente!')){fetch('/api/gestao/produto/${x.id}', {method: 'DELETE'}).then(carregarCardapio)}" class="text-red-400 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors shadow-sm"><i class="ph-bold ph-trash text-base"></i></button>
+                    </td>
+                </tr>`;
+            }).join(''); 
         }
 
         // --- FUNÇÕES DE EDIÇÃO DE PRODUTO ---
