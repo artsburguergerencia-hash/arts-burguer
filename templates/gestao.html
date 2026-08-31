@@ -386,36 +386,39 @@
                 </div>
                 
                 <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-    <!-- 🚨 BARRA DE PESQUISA E FILTROS DO CARDÁPIO 🚨 -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
-        <h3 class="text-lg font-black text-slate-800 shrink-0">Cardápio Atual</h3>
-        
-        <div class="flex flex-col md:flex-row gap-3 w-full md:justify-end items-center">
-            <!-- Pesquisa por Nome -->
-            <div class="relative w-full md:w-56">
-                <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                <input type="text" id="busca-cardapio" onkeyup="filtrarCardapio()" placeholder="Pesquisar lanche..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500 transition-colors">
-            </div>
-            
-            <!-- 🚨 NOVO: Filtro de Ordem (Preço, A-Z) -->
-            <select id="filtro-cardapio-ordem" onchange="filtrarCardapio()" class="w-full md:w-40 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-colors">
-                <option value="padrao">Cadastro</option>
-                <option value="menor_preco">Menor Preço</option>
-                <option value="maior_preco">Maior Preço</option>
-                <option value="az">Letra A-Z</option>
-            </select>
+                    
+                    <!-- 🚨 BARRA DE PESQUISA E FILTROS DO CARDÁPIO 🚨 -->
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+                        <h3 class="text-lg font-black text-slate-800 shrink-0">Cardápio Atual</h3>
+                        
+                        <div class="flex flex-col md:flex-row gap-3 w-full md:justify-end items-center">
+                            <!-- Pesquisa por Nome -->
+                            <div class="relative w-full md:w-56">
+                                <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                                <input type="text" id="busca-cardapio" onkeyup="filtrarCardapio()" placeholder="Pesquisar lanche..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500 transition-colors">
+                            </div>
+                            
+                            <!-- Filtro de Ordem (Preço, A-Z) -->
+                            <select id="filtro-cardapio-ordem" onchange="filtrarCardapio()" class="w-full md:w-40 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-colors">
+                                <option value="padrao">Cadastro</option>
+                                <option value="menor_preco">Menor Preço</option>
+                                <option value="maior_preco">Maior Preço</option>
+                                <option value="az">Letra A-Z</option>
+                            </select>
 
-            <!-- Filtro de Categoria -->
-            <select id="filtro-cardapio-categoria" onchange="filtrarCardapio()" class="w-full md:w-48 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-colors">
-                <option value="todas">Todas as Categorias</option>
-            </select>
+                            <!-- Filtro de Categoria -->
+                            <select id="filtro-cardapio-categoria" onchange="filtrarCardapio()" class="w-full md:w-48 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-colors">
+                                <option value="todas">Todas as Categorias</option>
+                            </select>
 
-            <!-- Botão Atualizar -->
-            <button onclick="carregarCardapio()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm shrink-0">
-                Atualizar
-            </button>
-        </div>
-    </div>
+                            <!-- Botão Atualizar -->
+                            <button onclick="carregarCardapio()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm shrink-0">
+                                Atualizar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- TABELA -->
                     <table class="w-full text-left text-sm">
                         <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-100">
                             <th class="py-4 px-6">Produto</th>
@@ -425,7 +428,6 @@
                         <tbody id="lista-cardapio"></tbody>
                     </table>
                 </div>
-            </div>
             
             <!-- ============================================== -->
             <!-- ABA: ESTOQUE -->
