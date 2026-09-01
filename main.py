@@ -3237,14 +3237,16 @@ def get_manifest():
         "theme_color": "#ff4757",
         "icons": [
             {
-                "src": "/static/img/icon-192x192.png?v=3",
+                "src": "https://arts-burguer.onrender.com/static/img/icon-192x192.png",
                 "sizes": "192x192",
-                "type": "image/png"
+                "type": "image/png",
+                "purpose": "any maskable"
             },
             {
-                "src": "/static/img/icon-512x512.png?v=3",
+                "src": "https://arts-burguer.onrender.com/static/img/icon-512x512.png",
                 "sizes": "512x512",
-                "type": "image/png"
+                "type": "image/png",
+                "purpose": "any maskable"
             }
         ]
     }
