@@ -3237,12 +3237,12 @@ def get_manifest():
         "theme_color": "#ff4757",
         "icons": [
             {
-                "src": "https://ui-avatars.com/api/?name=A+B&background=ff4757&color=fff&size=192",
+                "src": "/static/img/icon-192x192.png",
                 "sizes": "192x192",
                 "type": "image/png"
             },
             {
-                "src": "https://ui-avatars.com/api/?name=A+B&background=ff4757&color=fff&size=512",
+                "src": "/static/img/icon-512x512.png",
                 "sizes": "512x512",
                 "type": "image/png"
             }
