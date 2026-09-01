@@ -35,17 +35,17 @@
         @keyframes modalSlideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 
-    <!-- Conecta o arquivo de configuração do App -->
+    <!-- CHAMA O MANIFEST PARA O CHROME DO ANDROID -->
     <link rel="manifest" href="/static/manifest.json">
     
-    <!-- Ícone para Android (Chrome) -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/icon-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Art's Burguer">
+    <meta name="application-name" content="Art's Burguer">
     
-    <!-- Ícone para iPhone (Safari) -->
+    <!-- 🚨 VEJA QUE AQUI ESTÁ icon-192x192.png 🚨 -->
+    <link rel="icon" sizes="192x192" href="/static/img/icon-192x192.png">
     <link rel="apple-touch-icon" href="/static/img/icon-192x192.png">
-    
-    <!-- Cor da barra superior do celular -->
-    <meta name="theme-color" content="#ef4444">
 </head>
 <body class="pb-24 overflow-x-hidden selection:bg-brand-500 selection:text-white">
 
