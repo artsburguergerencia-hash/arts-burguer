@@ -196,7 +196,7 @@ class ProdutoModel(Base):
     imagem_url = Column(String, default="")
     ativo = Column(Boolean, default=True)
     participa_fidelidade = Column(Boolean, default=True)
-
+    ordem = Column(Integer, default=0) # 🚨 ADICIONE ESTA LINHA AQUI
 
 class FichaTecnicaModel(Base):
     __tablename__ = "fichas_tecnicas"
