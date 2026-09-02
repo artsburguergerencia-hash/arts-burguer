@@ -128,6 +128,7 @@ class NovoProduto(BaseModel):
     preco: float
     categoria: str
     imagem_url: str = ""
+    ordem: int = 0  # 🚨 NOVA LINHA AQUI
     fichas: List[FichaItem] = []
 
 
