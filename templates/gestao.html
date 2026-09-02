@@ -1106,7 +1106,8 @@
                     <textarea id="edit-prod-desc" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 h-20"></textarea>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-4">
+                <!-- 🚨 AQUI ESTÁ A MÁGICA: GRID DE 3 COLUNAS 🚨 -->
+                <div class="grid grid-cols-3 gap-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">URL da Imagem</label>
                         <input type="text" id="edit-prod-img" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
@@ -1114,6 +1115,10 @@
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Categoria</label>
                         <select id="edit-prod-categoria" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Posição (Ex: 1)</label>
+                        <input type="number" id="edit-prod-ordem" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none focus:border-brand-500" title="Digite 1 para aparecer primeiro">
                     </div>
                 </div>
                 
@@ -2663,6 +2668,9 @@ function gerarStringDeHorarios() {
                 document.getElementById('edit-prod-desc').value = p.descricao || "";
                 document.getElementById('edit-prod-img').value = p.imagem_url || "";
                 
+                // 🚨 NOVA LINHA AQUI: Preenche a ordem no campinho do pop-up!
+                document.getElementById('edit-prod-ordem').value = p.ordem || 0;
+                
                 carregarCategoriasSelect('edit-prod-categoria', listaCatCardapio);
                 setTimeout(() => { document.getElementById('edit-prod-categoria').value = p.categoria; }, 100);
 
@@ -2714,43 +2722,47 @@ function gerarStringDeHorarios() {
         }
         
         async function salvarEdicaoProduto(e) {
-            e.preventDefault();
-            const id = document.getElementById('edit-prod-id').value;
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
-            btn.disabled = true;
+    e.preventDefault();
+    const id = document.getElementById('edit-prod-id').value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+    btn.disabled = true;
 
-            const payload = {
-                nome: document.getElementById('edit-prod-nome').value,
-                preco: parseMoeda(document.getElementById('edit-prod-preco').value),
-                descricao: document.getElementById('edit-prod-desc').value,
-                imagem_url: document.getElementById('edit-prod-img').value,
-                categoria: document.getElementById('edit-prod-categoria').value,
-                ativo: document.getElementById('edit-prod-ativo').checked,
-                // 🚨 O PULO DO GATO: Enviando os ingredientes para o Python!
-                fichas: ingredientesFichaEdit 
-            };
+    const payload = {
+        nome: document.getElementById('edit-prod-nome').value,
+        preco: parseMoeda(document.getElementById('edit-prod-preco').value),
+        descricao: document.getElementById('edit-prod-desc').value,
+        imagem_url: document.getElementById('edit-prod-img').value,
+        categoria: document.getElementById('edit-prod-categoria').value,
+        ativo: document.getElementById('edit-prod-ativo').checked,
+        
+        // 🚨 NOVA LINHA AQUI: Enviando a ordem para o Python!
+        ordem: parseInt(document.getElementById('edit-prod-ordem').value) || 0, 
+        
+        // 🚨 O PULO DO GATO: Enviando os ingredientes para o Python!
+        fichas: ingredientesFichaEdit 
+    };
 
-            try {
-                const res = await fetch(`/api/gestao/produto/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if(res.ok) {
-                    alertaPremium("Produto e Ficha Técnica atualizados com sucesso!", "Edição Salva", "sucesso");
-                    document.getElementById('modal-editar-produto').classList.replace('flex', 'hidden');
-                    carregarCardapio();
-                } else {
-                    alertaPremium("Erro ao salvar alterações no banco.", "Falha", "erro");
-                }
-            } catch(err) {
-                alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
-            }
-            btn.innerHTML = "Salvar Alterações";
-            btn.disabled = false;
+    try {
+        const res = await fetch(`/api/gestao/produto/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if(res.ok) {
+            alertaPremium("Produto e Ficha Técnica atualizados com sucesso!", "Edição Salva", "sucesso");
+            document.getElementById('modal-editar-produto').classList.replace('flex', 'hidden');
+            carregarCardapio();
+        } else {
+            alertaPremium("Erro ao salvar alterações no banco.", "Falha", "erro");
         }
+    } catch(err) {
+        alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
+    }
+    btn.innerHTML = "Salvar Alterações";
+    btn.disabled = false;
+}
 
         function abrirModalCriarGrupo(id, nome) {
             document.getElementById('add-grupo-prod-id').value = id;
