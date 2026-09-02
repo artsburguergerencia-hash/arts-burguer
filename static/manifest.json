@@ -3,8 +3,8 @@
   "short_name": "Art's Burguer",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ef4444",
+  "background_color": "#0f172a",
+  "theme_color": "#ff4757",
   "icons": [
     {
       "src": "/static/img/icon-192x192.png",
