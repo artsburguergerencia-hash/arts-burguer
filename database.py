@@ -359,6 +359,8 @@ def inicializar_banco():
         # ---> AQUI ESTÁ A CORREÇÃO EXATA PARA O SEU ERRO DO FORNECEDOR <---
         "ALTER TABLE fornecedores ADD COLUMN contato VARCHAR DEFAULT '';",
         "ALTER TABLE fornecedores ADD COLUMN telefone VARCHAR DEFAULT '';"
+        # ---> NOSSA NOVA COLUNA DE ORDENAÇÃO DO CARDÁPIO <---
+        "ALTER TABLE produtos ADD COLUMN ordem INTEGER DEFAULT 0;"
     ]
 
     try:
