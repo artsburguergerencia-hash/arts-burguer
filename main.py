@@ -2552,40 +2552,48 @@ def obter_fichas_produto(produto_id: int, db: Session = Depends(get_db)):
     return resultado
 
 # 1. Atualizar Produto (Cardápio)
+# ==========================================
+# ATUALIZAÇÃO DE PRODUTOS E FICHAS (CARDÁPIO)
+# ==========================================
 @app.put("/api/gestao/produto/{produto_id}")
 def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db)):
-    from database import ProdutoModel, FichaTecnicaModel
-    produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
-    if not produto:
-        raise HTTPException(status_code=404, detail="Produto não encontrado")
-    
-    # Atualiza as informações (mapeamento inteligente)
-    if 'nome' in dados: produto.nome = dados['nome']
-    if 'descricao' in dados: produto.descricao = dados['descricao']
-    if 'imagem_url' in dados: produto.imagem_url = dados['imagem_url']
-    if 'categoria' in dados: produto.categoria = dados['categoria']
-    if 'ativo' in dados: produto.ativo = dados['ativo']
-    
-    # O frontend manda como "preco", mas o banco salva como "preco_venda"
-    if 'preco' in dados: produto.preco_venda = dados['preco']
-    
-    # 🚨 NOVA LINHA AQUI: Permite alterar a posição do lanche!
-    if 'ordem' in dados: produto.ordem = int(dados['ordem'])
-    
-    # O PULO DO GATO: Atualiza a Ficha Técnica
-    if 'fichas' in dados:
-        # 1. Apaga as fichas antigas para não duplicar
-        db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).delete()
-        # 2. Insere a nova lista de ingredientes que veio da tela
-        for f in dados['fichas']:
-            db.add(FichaTecnicaModel(
-                produto_id=produto_id, 
-                insumo_id=f["insumo_id"], 
-                quantidade_necessaria=f["quantidade"]
-            ))
+    try:
+        produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
+        if not produto:
+            raise HTTPException(status_code=404, detail="Produto não encontrado.")
         
-    db.commit()
-    return {"status": "sucesso", "mensagem": "Produto e Ficha atualizados!"}
+        # Atualiza as informações básicas
+        if 'nome' in dados: produto.nome = dados['nome']
+        if 'descricao' in dados: produto.descricao = dados['descricao']
+        if 'imagem_url' in dados: produto.imagem_url = dados['imagem_url']
+        if 'categoria' in dados: produto.categoria = dados['categoria']
+        if 'ativo' in dados: produto.ativo = dados['ativo']
+        if 'preco' in dados: produto.preco_venda = dados['preco']
+        
+        # 🚨 Ordem do lanche
+        if 'ordem' in dados: produto.ordem = int(dados['ordem'])
+        
+        # Atualiza a Ficha Técnica
+        if 'fichas' in dados:
+            db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).delete()
+            for f in dados['fichas']:
+                db.add(FichaTecnicaModel(
+                    produto_id=produto_id, 
+                    insumo_id=f["insumo_id"], 
+                    quantidade_necessaria=f["quantidade"]
+                ))
+            
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Produto e Ficha atualizados com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+
+# ==========================================
+# MOTOR UNIVERSAL DE GESTÃO (CRUD FASE 4)
+# ==========================================
+# (Seu código original continua daqui para baixo...)
 
 # 2. Excluir Produto Definitivamente
 @app.delete("/api/gestao/produto/{produto_id}")
