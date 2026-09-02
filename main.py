@@ -3224,34 +3224,6 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
 # ==========================================
 # MOTOR PWA (APLICATIVO INSTALÁVEL)
 # ==========================================
-
-@app.get("/manifest.json")
-def get_manifest():
-    manifest = {
-        "name": "Art's Burguer",
-        "short_name": "Art's Burguer",
-        "description": "O melhor burger da cidade no seu celular!",
-        "start_url": "/",
-        "display": "standalone",
-        "background_color": "#0f172a",
-        "theme_color": "#ff4757",
-        "icons": [
-            {
-                "src": "https://arts-burguer.onrender.com/static/img/icon-192x192.png",
-                "sizes": "192x192",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
-                "src": "https://arts-burguer.onrender.com/static/img/icon-512x512.png",
-                "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "any maskable"
-            }
-        ]
-    }
-    return JSONResponse(content=manifest)
-
 @app.get("/sw.js")
 def get_service_worker():
     sw_content = """
