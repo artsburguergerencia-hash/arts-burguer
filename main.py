@@ -1343,8 +1343,9 @@ def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
 
 @app.get("/api/cardapio")
 def listar_cardapio_digital(db: Session = Depends(get_db)): 
-    # Filtro Mágico: Traz tudo, MENOS a categoria "Integrações"
-    produtos = db.query(ProdutoModel).filter(ProdutoModel.categoria != "Integrações").all()
+    # Filtro Mágico + Ordenação Personalizada (Do menor número para o maior)
+    produtos = db.query(ProdutoModel).filter(ProdutoModel.categoria != "Integrações").order_by(ProdutoModel.ordem.asc()).all()
+    
     lista_formatada = []
     
     for p in produtos:
@@ -1354,7 +1355,8 @@ def listar_cardapio_digital(db: Session = Depends(get_db)):
             "descricao": getattr(p, "descricao", ""),
             "preco_venda": p.preco_venda,
             "categoria": p.categoria,
-            "imagem_url": getattr(p, "imagem_url", "")
+            "imagem_url": getattr(p, "imagem_url", ""),
+            "ordem": getattr(p, "ordem", 0) # 🚨 DEVOLVENDO A ORDEM PARA A TELA
         })
         
     return lista_formatada
@@ -1368,7 +1370,8 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
             descricao=produto.descricao,
             preco_venda=produto.preco, 
             categoria=produto.categoria,
-            imagem_url=produto.imagem_url
+            imagem_url=produto.imagem_url,
+            ordem=produto.ordem # 🚨 SALVANDO A ORDEM AO CRIAR UM NOVO LANCHE
         )
         db.add(novo_produto)
         db.flush()
