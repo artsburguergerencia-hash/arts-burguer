@@ -3237,16 +3237,16 @@ def get_manifest():
         "theme_color": "#ff4757",
         "icons": [
             {
-                "src": "/static/img/icon-192x192.png",
+                "src": "https://raw.githubusercontent.com/artsburguergerencia-hash/arts-burguer/main/static/img/icon-192x192.png",
                 "sizes": "192x192",
                 "type": "image/png",
-                "purpose": "any maskable"
+                "purpose": "any"
             },
             {
-                "src": "/static/img/icon-512x512.png",
+                "src": "https://raw.githubusercontent.com/artsburguergerencia-hash/arts-burguer/main/static/img/icon-512x512.png",
                 "sizes": "512x512",
                 "type": "image/png",
-                "purpose": "any maskable"
+                "purpose": "any"
             }
         ]
     }
