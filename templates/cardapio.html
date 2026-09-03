@@ -820,18 +820,18 @@
             atualizarContadoresCheckout(); 
         }
 
-        function atualizarContadoresCheckout() {
+        // MOTOR MATEMÁTICO 2 (Atualiza o botão verde grande)
+function atualizarContadoresCheckout() {
     const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
     
-    // Verifica se é delivery mesmo antes de cobrar a taxa!
     let freteLocal = 0;
     const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked');
     if (radioEntrega && radioEntrega.value === 'entrega' && typeof valorFreteAtual !== 'undefined') {
         freteLocal = valorFreteAtual;
     }
 
-    // Matemática perfeita: Lanche - Cupom + Frete (se for delivery)
-    let final = subtotal - valorDescontoCupom + freteLocal;
+    // A mesma conta repassada pro botão verde
+    let final = subtotal + freteLocal - valorDescontoCupom;
     if(final < 0) final = 0;
     
     const btnFinal1 = document.getElementById('final-total'); if(btnFinal1) btnFinal1.innerText = `R$ ${final.toFixed(2).replace('.',',')}`;
@@ -1319,22 +1319,23 @@
             } catch(e) { alert("Erro ao validar cupom."); }
         }
 
-        function atualizarContadores() {
+        // MOTOR MATEMÁTICO 1 (Atualiza as bolinhas e a barra flutuante)
+function atualizarContadores() {
     const subtotalLocal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
     if(cupomAplicado) { const divDesc = document.getElementById('div-desconto'); if(divDesc) divDesc.classList.remove('hidden'); } else { const divDesc = document.getElementById('div-desconto'); if(divDesc) divDesc.classList.add('hidden'); }
 
-    // 🚨 MÁGICA DO FRETE INJETADA AQUI 🚨
+    // Descobre se é delivery para cobrar ou não
     let freteLocal = 0;
     const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked');
     if (radioEntrega && radioEntrega.value === 'entrega' && typeof valorFreteAtual !== 'undefined') {
         freteLocal = valorFreteAtual;
     }
 
-    // A matemática agora é: Lanche + Frete - Desconto
+    // A CONTA REAL:
     let final = subtotalLocal + freteLocal - valorDescontoCupom; 
     if(final < 0) final = 0;
-    const form = `R$ ${final.toFixed(2).replace('.', ',')}`;
     
+    const form = `R$ ${final.toFixed(2).replace('.', ',')}`;
     const carTotalFlu = document.getElementById('carrinho-total-flutuante'); if(carTotalFlu) carTotalFlu.innerText = form;
     
     const qtd = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
@@ -1348,8 +1349,8 @@
         fecharCarrinho();
     }
     
-    // Mantemos sua chamada original intacta!
-    atualizarContadoresCheckout();
+    // Chama o calculador do botão de fechar pedido
+    if (typeof atualizarContadoresCheckout === 'function') atualizarContadoresCheckout();
 }
 
     function toggleEndereco(isDelivery) {
