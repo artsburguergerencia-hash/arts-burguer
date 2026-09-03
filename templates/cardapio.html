@@ -1418,32 +1418,42 @@
 
         async function enviarPedidoNuvem(e) {
             e.preventDefault();
-            const btn = document.getElementById('btn-enviar-pedido'); const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i>'; btn.disabled = true;
+            const btn = document.getElementById('btn-enviar-pedido'); 
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i>'; 
+            btn.disabled = true;
 
             let nome, tel, end, cliente_id, cpf;
             const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked');
             const isDelivery = radioEntrega ? radioEntrega.value === 'entrega' : false;
             
-            const selBairro = document.getElementById('ped-bairro');
-            const nomeBairro = (isDelivery && selBairro && selBairro.value !== "0") ? selBairro.options[selBairro.selectedIndex].text : "";
-
-           // 🚨 Lógica Unificada de Endereço (Corrigida)
+            // 🚨 1. A NOVA LÓGICA DE ENDEREÇO E VALIDAÇÃO 🚨
             let endLimpo = "";
+            let nomeBairro = "";
+            
             if (isDelivery) {
-                const cep = document.getElementById('ped-cep').value;
-                const rua = document.getElementById('ped-rua').value;
-                const num = document.getElementById('ped-num').value;
-                const comp = document.getElementById('ped-comp').value;
+                const cep = document.getElementById('check-cep').value;
+                const rua = document.getElementById('check-rua').value;
+                const num = document.getElementById('check-numero').value;
+                nomeBairro = document.getElementById('check-bairro').value;
+                const comp = document.getElementById('check-complemento').value;
                 
-                if (!rua || !num) {
-                    alertaPremium("⚠️ Preencha a Rua e o Número do endereço para a entrega.", "Atenção", "erro");
+                if (!rua || !num || !nomeBairro) {
+                    alertaPremium("⚠️ Preencha o CEP e o Número do endereço para a entrega.", "Atenção", "erro");
                     btn.innerHTML = txtOriginal; btn.disabled = false; return;
                 }
                 
-                // Formatação limpa que o Ponto de Venda/Motoboy consegue ler:
-                endLimpo = `${rua}, ${num}`;
+                // Formatação limpa e profissional para a Cozinha e Motoboy
+                endLimpo = `${rua}, ${num} - ${nomeBairro}`;
                 if (comp) endLimpo += ` (${comp})`;
+                if (cep) endLimpo += ` - CEP: ${cep}`;
+                
+                // Salva no cache do cliente para a próxima compra abrir preenchida!
+                localStorage.setItem('cliente_cep', cep);
+                localStorage.setItem('cliente_endereco', rua);
+                localStorage.setItem('cliente_numero', num);
+                localStorage.setItem('cliente_bairro', nomeBairro);
+                localStorage.setItem('cliente_complemento', comp);
             } else {
                 endLimpo = "Retirada Balcão";
             }
@@ -1451,12 +1461,10 @@
             if (clienteLogado) {
                 nome = clienteLogado.nome; 
                 tel = clienteLogado.telefone; 
-                // 🚨 O PULO DO GATO: Se for delivery, usa o que tá na tela. Se for balcão, ignora.
                 end = isDelivery ? endLimpo : "Retirada Balcão"; 
                 cliente_id = clienteLogado.id; 
                 cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
             } else {
-// ... resto do seu código igual
                 nome = document.getElementById('guest-nome').value.trim(); 
                 tel = document.getElementById('guest-tel').value.trim();
                 end = endLimpo;
@@ -1465,8 +1473,10 @@
                 if (!nome || !tel) { alertaPremium("⚠️ Preencha seu Nome e WhatsApp.", "Atenção", "erro"); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
             }
 
-            if (isDelivery && taxasEntrega.length > 0 && (!selBairro || selBairro.value === "0")) { alertaPremium("⚠️ Por favor, selecione o seu bairro de entrega na tabela.", "Atenção", "erro"); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
-            if (isDelivery && nomeBairro) end += ` (Bairro: ${nomeBairro} - Taxa R$ ${valorFreteAtual.toFixed(2)})`;
+            // Adiciona a Taxa de Entrega no finalzinho do endereço (se for Delivery)
+            if (isDelivery && valorFreteAtual > 0) {
+                end += ` | (Taxa de Entrega: R$ ${valorFreteAtual.toFixed(2).replace('.',',')})`;
+            }
 
             const tipoPgto = document.getElementById('forma-pag-online').value;
             if ((tipoPgto === 'pix' || tipoPgto === 'credito') && !cpf) {
@@ -1556,7 +1566,7 @@
                 alertaPremium("Ocorreu um erro de rede. Se o pedido descontou, avise a loja no WhatsApp.", "Erro", "erro"); 
                 btn.disabled = false; btn.innerHTML = txtOriginal; 
             }
-        }
+}
 
         // 🚨 1. RESTAURA O MODAL DO PERFIL E HISTÓRICO DE PEDIDOS 🚨
         async function abrirModalPerfil() {
