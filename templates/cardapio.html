@@ -1310,25 +1310,69 @@
         }
 
         function atualizarContadores() {
-            const subtotalLocal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
-            if(cupomAplicado) { const divDesc = document.getElementById('div-desconto'); if(divDesc) divDesc.classList.remove('hidden'); } else { const divDesc = document.getElementById('div-desconto'); if(divDesc) divDesc.classList.add('hidden'); }
+    const subtotalLocal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+    if(cupomAplicado) { const divDesc = document.getElementById('div-desconto'); if(divDesc) divDesc.classList.remove('hidden'); } else { const divDesc = document.getElementById('div-desconto'); if(divDesc) divDesc.classList.add('hidden'); }
 
-            let final = subtotalLocal - valorDescontoCupom; if(final < 0) final = 0;
-            const form = `R$ ${final.toFixed(2).replace('.', ',')}`;
-            const carTotalFlu = document.getElementById('carrinho-total-flutuante'); if(carTotalFlu) carTotalFlu.innerText = form;
-            
-            const qtd = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
-            const carQtd = document.getElementById('carrinho-qtd'); if(carQtd) carQtd.innerText = qtd;
-            
-            const barra = document.getElementById('barra-carrinho');
-            if (qtd > 0) { barra.classList.remove('translate-y-40'); } 
-            else {
-                barra.classList.add('translate-y-40'); cupomAplicado = null; valorDescontoCupom = 0;
-                const sc = document.getElementById('status-cupom'); if(sc) { sc.classList.add('hidden'); document.getElementById('input-cupom').value = ''; }
-                fecharCarrinho();
-            }
-            atualizarContadoresCheckout();
+    // 🚨 MÁGICA DO FRETE INJETADA AQUI 🚨
+    let freteLocal = 0;
+    const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked');
+    if (radioEntrega && radioEntrega.value === 'entrega' && typeof valorFreteAtual !== 'undefined') {
+        freteLocal = valorFreteAtual;
+    }
+
+    // A matemática agora é: Lanche + Frete - Desconto
+    let final = subtotalLocal + freteLocal - valorDescontoCupom; 
+    if(final < 0) final = 0;
+    const form = `R$ ${final.toFixed(2).replace('.', ',')}`;
+    
+    const carTotalFlu = document.getElementById('carrinho-total-flutuante'); if(carTotalFlu) carTotalFlu.innerText = form;
+    
+    const qtd = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
+    const carQtd = document.getElementById('carrinho-qtd'); if(carQtd) carQtd.innerText = qtd;
+    
+    const barra = document.getElementById('barra-carrinho');
+    if (qtd > 0) { barra.classList.remove('translate-y-40'); } 
+    else {
+        barra.classList.add('translate-y-40'); cupomAplicado = null; valorDescontoCupom = 0;
+        const sc = document.getElementById('status-cupom'); if(sc) { sc.classList.add('hidden'); document.getElementById('input-cupom').value = ''; }
+        fecharCarrinho();
+    }
+    
+    // Mantemos sua chamada original intacta!
+    atualizarContadoresCheckout();
+}
+
+    function toggleEndereco(isDelivery) {
+    const boxEndereco = document.getElementById('box-endereco');
+    if (!boxEndereco) return;
+
+    if (isDelivery) {
+        // Mostra a caixa de endereço
+        boxEndereco.classList.remove('hidden');
+        
+        // Se o cliente voltar para "Delivery", tenta calcular o frete com o bairro que já está digitado
+        const bairroAtual = document.getElementById('check-bairro').value;
+        if (bairroAtual && bairroAtual !== "Buscando...") {
+            calcularTaxaPorBairro(bairroAtual);
+        } else {
+            atualizarContadores();
         }
+    } else {
+        // Esconde a caixa de endereço (Retirada no Balcão)
+        boxEndereco.classList.add('hidden');
+        
+        // Zera o frete e limpa os textos visuais
+        valorFreteAtual = 0; 
+        const statusFrete = document.getElementById('status-frete');
+        if(statusFrete) statusFrete.innerHTML = '';
+        
+        const boxFrete = document.getElementById('box-frete');
+        if(boxFrete) boxFrete.classList.add('hidden');
+        
+        // Refaz a matemática imediatamente para tirar os R$ 5,00 da conta
+        atualizarContadores(); 
+    }
+}
 
         function abrirCarrinho() {
             const lista = document.getElementById('lista-carrinho-modal');
