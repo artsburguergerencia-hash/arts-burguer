@@ -394,23 +394,28 @@
                         </label>
                     </div>
 
-                    <div id="box-endereco" class="space-y-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl transition-all">
-                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Bairro de Entrega (Para a Taxa)</label>
-                        <div class="relative mb-2">
-                            <select id="ped-bairro" onchange="calcularFrete()" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-bold outline-none focus:border-brand-500 appearance-none">
-                                <option value="0">Carregando...</option>
-                            </select>
-                            <i class="ph-bold ph-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                        </div>
+                    <!-- ... os botões de Delivery / Retirar Local ficam aqui em cima ... -->
 
-                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 mt-4">Endereço de Entrega</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <input type="text" id="ped-cep" placeholder="CEP" onblur="buscarCepCheckout(this.value)" class="col-span-1 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-brand-600 dark:text-brand-400 font-bold rounded-xl text-sm outline-none focus:border-brand-500 text-center">
-                            <input type="text" id="ped-rua" placeholder="Rua e Bairro" class="col-span-2 px-4 py-3 bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-medium outline-none focus:border-brand-500 transition-colors">
+                    <!-- BOX ENDEREÇO MÁGICO VIA CEP -->
+                    <div id="box-endereco" class="space-y-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl transition-all">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">CEP de Entrega (Busca Automática)</label>
+                            <span id="status-frete" class="text-[10px] font-black uppercase tracking-widest text-emerald-500"></span>
                         </div>
+                        
+                        <div class="relative">
+                            <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="check-cep" onblur="buscarCepCheckout(this.value)" placeholder="00000-000" class="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-brand-600 dark:text-brand-400 font-black rounded-xl text-sm outline-none focus:border-brand-500 transition-colors">
+                        </div>
+                        
                         <div class="grid grid-cols-3 gap-2 mt-2">
-                            <input type="text" id="ped-num" placeholder="Nº" class="col-span-1 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-bold outline-none focus:border-brand-500 text-center">
-                            <input type="text" id="ped-comp" placeholder="Complemento (Ex: Casa 2)" class="col-span-2 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-medium outline-none focus:border-brand-500">
+                            <input type="text" id="check-rua" placeholder="Rua / Avenida" readonly class="col-span-2 px-4 py-3 bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 rounded-xl text-sm font-medium outline-none cursor-not-allowed">
+                            <input type="text" id="check-numero" placeholder="Nº" class="col-span-1 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-bold outline-none focus:border-brand-500 text-center">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <input type="text" id="check-bairro" placeholder="Bairro" readonly class="px-4 py-3 bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 rounded-xl text-sm font-medium outline-none cursor-not-allowed">
+                            <input type="text" id="check-complemento" placeholder="Apto/Casa..." class="px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white rounded-xl text-sm font-medium outline-none focus:border-brand-500">
                         </div>
                         
                         <div class="flex justify-between items-center text-sm font-bold text-slate-500 dark:text-slate-400 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 hidden" id="box-frete">
@@ -1343,36 +1348,48 @@
                 </div>
             `).join('');
             
-            // 🚨 EXTRATOR INTELIGENTE DEFINITIVO 🚨
-            if (clienteLogado && document.getElementById('ped-rua').value === "") {
-                let cepStr = clienteLogado.cep || "";
-                let ruaStr = clienteLogado.endereco || "";
-                let numStr = clienteLogado.numero || "";
-                let compStr = clienteLogado.complemento || "";
+            // 🚨 NOVO AUTOPREENCHIMENTO MÁGICO (Via CEP/Bairro) 🚨
+            if (clienteLogado && document.getElementById('check-rua').value === "") {
+                
+                // Puxa as informações já separadinhas da nova API de Login
+                let cepStr = clienteLogado.cep || localStorage.getItem('cliente_cep') || "";
+                let ruaStr = clienteLogado.endereco || localStorage.getItem('cliente_endereco') || "";
+                let numStr = clienteLogado.numero || localStorage.getItem('cliente_numero') || "";
+                let bairroStr = clienteLogado.bairro || localStorage.getItem('cliente_bairro') || "";
+                let compStr = clienteLogado.complemento || localStorage.getItem('cliente_complemento') || "";
 
-                // Se logou em outro aparelho e a API só devolveu a frase inteira "Rua X, 123 (Casa) - CEP: 000"
+                // Se o cliente é antigo e só tem aquele "endereco_completo" misturado (Rua, Num - Bairro)
                 if (!ruaStr && clienteLogado.endereco_completo) {
                     let endCompleto = clienteLogado.endereco_completo; 
                     
+                    // Extrai o CEP
                     const matchCep = endCompleto.match(/(?:CEP:\s*)?(\d{5}-?\d{3})/i);
                     if (matchCep) {
                         cepStr = matchCep[1].trim();
                         endCompleto = endCompleto.replace(matchCep[0], '').replace(/-\s*$/, '').trim();
                     }
 
+                    // Extrai o Complemento (Tudo que estiver entre parênteses)
                     const matchComp = endCompleto.match(/\((.*?)\)/);
                     if (matchComp) {
                         compStr = matchComp[1].trim();
                         endCompleto = endCompleto.replace(/\(.*?\)/, '').trim(); 
                     }
+                    
+                    // Divide por vírgulas ou traços para tentar achar Rua, Número e Bairro
+                    let partesTraco = endCompleto.split('-');
+                    if (partesTraco.length > 1) {
+                        bairroStr = partesTraco.pop().trim();
+                        endCompleto = partesTraco.join('-').trim();
+                    }
 
-                    let partes = endCompleto.split(',');
-                    if (partes.length > 1) {
-                        let ultimaParte = partes.pop().trim(); 
+                    let partesVirgula = endCompleto.split(',');
+                    if (partesVirgula.length > 1) {
+                        let ultimaParte = partesVirgula.pop().trim(); 
                         let matchNum = ultimaParte.match(/(\d+)/);
                         if (matchNum) {
                             numStr = matchNum[0];
-                            ruaStr = partes.join(',').trim();
+                            ruaStr = partesVirgula.join(',').trim();
                         } else {
                             ruaStr = endCompleto; 
                         }
@@ -1381,17 +1398,21 @@
                     }
                 }
 
-                // Limpeza de vírgulas sobrando
-                if (ruaStr.startsWith(',')) ruaStr = ruaStr.substring(1).trim();
-
-                document.getElementById('ped-cep').value = cepStr;
-                document.getElementById('ped-rua').value = ruaStr;
-                document.getElementById('ped-num').value = numStr;
-                document.getElementById('ped-comp').value = compStr;
+                // Joga tudo pras novas caixinhas na tela!
+                document.getElementById('check-cep').value = cepStr;
+                document.getElementById('check-rua').value = ruaStr;
+                document.getElementById('check-numero').value = numStr;
+                document.getElementById('check-bairro').value = bairroStr;
+                document.getElementById('check-complemento').value = compStr;
+                
+                // MÁGICA FINAL: Se ele achou o Bairro, já aciona o cálculo da taxa sozinho!
+                if (bairroStr && bairroStr !== "") {
+                    calcularTaxaPorBairro(bairroStr);
+                }
             }
 
             document.getElementById('modal-carrinho').classList.replace('hidden', 'flex');
-        }
+        } // <--- Fim da função abrirCarrinho
 
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.replace('flex', 'hidden'); }
 
@@ -1647,6 +1668,78 @@
                 }
             }
         };
+
+        // VARIÁVEIS GLOBAIS DE FRETE (Para usar na hora de cobrar no PIX/Cartão)
+let listaTaxasSistema = [];
+let valorFreteAtual = 0;
+
+// 1. Ao abrir o cardápio, ele já puxa a tabela de taxas do servidor
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const res = await fetch('/api/taxas/listar');
+        listaTaxasSistema = await res.json();
+    } catch(e) { console.log("Erro ao carregar taxas de entrega."); }
+});
+
+// 2. Quando o cliente digita o CEP, ele busca na API oficial dos Correios
+async function buscarCepCheckout(cepInput) {
+    const cep = cepInput.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+
+    document.getElementById('check-rua').value = "Buscando...";
+    document.getElementById('check-bairro').value = "Buscando...";
+    document.getElementById('status-frete').innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
+
+    try {
+        const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await res.json();
+
+        if (!data.erro) {
+            document.getElementById('check-rua').value = data.logradouro;
+            document.getElementById('check-bairro').value = data.bairro;
+            document.getElementById('check-numero').focus(); // Joga o ponteiro pro campo do número
+            
+            // Tenta calcular o frete com base no nome do bairro que o correio mandou
+            calcularTaxaPorBairro(data.bairro);
+        } else {
+            document.getElementById('check-rua').value = "";
+            document.getElementById('check-bairro').value = "";
+            document.getElementById('status-frete').innerHTML = `<span class="text-red-500">CEP Inválido</span>`;
+        }
+    } catch (e) { console.error(e); }
+}
+
+// 3. A Função que cruza o Bairro com o banco de dados
+function calcularTaxaPorBairro(nomeBairro) {
+    if(!nomeBairro) return;
+
+    // Remove acentos, cedilhas e deixa minúsculo pra bater certinho com o que você cadastrou no sistema
+    const bairroLimpo = nomeBairro.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+    // Procura na lista que puxamos do seu painel de gestão
+    const taxaEncontrada = listaTaxasSistema.find(t => 
+        t.bairro.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === bairroLimpo
+    );
+
+    if (taxaEncontrada) {
+        valorFreteAtual = taxaEncontrada.taxa;
+        document.getElementById('status-frete').innerHTML = `Taxa: + R$ ${valorFreteAtual.toFixed(2).replace('.', ',')}`;
+        
+        // MOSTRA A TAXA NO RESUMO DE VALORES DA SACOLA
+        document.getElementById('box-frete').classList.remove('hidden');
+        document.getElementById('valor-frete').innerText = `+ R$ ${valorFreteAtual.toFixed(2).replace('.', ',')}`;
+    } else {
+        // Se o bairro não estiver cadastrado no sistema, ele cobra R$ 0 ou zera
+        valorFreteAtual = 0;
+        document.getElementById('status-frete').innerHTML = `<span class="text-red-500">Bairro Fora de Área</span>`;
+        document.getElementById('box-frete').classList.add('hidden');
+    }
+
+    // AQUI ELE CHAMA A FUNÇÃO QUE RECALCULA O TOTAL DO PEDIDO PARA SOMAR COM O FRETE
+    if (typeof renderizarCarrinho === 'function') {
+        renderizarCarrinho(); // Garante que a soma do lanche + cupom + taxa fique certa
+    }
+}
     </script>
-</body>
+    </body>
 </html>
