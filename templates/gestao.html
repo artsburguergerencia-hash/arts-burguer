@@ -2655,49 +2655,74 @@ function gerarStringDeHorarios() {
         }
 
         // --- FUNÇÕES DE EDIÇÃO DE PRODUTO ---
-        async function abrirModalEditarProduto(id) {
-            try {
-                const res = await fetch('/api/cardapio');
-                const produtos = await res.json();
-                const p = produtos.find(x => x.id === id);
-                if(!p) return;
+        let bloqueioEdicao = false; 
 
-                document.getElementById('edit-prod-id').value = p.id;
-                document.getElementById('edit-prod-nome').value = p.nome;
-                document.getElementById('edit-prod-preco').value = formataMoedaParaInput(p.preco_venda);
-                document.getElementById('edit-prod-desc').value = p.descricao || "";
-                document.getElementById('edit-prod-img').value = p.imagem_url || "";
-                
-                // 🚨 NOVA LINHA AQUI: Preenche a ordem no campinho do pop-up!
-                document.getElementById('edit-prod-ordem').value = p.ordem || 0;
-                
-                carregarCategoriasSelect('edit-prod-categoria', listaCatCardapio);
-                setTimeout(() => { document.getElementById('edit-prod-categoria').value = p.categoria; }, 100);
+async function abrirModalEditarProduto(id) {
+    if (bloqueioEdicao) return; 
+    bloqueioEdicao = true;
+    
+    // Feedback visual (Mouse de carregamento)
+    document.body.style.cursor = 'wait';
 
-                const isAtivo = p.ativo !== false && p.ativo !== 0;
-                const checkAtivo = document.getElementById('edit-prod-ativo');
-                checkAtivo.checked = isAtivo;
-                document.getElementById('label-status-prod').innerText = isAtivo ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
-                
-                checkAtivo.onchange = (e) => {
-                    document.getElementById('label-status-prod').innerText = e.target.checked ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
-                };
+    try {
+        // 🚨 A MÁGICA DA VELOCIDADE: Dispara as duas buscas AO MESMO TEMPO!
+        const [resCardapio, resFichas] = await Promise.all([
+            fetch('/api/cardapio'),
+            fetch(`/api/gestao/produto/${id}/fichas`)
+        ]);
 
-                // 🚨 NOVO: Busca os ingredientes atuais no banco de dados
-                const resFichas = await fetch(`/api/gestao/produto/${id}/fichas`);
-                if(resFichas.ok) {
-                    ingredientesFichaEdit = await resFichas.json();
-                } else {
-                    ingredientesFichaEdit = [];
-                }
-                renderizarIngredientesEdicao();
-                // 🚨 FIM DA INJEÇÃO
-
-                document.getElementById('modal-editar-produto').classList.replace('hidden', 'flex');
-            } catch(e) {
-                alertaPremium("Erro ao carregar dados do produto.", "Erro", "erro");
-            }
+        const produtos = await resCardapio.json();
+        const p = produtos.find(x => x.id === id);
+        
+        if(!p) {
+            bloqueioEdicao = false;
+            document.body.style.cursor = 'default';
+            alertaPremium("Lanche não encontrado.", "Erro", "erro");
+            return;
         }
+
+        // Processa as Fichas Técnicas instantaneamente
+        if(resFichas.ok) {
+            ingredientesFichaEdit = await resFichas.json();
+        } else {
+            ingredientesFichaEdit = [];
+        }
+
+        // Preenche a tela em milissegundos
+        document.getElementById('edit-prod-id').value = p.id;
+        document.getElementById('edit-prod-nome').value = p.nome;
+        document.getElementById('edit-prod-preco').value = formataMoedaParaInput(p.preco_venda);
+        document.getElementById('edit-prod-desc').value = p.descricao || "";
+        document.getElementById('edit-prod-img').value = p.imagem_url || "";
+        document.getElementById('edit-prod-ordem').value = p.ordem || 0;
+        
+        carregarCategoriasSelect('edit-prod-categoria', listaCatCardapio);
+        setTimeout(() => { document.getElementById('edit-prod-categoria').value = p.categoria; }, 50);
+
+        const isAtivo = p.ativo !== false && p.ativo !== 0;
+        const checkAtivo = document.getElementById('edit-prod-ativo');
+        checkAtivo.checked = isAtivo;
+        document.getElementById('label-status-prod').innerText = isAtivo ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
+        
+        checkAtivo.onchange = (e) => {
+            document.getElementById('label-status-prod').innerText = e.target.checked ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
+        };
+
+        // Renderiza as fichas na tela e mostra o modal
+        renderizarIngredientesEdicao();
+        
+        document.body.style.cursor = 'default';
+        document.getElementById('modal-editar-produto').classList.replace('hidden', 'flex');
+        
+        // Destrava para uso futuro
+        bloqueioEdicao = false; 
+        
+    } catch(e) {
+        bloqueioEdicao = false;
+        document.body.style.cursor = 'default';
+        alertaPremium("Erro de conexão ao abrir o lanche.", "Falha na Rede", "erro");
+    }
+}
 
         function adicionarIngredienteEdicao() {
             const select = document.getElementById('edit-select-insumo'); 
