@@ -357,38 +357,33 @@
             <!-- ABA: CARDÁPIO -->
             <!-- ============================================== -->
             <div id="aba-cardapio" class="painel hidden">
-    <div class="bg-white rounded-2xl p-8 mb-8 border border-slate-200 shadow-sm">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-            <h3 class="text-xl font-black text-slate-800">Novo Produto Simples</h3>
-            <button type="button" onclick="abrirAssistenteCombo()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black px-4 py-2.5 rounded-xl text-[10px] uppercase tracking-widest shadow-md transition-all flex items-center active:scale-95"><i class="ph-bold ph-lightning mr-2 text-sm"></i> Assistente de Combos VIP</button>
-        </div>
-        <form onsubmit="salvarProduto(event)" class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-                <input type="text" id="prod-nome" placeholder="Nome do Produto" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
-                <input type="text" id="prod-img" placeholder="URL da Foto" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
-            </div>
-            
-            <textarea id="prod-desc" placeholder="Descrição comercial do lanche" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></textarea>
-            
-            <!-- 🚨 AQUI ENTROU A 3ª COLUNA PARA A POSIÇÃO 🚨 -->
-            <div class="grid grid-cols-3 gap-4">
-                <input type="text" id="prod-preco" oninput="mascaraMoeda(this)" placeholder="Preço Final (R$)" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 font-bold text-green-600 outline-none focus:border-brand-500">
-                <select id="prod-categoria" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></select>
-                <input type="number" id="prod-ordem" placeholder="Posição (Ex: 1)" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 font-bold text-slate-700 rounded-xl outline-none focus:border-brand-500" title="Digite 1 para aparecer primeiro, 2 para o segundo, etc.">
-            </div>
-            
-            <div class="border-t border-slate-100 pt-4 mt-2">
-                <label class="font-bold text-sm text-slate-500 uppercase tracking-widest mb-2 block">Ficha Técnica (Ingredientes)</label>
-                <div class="flex space-x-2">
-                    <select id="select-insumo" class="flex-1 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></select>
-                    <input type="number" id="input-qtd-insumo" step="0.01" placeholder="Quantidade" class="w-24 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
-                    <button type="button" onclick="adicionarIngredienteNaLista()" class="bg-slate-900 text-white px-5 rounded-xl font-black hover:bg-slate-800">+</button>
+                <div class="bg-white rounded-2xl p-8 mb-8 border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                        <h3 class="text-xl font-black text-slate-800">Novo Produto Simples</h3>
+                        <button type="button" onclick="abrirAssistenteCombo()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black px-4 py-2.5 rounded-xl text-[10px] uppercase tracking-widest shadow-md transition-all flex items-center active:scale-95"><i class="ph-bold ph-lightning mr-2 text-sm"></i> Assistente de Combos VIP</button>
+                    </div>
+                    <form onsubmit="salvarProduto(event)" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" id="prod-nome" placeholder="Nome do Produto" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                            <input type="text" id="prod-img" placeholder="URL da Foto" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                        </div>
+                        <textarea id="prod-desc" placeholder="Descrição comercial do lanche" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></textarea>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" id="prod-preco" oninput="mascaraMoeda(this)" placeholder="Preço Final (R$)" required class="w-full px-4 py-3 border border-slate-200 bg-slate-50 font-bold text-green-600 outline-none focus:border-brand-500">
+                            <select id="prod-categoria" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></select>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-2">
+                            <label class="font-bold text-sm text-slate-500 uppercase tracking-widest mb-2 block">Ficha Técnica (Ingredientes)</label>
+                            <div class="flex space-x-2">
+                                <select id="select-insumo" class="flex-1 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></select>
+                                <input type="number" id="input-qtd-insumo" step="0.01" placeholder="Quantidade" class="w-24 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                                <button type="button" onclick="adicionarIngredienteNaLista()" class="bg-slate-900 text-white px-5 rounded-xl font-black hover:bg-slate-800">+</button>
+                            </div>
+                            <ul id="lista-ingredientes-produto" class="mt-4 space-y-2 text-slate-800"></ul>
+                        </div>
+                        <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-black py-4 px-8 rounded-xl mt-4 transition-colors">Salvar no Cardápio</button>
+                    </form>
                 </div>
-                <ul id="lista-ingredientes-produto" class="mt-4 space-y-2 text-slate-800"></ul>
-            </div>
-            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-black py-4 px-8 rounded-xl mt-4 transition-colors">Salvar no Cardápio</button>
-        </form>
-    </div>
                 
                 <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
                     
@@ -1078,8 +1073,6 @@
             
             <form id="form-edit-produto" onsubmit="salvarEdicaoProduto(event)" class="space-y-4">
                 <input type="hidden" id="edit-prod-id">
-                
-                <!-- Status de Venda -->
                 <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
                     <div>
                         <p class="font-black text-slate-800 text-sm">Status de Venda</p>
@@ -1092,7 +1085,6 @@
                     </label>
                 </div>
 
-                <!-- Nome e Preço -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Lanche</label>
@@ -1104,14 +1096,12 @@
                     </div>
                 </div>
                 
-                <!-- Descrição -->
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Descrição</label>
                     <textarea id="edit-prod-desc" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 h-20"></textarea>
                 </div>
                 
-                <!-- Imagem, Categoria e POSIÇÃO -->
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">URL da Imagem</label>
                         <input type="text" id="edit-prod-img" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
@@ -1120,37 +1110,26 @@
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Categoria</label>
                         <select id="edit-prod-categoria" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500"></select>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Posição (Ex: 1)</label>
-                        <input type="number" id="edit-prod-ordem" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none focus:border-brand-500" title="Digite 1 para aparecer primeiro">
-                    </div>
-                </div> 
-
-                <!-- FICHA TÉCNICA (INGREDIENTES) -->
-                <div class="mt-6 pt-6 border-t border-slate-200">
-                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Ficha Técnica (Ingredientes)</p>
-                    
-                    <div class="flex items-center gap-2 mb-4">
-                        <select id="edit-select-insumo" class="flex-1 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500 text-sm">
-                            <option value="">-- Buscar Insumo --</option>
-                        </select>
-                        <input type="number" id="edit-qtd-insumo" placeholder="Quant" class="w-24 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500 text-sm text-center" step="0.01">
-                        <button type="button" onclick="adicionarFichaEdit()" class="bg-slate-900 text-white w-12 h-[46px] rounded-xl flex items-center justify-center hover:bg-brand-500 transition-colors"><i class="ph-bold ph-plus text-lg"></i></button>
-                    </div>
-                    
-                    <div id="edit-lista-fichas" class="space-y-2 max-h-40 overflow-y-auto pr-2">
-                        <!-- Os ingredientes do lanche vão aparecer aqui -->
-                    </div>
                 </div>
+                
+                <!-- 🚨 INJEÇÃO DA FICHA TÉCNICA NO MODAL DE EDIÇÃO 🚨 -->
+                <div class="border-t border-slate-100 dark:border-slate-700 pt-4 mt-4">
+                    <label class="font-bold text-sm text-slate-500 uppercase tracking-widest mb-2 block">Ficha Técnica (Ingredientes)</label>
+                    <div class="flex space-x-2">
+                        <select id="edit-select-insumo" class="flex-1 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500"></select>
+                        <input type="number" id="edit-input-qtd-insumo" step="0.01" placeholder="Quantidade" class="w-24 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500">
+                        <button type="button" onclick="adicionarIngredienteEdicao()" class="bg-slate-900 text-white px-5 rounded-xl font-black hover:bg-slate-800 transition-colors">+</button>
+                    </div>
+                    <ul id="lista-ingredientes-edit" class="mt-4 space-y-2 text-slate-800 max-h-40 overflow-y-auto pr-2 no-scrollbar"></ul>
+                </div>
+                <!-- 🚨 FIM DA INJEÇÃO 🚨 -->
 
-                <!-- BOTÃO DE SALVAR -->
-                <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl mt-6 hover:bg-brand-500 transition-colors shadow-lg shadow-slate-900/20 flex items-center justify-center">
-                    SALVAR ALTERAÇÕES
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl mt-6 transition-colors shadow-lg active:scale-95 uppercase tracking-widest text-sm">
+                    Salvar Alterações
                 </button>
             </form>
         </div>
     </div>
-    <!-- FIM DO MODAL DE EDIÇÃO -->
 
     <!-- MEGA MODAL DE EDIÇÃO DE CLIENTE (CRM) -->
     <div id="modal-editar-cliente" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
@@ -2526,51 +2505,49 @@ function gerarStringDeHorarios() {
         }
 
         async function salvarProduto(e) { 
-    e.preventDefault(); 
-    const btn = e.target.querySelector('button[type="submit"]');
-    const txtOriginal = btn.innerHTML;
-    btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
-    btn.disabled = true;
+            e.preventDefault(); 
+            const btn = e.target.querySelector('button[type="submit"]');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+            btn.disabled = true;
 
-    const payload = { 
-        nome: document.getElementById('prod-nome').value, 
-        descricao: document.getElementById('prod-desc').value, 
-        imagem_url: document.getElementById('prod-img').value, 
-        preco: parseMoeda(document.getElementById('prod-preco').value), 
-        categoria: document.getElementById('prod-categoria').value, 
-        ordem: parseInt(document.getElementById('prod-ordem').value) || 0, // 🚨 NOVA LINHA AQUI!
-        fichas: ingredientesFicha 
-    }; 
-    
-    try {
-        const res = await fetch('/api/gestao/produto', { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(payload) 
-        }); 
-        
-        if (res.ok) {
-            // SÓ LIMPA OS CAMPOS SE O BANCO CONFIRMAR O SALVAMENTO
-            document.getElementById('prod-nome').value = '';
-            document.getElementById('prod-desc').value = '';
-            document.getElementById('prod-img').value = '';
-            document.getElementById('prod-preco').value = '';
-            document.getElementById('prod-ordem').value = ''; // 🚨 LIMPA O CAMPO ORDEM
-            ingredientesFicha = []; 
-            document.getElementById('lista-ingredientes-produto').innerHTML = ''; 
-            carregarCardapio(); 
-            alertaPremium("Lanche Registrado no Cardápio!", "Sucesso", "sucesso"); 
-        } else {
-            const err = await res.json();
-            alertaPremium("O banco recusou o cadastro: " + (err.detail || "Erro interno."), "Erro", "erro");
+            const payload = { 
+                nome: document.getElementById('prod-nome').value, 
+                descricao: document.getElementById('prod-desc').value, 
+                imagem_url: document.getElementById('prod-img').value, 
+                preco: parseMoeda(document.getElementById('prod-preco').value), 
+                categoria: document.getElementById('prod-categoria').value, 
+                fichas: ingredientesFicha 
+            }; 
+            
+            try {
+                const res = await fetch('/api/gestao/produto', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                }); 
+                
+                if (res.ok) {
+                    // SÓ LIMPA OS CAMPOS SE O BANCO CONFIRMAR O SALVAMENTO
+                    document.getElementById('prod-nome').value = '';
+                    document.getElementById('prod-desc').value = '';
+                    document.getElementById('prod-img').value = '';
+                    document.getElementById('prod-preco').value = '';
+                    ingredientesFicha = []; 
+                    document.getElementById('lista-ingredientes-produto').innerHTML = ''; 
+                    carregarCardapio(); 
+                    alertaPremium("Lanche Registrado no Cardápio!", "Sucesso", "sucesso"); 
+                } else {
+                    const err = await res.json();
+                    alertaPremium("O banco recusou o cadastro: " + (err.detail || "Erro interno."), "Erro", "erro");
+                }
+            } catch (err) {
+                alertaPremium("Falha na rede ou servidor offline.", "Erro de Conexão", "erro");
+            }
+            
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
         }
-    } catch (err) {
-        alertaPremium("Falha na rede ou servidor offline.", "Erro de Conexão", "erro");
-    }
-    
-    btn.innerHTML = txtOriginal;
-    btn.disabled = false;
-}
 
        // ==========================================
         // MOTOR DO CARDÁPIO (BUSCA E FILTRO)
@@ -2666,74 +2643,46 @@ function gerarStringDeHorarios() {
         }
 
         // --- FUNÇÕES DE EDIÇÃO DE PRODUTO ---
-        let bloqueioEdicao = false; 
+        async function abrirModalEditarProduto(id) {
+            try {
+                const res = await fetch('/api/cardapio');
+                const produtos = await res.json();
+                const p = produtos.find(x => x.id === id);
+                if(!p) return;
 
-async function abrirModalEditarProduto(id) {
-    if (bloqueioEdicao) return; 
-    bloqueioEdicao = true;
-    
-    // Feedback visual (Mouse de carregamento)
-    document.body.style.cursor = 'wait';
+                document.getElementById('edit-prod-id').value = p.id;
+                document.getElementById('edit-prod-nome').value = p.nome;
+                document.getElementById('edit-prod-preco').value = formataMoedaParaInput(p.preco_venda);
+                document.getElementById('edit-prod-desc').value = p.descricao || "";
+                document.getElementById('edit-prod-img').value = p.imagem_url || "";
+                
+                carregarCategoriasSelect('edit-prod-categoria', listaCatCardapio);
+                setTimeout(() => { document.getElementById('edit-prod-categoria').value = p.categoria; }, 100);
 
-    try {
-        // 🚨 A MÁGICA DA VELOCIDADE: Dispara as duas buscas AO MESMO TEMPO!
-        const [resCardapio, resFichas] = await Promise.all([
-            fetch('/api/cardapio'),
-            fetch(`/api/gestao/produto/${id}/fichas`)
-        ]);
+                const isAtivo = p.ativo !== false && p.ativo !== 0;
+                const checkAtivo = document.getElementById('edit-prod-ativo');
+                checkAtivo.checked = isAtivo;
+                document.getElementById('label-status-prod').innerText = isAtivo ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
+                
+                checkAtivo.onchange = (e) => {
+                    document.getElementById('label-status-prod').innerText = e.target.checked ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
+                };
 
-        const produtos = await resCardapio.json();
-        const p = produtos.find(x => x.id === id);
-        
-        if(!p) {
-            bloqueioEdicao = false;
-            document.body.style.cursor = 'default';
-            alertaPremium("Lanche não encontrado.", "Erro", "erro");
-            return;
+                // 🚨 NOVO: Busca os ingredientes atuais no banco de dados
+                const resFichas = await fetch(`/api/gestao/produto/${id}/fichas`);
+                if(resFichas.ok) {
+                    ingredientesFichaEdit = await resFichas.json();
+                } else {
+                    ingredientesFichaEdit = [];
+                }
+                renderizarIngredientesEdicao();
+                // 🚨 FIM DA INJEÇÃO
+
+                document.getElementById('modal-editar-produto').classList.replace('hidden', 'flex');
+            } catch(e) {
+                alertaPremium("Erro ao carregar dados do produto.", "Erro", "erro");
+            }
         }
-
-        // Processa as Fichas Técnicas instantaneamente
-        if(resFichas.ok) {
-            ingredientesFichaEdit = await resFichas.json();
-        } else {
-            ingredientesFichaEdit = [];
-        }
-
-        // Preenche a tela em milissegundos
-        document.getElementById('edit-prod-id').value = p.id;
-        document.getElementById('edit-prod-nome').value = p.nome;
-        document.getElementById('edit-prod-preco').value = formataMoedaParaInput(p.preco_venda);
-        document.getElementById('edit-prod-desc').value = p.descricao || "";
-        document.getElementById('edit-prod-img').value = p.imagem_url || "";
-        document.getElementById('edit-prod-ordem').value = p.ordem || 0;
-        
-        carregarCategoriasSelect('edit-prod-categoria', listaCatCardapio);
-        setTimeout(() => { document.getElementById('edit-prod-categoria').value = p.categoria; }, 50);
-
-        const isAtivo = p.ativo !== false && p.ativo !== 0;
-        const checkAtivo = document.getElementById('edit-prod-ativo');
-        checkAtivo.checked = isAtivo;
-        document.getElementById('label-status-prod').innerText = isAtivo ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
-        
-        checkAtivo.onchange = (e) => {
-            document.getElementById('label-status-prod').innerText = e.target.checked ? "Ativo (Vendendo)" : "Pausado (Esgotado)";
-        };
-
-        // Renderiza as fichas na tela e mostra o modal
-        renderizarIngredientesEdicao();
-        
-        document.body.style.cursor = 'default';
-        document.getElementById('modal-editar-produto').classList.replace('hidden', 'flex');
-        
-        // Destrava para uso futuro
-        bloqueioEdicao = false; 
-        
-    } catch(e) {
-        bloqueioEdicao = false;
-        document.body.style.cursor = 'default';
-        alertaPremium("Erro de conexão ao abrir o lanche.", "Falha na Rede", "erro");
-    }
-}
 
         function adicionarIngredienteEdicao() {
             const select = document.getElementById('edit-select-insumo'); 
@@ -2758,47 +2707,43 @@ async function abrirModalEditarProduto(id) {
         }
         
         async function salvarEdicaoProduto(e) {
-    e.preventDefault();
-    const id = document.getElementById('edit-prod-id').value;
-    const btn = e.target.querySelector('button[type="submit"]');
-    btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
-    btn.disabled = true;
+            e.preventDefault();
+            const id = document.getElementById('edit-prod-id').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Salvando...";
+            btn.disabled = true;
 
-    const payload = {
-        nome: document.getElementById('edit-prod-nome').value,
-        preco: parseMoeda(document.getElementById('edit-prod-preco').value),
-        descricao: document.getElementById('edit-prod-desc').value,
-        imagem_url: document.getElementById('edit-prod-img').value,
-        categoria: document.getElementById('edit-prod-categoria').value,
-        ativo: document.getElementById('edit-prod-ativo').checked,
-        
-        // 🚨 NOVA LINHA AQUI: Enviando a ordem para o Python!
-        ordem: parseInt(document.getElementById('edit-prod-ordem').value) || 0, 
-        
-        // 🚨 O PULO DO GATO: Enviando os ingredientes para o Python!
-        fichas: ingredientesFichaEdit 
-    };
+            const payload = {
+                nome: document.getElementById('edit-prod-nome').value,
+                preco: parseMoeda(document.getElementById('edit-prod-preco').value),
+                descricao: document.getElementById('edit-prod-desc').value,
+                imagem_url: document.getElementById('edit-prod-img').value,
+                categoria: document.getElementById('edit-prod-categoria').value,
+                ativo: document.getElementById('edit-prod-ativo').checked,
+                // 🚨 O PULO DO GATO: Enviando os ingredientes para o Python!
+                fichas: ingredientesFichaEdit 
+            };
 
-    try {
-        const res = await fetch(`/api/gestao/produto/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        
-        if(res.ok) {
-            alertaPremium("Produto e Ficha Técnica atualizados com sucesso!", "Edição Salva", "sucesso");
-            document.getElementById('modal-editar-produto').classList.replace('flex', 'hidden');
-            carregarCardapio();
-        } else {
-            alertaPremium("Erro ao salvar alterações no banco.", "Falha", "erro");
+            try {
+                const res = await fetch(`/api/gestao/produto/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if(res.ok) {
+                    alertaPremium("Produto e Ficha Técnica atualizados com sucesso!", "Edição Salva", "sucesso");
+                    document.getElementById('modal-editar-produto').classList.replace('flex', 'hidden');
+                    carregarCardapio();
+                } else {
+                    alertaPremium("Erro ao salvar alterações no banco.", "Falha", "erro");
+                }
+            } catch(err) {
+                alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
+            }
+            btn.innerHTML = "Salvar Alterações";
+            btn.disabled = false;
         }
-    } catch(err) {
-        alertaPremium("Erro de comunicação com o servidor.", "Falha", "erro");
-    }
-    btn.innerHTML = "Salvar Alterações";
-    btn.disabled = false;
-}
 
         function abrirModalCriarGrupo(id, nome) {
             document.getElementById('add-grupo-prod-id').value = id;
