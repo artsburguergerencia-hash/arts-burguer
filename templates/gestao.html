@@ -1121,6 +1121,31 @@
                         <input type="number" id="edit-prod-ordem" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none focus:border-brand-500" title="Digite 1 para aparecer primeiro">
                     </div>
                 </div>
+                <!-- FICHA TÉCNICA (INGREDIENTES) -->
+                <div class="mt-6 pt-6 border-t border-slate-200">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Ficha Técnica (Ingredientes)</p>
+                    
+                    <div class="flex items-center gap-2 mb-4">
+                        <select id="edit-select-insumo" class="flex-1 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500 text-sm">
+                            <option value="">-- Buscar Insumo --</option>
+                        </select>
+                        <input type="number" id="edit-qtd-insumo" placeholder="Quant" class="w-24 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500 text-sm text-center" step="0.01">
+                        <button type="button" onclick="adicionarFichaEdit()" class="bg-slate-900 text-white w-12 h-[46px] rounded-xl flex items-center justify-center hover:bg-brand-500 transition-colors"><i class="ph-bold ph-plus text-lg"></i></button>
+                    </div>
+                    
+                    <div id="edit-lista-fichas" class="space-y-2 max-h-40 overflow-y-auto pr-2">
+                        <!-- Os ingredientes do lanche vão aparecer aqui -->
+                    </div>
+                </div>
+
+                <!-- BOTÃO DE SALVAR -->
+                <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl mt-6 hover:bg-brand-500 transition-colors shadow-lg shadow-slate-900/20 flex items-center justify-center">
+                    SALVAR ALTERAÇÕES
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- FIM DO MODAL DE EDIÇÃO -->
                 
                 <!-- 🚨 INJEÇÃO DA FICHA TÉCNICA NO MODAL DE EDIÇÃO 🚨 -->
                 <div class="border-t border-slate-100 dark:border-slate-700 pt-4 mt-4">
