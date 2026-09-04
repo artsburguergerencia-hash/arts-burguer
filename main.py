@@ -2768,76 +2768,82 @@ def excluir_cupom(cupom_id: int, db: Session = Depends(get_db)):
 
 @app.post("/api/carrinho/validar-cupom")
 def validar_cupom(dados: dict, db: Session = Depends(get_db)):
-    codigo = dados.get("codigo", "").upper().strip()
-    cpf_cliente = dados.get("cpf", "").strip()
-    is_cadastrado = dados.get("is_cadastrado", False)
-    
-    cupom = db.query(CupomModel).filter(CupomModel.codigo == codigo, CupomModel.ativo == True).first()
-    
-    if not cupom:
-        raise HTTPException(status_code=404, detail="Cupom inválido ou não existe.")
-
-    # 1. TRAVA DE VALIDADE BLINDADA E ESTRITA
-    if cupom.data_validade and not cupom.data_validade.startswith("203"): # 203x é infinito
-        try:
-            # Força o formato exato YYYY-MM-DD
-            data_str = cupom.data_validade[:10]
-            val_date = datetime.strptime(data_str, "%Y-%m-%d").date()
-            if datetime.utcnow().date() > val_date:
-                raise HTTPException(status_code=400, detail=f"Este cupom venceu no dia {val_date.strftime('%d/%m/%Y')}.")
-        except ValueError:
-            pass
-
-    # 2. TRAVA DE QUANTIDADE (ESCASSEZ)
-    if cupom.qtd_limite is not None and cupom.qtd_limite > 0:
-        usos = getattr(cupom, 'usos_atuais', 0)
-        if usos >= cupom.qtd_limite:
-            raise HTTPException(status_code=400, detail="Esgotado! O limite de usos deste cupom já foi atingido.")
-
-    # 3. TRAVA DE PÚBLICO-ALVO
-    publico = getattr(cupom, 'publico_alvo', 'todos')
-    if publico == "cadastrados" and not is_cadastrado:
-        raise HTTPException(status_code=400, detail="Cupom exclusivo para clientes que possuem conta/login.")
-    if publico == "visitantes" and is_cadastrado:
-        raise HTTPException(status_code=400, detail="Cupom válido apenas para a primeira compra (visitantes).")
-
-    # 4. TRAVA DE CPF EXCLUSIVO (CUPOM NOMINAL) -> ✨ A REGRA NOVA AQUI ✨
-    if getattr(cupom, 'cpf_exclusivo', None):
-        if not cpf_cliente or cpf_cliente != cupom.cpf_exclusivo:
-            raise HTTPException(status_code=400, detail="Este cupom é nominal, intransferível e atrelado a outro CPF.")
-
-    # 5. TRAVA CONTRA FRAUDE (O CLIENTE JÁ USOU ANTES?)
-    if cpf_cliente:
-        # Puxa o banco pra ver se o cliente já comprou com esse CPF E usou a palavra do cupom na observação
-        from sqlalchemy import text
-        ja_usou = db.execute(text("""
-            SELECT id FROM pedidos 
-            WHERE cpf = :cpf 
-            AND itens_resumo LIKE :cod 
-            AND status != 'CANCELADO' 
-            LIMIT 1
-        """), {"cpf": cpf_cliente, "cod": f"%🎫 Cupom Usado: {codigo}%"}).fetchone()
+    try:
+        codigo = dados.get("codigo", "").upper().strip()
+        cpf_cliente = dados.get("cpf", "").strip()
+        is_cadastrado = dados.get("is_cadastrado", False)
         
-        if ja_usou:
-             raise HTTPException(status_code=400, detail="Promoção Inválida: Este CPF já utilizou este cupom anteriormente.")
+        cupom = db.query(CupomModel).filter(CupomModel.codigo == codigo, CupomModel.ativo == True).first()
+        
+        if not cupom:
+            raise HTTPException(status_code=404, detail="Cupom inválido ou não existe.")
 
-    # Se passou por tudo, calcula o desconto e aprova!
-    subtotal = float(dados.get("subtotal", 0.0))
-    desconto = 0.0
-    if cupom.tipo == "PERCENTUAL":
-        desconto = subtotal * (cupom.valor / 100.0)
-    else:
-        desconto = cupom.valor
+        # 1. TRAVA DE VALIDADE
+        if cupom.data_validade and not cupom.data_validade.startswith("203"):
+            try:
+                data_str = cupom.data_validade[:10]
+                val_date = datetime.strptime(data_str, "%Y-%m-%d").date()
+                if datetime.utcnow().date() > val_date:
+                    raise HTTPException(status_code=400, detail=f"Este cupom venceu no dia {val_date.strftime('%d/%m/%Y')}.")
+            except ValueError:
+                pass
+
+        # 2. TRAVA DE QUANTIDADE (ESCASSEZ)
+        if cupom.qtd_limite is not None and cupom.qtd_limite > 0:
+            usos = getattr(cupom, 'usos_atuais', 0)
+            if usos >= cupom.qtd_limite:
+                raise HTTPException(status_code=400, detail="Esgotado! O limite de usos deste cupom já foi atingido.")
+
+        # 3. TRAVA DE PÚBLICO-ALVO
+        publico = getattr(cupom, 'publico_alvo', 'todos')
+        if publico == "cadastrados" and not is_cadastrado:
+            raise HTTPException(status_code=400, detail="Cupom exclusivo para clientes que possuem conta/login.")
+        if publico == "visitantes" and is_cadastrado:
+            raise HTTPException(status_code=400, detail="Cupom válido apenas para a primeira compra (visitantes).")
+
+        # 4. TRAVA DE CPF EXCLUSIVO (CUPOM NOMINAL)
+        if getattr(cupom, 'cpf_exclusivo', None):
+            if not cpf_cliente or cpf_cliente != cupom.cpf_exclusivo:
+                raise HTTPException(status_code=400, detail="Este cupom é nominal, intransferível e atrelado a outro CPF.")
+
+        # 5. TRAVA CONTRA FRAUDE (Segura, usando o cérebro Python/ORM)
+        if cpf_cliente:
+            cliente_banco = db.query(ClienteModel).filter(ClienteModel.cpf == cpf_cliente).first()
+            if cliente_banco:
+                pedidos_cliente = db.query(PedidoModel).filter(PedidoModel.cliente_id == cliente_banco.id).all()
+                for p in pedidos_cliente:
+                    if str(getattr(p, 'status', '')).upper() == 'CANCELADO':
+                        continue
+                    
+                    # Varre as observações dos itens para ver se o cupom já foi usado por este CPF
+                    for item in getattr(p, 'itens', getattr(p, 'itens_pedido', [])):
+                        obs = getattr(item, 'observacao', getattr(item, 'observacoes', ''))
+                        if obs and f"Cupom Usado: {codigo}" in obs:
+                            raise HTTPException(status_code=400, detail="Promoção Inválida: Este CPF já utilizou este cupom anteriormente.")
+
+        # Se passou por tudo, calcula e aprova!
+        subtotal = float(dados.get("subtotal", 0.0))
+        desconto = 0.0
+        if cupom.tipo == "PERCENTUAL":
+            desconto = subtotal * (cupom.valor / 100.0)
+        else:
+            desconto = cupom.valor
+            
+        if desconto > subtotal:
+            desconto = subtotal
+            
+        return {
+            "status": "sucesso",
+            "codigo": cupom.codigo,
+            "tipo": cupom.tipo,
+            "valor_desconto": round(desconto, 2)
+        }
         
-    if desconto > subtotal:
-        desconto = subtotal
-        
-    return {
-        "status": "sucesso",
-        "codigo": cupom.codigo,
-        "tipo": cupom.tipo,
-        "valor_desconto": round(desconto, 2)
-    }
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        # Se qualquer coisa explodir, ele avisa o erro exato na tela ao invés de "Erro de conexão"
+        raise HTTPException(status_code=500, detail=f"Erro interno no Banco de Dados: {str(e)}")
 
 # ==========================================
 # MOTOR DE COMBOS (ASSISTENTE FAST FOOD)
