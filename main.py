@@ -3713,7 +3713,48 @@ def atualizar_posicao_motoboy(pedido_id: int, payload: dict):
         return {"ok": False, "erro": "Coordenadas não enviadas"}
     except Exception as e:
         return {"ok": False, "erro": str(e)}
+
+# ==========================================
+# ROTA VIP DE CUPONS (BLINDADA CONTRA CONFLITOS)
+# ==========================================
+@app.post("/api/cupons-pro/criar")
+def criar_cupom_avancado(dados: dict, db: Session = Depends(get_db)):
+    codigo = str(dados.get("codigo", "")).upper().strip()
+    if not codigo:
+        raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
         
+    existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
+    if existe:
+        raise HTTPException(status_code=400, detail="Este código de cupom já existe.")
+        
+    tipo_cupom = dados.get("tipo", "PERCENTUAL")
+    val_cupom = float(dados.get("valor", 0.0))
+    
+    # Pegando as novidades
+    qtd_limite = dados.get("qtd_limite")
+    data_val = dados.get("validade")
+    
+    # Se o dono não colocar data, joga a validade para daqui a 10 anos
+    if not data_val:
+        from datetime import datetime, timedelta
+        data_val = (datetime.utcnow() + timedelta(days=3650)).strftime("%Y-%m-%d")
+        
+    novo = CupomModel(
+        codigo=codigo,
+        tipo=tipo_cupom,
+        valor=val_cupom,
+        desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
+        desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
+        data_validade=data_val,
+        ativo=True,
+        qtd_limite=qtd_limite,
+        usos_atuais=0,
+        publico_alvo=dados.get("publico_alvo", "todos")
+    )
+    db.add(novo)
+    db.commit()
+    return {"status": "sucesso", "mensagem": f"Cupom {codigo} criado com regras avançadas!"}
+    
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
