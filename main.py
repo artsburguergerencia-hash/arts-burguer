@@ -3538,6 +3538,9 @@ def cura_checkout(db: Session = Depends(get_db)):
         db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN usos_atuais INTEGER DEFAULT 0;"))
         db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN publico_alvo VARCHAR DEFAULT 'todos';"))
         
+        # 🚨 A LINHA NOVA DO CPF NOMINAL ENTRA AQUI 🚨
+        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN cpf_exclusivo VARCHAR;"))
+        
         db.commit()
         logs.append("Tabela CUPONS curada com sucesso!")
     except Exception as e:
