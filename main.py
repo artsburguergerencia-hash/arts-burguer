@@ -3528,24 +3528,24 @@ def cura_checkout(db: Session = Depends(get_db)):
         db.rollback()
         logs.append(f"Erro em Configurações: {str(e)}")
 
-    # 3. Consertando os Cupons (Por precaução)
-    try:
-        db.execute(text("ALTER TABLE cupons_desconto DROP COLUMN IF EXISTS ativo;"))
-        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN ativo BOOLEAN DEFAULT TRUE;"))
-        
-        # 🚨 NOVAS COLUNAS DO MOTOR DE CUPONS 🚨
-        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN qtd_limite INTEGER;"))
-        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN usos_atuais INTEGER DEFAULT 0;"))
-        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN publico_alvo VARCHAR DEFAULT 'todos';"))
-        
-        # 🚨 A LINHA NOVA DO CPF NOMINAL ENTRA AQUI 🚨
-        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN cpf_exclusivo VARCHAR;"))
-        
-        db.commit()
-        logs.append("Tabela CUPONS curada com sucesso!")
-    except Exception as e:
-        db.rollback()
-        logs.append(f"Erro em Cupons: {str(e)}")
+    # 3. Consertando os Cupons (Bulletproof - Pula o que já existe)
+    comandos_cupons = [
+        "ALTER TABLE cupons_desconto DROP COLUMN IF EXISTS ativo;",
+        "ALTER TABLE cupons_desconto ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
+        "ALTER TABLE cupons_desconto ADD COLUMN qtd_limite INTEGER;",
+        "ALTER TABLE cupons_desconto ADD COLUMN usos_atuais INTEGER DEFAULT 0;",
+        "ALTER TABLE cupons_desconto ADD COLUMN publico_alvo VARCHAR DEFAULT 'todos';",
+        "ALTER TABLE cupons_desconto ADD COLUMN cpf_exclusivo VARCHAR;"
+    ]
+    
+    for cmd in comandos_cupons:
+        try:
+            db.execute(text(cmd))
+            db.commit()
+        except Exception as e:
+            db.rollback() # Se a coluna já existir, ele simplesmente ignora e vai pra próxima!
+            
+    logs.append("Tabela CUPONS vacinada com sucesso (colunas extras criadas)!")
 
     return {"status": "Vacina do Checkout Aplicada!", "logs": logs}
     
@@ -3724,44 +3724,53 @@ def atualizar_posicao_motoboy(pedido_id: int, payload: dict):
 # ==========================================
 # ROTA VIP DE CUPONS (BLINDADA CONTRA CONFLITOS)
 # ==========================================
+# ==========================================
+# ROTA VIP DE CUPONS (BLINDADA CONTRA CONFLITOS E ERROS)
+# ==========================================
 @app.post("/api/cupons-pro/criar")
 def criar_cupom_avancado(dados: dict, db: Session = Depends(get_db)):
-    codigo = str(dados.get("codigo", "")).upper().strip()
-    if not codigo:
-        raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
+    try:
+        codigo = str(dados.get("codigo", "")).upper().strip()
+        if not codigo:
+            raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
+            
+        existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
+        if existe:
+            raise HTTPException(status_code=400, detail="Este código de cupom já existe.")
+            
+        tipo_cupom = dados.get("tipo", "PERCENTUAL")
+        val_cupom = float(dados.get("valor", 0.0))
         
-    existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
-    if existe:
-        raise HTTPException(status_code=400, detail="Este código de cupom já existe.")
+        qtd_limite = dados.get("qtd_limite")
+        data_val = dados.get("validade")
         
-    tipo_cupom = dados.get("tipo", "PERCENTUAL")
-    val_cupom = float(dados.get("valor", 0.0))
-    
-    # Pegando as novidades
-    qtd_limite = dados.get("qtd_limite")
-    data_val = dados.get("validade")
-    
-    # Se o dono não colocar data, joga a validade para daqui a 10 anos
-    if not data_val:
-        from datetime import datetime, timedelta
-        data_val = (datetime.utcnow() + timedelta(days=3650)).strftime("%Y-%m-%d")
+        if not data_val:
+            from datetime import datetime, timedelta
+            data_val = (datetime.utcnow() + timedelta(days=3650)).strftime("%Y-%m-%d")
+            
+        novo = CupomModel(
+            codigo=codigo,
+            tipo=tipo_cupom,
+            valor=val_cupom,
+            desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
+            desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
+            data_validade=data_val,
+            ativo=True,
+            qtd_limite=qtd_limite,
+            usos_atuais=0,
+            publico_alvo=dados.get("publico_alvo", "todos"),
+            cpf_exclusivo=dados.get("cpf_exclusivo", "").replace(".", "").replace("-", "").strip() or None
+        )
+        db.add(novo)
+        db.commit()
+        return {"status": "sucesso", "mensagem": f"Cupom {codigo} criado com regras avançadas!"}
         
-    novo = CupomModel(
-        codigo=codigo,
-        tipo=tipo_cupom,
-        valor=val_cupom,
-        desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
-        desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
-        data_validade=data_val,
-        ativo=True,
-        qtd_limite=qtd_limite,
-        usos_atuais=0,
-        publico_alvo=dados.get("publico_alvo", "todos"),
-        cpf_exclusivo=dados.get("cpf_exclusivo", "").replace(".", "").replace("-", "").strip() or None
-    )
-    db.add(novo)
-    db.commit()
-    return {"status": "sucesso", "mensagem": f"Cupom {codigo} criado com regras avançadas!"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        db.rollback()
+        # Manda a mensagem EXATA do erro do banco pra sua tela!
+        raise HTTPException(status_code=500, detail=f"Erro interno no Banco de Dados: {str(e)}")
     
 if __name__ == "__main__":
     print("🚀 Iniciando Servidor Web do Art's Burguer V5 (Google Cloud Edition)...")
