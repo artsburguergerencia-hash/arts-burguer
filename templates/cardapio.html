@@ -1810,107 +1810,78 @@ function calcularTaxaPorBairro(nomeBairro) {
   // ==========================================
 // MOTOR DE LOGÍSTICA E CEP (BLINDADO)
 // ==========================================
-listaTaxasSistema = [];
-valorFreteAtual = 0;
-
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const res = await fetch('/api/taxas/listar');
-        listaTaxasSistema = await res.json();
-    } catch(e) {}
-});
-
-// 1. Gatilho automático
-function mascaraCepEBusca(input) {
+// 1. Gatilho automático (Versão Global)
+window.mascaraCepEBusca = function(input) {
     let v = input.value.replace(/\D/g, '');
     if (v.length > 5) v = v.substring(0, 5) + '-' + v.substring(5, 8);
     input.value = v;
 
     if (input.value.length === 9) {
-        buscarCepCheckout(input.value);
+        window.buscarCepCheckout(input.value);
     } else {
         valorFreteAtual = 0;
-        document.getElementById('status-frete').innerHTML = '';
-        const boxFrete = document.getElementById('box-frete');
-        if(boxFrete) boxFrete.classList.add('hidden');
+        const sf = document.getElementById('status-frete');
+        if (sf) sf.innerHTML = '';
+        const bf = document.getElementById('box-frete');
+        if (bf) bf.classList.add('hidden');
         atualizarContadores();
     }
-}
+};
 
-// 2. Busca nos Correios (Com Destravamento de Segurança)
-async function buscarCepCheckout(cepInput) {
+// 2. Busca nos Correios (Versão Blindada contra Crash)
+window.buscarCepCheckout = async function(cepInput) {
     const cep = cepInput.replace(/\D/g, '');
     if (cep.length !== 8) return;
 
-    const inputRua = document.getElementById('check-rua');
-    const inputBairro = document.getElementById('check-bairro');
+    // Procura pelas caixas independente se o nome for o novo ou o antigo
+    const inputRua = document.getElementById('check-rua') || document.getElementById('ped-rua');
+    const inputBairro = document.getElementById('check-bairro') || document.getElementById('ped-bairro');
     
-    inputRua.value = "Buscando...";
-    inputBairro.value = "Buscando...";
-    document.getElementById('status-frete').innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
+    // Se achar a caixa, avisa que está buscando
+    if (inputRua) inputRua.value = "Buscando...";
+    if (inputBairro) inputBairro.value = "Buscando...";
+    
+    const sf = document.getElementById('status-frete');
+    if (sf) sf.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i>`;
 
     try {
         const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await res.json();
 
         if (!data.erro) {
-            // Sucesso! Preenche e trava os campos
-            inputRua.value = data.logradouro || "";
-            inputBairro.value = data.bairro || "";
-            inputRua.readOnly = true;
-            inputBairro.readOnly = true;
-            document.getElementById('check-numero').focus(); 
+            // Preenche e trava
+            if (inputRua) { inputRua.value = data.logradouro || ""; inputRua.readOnly = true; }
+            if (inputBairro) { inputBairro.value = data.bairro || ""; inputBairro.readOnly = true; }
+            
+            const checkNum = document.getElementById('check-numero') || document.getElementById('ped-num');
+            if (checkNum) checkNum.focus();
+            
             calcularTaxaPorBairro(data.bairro);
         } else {
-            throw new Error("CEP não existe na base");
+            throw new Error("CEP não encontrado");
         }
-    } catch (e) { 
-        // 🚨 FALHA NOS CORREIOS: Destrava a caixa pro cliente digitar!
-        inputRua.value = "";
-        inputBairro.value = "";
-        inputRua.readOnly = false; 
-        inputBairro.readOnly = false;
-        
-        // Tira a cor cinza de bloqueado e deixa branco
-        inputRua.classList.remove('cursor-not-allowed', 'bg-slate-200', 'dark:bg-slate-700');
-        inputRua.classList.add('bg-white', 'dark:bg-slate-900');
-        inputBairro.classList.remove('cursor-not-allowed', 'bg-slate-200', 'dark:bg-slate-700');
-        inputBairro.classList.add('bg-white', 'dark:bg-slate-900');
-        
-        inputRua.placeholder = "Digite o nome da Rua";
-        inputBairro.placeholder = "Digite o seu Bairro";
-        document.getElementById('status-frete').innerHTML = `<span class="text-amber-500 font-black">CEP não encontrado. Digite a rua.</span>`;
-        
-        // Se o cliente digitar o bairro na mão, o sistema calcula a taxa quando ele sair da caixinha
-        inputBairro.onblur = function() { calcularTaxaPorBairro(this.value); };
+    } catch (e) {
+        // Se a internet falhar ou CEP for novo, destrava tudo pro cliente digitar
+        if (inputRua) {
+            inputRua.value = ""; 
+            inputRua.readOnly = false;
+            inputRua.classList.remove('cursor-not-allowed', 'bg-slate-200', 'dark:bg-slate-700');
+            inputRua.classList.add('bg-white', 'dark:bg-slate-900');
+            inputRua.placeholder = "Digite o nome da Rua";
+        }
+        if (inputBairro) {
+            inputBairro.value = ""; 
+            inputBairro.readOnly = false;
+            inputBairro.classList.remove('cursor-not-allowed', 'bg-slate-200', 'dark:bg-slate-700');
+            inputBairro.classList.add('bg-white', 'dark:bg-slate-900');
+            inputBairro.placeholder = "Digite o seu Bairro";
+            
+            // Calcula a taxa quando ele terminar de digitar o bairro na mão
+            inputBairro.onblur = function() { calcularTaxaPorBairro(this.value); };
+        }
+        if (sf) sf.innerHTML = `<span class="text-amber-500 font-black text-xs">CEP não encontrado. Digite o endereço.</span>`;
     }
-}
-
-// 3. Cruza Bairro com Painel
-function calcularTaxaPorBairro(nomeBairro) {
-    if(!nomeBairro) return;
-
-    const bairroLimpo = nomeBairro.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-    const taxaEncontrada = listaTaxasSistema.find(t => 
-        t.bairro.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === bairroLimpo
-    );
-
-    if (taxaEncontrada) {
-        valorFreteAtual = taxaEncontrada.taxa;
-        document.getElementById('status-frete').innerHTML = `Taxa: + R$ ${valorFreteAtual.toFixed(2).replace('.', ',')}`;
-        const boxFrete = document.getElementById('box-frete');
-        if(boxFrete) boxFrete.classList.remove('hidden');
-        const valorFreteSpan = document.getElementById('valor-frete');
-        if(valorFreteSpan) valorFreteSpan.innerText = `+ R$ ${valorFreteAtual.toFixed(2).replace('.', ',')}`;
-    } else {
-        valorFreteAtual = 0;
-        document.getElementById('status-frete').innerHTML = `<span class="text-red-500 font-black">Bairro Fora de Área</span>`;
-        const boxFrete = document.getElementById('box-frete');
-        if(boxFrete) boxFrete.classList.add('hidden');
-    }
-
-    atualizarContadores();
-}
+};
     </script>
     </body>
 </html>
