@@ -2038,7 +2038,8 @@ function gerarStringDeHorarios() {
     };
 
     try {
-        const res = await fetch('/api/gestao/cupons', {
+        // 🚨 LINK VIP ATUALIZADO AQUI 🚨
+        const res = await fetch('/api/cupons-pro/criar', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
