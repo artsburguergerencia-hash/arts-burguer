@@ -1299,25 +1299,78 @@ function atualizarContadoresCheckout() {
         }
 
         async function aplicarCupom() {
-            const codigo = document.getElementById('input-cupom').value.trim().toUpperCase();
-            const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
-            const statusDiv = document.getElementById('status-cupom');
-            if(!codigo) { alert("Digite o código do cupom."); return; }
+    const inputCupom = document.getElementById('input-cupom');
+    const codigo = inputCupom.value.toUpperCase().trim();
+    
+    if (!codigo) {
+        alertaPremium("Digite o código do cupom.", "Aviso", "erro");
+        return;
+    }
 
-            try {
-                const res = await fetch('/api/carrinho/validar-cupom', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ codigo, subtotal }) });
-                const data = await res.json();
-                if(res.ok) {
-                    cupomAplicado = data.codigo; valorDescontoCupom = data.valor_desconto;
-                    statusDiv.className = "text-xs font-bold mb-4 text-emerald-500 dark:text-emerald-400 block";
-                    statusDiv.innerText = `✅ Cupom "${data.codigo}" aplicado! Desconto de R$ ${data.valor_desconto.toFixed(2).replace('.', ',')}`;
-                    atualizarContadores();
-                } else {
-                    statusDiv.className = "text-xs font-bold mb-4 text-red-500 dark:text-red-400 block"; statusDiv.innerText = `❌ ${data.detail || "Cupom inválido."}`;
-                    cupomAplicado = null; valorDescontoCupom = 0; atualizarContadores();
-                }
-            } catch(e) { alert("Erro ao validar cupom."); }
+    // 🚨 CAPTURA O CPF PARA BARRAR FRAUDES E VALIDAR CUPOM NOMINAL
+    let cpfCliente = "";
+    if (clienteLogado) {
+        const elCpfLogado = document.getElementById('logado-cpf');
+        if (elCpfLogado) cpfCliente = elCpfLogado.value.replace(/\D/g, '');
+    } else {
+        const elCpfGuest = document.getElementById('guest-cpf');
+        if (elCpfGuest) cpfCliente = elCpfGuest.value.replace(/\D/g, '');
+    }
+
+    // Se o cliente não digitar o CPF, o sistema trava o cupom e pisca a caixa de CPF em vermelho
+    if (!cpfCliente || cpfCliente.length !== 11) {
+        alertaPremium("⚠️ Para utilizar cupons de desconto, é obrigatório preencher um CPF válido na seção de Identificação.", "CPF Exigido", "erro");
+        
+        const alvoCpf = clienteLogado ? document.getElementById('logado-cpf') : document.getElementById('guest-cpf');
+        if (alvoCpf) {
+            alvoCpf.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            alvoCpf.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+            setTimeout(() => alvoCpf.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-900/20'), 2000);
+            alvoCpf.focus();
         }
+        return;
+    }
+
+    const statusBox = document.getElementById('status-cupom');
+    statusBox.classList.remove('hidden');
+    statusBox.className = "text-xs font-bold mb-4 text-blue-500 dark:text-blue-400 block";
+    statusBox.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Validando regras...';
+
+    const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+
+    try {
+        // Envia o código E o CPF para o servidor verificar quem é o cliente
+        const response = await fetch('/api/carrinho/validar-cupom', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                codigo: codigo, 
+                subtotal: subtotal,
+                cpf: cpfCliente,
+                is_cadastrado: clienteLogado ? true : false 
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            cupomAplicado = data.codigo;
+            valorDescontoCupom = data.valor_desconto;
+            statusBox.className = "text-xs font-bold mb-4 text-emerald-500 dark:text-emerald-400 block";
+            statusBox.innerText = `✅ Cupom "${data.codigo}" aceito! Desconto de R$ ${valorDescontoCupom.toFixed(2).replace('.', ',')}`;
+            atualizarContadores();
+        } else {
+            statusBox.className = "text-xs font-bold mb-4 text-red-500 dark:text-red-400 block";
+            statusBox.innerText = `❌ ${data.detail || "Cupom Inválido"}`;
+            cupomAplicado = null;
+            valorDescontoCupom = 0;
+            atualizarContadores();
+        }
+    } catch (e) {
+        statusBox.className = "text-xs font-bold mb-4 text-red-500 dark:text-red-400 block";
+        statusBox.innerText = `❌ Erro de conexão. Tente novamente.`;
+    }
+}
 
         // MOTOR MATEMÁTICO 1 (Atualiza as bolinhas e a barra flutuante)
 function atualizarContadores() {
@@ -1472,155 +1525,150 @@ function atualizarContadores() {
         function fecharCarrinho() { document.getElementById('modal-carrinho').classList.replace('flex', 'hidden'); }
 
         async function enviarPedidoNuvem(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-enviar-pedido'); 
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i>'; 
-            btn.disabled = true;
+    e.preventDefault();
+    const btn = document.getElementById('btn-enviar-pedido'); 
+    const txtOriginal = btn.innerHTML;
+    btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i>'; 
+    btn.disabled = true;
 
-            let nome, tel, end, cliente_id, cpf;
-            const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked');
-            const isDelivery = radioEntrega ? radioEntrega.value === 'entrega' : false;
+    let nome, tel, end, cliente_id, cpf;
+    const radioEntrega = document.querySelector('input[name="tipo_entrega"]:checked');
+    const isDelivery = radioEntrega ? radioEntrega.value === 'entrega' : false;
+    
+    let endLimpo = "";
+    let nomeBairro = "";
+    
+    if (isDelivery) {
+        const cep = document.getElementById('check-cep').value;
+        const rua = document.getElementById('check-rua').value;
+        const num = document.getElementById('check-numero').value;
+        nomeBairro = document.getElementById('check-bairro').value;
+        const comp = document.getElementById('check-complemento').value;
+        
+        if (!rua || !num || !nomeBairro) {
+            alertaPremium("⚠️ Preencha o CEP e o Número do endereço para a entrega.", "Atenção", "erro");
+            btn.innerHTML = txtOriginal; btn.disabled = false; return;
+        }
+        
+        endLimpo = `${rua}, ${num} - ${nomeBairro}`;
+        if (comp) endLimpo += ` (${comp})`;
+        if (cep) endLimpo += ` - CEP: ${cep}`;
+        
+        localStorage.setItem('cliente_cep', cep);
+        localStorage.setItem('cliente_endereco', rua);
+        localStorage.setItem('cliente_numero', num);
+        localStorage.setItem('cliente_bairro', nomeBairro);
+        localStorage.setItem('cliente_complemento', comp);
+    } else {
+        endLimpo = "Retirada Balcão";
+    }
+
+    if (clienteLogado) {
+        nome = clienteLogado.nome; 
+        tel = clienteLogado.telefone; 
+        end = isDelivery ? endLimpo : "Retirada Balcão"; 
+        cliente_id = clienteLogado.id; 
+        cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
+    } else {
+        nome = document.getElementById('guest-nome').value.trim(); 
+        tel = document.getElementById('guest-tel').value.trim();
+        end = endLimpo;
+        cpf = document.getElementById('guest-cpf').value.replace(/\D/g, ''); 
+        cliente_id = null;
+        if (!nome || !tel) { alertaPremium("⚠️ Preencha seu Nome e WhatsApp.", "Atenção", "erro"); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
+    }
+
+    if (isDelivery && valorFreteAtual > 0) {
+        end += ` | (Taxa de Entrega: R$ ${valorFreteAtual.toFixed(2).replace('.',',')})`;
+    }
+
+    const tipoPgto = document.getElementById('forma-pag-online').value;
+    if ((tipoPgto === 'pix' || tipoPgto === 'credito') && !cpf) {
+        alertaPremium("⚠️ O CPF é obrigatório para garantir o seu pagamento online via Pix ou Cartão.", "Atenção", "erro");
+        if(clienteLogado) document.getElementById('logado-cpf').focus(); else document.getElementById('guest-cpf').focus();
+        btn.innerHTML=txtOriginal; btn.disabled=false; return;
+    }
+
+    let itensFinais = carrinho.map(i => ({ 
+        produto_id: i.produto_id, 
+        quantidade: i.quantidade, 
+        observacao: i.observacao || "" 
+    }));
+    
+    // Anota o cupom na observação da cozinha para a nota fiscal e para o sistema validar fraude
+    if(cupomAplicado) itensFinais[0].observacao += ` | 🎫 Cupom Usado: ${cupomAplicado} (-R$ ${valorDescontoCupom.toFixed(2)})`;
+
+    // 🚨 AQUI ESTÁ A CORREÇÃO DA MATEMÁTICA 🚨
+    const payload = { 
+        cliente_id: cliente_id, 
+        nome_cliente: nome, 
+        telefone_cliente: tel, 
+        endereco_cliente: end, 
+        cpf: cpf, 
+        itens: itensFinais, 
+        usar_saldo_cashback: valorDescontoCupom // Finge que é cashback pro Backend fazer a conta perfeitamente!
+    };
+
+    if (tipoPgto === 'credito') {
+        const numCartao = document.getElementById('cc-num').value.replace(/\D/g, ''); const nomeCartao = document.getElementById('cc-nome').value;
+        const valCartao = document.getElementById('cc-val').value; const cvvCartao = document.getElementById('cc-cvv').value;
+
+        if(!numCartao || !nomeCartao || !valCartao || !cvvCartao) { alertaPremium("⚠️ Preencha todos os dados do cartão de crédito!", "Atenção", "erro"); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
+
+        try {
+            const mp = new MercadoPago('APP_USR-848cf42a-5349-4310-9ba5-b8c42f1ee022'); 
+            const metodos = await mp.getPaymentMethods({ bin: numCartao.substring(0, 6) });
+            if(metodos.results.length === 0) throw new Error();
             
-            // 🚨 1. A NOVA LÓGICA DE ENDEREÇO E VALIDAÇÃO 🚨
-            let endLimpo = "";
-            let nomeBairro = "";
-            
-            if (isDelivery) {
-                const cep = document.getElementById('check-cep').value;
-                const rua = document.getElementById('check-rua').value;
-                const num = document.getElementById('check-numero').value;
-                nomeBairro = document.getElementById('check-bairro').value;
-                const comp = document.getElementById('check-complemento').value;
+            const tokenRes = await mp.createCardToken({
+                cardNumber: numCartao, cardholderName: nomeCartao, cardExpirationMonth: valCartao.split('/')[0],
+                cardExpirationYear: valCartao.split('/')[1].length === 2 ? "20" + valCartao.split('/')[1] : valCartao.split('/')[1],
+                securityCode: cvvCartao, identificationType: "CPF", identificationNumber: cpf.replace(/\D/g, '')
+            });
+
+            if(tokenRes.error) throw new Error();
+            payload.token_cartao = tokenRes.id; payload.payment_method_id = metodos.results[0].id; payload.parcelas = document.getElementById('cc-parcelas').value;
+        } catch (e) { alertaPremium("⚠️ Dados do cartão de crédito inválidos.", "Erro", "erro"); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
+    }
+
+    try {
+        const res = await fetch(`/api/pedidos/online?forma_pagamento=${tipoPgto}`, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload) 
+        });
+        
+        if (res.ok) {
+            let data = {};
+            try { data = await res.json(); } catch(jsonErr) {}
+
+            const numPed = data.senha_diaria || data.pedido_id || data.id || "000";
+
+            if (data.status === "checkout_transparente") { 
+                document.getElementById('pix-pedido-num').innerText = numPed;
+                document.getElementById('pix-codigo-texto').innerText = data.copia_e_cola;
+                document.getElementById('modal-pix').classList.replace('hidden', 'flex');
+            } 
+            else { 
+                const txtSucesso = tipoPgto === 'credito' ? 
+                    `O Pagamento foi aprovado!\nSeu pedido #${numPed} já foi para a cozinha. Acompanhe a entrega na tela de Rastreio.` : 
+                    `Seu pedido #${numPed} foi recebido pela cozinha com sucesso!\nAcompanhe o preparo pela tela de Rastreio.`;
                 
-                if (!rua || !num || !nomeBairro) {
-                    alertaPremium("⚠️ Preencha o CEP e o Número do endereço para a entrega.", "Atenção", "erro");
-                    btn.innerHTML = txtOriginal; btn.disabled = false; return;
-                }
-                
-                // Formatação limpa e profissional para a Cozinha e Motoboy
-                endLimpo = `${rua}, ${num} - ${nomeBairro}`;
-                if (comp) endLimpo += ` (${comp})`;
-                if (cep) endLimpo += ` - CEP: ${cep}`;
-                
-                // Salva no cache do cliente para a próxima compra abrir preenchida!
-                localStorage.setItem('cliente_cep', cep);
-                localStorage.setItem('cliente_endereco', rua);
-                localStorage.setItem('cliente_numero', num);
-                localStorage.setItem('cliente_bairro', nomeBairro);
-                localStorage.setItem('cliente_complemento', comp);
-            } else {
-                endLimpo = "Retirada Balcão";
-            }
-
-            if (clienteLogado) {
-                nome = clienteLogado.nome; 
-                tel = clienteLogado.telefone; 
-                end = isDelivery ? endLimpo : "Retirada Balcão"; 
-                cliente_id = clienteLogado.id; 
-                cpf = document.getElementById('logado-cpf').value.replace(/\D/g, ''); 
-            } else {
-                nome = document.getElementById('guest-nome').value.trim(); 
-                tel = document.getElementById('guest-tel').value.trim();
-                end = endLimpo;
-                cpf = document.getElementById('guest-cpf').value.replace(/\D/g, ''); 
-                cliente_id = null;
-                if (!nome || !tel) { alertaPremium("⚠️ Preencha seu Nome e WhatsApp.", "Atenção", "erro"); btn.innerHTML=txtOriginal; btn.disabled=false; return; }
-            }
-
-            // Adiciona a Taxa de Entrega no finalzinho do endereço (se for Delivery)
-            if (isDelivery && valorFreteAtual > 0) {
-                end += ` | (Taxa de Entrega: R$ ${valorFreteAtual.toFixed(2).replace('.',',')})`;
-            }
-
-            const tipoPgto = document.getElementById('forma-pag-online').value;
-            if ((tipoPgto === 'pix' || tipoPgto === 'credito') && !cpf) {
-                alertaPremium("⚠️ O CPF é obrigatório para garantir o seu pagamento online via Pix ou Cartão.", "Atenção", "erro");
-                if(clienteLogado) document.getElementById('logado-cpf').focus(); else document.getElementById('guest-cpf').focus();
-                btn.innerHTML=txtOriginal; btn.disabled=false; return;
-            }
-
-            let itensFinais = carrinho.map(i => ({ 
-                produto_id: i.produto_id, 
-                quantidade: i.quantidade, 
-                observacao: i.observacao || "" 
-            }));
-            if(cupomAplicado) itensFinais[0].observacao += ` | 🎫 Cupom Usado: ${cupomAplicado} (-R$ ${valorDescontoCupom.toFixed(2)})`;
-
-            const descontoFinalEnviado = valorDescontoCupom - valorFreteAtual;
-
-            const payload = { 
-                cliente_id: cliente_id, 
-                nome_cliente: nome, 
-                telefone_cliente: tel, 
-                endereco_cliente: end, 
-                cpf: cpf, 
-                itens: itensFinais, 
-                usar_saldo_cashback: descontoFinalEnviado 
-            };
-
-            if (tipoPgto === 'credito') {
-                const numCartao = document.getElementById('cc-num').value.replace(/\D/g, ''); const nomeCartao = document.getElementById('cc-nome').value;
-                const valCartao = document.getElementById('cc-val').value; const cvvCartao = document.getElementById('cc-cvv').value;
-
-                if(!numCartao || !nomeCartao || !valCartao || !cvvCartao) { alertaPremium("⚠️ Preencha todos os dados do cartão de crédito!", "Atenção", "erro"); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
-
-                try {
-                    const mp = new MercadoPago('APP_USR-848cf42a-5349-4310-9ba5-b8c42f1ee022'); 
-                    const metodos = await mp.getPaymentMethods({ bin: numCartao.substring(0, 6) });
-                    if(metodos.results.length === 0) throw new Error();
-                    
-                    const tokenRes = await mp.createCardToken({
-                        cardNumber: numCartao, cardholderName: nomeCartao, cardExpirationMonth: valCartao.split('/')[0],
-                        cardExpirationYear: valCartao.split('/')[1].length === 2 ? "20" + valCartao.split('/')[1] : valCartao.split('/')[1],
-                        securityCode: cvvCartao, identificationType: "CPF", identificationNumber: cpf.replace(/\D/g, '')
-                    });
-
-                    if(tokenRes.error) throw new Error();
-                    payload.token_cartao = tokenRes.id; payload.payment_method_id = metodos.results[0].id; payload.parcelas = document.getElementById('cc-parcelas').value;
-                } catch (e) { alertaPremium("⚠️ Dados do cartão de crédito inválidos.", "Erro", "erro"); btn.disabled = false; btn.innerHTML = txtOriginal; return; }
-            }
-
-            try {
-                const res = await fetch(`/api/pedidos/online?forma_pagamento=${tipoPgto}`, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(payload) 
+                alertaPremium(txtSucesso, "Pedido Confirmado! 🎉", "sucesso", () => {
+                    window.location.reload();
                 });
-                
-                if (res.ok) {
-                    let data = {};
-                    try { data = await res.json(); } catch(jsonErr) {}
-
-                    const numPed = data.senha_diaria || data.pedido_id || data.id || "000";
-
-                    if (data.status === "checkout_transparente") { 
-                        // ABRE O NOVO MODAL DE PIX!
-                        document.getElementById('pix-pedido-num').innerText = numPed;
-                        document.getElementById('pix-codigo-texto').innerText = data.copia_e_cola;
-                        document.getElementById('modal-pix').classList.replace('hidden', 'flex');
-                    } 
-                    else { 
-                        // MENSAGEM CUSTOMIZADA COM O NÚMERO DO PEDIDO PARA O CLIENTE
-                        const txtSucesso = tipoPgto === 'credito' ? 
-                            `O Pagamento foi aprovado!\nSeu pedido #${numPed} já foi para a cozinha. Acompanhe a entrega na tela de Rastreio.` : 
-                            `Seu pedido #${numPed} foi recebido pela cozinha com sucesso!\nAcompanhe o preparo pela tela de Rastreio.`;
-                        
-                        alertaPremium(txtSucesso, "Pedido Confirmado! 🎉", "sucesso", () => {
-                            window.location.reload();
-                        });
-                    }
-                } else { 
-                    let errData = {};
-                    try { errData = await res.json(); } catch(e) {}
-                    let mensagemErro = errData.detail || "Verifique os dados preenchidos.";
-                    alertaPremium("Pedido recusado:\n" + mensagemErro, "Falha na Transação", "erro"); 
-                    btn.disabled = false; btn.innerHTML = txtOriginal; 
-                }
-            } catch(e) { 
-                alertaPremium("Ocorreu um erro de rede. Se o pedido descontou, avise a loja no WhatsApp.", "Erro", "erro"); 
-                btn.disabled = false; btn.innerHTML = txtOriginal; 
             }
+        } else { 
+            let errData = {};
+            try { errData = await res.json(); } catch(e) {}
+            let mensagemErro = errData.detail || "Verifique os dados preenchidos.";
+            alertaPremium("Pedido recusado:\n" + mensagemErro, "Falha na Transação", "erro"); 
+            btn.disabled = false; btn.innerHTML = txtOriginal; 
+        }
+    } catch(e) { 
+        alertaPremium("Ocorreu um erro de rede. Se o pedido descontou, avise a loja no WhatsApp.", "Erro", "erro"); 
+        btn.disabled = false; btn.innerHTML = txtOriginal; 
+    }
 }
 
         // 🚨 1. RESTAURA O MODAL DO PERFIL E HISTÓRICO DE PEDIDOS 🚨
