@@ -606,15 +606,47 @@
             <div id="aba-cupons" class="painel hidden">
                 <div class="bg-white rounded-2xl p-8 mb-8 border border-slate-200 shadow-sm">
                     <h3 class="text-xl font-black mb-4 flex items-center"><i class="ph-fill ph-ticket text-brand-500 mr-2"></i> Criar Cupom de Desconto</h3>
-                    <form id="form-cupom" onsubmit="criarCupom(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <input type="text" id="cupom-codigo" placeholder="Código (Ex: ARTS10)" required class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold uppercase outline-none focus:border-brand-500">
-                        <select id="cupom-tipo" class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl outline-none focus:border-brand-500 font-bold">
-                            <option value="PERCENTUAL">Desconto Percentual (%)</option>
-                            <option value="VALOR_FIXO">Valor Fixo (R$)</option>
-                        </select>
-                        <input type="number" step="0.01" id="cupom-valor" placeholder="Valor (Ex: 10 ou 15.00)" required class="px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl font-bold outline-none focus:border-brand-500">
-                        <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl transition-colors">Cadastrar Cupom</button>
-                    </form>
+                    <form id="form-cupom" onsubmit="criarCupom(event)" class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Código do Cupom</label>
+            <input type="text" id="cupom-codigo" placeholder="EX: ARTSNIVER" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500 uppercase">
+        </div>
+        <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Desconto</label>
+            <select id="cupom-tipo" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+                <option value="PERCENTUAL">Desconto Percentual (%)</option>
+                <option value="VALOR_FIXO">Valor Fixo (R$)</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Valor do Desconto</label>
+            <input type="number" step="0.01" id="cupom-valor" placeholder="Ex: 10 ou 15.00" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border-t border-slate-100 pt-4 mt-2">
+        <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Limite de Usos (Qtd)</label>
+            <input type="number" id="cupom-qtd" placeholder="Deixe vazio p/ infinito" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+        </div>
+        <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Válido Até</label>
+            <input type="date" id="cupom-validade" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-500 outline-none focus:border-brand-500">
+        </div>
+        <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Público Alvo</label>
+            <select id="cupom-publico" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-brand-500">
+                <option value="todos">Todos (Com ou Sem Cadastro)</option>
+                <option value="cadastrados">Somente Clientes Cadastrados</option>
+                <option value="visitantes">Somente Visitantes (Sem Cadastro)</option>
+            </select>
+        </div>
+        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl transition-colors h-[46px] shadow-sm">
+            Cadastrar Cupom
+        </button>
+    </div>
+</form>
                 </div>
                 
                 <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
@@ -1984,26 +2016,50 @@ function gerarStringDeHorarios() {
         }
 
         async function criarCupom(e) {
-            e.preventDefault();
-            const payload = {
-                codigo: document.getElementById('cupom-codigo').value,
-                tipo: document.getElementById('cupom-tipo').value,
-                valor: parseFloat(document.getElementById('cupom-valor').value)
-            };
-            const res = await fetch('/api/gestao/cupons', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            if(res.ok) {
-                alertaPremium("Cupom criado com sucesso!", "Sucesso", "sucesso");
-                document.getElementById('form-cupom').reset();
-                carregarCupons();
-            } else {
-                const err = await res.json();
-                alertaPremium(err.detail, "Erro", "erro");
-            }
+    e.preventDefault();
+    
+    // Animação de carregamento no botão
+    const btn = e.target.querySelector('button[type="submit"]');
+    const txtOriginal = btn.innerHTML;
+    btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i> Cadastrando...";
+    btn.disabled = true;
+
+    // Coletando os valores (se estiverem vazios, envia nulo para o banco de dados ignorar o limite)
+    const qtdValor = document.getElementById('cupom-qtd').value;
+    const validadeValor = document.getElementById('cupom-validade').value;
+
+    const payload = {
+        codigo: document.getElementById('cupom-codigo').value.toUpperCase().trim(),
+        tipo: document.getElementById('cupom-tipo').value,
+        valor: parseFloat(document.getElementById('cupom-valor').value),
+        qtd_limite: qtdValor ? parseInt(qtdValor) : null,
+        validade: validadeValor ? validadeValor : null,
+        publico_alvo: document.getElementById('cupom-publico').value
+    };
+
+    try {
+        const res = await fetch('/api/gestao/cupons', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        
+        if(res.ok) {
+            alertaPremium("Cupom Master criado com novas regras e enviado ao servidor!", "Sucesso", "sucesso");
+            document.getElementById('form-cupom').reset();
+            carregarCupons(); // Atualiza a tabela abaixo na hora
+        } else {
+            const err = await res.json();
+            alertaPremium("Erro: " + (err.detail || "Código já existente ou inválido."), "Falha no Cadastro", "erro");
         }
+    } catch(err) {
+        alertaPremium("Sem comunicação com o servidor.", "Falha na Rede", "erro");
+    }
+    
+    // Restaura o botão
+    btn.innerHTML = txtOriginal;
+    btn.disabled = false;
+}
 
         async function excluirCupom(id) {
             if(confirm("Tem certeza que deseja excluir este cupom?")) {
