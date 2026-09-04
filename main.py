@@ -2034,7 +2034,7 @@ class CupomModel(Base):
     qtd_limite = Column(Integer, nullable=True) # Se for null, é infinito
     usos_atuais = Column(Integer, default=0)
     publico_alvo = Column(String, default="todos") # "todos", "cadastrados", "visitantes"
-
+    cpf_exclusivo = Column(String, nullable=True) # 🚨 NOVA COLUNA PARA CUPOM NOMINAL
 
 def pegar_modelo_banco(tabela: str):
     # Traduz o nome da URL para a tabela real do banco
@@ -2777,15 +2777,15 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
     if not cupom:
         raise HTTPException(status_code=404, detail="Cupom inválido ou não existe.")
 
-    # 1. TRAVA DE VALIDADE
-    if cupom.data_validade:
+    # 1. TRAVA DE VALIDADE BLINDADA E ESTRITA
+    if cupom.data_validade and not cupom.data_validade.startswith("203"): # 203x é infinito
         try:
-            # Se for ano-mes-dia
-            if "-" in cupom.data_validade and len(cupom.data_validade) <= 10:
-                val_date = datetime.strptime(cupom.data_validade, "%Y-%m-%d").date()
-                if datetime.utcnow().date() > val_date:
-                    raise HTTPException(status_code=400, detail="Este cupom já expirou.")
-        except Exception as e:
+            # Força o formato exato YYYY-MM-DD
+            data_str = cupom.data_validade[:10]
+            val_date = datetime.strptime(data_str, "%Y-%m-%d").date()
+            if datetime.utcnow().date() > val_date:
+                raise HTTPException(status_code=400, detail=f"Este cupom venceu no dia {val_date.strftime('%d/%m/%Y')}.")
+        except ValueError:
             pass
 
     # 2. TRAVA DE QUANTIDADE (ESCASSEZ)
@@ -2801,10 +2801,14 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
     if publico == "visitantes" and is_cadastrado:
         raise HTTPException(status_code=400, detail="Cupom válido apenas para a primeira compra (visitantes).")
 
-    # 4. TRAVA CONTRA FRAUDE (CPF ÚNICO POR CUPOM)
+    # 4. TRAVA DE CPF EXCLUSIVO (CUPOM NOMINAL) -> ✨ A REGRA NOVA AQUI ✨
+    if getattr(cupom, 'cpf_exclusivo', None):
+        if not cpf_cliente or cpf_cliente != cupom.cpf_exclusivo:
+            raise HTTPException(status_code=400, detail="Este cupom é nominal, intransferível e atrelado a outro CPF.")
+
+    # 5. TRAVA CONTRA FRAUDE (O CLIENTE JÁ USOU ANTES?)
     if cpf_cliente:
         # Puxa o banco pra ver se o cliente já comprou com esse CPF E usou a palavra do cupom na observação
-        # O SQLAlchemy text() cruza os dados rapidamente
         from sqlalchemy import text
         ja_usou = db.execute(text("""
             SELECT id FROM pedidos 
@@ -3749,7 +3753,8 @@ def criar_cupom_avancado(dados: dict, db: Session = Depends(get_db)):
         ativo=True,
         qtd_limite=qtd_limite,
         usos_atuais=0,
-        publico_alvo=dados.get("publico_alvo", "todos")
+        publico_alvo=dados.get("publico_alvo", "todos"),
+        cpf_exclusivo=dados.get("cpf_exclusivo", "").replace(".", "").replace("-", "").strip() or None
     )
     db.add(novo)
     db.commit()
