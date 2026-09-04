@@ -2027,9 +2027,13 @@ class CupomModel(Base):
     valor = Column(Float, default=0.0)
     desconto_percentual = Column(Float, default=0.0)
     desconto_fixo = Column(Float, default=0.0)
-    # BLINDAGEM: Se a data não vier do HTML, ele insere 10 anos automaticamente
     data_validade = Column(String, default=data_infinita_str, nullable=True) 
     ativo = Column(Boolean, default=True)
+    
+    # 🚨 NOVAS COLUNAS DO MOTOR DE CUPONS 🚨
+    qtd_limite = Column(Integer, nullable=True) # Se for null, é infinito
+    usos_atuais = Column(Integer, default=0)
+    publico_alvo = Column(String, default="todos") # "todos", "cadastrados", "visitantes"
 
 
 def pegar_modelo_banco(tabela: str):
@@ -2731,16 +2735,23 @@ def criar_cupom(dados: dict, db: Session = Depends(get_db)):
     tipo_cupom = dados.get("tipo", "PERCENTUAL")
     val_cupom = float(dados.get("valor", 0.0))
     
-    from datetime import datetime, timedelta
-    
+    # Pegando as novidades do Painel HTML
+    qtd_limite = dados.get("qtd_limite")
+    data_val = dados.get("validade")
+    if not data_val:
+        data_val = data_infinita_str()
+        
     novo = CupomModel(
         codigo=codigo,
         tipo=tipo_cupom,
         valor=val_cupom,
         desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
         desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
+        data_validade=data_val,
         ativo=True,
-        data_validade=datetime.utcnow() + timedelta(days=365) # Preenche a validade exigida pelo PostgreSQL
+        qtd_limite=qtd_limite,
+        usos_atuais=0,
+        publico_alvo=dados.get("publico_alvo", "todos")
     )
     db.add(novo)
     db.commit()
@@ -2758,12 +2769,56 @@ def excluir_cupom(cupom_id: int, db: Session = Depends(get_db)):
 @app.post("/api/carrinho/validar-cupom")
 def validar_cupom(dados: dict, db: Session = Depends(get_db)):
     codigo = dados.get("codigo", "").upper().strip()
-    subtotal = float(dados.get("subtotal", 0.0))
+    cpf_cliente = dados.get("cpf", "").strip()
+    is_cadastrado = dados.get("is_cadastrado", False)
     
     cupom = db.query(CupomModel).filter(CupomModel.codigo == codigo, CupomModel.ativo == True).first()
+    
     if not cupom:
-        raise HTTPException(status_code=404, detail="Cupom inválido ou expirado.")
+        raise HTTPException(status_code=404, detail="Cupom inválido ou não existe.")
+
+    # 1. TRAVA DE VALIDADE
+    if cupom.data_validade:
+        try:
+            # Se for ano-mes-dia
+            if "-" in cupom.data_validade and len(cupom.data_validade) <= 10:
+                val_date = datetime.strptime(cupom.data_validade, "%Y-%m-%d").date()
+                if datetime.utcnow().date() > val_date:
+                    raise HTTPException(status_code=400, detail="Este cupom já expirou.")
+        except Exception as e:
+            pass
+
+    # 2. TRAVA DE QUANTIDADE (ESCASSEZ)
+    if cupom.qtd_limite is not None and cupom.qtd_limite > 0:
+        usos = getattr(cupom, 'usos_atuais', 0)
+        if usos >= cupom.qtd_limite:
+            raise HTTPException(status_code=400, detail="Esgotado! O limite de usos deste cupom já foi atingido.")
+
+    # 3. TRAVA DE PÚBLICO-ALVO
+    publico = getattr(cupom, 'publico_alvo', 'todos')
+    if publico == "cadastrados" and not is_cadastrado:
+        raise HTTPException(status_code=400, detail="Cupom exclusivo para clientes que possuem conta/login.")
+    if publico == "visitantes" and is_cadastrado:
+        raise HTTPException(status_code=400, detail="Cupom válido apenas para a primeira compra (visitantes).")
+
+    # 4. TRAVA CONTRA FRAUDE (CPF ÚNICO POR CUPOM)
+    if cpf_cliente:
+        # Puxa o banco pra ver se o cliente já comprou com esse CPF E usou a palavra do cupom na observação
+        # O SQLAlchemy text() cruza os dados rapidamente
+        from sqlalchemy import text
+        ja_usou = db.execute(text("""
+            SELECT id FROM pedidos 
+            WHERE cpf = :cpf 
+            AND itens_resumo LIKE :cod 
+            AND status != 'CANCELADO' 
+            LIMIT 1
+        """), {"cpf": cpf_cliente, "cod": f"%🎫 Cupom Usado: {codigo}%"}).fetchone()
         
+        if ja_usou:
+             raise HTTPException(status_code=400, detail="Promoção Inválida: Este CPF já utilizou este cupom anteriormente.")
+
+    # Se passou por tudo, calcula o desconto e aprova!
+    subtotal = float(dados.get("subtotal", 0.0))
     desconto = 0.0
     if cupom.tipo == "PERCENTUAL":
         desconto = subtotal * (cupom.valor / 100.0)
@@ -2777,8 +2832,7 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
         "status": "sucesso",
         "codigo": cupom.codigo,
         "tipo": cupom.tipo,
-        "valor_desconto": round(desconto, 2),
-        "total_com_desconto": round(subtotal - desconto, 2)
+        "valor_desconto": round(desconto, 2)
     }
 
 # ==========================================
@@ -3474,6 +3528,12 @@ def cura_checkout(db: Session = Depends(get_db)):
     try:
         db.execute(text("ALTER TABLE cupons_desconto DROP COLUMN IF EXISTS ativo;"))
         db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN ativo BOOLEAN DEFAULT TRUE;"))
+        
+        # 🚨 NOVAS COLUNAS DO MOTOR DE CUPONS 🚨
+        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN qtd_limite INTEGER;"))
+        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN usos_atuais INTEGER DEFAULT 0;"))
+        db.execute(text("ALTER TABLE cupons_desconto ADD COLUMN publico_alvo VARCHAR DEFAULT 'todos';"))
+        
         db.commit()
         logs.append("Tabela CUPONS curada com sucesso!")
     except Exception as e:
