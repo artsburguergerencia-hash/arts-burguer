@@ -2778,15 +2778,17 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
         if not cupom:
             raise HTTPException(status_code=404, detail="Cupom inválido ou não existe.")
 
-        # 1. TRAVA DE VALIDADE
-        if cupom.data_validade and not cupom.data_validade.startswith("203"):
-            try:
-                data_str = cupom.data_validade[:10]
-                val_date = datetime.strptime(data_str, "%Y-%m-%d").date()
-                if datetime.utcnow().date() > val_date:
-                    raise HTTPException(status_code=400, detail=f"Este cupom venceu no dia {val_date.strftime('%d/%m/%Y')}.")
-            except ValueError:
-                pass
+        # 1. TRAVA DE VALIDADE (BLINDADA CONTRA ERRO DE DATETIME)
+        if cupom.data_validade:
+            data_val_str = str(cupom.data_validade) # 🚨 A MÁGICA AQUI: Força a data a virar texto seguro!
+            if not data_val_str.startswith("203"):
+                try:
+                    data_str = data_val_str[:10]
+                    val_date = datetime.strptime(data_str, "%Y-%m-%d").date()
+                    if datetime.utcnow().date() > val_date:
+                        raise HTTPException(status_code=400, detail=f"Este cupom venceu no dia {val_date.strftime('%d/%m/%Y')}.")
+                except ValueError:
+                    pass
 
         # 2. TRAVA DE QUANTIDADE (ESCASSEZ)
         if cupom.qtd_limite is not None and cupom.qtd_limite > 0:
@@ -2806,7 +2808,7 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
             if not cpf_cliente or cpf_cliente != cupom.cpf_exclusivo:
                 raise HTTPException(status_code=400, detail="Este cupom é nominal, intransferível e atrelado a outro CPF.")
 
-        # 5. TRAVA CONTRA FRAUDE (Segura, usando o cérebro Python/ORM)
+        # 5. TRAVA CONTRA FRAUDE (O CLIENTE JÁ USOU ANTES?)
         if cpf_cliente:
             cliente_banco = db.query(ClienteModel).filter(ClienteModel.cpf == cpf_cliente).first()
             if cliente_banco:
@@ -2815,7 +2817,6 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
                     if str(getattr(p, 'status', '')).upper() == 'CANCELADO':
                         continue
                     
-                    # Varre as observações dos itens para ver se o cupom já foi usado por este CPF
                     for item in getattr(p, 'itens', getattr(p, 'itens_pedido', [])):
                         obs = getattr(item, 'observacao', getattr(item, 'observacoes', ''))
                         if obs and f"Cupom Usado: {codigo}" in obs:
@@ -2842,7 +2843,6 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
     except HTTPException as he:
         raise he
     except Exception as e:
-        # Se qualquer coisa explodir, ele avisa o erro exato na tela ao invés de "Erro de conexão"
         raise HTTPException(status_code=500, detail=f"Erro interno no Banco de Dados: {str(e)}")
 
 # ==========================================
