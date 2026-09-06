@@ -1209,46 +1209,64 @@ function atualizarContadoresCheckout() {
         }
 
         async function carregarCardapioDigital() {
-            try {
-                const res = await fetch('/api/cardapio'); produtosServer = await res.json();
-                const categorias = [...new Set(produtosServer.map(p => p.categoria).filter(c => c && c.toUpperCase() !== 'INTEGRAÇÕES'))];
-                
-                document.getElementById('nav-categorias').innerHTML = categorias.map((c, i) => `
-                    <a href="#cat-${c.replace(/\s+/g, '-')}" class="shrink-0 px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-colors ${i===0 ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30 border-transparent' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-brand-500 dark:hover:text-white'}">${c}</a>
-                `).join('');
+    try {
+        const res = await fetch('/api/cardapio'); 
+        produtosServer = await res.json();
+        const categorias = [...new Set(produtosServer.map(p => p.categoria).filter(c => c && c.toUpperCase() !== 'INTEGRAÇÕES'))];
+        
+        // 🚨 MÁGICA 1: Adicionado o "onclick='mudarCorCategoria(this)'" para pintar o botão
+        document.getElementById('nav-categorias').innerHTML = categorias.map((c, i) => `
+            <a href="#cat-${c.replace(/\s+/g, '-')}" onclick="mudarCorCategoria(this)" class="botao-categoria shrink-0 px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-colors ${i===0 ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30 border-transparent ativo' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-brand-500 dark:hover:text-white inativo'}">${c}</a>
+        `).join('');
 
-                document.getElementById('lista-produtos').innerHTML = categorias.map(cat => {
-                    const prodsCat = produtosServer.filter(p => p.categoria === cat);
-                    return `
-                        <div id="cat-${cat.replace(/\s+/g, '-')}" class="pt-24 -mt-20 mb-8">
-                            <h3 class="text-xl font-black text-slate-800 dark:text-white mb-4 tracking-tight flex items-center">
-                                <span class="w-1.5 h-6 bg-brand-500 rounded-full mr-3 block"></span> ${cat}
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                ${prodsCat.map(p => {
-                                    const imgUrl = p.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
-                                    return `
-                                    <div class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-3xl p-4 flex gap-4 transition-colors shadow-sm relative">
-                                        <div class="flex-1 flex flex-col justify-between pr-2 cursor-pointer active:scale-95 transition-transform" onclick="abrirModalMontagem(${p.id})">
-                                            <div>
-                                                <h4 class="font-black text-slate-800 dark:text-white text-base leading-tight mb-1">${p.nome}</h4>
-                                                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-3">${p.descricao || 'Experimente esta delícia!'}</p>
-                                            </div>
-                                            <span class="font-black text-emerald-500 dark:text-emerald-400 text-sm">R$ ${p.preco_venda.toFixed(2).replace('.',',')}</span>
-                                        </div>
-                                        <div onclick="abrirZoom('${imgUrl}')" class="w-28 h-28 shrink-0 bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden relative border border-slate-200 dark:border-slate-700 cursor-pointer group" title="Clique para dar Zoom">
-                                            <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                                            <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i class="ph-bold ph-arrows-out text-white text-2xl drop-shadow-md"></i></div>
-                                            <button onclick="event.stopPropagation(); abrirModalMontagem(${p.id})" class="absolute bottom-1 right-1 w-7 h-7 bg-white/90 dark:bg-slate-900/90 backdrop-blur text-brand-500 rounded-xl flex items-center justify-center font-black shadow-md hover:scale-110 transition-transform"><i class="ph-bold ph-plus"></i></button>
-                                        </div>
+        document.getElementById('lista-produtos').innerHTML = categorias.map(cat => {
+            const prodsCat = produtosServer.filter(p => p.categoria === cat);
+            return `
+                <div id="cat-${cat.replace(/\s+/g, '-')}" class="pt-24 -mt-20 mb-8">
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-4 tracking-tight flex items-center">
+                        <span class="w-1.5 h-6 bg-brand-500 rounded-full mr-3 block"></span> ${cat}
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${prodsCat.map(p => {
+                            const imgUrl = p.imagem_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop";
+                            return `
+                            <div class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-3xl p-4 flex gap-4 transition-colors shadow-sm relative">
+                                <div class="flex-1 flex flex-col justify-between pr-2 cursor-pointer active:scale-95 transition-transform" onclick="abrirModalMontagem(${p.id})">
+                                    <div>
+                                        <h4 class="font-black text-slate-800 dark:text-white text-base leading-tight mb-1">${p.nome}</h4>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-3">${p.descricao || 'Experimente esta delícia!'}</p>
                                     </div>
-                                `}).join('')}
+                                    <span class="font-black text-emerald-500 dark:text-emerald-400 text-sm">R$ ${p.preco_venda.toFixed(2).replace('.',',')}</span>
+                                </div>
+                                <div onclick="abrirZoom('${imgUrl}')" class="w-28 h-28 shrink-0 bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden relative border border-slate-200 dark:border-slate-700 cursor-pointer group" title="Clique para dar Zoom">
+                                    <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i class="ph-bold ph-arrows-out text-white text-2xl drop-shadow-md"></i></div>
+                                    <button onclick="event.stopPropagation(); abrirModalMontagem(${p.id})" class="absolute bottom-1 right-1 w-7 h-7 bg-white/90 dark:bg-slate-900/90 backdrop-blur text-brand-500 rounded-xl flex items-center justify-center font-black shadow-md hover:scale-110 transition-transform"><i class="ph-bold ph-plus"></i></button>
+                                </div>
                             </div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (e) { document.getElementById('lista-produtos').innerHTML = '<p class="text-center text-brand-500 font-bold py-10">Lojinha fechada no momento.</p>'; }
-        }
+                        `}).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (e) { document.getElementById('lista-produtos').innerHTML = '<p class="text-center text-brand-500 font-bold py-10">Lojinha fechada no momento.</p>'; }
+}
+
+// 🚨 MÁGICA 2: A função que faz o trabalho de repintar os botões na hora do clique
+function mudarCorCategoria(botaoClicado) {
+    // 1. Pega todos os botões que tem a classe 'botao-categoria'
+    const todosBotoes = document.querySelectorAll('.botao-categoria');
+    
+    // 2. Limpa o vermelho de todos eles e deixa branco/cinza
+    todosBotoes.forEach(btn => {
+        btn.classList.remove('bg-brand-500', 'text-white', 'shadow-lg', 'shadow-brand-500/30', 'border-transparent', 'ativo');
+        btn.classList.add('bg-white', 'dark:bg-slate-800', 'border-slate-200', 'dark:border-slate-700', 'text-slate-500', 'dark:text-slate-400', 'inativo');
+    });
+
+    // 3. Pinta APENAS o botão que foi clicado de vermelho!
+    botaoClicado.classList.remove('bg-white', 'dark:bg-slate-800', 'border-slate-200', 'dark:border-slate-700', 'text-slate-500', 'dark:text-slate-400', 'inativo');
+    botaoClicado.classList.add('bg-brand-500', 'text-white', 'shadow-lg', 'shadow-brand-500/30', 'border-transparent', 'ativo');
+}
 
         async function abrirModalMontagem(id) {
             produtoSendoMontado = produtosServer.find(p => p.id === id);
