@@ -2819,7 +2819,7 @@ async function abrirModalEditarProduto(id) {
         // Destrava para uso futuro
         bloqueioEdicao = false; 
         
-    }} catch (e) {
+    } catch (e) {
         console.error("ERRO ESCONDIDO:", e); // Isso vai forçar o erro a aparecer no Console!
         alertaPremium(str(e.message || e), "Falha no Sistema", "erro"); // Isso vai jogar o erro técnico na caixinha!
     }
