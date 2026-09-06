@@ -2849,6 +2849,35 @@ async function abrirModalEditarProduto(id) {
     `).join(''); 
 }
         
+        function adicionarFichaEdit() {
+    const select = document.getElementById('edit-select-insumo');
+    const inputQtd = document.getElementById('edit-qtd-insumo');
+
+    const insumo_id = select.value;
+    const quantidade = inputQtd.value;
+
+    if (!insumo_id || !quantidade || quantidade <= 0) {
+        alertaPremium("Selecione um insumo e digite uma quantidade válida.", "Atenção", "aviso");
+        return;
+    }
+
+    const nome = select.options[select.selectedIndex].text;
+
+    // Adiciona o ingrediente na variável da memória do modal de edição
+    ingredientesFichaEdit.push({
+        insumo_id: parseInt(insumo_id),
+        nome: nome,
+        quantidade: parseFloat(quantidade)
+    });
+
+    // Atualiza a listagem na tela do modal
+    renderizarIngredientesEdicao();
+
+    // Limpa os campos para facilitar adicionar o próximo ingrediente
+    select.value = "";
+    inputQtd.value = "";
+}
+        
         async function salvarEdicaoProduto(e) {
     e.preventDefault();
     const id = document.getElementById('edit-prod-id').value;
