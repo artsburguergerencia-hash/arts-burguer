@@ -2840,13 +2840,14 @@ async function abrirModalEditarProduto(id) {
         }
 
         function renderizarIngredientesEdicao() {
-            document.getElementById('lista-ingredientes-edit').innerHTML = ingredientesFichaEdit.map((x, i) => `
-                <li class="flex justify-between items-center bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl text-sm shadow-sm">
-                    <span class="font-bold text-slate-700">${x.nome} <span class="text-brand-500 ml-2">Qtd: ${x.quantidade}</span></span>
-                    <button type="button" onclick="ingredientesFichaEdit.splice(${i}, 1); renderizarIngredientesEdicao()" class="text-red-400 hover:text-red-600"><i class="ph-bold ph-trash text-lg"></i></button>
-                </li>
-            `).join(''); 
-        }
+    // 🚨 A MÁGICA: Trocamos o ID para 'edit-lista-fichas', que é o nome correto no seu HTML!
+    document.getElementById('edit-lista-fichas').innerHTML = ingredientesFichaEdit.map((x, i) => `
+        <li class="flex justify-between items-center bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl text-sm shadow-sm">
+            <span class="font-bold text-slate-700">${x.nome} <span class="text-brand-500 ml-2">Qtd: ${x.quantidade}</span></span>
+            <button type="button" onclick="ingredientesFichaEdit.splice(${i}, 1); renderizarIngredientesEdicao()" class="text-red-400 hover:text-red-600"><i class="ph-bold ph-trash text-lg"></i></button>
+        </li>
+    `).join(''); 
+}
         
         async function salvarEdicaoProduto(e) {
     e.preventDefault();
