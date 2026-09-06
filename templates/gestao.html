@@ -2819,10 +2819,9 @@ async function abrirModalEditarProduto(id) {
         // Destrava para uso futuro
         bloqueioEdicao = false; 
         
-    } catch(e) {
-        bloqueioEdicao = false;
-        document.body.style.cursor = 'default';
-        alertaPremium("Erro de conexão ao abrir o lanche.", "Falha na Rede", "erro");
+    }} catch (e) {
+        console.error("ERRO ESCONDIDO:", e); // Isso vai forçar o erro a aparecer no Console!
+        alertaPremium(str(e.message || e), "Falha no Sistema", "erro"); // Isso vai jogar o erro técnico na caixinha!
     }
 }
 
