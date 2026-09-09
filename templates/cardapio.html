@@ -1208,43 +1208,29 @@ function atualizarContadoresCheckout() {
             } catch(err) { alert("Erro de conexão"); }
         }
 
-        // 🚨 MÁGICA DA ORDEM AQUI! 🚨
-// Escreva os nomes das categorias exatamente como estão cadastradas, na ordem que você quer.
-// Se uma categoria nova for criada e não estiver aqui, ela vai automaticamente para o final.
-const ordemDesejadaDasCategorias = [
-    "Burgers", 
-    "Combos",
-    "Porções",
-    "Bebidas", 
-    "Sobremesas"
-];
-
-async function carregarCardapioDigital() {
+        async function carregarCardapioDigital() {
     try {
         const res = await fetch('/api/cardapio'); 
         produtosServer = await res.json();
         
-        let categorias = [...new Set(produtosServer.map(p => p.categoria).filter(c => c && c.toUpperCase() !== 'INTEGRAÇÕES'))];
+        let categoriasBrutas = [...new Set(produtosServer.map(p => p.categoria).filter(c => c && c.toUpperCase() !== 'INTEGRAÇÕES'))];
         
-        // Ordenando as abas com base na sua Lista de Prioridades acima!
-        categorias.sort((catA, catB) => {
-            let indexA = ordemDesejadaDasCategorias.indexOf(catA);
-            let indexB = ordemDesejadaDasCategorias.indexOf(catB);
-            
-            // Se a categoria não estiver na lista, empurra para o final (posição 999)
-            if (indexA === -1) indexA = 999;
-            if (indexB === -1) indexB = 999;
-            
-            return indexA - indexB;
-        });
-        
-        // 🚨 MÁGICA 1: Adicionado o "onclick='mudarCorCategoria(this)'" para pintar o botão
-        document.getElementById('nav-categorias').innerHTML = categorias.map((c, i) => `
-            <a href="#cat-${c.replace(/\s+/g, '-')}" onclick="mudarCorCategoria(this)" class="botao-categoria shrink-0 px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-colors ${i===0 ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30 border-transparent ativo' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-brand-500 dark:hover:text-white inativo'}">${c}</a>
-        `).join('');
+        // Ordena as abas baseada nos números cadastrados no painel (ex: 01 - Burgers vem antes de 02 - Bebidas)
+        categoriasBrutas.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
 
-        document.getElementById('lista-produtos').innerHTML = categorias.map(cat => {
-            // Mantém os produtos dentro da categoria ordenados pela posição que você cadastrou no painel
+        // Função que ESCONDE o número do cliente na tela do cardápio (Transforma "01 - Burgers" em "Burgers")
+        const esconderNumero = (nome) => nome.replace(/^\d+[\s.-]*/, '').trim();
+        
+        document.getElementById('nav-categorias').innerHTML = categoriasBrutas.map((c, i) => {
+            const catLimpa = esconderNumero(c); 
+            return `
+            <a href="#cat-${c.replace(/\s+/g, '-')}" onclick="mudarCorCategoria(this)" class="botao-categoria shrink-0 px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-colors ${i===0 ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30 border-transparent ativo' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-brand-500 dark:hover:text-white inativo'}">${catLimpa}</a>
+        `}).join('');
+
+        document.getElementById('lista-produtos').innerHTML = categoriasBrutas.map(cat => {
+            const catLimpa = esconderNumero(cat); 
+            
+            // Mantém os produtos dentro da categoria ordenados pela posição que o funcionário digitou
             const prodsCat = produtosServer
                 .filter(p => p.categoria === cat)
                 .sort((a, b) => (a.posicao || a.ordem || 999) - (b.posicao || b.ordem || 999));
@@ -1252,7 +1238,7 @@ async function carregarCardapioDigital() {
             return `
                 <div id="cat-${cat.replace(/\s+/g, '-')}" class="pt-24 -mt-20 mb-8">
                     <h3 class="text-xl font-black text-slate-800 dark:text-white mb-4 tracking-tight flex items-center">
-                        <span class="w-1.5 h-6 bg-brand-500 rounded-full mr-3 block"></span> ${cat}
+                        <span class="w-1.5 h-6 bg-brand-500 rounded-full mr-3 block"></span> ${catLimpa}
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         ${prodsCat.map(p => {
