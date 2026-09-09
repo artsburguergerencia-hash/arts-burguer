@@ -1208,11 +1208,35 @@ function atualizarContadoresCheckout() {
             } catch(err) { alert("Erro de conexão"); }
         }
 
-        async function carregarCardapioDigital() {
+        // 🚨 MÁGICA DA ORDEM AQUI! 🚨
+// Escreva os nomes das categorias exatamente como estão cadastradas, na ordem que você quer.
+// Se uma categoria nova for criada e não estiver aqui, ela vai automaticamente para o final.
+const ordemDesejadaDasCategorias = [
+    "Burgers", 
+    "Combos",
+    "Porções",
+    "Bebidas", 
+    "Sobremesas"
+];
+
+async function carregarCardapioDigital() {
     try {
         const res = await fetch('/api/cardapio'); 
         produtosServer = await res.json();
-        const categorias = [...new Set(produtosServer.map(p => p.categoria).filter(c => c && c.toUpperCase() !== 'INTEGRAÇÕES'))];
+        
+        let categorias = [...new Set(produtosServer.map(p => p.categoria).filter(c => c && c.toUpperCase() !== 'INTEGRAÇÕES'))];
+        
+        // Ordenando as abas com base na sua Lista de Prioridades acima!
+        categorias.sort((catA, catB) => {
+            let indexA = ordemDesejadaDasCategorias.indexOf(catA);
+            let indexB = ordemDesejadaDasCategorias.indexOf(catB);
+            
+            // Se a categoria não estiver na lista, empurra para o final (posição 999)
+            if (indexA === -1) indexA = 999;
+            if (indexB === -1) indexB = 999;
+            
+            return indexA - indexB;
+        });
         
         // 🚨 MÁGICA 1: Adicionado o "onclick='mudarCorCategoria(this)'" para pintar o botão
         document.getElementById('nav-categorias').innerHTML = categorias.map((c, i) => `
@@ -1220,7 +1244,11 @@ function atualizarContadoresCheckout() {
         `).join('');
 
         document.getElementById('lista-produtos').innerHTML = categorias.map(cat => {
-            const prodsCat = produtosServer.filter(p => p.categoria === cat);
+            // Mantém os produtos dentro da categoria ordenados pela posição que você cadastrou no painel
+            const prodsCat = produtosServer
+                .filter(p => p.categoria === cat)
+                .sort((a, b) => (a.posicao || a.ordem || 999) - (b.posicao || b.ordem || 999));
+            
             return `
                 <div id="cat-${cat.replace(/\s+/g, '-')}" class="pt-24 -mt-20 mb-8">
                     <h3 class="text-xl font-black text-slate-800 dark:text-white mb-4 tracking-tight flex items-center">
