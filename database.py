@@ -50,6 +50,7 @@ class ConfiguracaoLojaModel(Base):
     fidelidade_gasto_minimo = Column(Float, default=0.0)
     fidelidade_resgate = Column(Float, default=0.0)
     fidelidade_elegibilidade = Column(String, default="TODOS")
+    fidelidade_validade_dias = Column(Integer, default=180) # 🚨 NOVA COLUNA (VALIDADE EM DIAS)
 
 
 class Cliente(Base):
@@ -195,8 +196,9 @@ class ProdutoModel(Base):
     categoria = Column(String)
     imagem_url = Column(String, default="")
     ativo = Column(Boolean, default=True)
-    participa_fidelidade = Column(Boolean, default=True)
-    ordem = Column(Integer, default=0) # 🚨 ADICIONE ESTA LINHA AQUI
+    participa_fidelidade = Column(Boolean, default=True) # Já existia (Gera Pontos)
+    permite_resgate = Column(Boolean, default=False) # 🚨 NOVA COLUNA (Pode ser pego com pontos)
+    ordem = Column(Integer, default=0)
 
 class FichaTecnicaModel(Base):
     __tablename__ = "fichas_tecnicas"
@@ -361,6 +363,11 @@ def inicializar_banco():
         "ALTER TABLE fornecedores ADD COLUMN telefone VARCHAR DEFAULT '';"
         # ---> NOSSA NOVA COLUNA DE ORDENAÇÃO DO CARDÁPIO <---
         "ALTER TABLE produtos ADD COLUMN ordem INTEGER DEFAULT 0;"
+
+        # ... suas outras migrações ...
+        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_validade_dias INTEGER DEFAULT 180;",
+        "ALTER TABLE produtos ADD COLUMN permite_resgate BOOLEAN DEFAULT FALSE;"
+    ]
     ]
 
     try:
