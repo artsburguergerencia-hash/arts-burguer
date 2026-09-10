@@ -1139,6 +1139,28 @@
                     </label>
                 </div>
 
+                <!-- Configurações do Art's Club (Fidelidade) -->
+                <div class="grid grid-cols-2 gap-4 bg-orange-50 p-4 rounded-xl border border-orange-200 mb-4">
+                    <!-- Gera Pontos -->
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2">Gera Pontos / Cashback?</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="edit-prod-fidelidade" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                            <span class="ml-3 text-xs font-bold text-slate-700">Sim, participa</span>
+                        </label>
+                    </div>
+                    <!-- Permite Resgate -->
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2">Permite Resgate?</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="edit-prod-resgate" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                            <span class="ml-3 text-xs font-bold text-slate-700">Sim, pode trocar</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Nome e Preço -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -2757,7 +2779,7 @@ async function criarCupom(e) {
         }
 
         // --- FUNÇÕES DE EDIÇÃO DE PRODUTO ---
-        let bloqueioEdicao = false; 
+let bloqueioEdicao = false; 
 
 async function abrirModalEditarProduto(id) {
     if (bloqueioEdicao) return; 
@@ -2798,6 +2820,10 @@ async function abrirModalEditarProduto(id) {
         document.getElementById('edit-prod-img').value = p.imagem_url || "";
         document.getElementById('edit-prod-ordem').value = p.ordem || 0;
         
+        // 🚨 NOVOS BOTÕES DO ART'S CLUB (FIDELIDADE E RESGATE) AQUI! 🚨
+        document.getElementById('edit-prod-fidelidade').checked = p.participa_fidelidade !== false;
+        document.getElementById('edit-prod-resgate').checked = p.permite_resgate === true;
+
         carregarCategoriasSelect('edit-prod-categoria', listaCatCardapio);
         setTimeout(() => { document.getElementById('edit-prod-categoria').value = p.categoria; }, 50);
 
@@ -2893,10 +2919,14 @@ async function abrirModalEditarProduto(id) {
         categoria: document.getElementById('edit-prod-categoria').value,
         ativo: document.getElementById('edit-prod-ativo').checked,
         
-        // 🚨 NOVA LINHA AQUI: Enviando a ordem para o Python!
+        // Enviando a ordem para o Python!
         ordem: parseInt(document.getElementById('edit-prod-ordem').value) || 0, 
         
-        // 🚨 O PULO DO GATO: Enviando os ingredientes para o Python!
+        // 🚨 NOVAS LINHAS AQUI: Enviando as opções do Art's Club para o Banco!
+        participa_fidelidade: document.getElementById('edit-prod-fidelidade').checked,
+        permite_resgate: document.getElementById('edit-prod-resgate').checked,
+        
+        // Enviando os ingredientes para o Python!
         fichas: ingredientesFichaEdit 
     };
 
