@@ -368,8 +368,6 @@ def inicializar_banco():
         "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_validade_dias INTEGER DEFAULT 180;",
         "ALTER TABLE produtos ADD COLUMN permite_resgate BOOLEAN DEFAULT FALSE;"
     ]
-    
-
     try:
         with engine.connect() as conn:
             try:
