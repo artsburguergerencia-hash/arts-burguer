@@ -196,8 +196,8 @@ class ProdutoModel(Base):
     categoria = Column(String)
     imagem_url = Column(String, default="")
     ativo = Column(Boolean, default=True)
-    participa_fidelidade = Column(Boolean, default=True) # Já existia (Gera Pontos)
-    permite_resgate = Column(Boolean, default=False) # 🚨 NOVA COLUNA (Pode ser pego com pontos)
+    participa_fidelidade = Column(Boolean, default=True)
+    permite_resgate = Column(Boolean, default=False)
     ordem = Column(Integer, default=0)
 
 class FichaTecnicaModel(Base):
@@ -357,18 +357,13 @@ def inicializar_banco():
         "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
         "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;",
         "ALTER TABLE clientes ADD COLUMN foto VARCHAR DEFAULT '';",
-        
-        # ---> AQUI ESTÁ A CORREÇÃO EXATA PARA O SEU ERRO DO FORNECEDOR <---
         "ALTER TABLE fornecedores ADD COLUMN contato VARCHAR DEFAULT '';",
         "ALTER TABLE fornecedores ADD COLUMN telefone VARCHAR DEFAULT '';",
-        # ---> NOSSA NOVA COLUNA DE ORDENAÇÃO DO CARDÁPIO <---
         "ALTER TABLE produtos ADD COLUMN ordem INTEGER DEFAULT 0;",
-
-        # ... suas outras migrações ...
         "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_validade_dias INTEGER DEFAULT 180;",
         "ALTER TABLE produtos ADD COLUMN permite_resgate BOOLEAN DEFAULT FALSE;"
     ]
-    
+
     try:
         with engine.connect() as conn:
             try:
