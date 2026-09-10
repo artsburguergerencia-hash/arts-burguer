@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Chefe - Art's Burguer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 🚨 MOTOR DE CORES E TEMA (CLARO/ESCURO) 🚨 -->
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } };
+        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
+    </script>
+</head>
+<body class="bg-slate-50 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 font-sans h-screen flex overflow-hidden transition-colors duration-300">
+
+    <!-- MENU LATERAL (SIDEBAR) -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 shadow-2xl z-20 transition-colors">
+        <div class="p-6 border-b border-slate-800 flex items-center justify-center">
+            
+            <!-- 🚨 LOGO DINÂMICA INJETADA AQUI 🚨 -->
+            <div class="flex items-center space-x-3 w-full justify-center">
+                <div id="header-logo-container" class="w-10 h-10 bg-brand-500 rounded-lg flex items-center justify-center text-white shadow-lg overflow-hidden shrink-0 transition-colors">
+                    <i id="header-logo-letra" class="ph-fill ph-hamburger text-2xl"></i>
+                    <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
+                </div>
+                <h1 class="text-xl font-black text-white tracking-tight leading-none" id="sidebar-nome-loja">Art's Admin</h1>
+            </div>
+
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="mudarAba('visao-geral')" id="btn-visao-geral" class="w-full flex items-center px-4 py-3 bg-brand-500 text-white rounded-xl font-bold transition-colors shadow-sm">
+                <i class="ph ph-chart-pie-slice text-xl mr-3"></i> Visão Geral
+            </button>
+            <button onclick="mudarAba('cardapio-admin')" id="btn-cardapio-admin" class="w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-bold transition-colors">
+                <i class="ph ph-book-open text-xl mr-3"></i> Cardápio
+            </button>
+            <button onclick="mudarAba('financeiro')" id="btn-financeiro" class="w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-bold transition-colors">
+                <i class="ph ph-currency-dollar text-xl mr-3"></i> Financeiro
+            </button>
+        </nav>
+        <div class="p-4 border-t border-slate-800 text-xs text-center text-slate-500 font-medium">
+            Art's Burguer OS v1.0<br>Painel Administrativo
+        </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50 dark:bg-[#0b1120] transition-colors duration-300">
+        <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-16 flex items-center justify-between px-8 shrink-0 transition-colors duration-300">
+            <h2 id="titulo-pagina" class="text-xl font-black text-slate-800 dark:text-white">Visão Geral</h2>
+            <div class="flex items-center space-x-4">
+                <a href="/" target="_blank" class="text-sm font-bold text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 transition-colors flex items-center">
+                    <i class="ph ph-storefront mr-1 text-lg"></i> Ver Loja
+                </a>
+                
+                <button onclick="toggleTheme()" class="text-slate-400 hover:text-brand-500 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-8 h-8 flex items-center justify-center rounded-full shadow-sm transition-colors">
+                    <i id="theme-icon" class="ph-bold ph-moon"></i>
+                </button>
+
+                <div class="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
+                    <i class="ph ph-user"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 no-scrollbar">
+            
+            <!-- ABA 1: VISÃO GERAL -->
+            <div id="aba-visao-geral" class="space-y-6 block">
+                <!-- CARDS DE MÉTRICAS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400 rounded-xl"><i class="ph-fill ph-trend-up text-2xl"></i></div>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase">Faturamento (Bruto)</p>
+                        <h3 class="text-3xl font-black text-slate-800 dark:text-white mt-1" id="dash-faturamento">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 rounded-xl"><i class="ph-fill ph-trend-down text-2xl"></i></div>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase">Despesas (Empresa + Casa)</p>
+                        <h3 class="text-3xl font-black text-slate-800 dark:text-white mt-1" id="dash-despesas">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 rounded-xl"><i class="ph-fill ph-wallet text-2xl"></i></div>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase">Lucro Líquido</p>
+                        <h3 class="text-3xl font-black text-emerald-500 dark:text-emerald-400 mt-1" id="dash-lucro">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-purple-50 dark:bg-purple-500/10 text-purple-500 dark:text-purple-400 rounded-xl"><i class="ph-fill ph-chart-line-up text-2xl"></i></div>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase">Margem de Lucro</p>
+                        <h3 class="text-3xl font-black text-slate-800 dark:text-white mt-1" id="dash-margem">0%</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 2: CARDÁPIO (PRODUTOS) -->
+            <div id="aba-cardapio-admin" class="hidden space-y-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white">Gerenciar Produtos</h3>
+                    <button onclick="adicionarProdutoRapido()" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center shadow-md">
+                        <i class="ph ph-plus mr-2 text-lg"></i> Novo Produto Rápido
+                    </button>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden transition-colors">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                <th class="p-4 font-bold">Produto</th>
+                                <th class="p-4 font-bold">Categoria</th>
+                                <th class="p-4 font-bold">Preço de Venda</th>
+                                <th class="p-4 font-bold text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-produtos" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+                            <tr><td colspan="4" class="p-8 text-center text-slate-400">Carregando cardápio...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ABA 3: FINANCEIRO (CONTAS A PAGAR) -->
+            <div id="aba-financeiro" class="hidden space-y-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white">Contas a Pagar</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden transition-colors">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                <th class="p-4 font-bold">Descrição</th>
+                                <th class="p-4 font-bold">Vencimento</th>
+                                <th class="p-4 font-bold">Tipo</th>
+                                <th class="p-4 font-bold">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-contas" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+                            <tr><td colspan="4" class="p-8 text-center text-slate-400">Nenhuma conta cadastrada ou carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // SCRIPT DE MODO ESCURO E LOGO DINÂMICA
+        const themeIcon = document.getElementById('theme-icon');
+        if (document.documentElement.classList.contains('dark') && themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if(themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if(themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            carregarDadosVisaoGeral();
+            
+            // 🚨 PUXA A LOGO E O NOME DO BANCO DE DADOS 🚨
+            try {
+                const res = await fetch('/api/gestao/configuracoes'); 
+                const configLoja = await res.json();
+                
+                if(configLoja.nome_empresa) document.getElementById('sidebar-nome-loja').innerText = `${configLoja.nome_empresa} Admin`;
+
+                if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
+                    const letra = document.getElementById('header-logo-letra'); 
+                    const img = document.getElementById('header-logo-img'); 
+                    const container = document.getElementById('header-logo-container');
+                    if(letra && img && container) {
+                        img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
+                        img.src = configLoja.logo_url; 
+                        img.classList.remove('hidden');
+                        letra.classList.add('hidden'); 
+                        container.classList.remove('bg-brand-500'); 
+                        container.classList.add('bg-slate-800', 'border-slate-700');
+                    }
+                }
+            } catch(e) {}
+        });
+
+        // Controle de Abas
+        function mudarAba(abaId) {
+            ['visao-geral', 'cardapio-admin', 'financeiro'].forEach(id => {
+                document.getElementById(`aba-${id}`).classList.add('hidden');
+                document.getElementById(`aba-${id}`).classList.remove('block');
+                
+                let btn = document.getElementById(`btn-${id}`);
+                btn.className = "w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-bold transition-colors text-slate-300";
+            });
+
+            document.getElementById(`aba-${abaId}`).classList.remove('hidden');
+            document.getElementById(`aba-${abaId}`).classList.add('block');
+            
+            let btnAtivo = document.getElementById(`btn-${abaId}`);
+            btnAtivo.className = "w-full flex items-center px-4 py-3 bg-brand-500 text-white rounded-xl font-bold transition-colors shadow-sm";
+
+            const titulos = {
+                'visao-geral': 'Visão Geral',
+                'cardapio-admin': 'Cardápio',
+                'financeiro': 'Financeiro'
+            };
+            document.getElementById('titulo-pagina').innerText = titulos[abaId];
+
+            if(abaId === 'visao-geral') carregarDadosVisaoGeral();
+            if(abaId === 'cardapio-admin') carregarProdutosAdmin();
+            if(abaId === 'financeiro') carregarContasFinanceiro();
+        }
+
+        // Buscar Lucratividade
+        async function carregarDadosVisaoGeral() {
+            try {
+                const res = await fetch('/api/gestao/financeiro/lucratividade');
+                const dados = await res.json();
+                
+                document.getElementById('dash-faturamento').innerText = `R$ ${dados.faturamento.toFixed(2).replace('.', ',')}`;
+                document.getElementById('dash-despesas').innerText = `R$ ${(dados.despesas_empresa + dados.despesas_casa).toFixed(2).replace('.', ',')}`;
+                
+                const lucroEl = document.getElementById('dash-lucro');
+                lucroEl.innerText = `R$ ${dados.lucro_liquido.toFixed(2).replace('.', ',')}`;
+                lucroEl.className = dados.lucro_liquido >= 0 ? "text-3xl font-black text-emerald-500 dark:text-emerald-400 mt-1" : "text-3xl font-black text-red-500 dark:text-red-400 mt-1";
+                
+                document.getElementById('dash-margem').innerText = `${dados.margem_lucro}%`;
+            } catch(e) {
+                console.error("Erro ao carregar métricas", e);
+            }
+        }
+
+        // Buscar Produtos do Cardápio
+        async function carregarProdutosAdmin() {
+            try {
+                const res = await fetch('/api/cardapio');
+                const produtos = await res.json();
+                const tbody = document.getElementById('tabela-produtos');
+                
+                if(produtos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400">Nenhum produto cadastrado.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = produtos.map(p => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <td class="p-4 font-bold text-slate-800 dark:text-white">${p.nome}</td>
+                        <td class="p-4"><span class="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded text-[10px] font-bold uppercase">${p.categoria}</span></td>
+                        <td class="p-4 font-bold text-brand-500 dark:text-brand-400">R$ ${p.preco_venda.toFixed(2).replace('.', ',')}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="deletarProduto(${p.id})" class="text-slate-400 hover:text-red-500 transition-colors p-2" title="Excluir Produto">
+                                <i class="ph-fill ph-trash text-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {
+                console.error("Erro ao carregar cardápio", e);
+            }
+        }
+
+        // Buscar Contas a Pagar
+        async function carregarContasFinanceiro() {
+            try {
+                const res = await fetch('/api/gestao/financeiro/resumo');
+                const dados = await res.json();
+                const tbody = document.getElementById('tabela-contas');
+                
+                if(!dados.contas || dados.contas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400">Nenhuma despesa lançada.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = dados.contas.map(c => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <td class="p-4 font-bold text-slate-800 dark:text-white">${c.descricao}</td>
+                        <td class="p-4 text-slate-600 dark:text-slate-400">${c.vencimento}</td>
+                        <td class="p-4">
+                            <span class="${c.tipo === 'Empresa' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400' : 'bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400'} px-2 py-1 rounded text-[10px] font-bold uppercase border ${c.tipo === 'Empresa' ? 'border-blue-200 dark:border-blue-500/30' : 'border-purple-200 dark:border-purple-500/30'}">${c.tipo}</span>
+                        </td>
+                        <td class="p-4 font-bold text-red-500 dark:text-red-400">R$ ${c.valor.toFixed(2).replace('.', ',')}</td>
+                    </tr>
+                `).join('');
+            } catch(e) {
+                console.error("Erro ao carregar financeiro", e);
+            }
+        }
+
+        async function deletarProduto(id) {
+            if(!confirm("Tem certeza que deseja excluir este produto do cardápio?")) return;
+            try {
+                const res = await fetch(`/api/gestao/produto/${id}`, { method: 'DELETE' });
+                if(res.ok) {
+                    carregarProdutosAdmin(); 
+                } else {
+                    alert("Erro ao excluir produto.");
+                }
+            } catch(e) {
+                alert("Falha na conexão.");
+            }
+        }
+        
+        async function adicionarProdutoRapido() {
+            const nome = prompt("Nome do Produto:");
+            if(!nome) return;
+            const precoStr = prompt("Preço de Venda (Ex: 25.90):");
+            const preco = parseFloat(precoStr.replace(',', '.'));
+            if(isNaN(preco)) return alert("Preço inválido.");
+            const categoria = prompt("Categoria (Ex: Burger, Bebida):") || "Geral";
+            
+            const payload = { nome: nome, descricao: "Adicionado via Admin", preco: preco, categoria: categoria, imagem_url: "", fichas: [] };
+            
+            try {
+                const res = await fetch('/api/gestao/produto', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    alert("✅ Produto adicionado com sucesso!");
+                    carregarProdutosAdmin();
+                } else {
+                    alert("Erro ao adicionar.");
+                }
+            } catch(e) { alert("Sem conexão com o servidor."); }
+        }
+    </script>
+</body>
+</html>
