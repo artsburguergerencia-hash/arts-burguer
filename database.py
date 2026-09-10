@@ -362,7 +362,7 @@ def inicializar_banco():
         "ALTER TABLE fornecedores ADD COLUMN contato VARCHAR DEFAULT '';",
         "ALTER TABLE fornecedores ADD COLUMN telefone VARCHAR DEFAULT '';"
         # ---> NOSSA NOVA COLUNA DE ORDENAÇÃO DO CARDÁPIO <---
-        "ALTER TABLE produtos ADD COLUMN ordem INTEGER DEFAULT 0;"
+        "ALTER TABLE produtos ADD COLUMN ordem INTEGER DEFAULT 0;",
 
         # ... suas outras migrações ...
         "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_validade_dias INTEGER DEFAULT 180;",
