@@ -128,7 +128,9 @@ class NovoProduto(BaseModel):
     preco: float
     categoria: str
     imagem_url: str = ""
-    ordem: int = 0  # 🚨 NOVA LINHA AQUI
+    ordem: int = 0  
+    participa_fidelidade: bool = True # 🚨 NOVO
+    permite_resgate: bool = False     # 🚨 NOVO
     fichas: List[FichaItem] = []
 
 
@@ -1979,24 +1981,20 @@ def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db
     if not produto:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     
-    # Atualiza as informações (mapeamento inteligente)
     if 'nome' in dados: produto.nome = dados['nome']
     if 'descricao' in dados: produto.descricao = dados['descricao']
     if 'imagem_url' in dados: produto.imagem_url = dados['imagem_url']
     if 'categoria' in dados: produto.categoria = dados['categoria']
     if 'ativo' in dados: produto.ativo = dados['ativo']
-    
-    # O frontend manda como "preco", mas o banco salva como "preco_venda"
     if 'preco' in dados: produto.preco_venda = dados['preco']
-    
-    # 🚨 NOVA LINHA AQUI: Permite alterar a posição do lanche!
     if 'ordem' in dados: produto.ordem = int(dados['ordem'])
     
-    # O PULO DO GATO: Atualiza a Ficha Técnica
+    # 🚨 NOVAS OPÇÕES DO ART'S CLUB
+    if 'participa_fidelidade' in dados: produto.participa_fidelidade = dados['participa_fidelidade']
+    if 'permite_resgate' in dados: produto.permite_resgate = dados['permite_resgate']
+    
     if 'fichas' in dados:
-        # 1. Apaga as fichas antigas para não duplicar
         db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).delete()
-        # 2. Insere a nova lista de ingredientes que veio da tela
         for f in dados['fichas']:
             db.add(FichaTecnicaModel(
                 produto_id=produto_id, 
