@@ -15,42 +15,6 @@
             alert("⛔ Acesso Negado! Área restrita para Administradores.");
             window.location.replace('/login');
         }
-        // 🚨 BLINDAGEM DE SESSÃO COM TOKEN JWT 🚨
-const tokenSeguranca = localStorage.getItem('access_token');
-const cargoAtual = localStorage.getItem('funcionario_cargo');
-
-if (!tokenSeguranca || !cargoAtual) {
-    window.location.replace('/login');
-}
-
-// Opcional para o gestao.html:
-// if (cargoAtual !== '1' && window.location.pathname.includes('/gestao')) {
-//    alert("Acesso Negado!"); window.location.replace('/portal');
-// }
-
-// 🚨 INTERCEPTADOR MÁGICO DE REDE (Fetch Injector) 🚨
-// Ele pega todos os "fetch" que você fizer no sistema e coloca o token escondido!
-const { fetch: originalFetch } = window;
-window.fetch = async (...args) => {
-    let [resource, config] = args;
-    
-    // Injeta o token apenas nas chamadas da nossa própria API
-    if (typeof resource === 'string' && resource.startsWith('/api/') && tokenSeguranca) {
-        config = config || {};
-        config.headers = config.headers || {};
-        config.headers['Authorization'] = `Bearer ${tokenSeguranca}`;
-    }
-    
-    const response = await originalFetch(resource, config);
-    
-    // Se o backend disser "Não autorizado" (Token expirou ou foi hackeado), derruba na hora!
-    if (response.status === 401 || response.status === 403) {
-        localStorage.clear();
-        alert("Sua sessão expirou ou o acesso foi negado. Por favor, faça login novamente.");
-        window.location.replace('/login');
-    }
-    return response;
-};
 
         // 2. CONFIGURAÇÃO UNIFICADA DO TAILWIND
         tailwind.config = { 
