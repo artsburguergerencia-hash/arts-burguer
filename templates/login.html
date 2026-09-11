@@ -120,6 +120,7 @@
                     // Salva os dados blindados na memória do navegador
                     localStorage.setItem('funcionario_nome', data.nome);
                     localStorage.setItem('funcionario_cargo', data.cargo_id.toString());
+                    localStorage.setItem('access_token', data.access_token); // 🚨 SALVA O TOKEN AQUI
                     
                     // SMART REDIRECT: Administrador (1) vai pro Gestão, outros vão pro Portal Hub
                     if (data.cargo_id === 1 || data.cargo_id === '1') {
