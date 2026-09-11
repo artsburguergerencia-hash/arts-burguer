@@ -8,6 +8,8 @@ from datetime import datetime, date
 from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text, DateTime
 import uvicorn
 from passlib.context import CryptContext
+# Coloque isso junto com os seus outros imports no main.py
+from auth import criar_token_acesso, obter_usuario_logado, verificar_admin
 
 # ==========================================
 # IMPORTAÇÕES DOS MÓDULOS (ART'S BURGUER)
@@ -1333,11 +1335,15 @@ def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
     # o Python força o número 1 para o frontend liberar o acesso ao Gestão!
     id_liberacao = 1 if (cargo and cargo.permissoes == "total") else funcionario.cargo_id
     
+    # 🚨 GERA O TOKEN CRIPTOGRAFADO AQUI BASEADO NA SUA MÁGICA 🚨
+    token = criar_token_acesso(data={"sub": funcionario.usuario, "cargo_id": id_liberacao})
+    
     return { 
         "status": "sucesso", 
         "nome": funcionario.nome, 
         "cargo_id": id_liberacao, 
-        "cargo_nome": cargo.nome if cargo else "Indefinido" 
+        "cargo_nome": cargo.nome if cargo else "Indefinido",
+        "access_token": token  # 👈 O TOKEN É ENVIADO AQUI PARA O NAVEGADOR SALVAR
     }
 
 
@@ -1363,7 +1369,7 @@ def listar_cardapio_digital(db: Session = Depends(get_db)):
 
 
 @app.post("/api/gestao/produto")
-def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
+def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         novo_produto = ProdutoModel(
             nome=produto.nome, 
@@ -1390,7 +1396,7 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/gestao/insumos")
-def listar_insumos_disp(db: Session = Depends(get_db)):
+def listar_insumos_disp(db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     insumos = db.query(InsumoModel).order_by(InsumoModel.nome.asc()).all()
     lista_formatada = []
     
@@ -1408,7 +1414,7 @@ def listar_insumos_disp(db: Session = Depends(get_db)):
 
 
 @app.post("/api/gestao/insumo")
-def receber_novo_insumo(insumo: NovoInsumo, db: Session = Depends(get_db)):
+def receber_novo_insumo(insumo: NovoInsumo, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         novo = InsumoModel(
             nome=insumo.nome, 
@@ -1428,7 +1434,7 @@ def receber_novo_insumo(insumo: NovoInsumo, db: Session = Depends(get_db)):
 
 
 @app.delete("/api/gestao/produto/{produto_id}")
-def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
+def deletar_produto(produto_id: int, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
         if not produto:
@@ -1443,7 +1449,7 @@ def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
 
 
 @app.delete("/api/gestao/insumo/{insumo_id}")
-def deletar_insumo(insumo_id: int, db: Session = Depends(get_db)):
+def deletar_insumo(insumo_id: int, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     insumo = db.query(InsumoModel).filter(InsumoModel.id == insumo_id).first()
     if not insumo:
         raise HTTPException(status_code=404)
@@ -1458,7 +1464,7 @@ def deletar_insumo(insumo_id: int, db: Session = Depends(get_db)):
 # ==========================================
 
 @app.post("/api/gestao/conta")
-def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
+def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         fornecedor_id = conta.fornecedor_id
         if not fornecedor_id:
@@ -1489,7 +1495,7 @@ def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
 
 
 @app.put("/api/gestao/contas/{conta_id}/pagar")
-def pagar_conta(conta_id: int, db: Session = Depends(get_db)):
+def pagar_conta(conta_id: int, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
     
     if not conta:
@@ -1502,7 +1508,7 @@ def pagar_conta(conta_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/api/gestao/financeiro/resumo")
-def resumo_financeiro(db: Session = Depends(get_db)):
+def resumo_financeiro(db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     contas = db.query(ContaPagarModel).order_by(ContaPagarModel.data_vencimento.asc()).all()
     
     total_empresa = sum(c.valor for c in contas if c.tipo_despesa == "Empresa")
@@ -1523,7 +1529,7 @@ def resumo_financeiro(db: Session = Depends(get_db)):
 
 
 @app.get("/api/gestao/financeiro/lucratividade")
-def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db)):
+def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     query_pedidos = db.query(PedidoModel).filter(PedidoModel.status != "CANCELADO")
     query_contas = db.query(ContaPagarModel)
     
@@ -1559,7 +1565,7 @@ def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None,
 
 
 @app.get("/api/gestao/relatorios/curva-abc")
-def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db)):
+def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     query = db.query(PedidoModel).filter(PedidoModel.status != "CANCELADO")
     
     # Tratamento contra o bug de datas "undefined" do frontend
@@ -1903,7 +1909,7 @@ def abrir_mapa_cliente():
 # ==========================================
 
 @app.get("/api/gestao/configuracoes")
-def ler_configuracoes(db: Session = Depends(get_db)):
+def ler_configuracoes(db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     config = db.query(ConfiguracaoLojaModel).first()
     if not config:
         config = ConfiguracaoLojaModel()
@@ -1915,7 +1921,7 @@ def ler_configuracoes(db: Session = Depends(get_db)):
 
 
 @app.put("/api/gestao/configuracoes")
-def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
+def salvar_configuracoes(dados: dict, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         # Busca a configuração no banco
         config = db.query(ConfiguracaoLojaModel).first()
@@ -1941,7 +1947,7 @@ def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/api/gestao/clientes")
-def listar_clientes_gestao(db: Session = Depends(get_db)):
+def listar_clientes_gestao(db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         from sqlalchemy import text
         
@@ -1973,7 +1979,7 @@ def listar_clientes_gestao(db: Session = Depends(get_db)):
 
 # 1. Atualizar Produto (Cardápio)
 @app.put("/api/gestao/produto/{produto_id}")
-def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db)):
+def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     from database import ProdutoModel, FichaTecnicaModel
     produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
     if not produto:
@@ -2048,7 +2054,7 @@ def pegar_modelo_banco(tabela: str):
 
 # ROTA PARA EDITAR (QUALQUER COISA)
 @app.put("/api/gestao/{tabela}/{item_id}")
-def atualizar_item_generico(tabela: str, item_id: int, dados: dict, db: Session = Depends(get_db)):
+def atualizar_item_generico(tabela: str, item_id: int, dados: dict, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         modelo = pegar_modelo_banco(tabela)
         if not modelo: raise HTTPException(status_code=404, detail="Tabela não encontrada no Motor.")
@@ -2069,7 +2075,7 @@ def atualizar_item_generico(tabela: str, item_id: int, dados: dict, db: Session 
 
 # ROTA PARA CRIAR (QUALQUER COISA)
 @app.post("/api/gestao/{tabela}")
-def criar_item_generico(tabela: str, dados: dict, db: Session = Depends(get_db)):
+def criar_item_generico(tabela: str, dados: dict, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         modelo = pegar_modelo_banco(tabela)
         if not modelo: raise HTTPException(status_code=404)
@@ -2084,7 +2090,7 @@ def criar_item_generico(tabela: str, dados: dict, db: Session = Depends(get_db))
 
 # ROTA PARA DELETAR SEM ERRO (QUALQUER COISA)
 @app.delete("/api/gestao/{tabela}/{item_id}")
-def deletar_item_generico(tabela: str, item_id: int, db: Session = Depends(get_db)):
+def deletar_item_generico(tabela: str, item_id: int, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         modelo = pegar_modelo_banco(tabela)
         if not modelo: raise HTTPException(status_code=404)
@@ -2106,7 +2112,7 @@ def deletar_item_generico(tabela: str, item_id: int, db: Session = Depends(get_d
         raise HTTPException(status_code=500, detail=str(e))
         
 @app.put("/api/gestao/clientes/{cliente_id}")
-def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db)):
+def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
         if not cliente:
@@ -2128,7 +2134,7 @@ def atualizar_dossie_cliente(cliente_id: int, dados: dict = Body(...), db: Sessi
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/gestao/clientes/{cliente_id}/pedidos")
-def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
+def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
         if not cliente: return []
@@ -2147,7 +2153,7 @@ def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
         return []
 
 @app.put("/api/gestao/clientes/{cliente_id}/editar")
-def editar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
+def editar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
     
     if not cliente: 
@@ -2163,7 +2169,7 @@ def editar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
 
 
 @app.put("/api/gestao/clientes/{cliente_id}/bloqueio")
-def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
+def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
     
     if not cliente: 
@@ -2175,7 +2181,7 @@ def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
 
 
 @app.delete("/api/gestao/clientes/{cliente_id}")
-def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
+def deletar_cliente(cliente_id: int, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     try:
         cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
         if not cliente: 
@@ -2287,7 +2293,7 @@ app.include_router(router_pagamentos)
 app.include_router(router_99food)
 
 @app.get("/api/gestao/notificacoes")
-def checar_novos_pedidos(db: Session = Depends(get_db)):
+def checar_novos_pedidos(db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     qtd_novos = db.query(PedidoModel).filter(PedidoModel.status == "RECEBIDO").count()
     return {"pendentes": qtd_novos}
 
@@ -2338,7 +2344,7 @@ def atualizar_perfil_colaborador(func_id: int, dados: EditarPerfilColaborador, d
     return {"status": "sucesso"}
 
 @app.put("/api/gestao/clientes/{cliente_id}/fiado")
-def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
+def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
     
     if not cliente: 
@@ -2350,7 +2356,7 @@ def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
     return {"status": "sucesso"}
 
 @app.delete("/api/sistema/zerar-dados")
-def limpar_banco_dados(db: Session = Depends(get_db)):
+def limpar_banco_dados(db: Session = Depends(get_db), _ = Depends(verificar_admin)):
     from sqlalchemy import text
     try:
         # A Ordem de Exclusão é a lei sagrada dos Bancos de Dados!
