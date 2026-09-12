@@ -1866,27 +1866,30 @@ function gerarStringDeHorarios() {
         }
 
         async function zerarBancoDeDados() {
-            if(confirm("⚠️ ALERTA VERMELHO: Tem certeza absoluta? Isso vai apagar TODAS as vendas, financeiro, clientes e produtos. Essa ação é IRREVERSÍVEL!")) {
-                const senha = prompt("Digite a palavra 'CONFIRMAR' em maiúsculo para autorizar a limpeza do banco de dados:");
-                if (senha === "CONFIRMAR") {
-                    try {
-                        alertaPremium("Iniciando varredura e limpeza do banco de dados...", "Aguarde", "info");
-                        const res = await fetch('/api/sistema/zerar-dados', { method: 'DELETE' });
-                        const data = await res.json();
-                        if(res.ok) {
-                            alertaPremium(data.mensagem, "Sistema Zerado", "sucesso");
-                            setTimeout(() => { window.location.reload(); }, 3000);
-                        } else {
-                            alertaPremium("Erro: " + data.detail, "Falha na Limpeza", "erro");
-                        }
-                    } catch(e) {
-                        alertaPremium("Erro de conexão ao tentar limpar o banco.", "Falha de Rede", "erro");
-                    }
+    if(confirm("⚠️ ALERTA VERMELHO: Tem certeza absoluta? Isso vai apagar TODAS as vendas, financeiro, clientes e produtos. Essa ação é IRREVERSÍVEL!")) {
+        const senha = prompt("Digite a palavra 'CONFIRMAR' em maiúsculo para autorizar a limpeza do banco de dados:");
+        if (senha === "CONFIRMAR") {
+            try {
+                alertaPremium("Iniciando varredura e limpeza do banco de dados...", "Aguarde", "info");
+                // 🚨 Agora enviamos a chave de segurança exigida pelo backend!
+                const res = await fetch('/api/sistema/zerar-dados?confirmacao=CONFIRMAR_EXCLUSAO_TOTAL', { 
+                    method: 'DELETE' 
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    alertaPremium(data.mensagem, "Sistema Zerado", "sucesso");
+                    setTimeout(() => { window.location.reload(); }, 3000);
                 } else {
-                    alertaPremium("Palavra de segurança incorreta. Operação de limpeza abortada.", "Acesso Negado", "erro");
+                    alertaPremium("Erro: " + data.detail, "Falha na Limpeza", "erro");
                 }
+            } catch(e) {
+                alertaPremium("Erro de conexão ao tentar limpar o banco.", "Falha de Rede", "erro");
             }
+        } else {
+            alertaPremium("Palavra de segurança incorreta. Operação de limpeza abortada.", "Acesso Negado", "erro");
         }
+    }
+}
         
         async function carregarConfiguracoesInit() {
             try {
