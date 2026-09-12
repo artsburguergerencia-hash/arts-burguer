@@ -116,24 +116,24 @@
                 
                 const data = await res.json();
 
-                if (res.ok && data.status === "sucesso") {
-                    // Salva os dados blindados na memória do navegador
-                    localStorage.setItem('funcionario_nome', data.nome);
-                    localStorage.setItem('funcionario_cargo', data.cargo_id.toString());
-                    
-                    // SMART REDIRECT: Administrador (1) vai pro Gestão, outros vão pro Portal Hub
-                    if (data.cargo_id === 1 || data.cargo_id === '1') {
-                        window.location.replace('/gestao');
-                    } else {
-                        window.location.replace('/portal');
-                    }
-                } else {
-                    // Mostra o alerta apenas se a senha/usuário estiver errado
-                    alert(data.detail || "Usuário ou senha incorretos!");
-                }
-            } catch (error) {
-                alert("Falha ao se conectar com o servidor. Verifique sua internet.");
-            }
+                // ✅ MUDE APENAS PARA FICAR ASSIM:
+if (res.ok && data.status === "sucesso") {
+    // 🚨 SALVA O TOKEN JWT CRIPTOGRAFADO NO NAVEGADOR
+    if (data.access_token) {
+        localStorage.setItem('access_token', data.access_token);
+    }
+
+    // Mantém exatamente o que você já tinha:
+    localStorage.setItem('funcionario_nome', data.nome);
+    localStorage.setItem('funcionario_cargo', data.cargo_id.toString());
+    
+    // SMART REDIRECT: Administrador (1) vai pro Gestão, outros vão pro Portal Hub
+    if (data.cargo_id === 1 || data.cargo_id === '1') {
+        window.location.replace('/gestao');
+    } else {
+        window.location.replace('/portal');
+    }
+}
 
             // Devolve o botão ao estado normal se algo der errado
             btn.innerHTML = textoOriginal;
