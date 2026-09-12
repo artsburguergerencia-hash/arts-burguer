@@ -3,7 +3,9 @@ uvicorn
 sqlalchemy
 psycopg2-binary
 pydantic
-passlib
+passlib[bcrypt]
 bcrypt
 requests
+httpx
 python-dotenv
+python-jose[cryptography]
