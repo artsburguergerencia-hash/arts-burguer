@@ -9,6 +9,7 @@ from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text, Date
 import uvicorn
 from passlib.context import CryptContext
 
+
 # ==========================================
 # IMPORTAÇÕES DOS MÓDULOS (ART'S BURGUER)
 # ==========================================
@@ -54,6 +55,15 @@ from database import (
     GrupoComplementoModel, 
     ItemComplementoModel,
     Cliente
+)
+
+# =========================================================
+# Importar as funções de autenticação e emitir JWT no Login
+# =========================================================
+from auth_security import (
+    criar_token_acesso, 
+    obter_usuario_logado, 
+    exigir_administrador
 )
 
 # ==========================================
@@ -1329,12 +1339,17 @@ def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
     
     cargo = db.query(Cargo).filter(Cargo.id == funcionario.cargo_id).first()
     
-    # A MÁGICA ESTÁ AQUI: Se o seu usuário tem permissão total, 
-    # o Python força o número 1 para o frontend liberar o acesso ao Gestão!
-    id_liberacao = 1 if (cargo and cargo.permissoes == "total") else funcionario.cargo_id
+    # Se tiver permissão total ou for o admin, força cargo 1 para destravar o Gestão
+    eh_admin = (cargo and cargo.permissoes == "total") or funcionario.usuario == "admin"
+    id_liberacao = 1 if eh_admin else funcionario.cargo_id
+    
+    # 🚨 GERAÇÃO DE TOKEN JWT SEGURO 🚨
+    access_token = criar_token_acesso(dados={"sub": str(funcionario.id), "cargo_id": id_liberacao})
     
     return { 
         "status": "sucesso", 
+        "access_token": access_token,
+        "token_type": "bearer",
         "nome": funcionario.nome, 
         "cargo_id": id_liberacao, 
         "cargo_nome": cargo.nome if cargo else "Indefinido" 
@@ -2350,30 +2365,41 @@ def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
     return {"status": "sucesso"}
 
 @app.delete("/api/sistema/zerar-dados")
-def limpar_banco_dados(db: Session = Depends(get_db)):
+def limpar_banco_dados(confirmacao: str = Query(..., description="Palavra de segurança"), db: Session = Depends(get_db)):
     from sqlalchemy import text
+    
+    # Trava de Segurança no Servidor: Se não vier a palavra exata, aborta na hora!
+    if confirmacao != "CONFIRMAR_EXCLUSAO_TOTAL":
+        raise HTTPException(
+            status_code=403, 
+            detail="Operação abortada: Chave de confirmação inválida ou ausente."
+        )
+
     try:
-        # A Ordem de Exclusão é a lei sagrada dos Bancos de Dados!
-        db.execute(text("DELETE FROM itens_complemento"))
-        db.execute(text("DELETE FROM grupos_complemento"))
-        db.execute(text("DELETE FROM fichas_tecnicas"))
+        # Ordem exata respeitando as Foreign Keys do PostgreSQL (Neon)
+        db.execute(text("DELETE FROM itens_complementos;"))
+        db.execute(text("DELETE FROM grupos_complementos;"))
+        db.execute(text("DELETE FROM fichas_tecnicas;"))
         db.query(ItemPedidoModel).delete()
         db.query(PedidoModel).delete()
         db.query(ProdutoModel).delete()
         db.query(InsumoModel).delete()
         db.query(ContaPagarModel).delete()
         db.query(FornecedorModel).delete()
-        db.query(ClienteModel).delete() # 🚨 APAGA CLIENTES
+        db.query(ClienteModel).delete()
         db.query(PontoModel).delete()
         db.query(OcorrenciaRHModel).delete()
         db.query(SolicitacaoFeriasModel).delete()
         db.query(InfoRHModel).delete()
-        db.query(FuncionarioModel).filter(FuncionarioModel.id > 1).delete() # 🚨 APAGA EQUIPE
+        
+        # 🚨 PROTEÇÃO DO ADMINISTRADOR: Apaga os funcionários de teste, mas NUNCA o Admin principal
+        db.query(FuncionarioModel).filter(FuncionarioModel.usuario != "admin").delete()
+        
         db.commit()
-        return {"mensagem": "Sistema Limpo! Vendas, Clientes e RH zerados."}
+        return {"status": "sucesso", "mensagem": "Sistema limpo com sucesso! Vendas, Clientes e Estoque zerados."}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Erro interno ao limpar banco: {str(e)}")
 
 @app.get("/api/cura-final")
 def forcar_colunas_fidelidade(db: Session = Depends(get_db)):
