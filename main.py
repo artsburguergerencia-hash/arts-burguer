@@ -2364,19 +2364,19 @@ def alternar_fiado_cliente(cliente_id: int, db: Session = Depends(get_db)):
     
     return {"status": "sucesso"}
 
+class ConfirmacaoZerarDados(BaseModel):
+    palavra_seguranca: str
+
 @app.delete("/api/sistema/zerar-dados")
-def limpar_banco_dados(confirmacao: str = Query(..., description="Palavra de segurança"), db: Session = Depends(get_db)):
-    from sqlalchemy import text
-    
-    # Trava de Segurança no Servidor: Se não vier a palavra exata, aborta na hora!
-    if confirmacao != "CONFIRMAR_EXCLUSAO_TOTAL":
-        raise HTTPException(
-            status_code=403, 
-            detail="Operação abortada: Chave de confirmação inválida ou ausente."
-        )
+def limpar_banco_dados(
+    payload: ConfirmacaoZerarDados, 
+    admin: FuncionarioModel = Depends(exigir_administrador), 
+    db: Session = Depends(get_db)
+):
+    if payload.palavra_seguranca != "CONFIRMAR":
+        raise HTTPException(status_code=400, detail="Palavra de segurança incorreta.")
 
     try:
-        # Ordem exata respeitando as Foreign Keys do PostgreSQL (Neon)
         db.execute(text("DELETE FROM itens_complementos;"))
         db.execute(text("DELETE FROM grupos_complementos;"))
         db.execute(text("DELETE FROM fichas_tecnicas;"))
@@ -2386,20 +2386,17 @@ def limpar_banco_dados(confirmacao: str = Query(..., description="Palavra de seg
         db.query(InsumoModel).delete()
         db.query(ContaPagarModel).delete()
         db.query(FornecedorModel).delete()
-        db.query(ClienteModel).delete()
         db.query(PontoModel).delete()
         db.query(OcorrenciaRHModel).delete()
         db.query(SolicitacaoFeriasModel).delete()
         db.query(InfoRHModel).delete()
-        
-        # 🚨 PROTEÇÃO DO ADMINISTRADOR: Apaga os funcionários de teste, mas NUNCA o Admin principal
-        db.query(FuncionarioModel).filter(FuncionarioModel.usuario != "admin").delete()
-        
+        # Não deleta os administradores
+        db.query(FuncionarioModel).filter(FuncionarioModel.id != admin.id).delete()
         db.commit()
-        return {"status": "sucesso", "mensagem": "Sistema limpo com sucesso! Vendas, Clientes e Estoque zerados."}
+        return {"mensagem": "Banco de dados higienizado com sucesso pelo administrador."}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro interno ao limpar banco: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/cura-final")
 def forcar_colunas_fidelidade(db: Session = Depends(get_db)):
