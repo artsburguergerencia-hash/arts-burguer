@@ -91,6 +91,69 @@ def get_db():
     finally:
         db.close()
 
+from fastapi import WebSocket, WebSocketDisconnect
+
+# ==========================================
+# GERENCIADOR DE CONEXÕES EM TEMPO REAL (WEBSOCKETS)
+# ==========================================
+class ConnectionManager:
+    def __init__(self):
+        self.conexoes_kds: List[WebSocket] = []
+        self.conexoes_tv: List[WebSocket] = []
+
+    async def conectar_kds(self, websocket: WebSocket):
+        await websocket.accept()
+        self.conexoes_kds.append(websocket)
+
+    def desconectar_kds(self, websocket: WebSocket):
+        if websocket in self.conexoes_kds:
+            self.conexoes_kds.remove(websocket)
+
+    async def conectar_tv(self, websocket: WebSocket):
+        await websocket.accept()
+        self.conexoes_tv.append(websocket)
+
+    def desconectar_tv(self, websocket: WebSocket):
+        if websocket in self.conexoes_tv:
+            self.conexoes_tv.remove(websocket)
+
+    async def notificar_kds(self):
+        """Avisa todas as telas da cozinha para recarregarem."""
+        for ws in list(self.conexoes_kds):
+            try:
+                await ws.send_json({"evento": "ATUALIZAR_COZINHA"})
+            except Exception:
+                self.desconectar_kds(ws)
+
+    async def notificar_tv(self, senha: str, cliente: str):
+        """Avisa a TV do salão para chamar a senha com áudio."""
+        for ws in list(self.conexoes_tv):
+            try:
+                await ws.send_json({"evento": "PEDIDO_PRONTO", "senha": senha, "cliente": cliente})
+            except Exception:
+                self.desconectar_tv(ws)
+
+ws_manager = ConnectionManager()
+
+# Endpoints de WebSocket
+@app.websocket("/ws/kds")
+async def websocket_kds_endpoint(websocket: WebSocket):
+    await ws_manager.conectar_kds(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.desconectar_kds(websocket)
+
+@app.websocket("/ws/tv")
+async def websocket_tv_endpoint(websocket: WebSocket):
+    await ws_manager.conectar_tv(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.desconectar_tv(websocket)
+        
 # ==========================================
 # ROTA DE SAÚDE / KEEP-ALIVE (RENDER & NEON)
 # ==========================================
@@ -1987,7 +2050,7 @@ def listar_pedidos_cozinha(db: Session = Depends(get_db)):
     return {"recebidos": recebidos, "preparando": preparando}
 
 @app.put("/api/kds/pedidos/{pedido_id}/status")
-def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+async def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
     if not pedido: 
         raise HTTPException(status_code=404)
@@ -1996,26 +2059,48 @@ def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, background_tas
     pedido.status = novo_status
     db.commit()
     
+    senha_enviar = getattr(pedido, 'senha_diaria', str(pedido.id).zfill(3))
+    nome_cliente = pedido.cliente.nome if pedido.cliente else "Cliente"
+    
+    # 🚨 NOTIFICAÇÃO INSTANTÂNEA VIA WEBSOCKET 🚨
+    await ws_manager.notificar_kds()
+    if novo_status == "PRONTO":
+        await ws_manager.notificar_tv(senha=senha_enviar, cliente=nome_cliente)
+    
     if pedido.cliente:
-        senha_enviar = getattr(pedido, 'senha_diaria', str(pedido.id).zfill(3))
         try:
             background_tasks.add_task(notificar_status_pedido, pedido.cliente.telefone, pedido.cliente.nome, senha_enviar, novo_status)
         except Exception: 
             pass
         
-    return {"mensagem":"Status atualizado"}
+    return {"mensagem": "Status atualizado"}
 
 
 # ==========================================
-# 17. TELEMETRIA GPS & RASTREIO
+# 17. TELEMETRIA GPS & RASTREIO (COM PERSISTÊNCIA NO BANCO)
 # ==========================================
 @app.post("/api/logistica/gps")
-def atualizar_gps_motoboy(dados: CoordenadasGPS):
+def atualizar_gps_motoboy(dados: CoordenadasGPS, db: Session = Depends(get_db)):
+    """Atualiza a posição na memória RAM e grava no pedido no Neon."""
+    # 1. Atualiza memória rápida
     POSICOES_MOTOBOYS_AO_VIVO[dados.pedido_id] = {
         "lat": dados.lat, 
         "lng": dados.lng, 
         "atualizado_em": datetime.now().isoformat()
     }
+    
+    # 2. Persiste no banco de dados para segurança contra reinicializações
+    try:
+        pedido = db.query(PedidoModel).filter(
+            (PedidoModel.id == dados.pedido_id) | (PedidoModel.senha_diaria == str(dados.pedido_id))
+        ).first()
+        if pedido:
+            pedido.entregador_lat = dados.lat
+            pedido.entregador_lng = dados.lng
+            db.commit()
+    except Exception as e:
+        db.rollback()
+        
     return {"status": "ok"}
 
 @app.get("/api/logistica/gps/{pedido_id}")
@@ -2043,20 +2128,34 @@ def buscar_posicao_motoboy(pedido_id: int, db: Session = Depends(get_db)):
         return {"status": "online", "posicao": coord_padrao}
 
 @app.post("/api/logistica/gps/{pedido_id}/atualizar")
-def atualizar_posicao_motoboy_endpoint(pedido_id: int, payload: dict):
+def atualizar_posicao_motoboy_endpoint(pedido_id: int, payload: dict, db: Session = Depends(get_db)):
     try:
         lat = payload.get("lat")
         lng = payload.get("lng")
         if lat and lng:
+            lat_f = float(lat)
+            lng_f = float(lng)
+            
             POSICOES_MOTOBOYS_AO_VIVO[pedido_id] = {
-                "lat": float(lat),
-                "lng": float(lng),
+                "lat": lat_f,
+                "lng": lng_f,
                 "status": "online",
                 "ultima_atualizacao": datetime.utcnow()
             }
+            
+            # Grava no banco
+            pedido = db.query(PedidoModel).filter(
+                (PedidoModel.id == pedido_id) | (PedidoModel.senha_diaria == str(pedido_id))
+            ).first()
+            if pedido:
+                pedido.entregador_lat = lat_f
+                pedido.entregador_lng = lng_f
+                db.commit()
+                
             return {"ok": True}
         return {"ok": False, "erro": "Coordenadas não enviadas"}
     except Exception as e:
+        db.rollback()
         return {"ok": False, "erro": str(e)}
 
 @app.get("/api/rastreio/{busca}")
