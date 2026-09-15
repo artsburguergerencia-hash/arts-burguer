@@ -898,7 +898,8 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
 
     itens_carrinho = [{"produto_id": i.produto_id, "quantidade": i.quantidade, "observacao": i.observacao} for i in pedido_caixa.itens]
     
-    try:novo_pedido = registrar_venda_pdv(
+    try:
+        novo_pedido = registrar_venda_pdv(
             db=db, 
             tipo=TipoPedido.BALCAO, 
             itens_carrinho=itens_carrinho, 
