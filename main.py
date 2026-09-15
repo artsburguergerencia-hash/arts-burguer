@@ -1084,8 +1084,64 @@ def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/gestao/funcionarios/{func_id}/dossie") def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)): rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first() func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first() if not rh: raise HTTPException(status_code=404, detail="Dossiê não encontrado.") return { "cpf": rh.cpf, "rg": rh.rg, "pis_pasep": rh.pis_pasep, "data_nascimento": rh.data_nascimento, "estado_civil": rh.estado_civil, "titulo_eleitor": rh.titulo_eleitor, "reservista": rh.reservista, "cep": rh.cep, "endereco_completo": rh.endereco_completo, "banco": rh.banco, "agencia": rh.agencia, "conta": rh.conta, "naturalidade": rh.naturalidade, "escolaridade": rh.escolaridade, "qtd_filhos_menores": rh.qtd_filhos_menores, "cnh": rh.cnh, "email": rh.email, "plano_saude_escolhido": rh.plano_saude_escolhido, "salario": rh.salario, "recebe_comissao": rh.recebe_comissao, "tipo_comissao": rh.tipo_comissao, "valor_comissao": rh.valor_comissao, "valor_vt": rh.valor_vt, "valor_va": rh.valor_va, "diaria_motoboy": rh.diaria_motoboy, "repasse_por_entrega": rh.repasse_por_entrega, "escala_matriz_json": rh.escala_matriz_json, "foto_3x4": func.foto_3x4 if func else "" } @app.put("/api/gestao/funcionarios/{func_id}/dossie") def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = Depends(get_db)): rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first() func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first() if not rh: raise HTTPException(status_code=404) for campo in ["cpf", "rg", "pis_pasep", "data_nascimento", "estado_civil", "titulo_eleitor", "reservista", "cep", "endereco_completo", "banco", "agencia", "conta", "naturalidade", "escolaridade", "qtd_filhos_menores", "cnh", "email", "plano_saude_escolhido"]: setattr(rh, campo, getattr(dados, campo)) if func: func.foto_3x4 = dados.foto_3x4 if rh.status_admissao == "PENDENTE_PREENCHIMENTO": rh.status_admissao = "ATIVO" db.commit() return {"status":"sucesso", "mensagem": "Documentos do Dossiê atualizados com sucesso."}
+@app.get("/api/gestao/funcionarios/{func_id}/dossie")
+def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    if not rh:
+        raise HTTPException(status_code=404, detail="Dossiê não encontrado.")
+        
+    return {
+        "cpf": rh.cpf, 
+        "rg": rh.rg, 
+        "pis_pasep": rh.pis_pasep, 
+        "data_nascimento": rh.data_nascimento, 
+        "estado_civil": rh.estado_civil, 
+        "titulo_eleitor": rh.titulo_eleitor, 
+        "reservista": rh.reservista, 
+        "cep": rh.cep,
+        "endereco_completo": rh.endereco_completo, 
+        "banco": rh.banco,
+        "agencia": rh.agencia,
+        "conta": rh.conta,
+        "naturalidade": rh.naturalidade, 
+        "escolaridade": rh.escolaridade, 
+        "qtd_filhos_menores": rh.qtd_filhos_menores, 
+        "cnh": rh.cnh, 
+        "email": rh.email,
+        "plano_saude_escolhido": rh.plano_saude_escolhido, 
+        "salario": rh.salario, 
+        "recebe_comissao": rh.recebe_comissao, 
+        "tipo_comissao": rh.tipo_comissao, 
+        "valor_comissao": rh.valor_comissao, 
+        "valor_vt": rh.valor_vt, 
+        "valor_va": rh.valor_va, 
+        "diaria_motoboy": rh.diaria_motoboy, 
+        "repasse_por_entrega": rh.repasse_por_entrega, 
+        "escala_matriz_json": rh.escala_matriz_json,
+        "foto_3x4": func.foto_3x4 if func else ""
+    }
 
+@app.put("/api/gestao/funcionarios/{func_id}/dossie")
+def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = Depends(get_db)):
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    if not rh:
+        raise HTTPException(status_code=404)
+        
+    for campo in ["cpf", "rg", "pis_pasep", "data_nascimento", "estado_civil", "titulo_eleitor", 
+                  "reservista", "cep", "endereco_completo", "banco", "agencia", "conta", 
+                  "naturalidade", "escolaridade", "qtd_filhos_menores", "cnh", "email", "plano_saude_escolhido"]:
+        setattr(rh, campo, getattr(dados, campo))
+        
+    if func:
+        func.foto_3x4 = dados.foto_3x4
+    if rh.status_admissao == "PENDENTE_PREENCHIMENTO": 
+        rh.status_admissao = "ATIVO"
+        
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Documentos do Dossiê atualizados com sucesso."}
+    
 @app.put("/api/gestao/funcionarios/{func_id}/financeiro")
 def atualizar_financeiro_rh(func_id: int, dados: AjusteFinanceiroRH, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
@@ -1126,13 +1182,12 @@ def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso", "mensagem": "Acesso revogado com sucesso."}
 
-@app.delete("/api/gestao/funcionarios/{func_id}/excluir")
+
 def excluir_funcionario_definitivo(func_id: int, db: Session = Depends(get_db)):
     try:
         func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
-        if not func: 
+        if not func:
             raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
-            
         db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).delete()
         db.query(PontoModel).filter(PontoModel.funcionario_id == func_id).delete()
         db.query(OcorrenciaRHModel).filter(OcorrenciaRHModel.funcionario_id == func_id).delete()
@@ -1141,7 +1196,65 @@ def excluir_funcionario_definitivo(func_id: int, db: Session = Depends(get_db)):
         db.commit()
         return {"status": "sucesso", "mensagem": "Funcionário apagado do sistema."}
     except Exception as e:
-        db.rollback() raise HTTPException(status_code=500, detail=str(e)) @app.put("/api/gestao/funcionarios/{func_id}/readmitir") def readmitir_funcionario(func_id: int, senha_nova: str = Query(...), db: Session = Depends(get_db)): func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first() if not func: raise HTTPException(status_code=404, detail="Funcionário não encontrado.") rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first() if rh: rh.status_admissao = "ATIVO" else: novo_rh = InfoRHModel(funcionario_id=func_id, status_admissao="ATIVO") db.add(novo_rh) func.senha_hash = pwd_context.hash(senha_nova) db.commit() return {"status": "sucesso", "mensagem": "Funcionário readmitido com sucesso!"} @app.post("/api/gestao/ponto") def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)): hoje = datetime.utcnow().date().strftime("%Y-%m-%d") hora = datetime.utcnow().strftime("%H:%M") rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == dados.funcionario_id).first() if not rh or rh.status_admissao != "ATIVO": return {"status": "erro", "detail": "Acesso negado. Funcionário pendente ou demitido."} ponto = db.query(PontoModel).filter(PontoModel.funcionario_id == dados.funcionario_id, PontoModel.data == hoje).first() if not ponto: ponto = PontoModel(funcionario_id=dados.funcionario_id, data=hoje) db.add(ponto) db.flush() if dados.tipo == "entrada": if ponto.entrada: return {"status": "erro", "detail": "Entrada já registrada no sistema."} ponto.entrada = hora else: if not ponto.entrada: return {"status": "erro", "detail": "Bata a Entrada antes de registrar a saída."} if ponto.saida: return {"status": "erro", "detail": "Saída já registrada no sistema."} ponto.saida = hora fmt = "%H:%M" try: t1 = datetime.strptime(ponto.entrada, fmt) t2 = datetime.strptime(ponto.saida, fmt) ponto.horas_trabalhadas = round((t2 - t1).total_seconds() / 3600.0, 2) except Exception: pass db.commit() return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} registrado com sucesso em {hora}!"} @app.post("/api/gestao/rh/ocorrencias") def registrar_ocorrencia(dados: NovaOcorrencia, db: Session = Depends(get_db)): try: nova_oc = OcorrenciaRHModel( funcionario_id=dados.funcionario_id,data_ocorrencia=dados.data_ocorrencia, 
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/gestao/funcionarios/{func_id}/readmitir")
+def readmitir_funcionario(func_id: int, senha_nova: str = Query(...), db: Session = Depends(get_db)):
+    func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
+    if not func:
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
+    if rh:
+        rh.status_admissao = "ATIVO"
+    else:
+        novo_rh = InfoRHModel(funcionario_id=func_id, status_admissao="ATIVO")
+        db.add(novo_rh)
+    func.senha_hash = pwd_context.hash(senha_nova)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Funcionário readmitido com sucesso!"}
+
+@app.post("/api/gestao/ponto")
+def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
+    hoje = datetime.utcnow().date().strftime("%Y-%m-%d")
+    hora = datetime.utcnow().strftime("%H:%M")
+    rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == dados.funcionario_id).first()
+    if not rh or rh.status_admissao != "ATIVO":
+        return {"status": "erro", "detail": "Acesso negado. Funcionário pendente ou demitido."}
+    ponto = db.query(PontoModel).filter(
+        PontoModel.funcionario_id == dados.funcionario_id,
+        PontoModel.data == hoje
+    ).first()
+    if not ponto:
+        ponto = PontoModel(funcionario_id=dados.funcionario_id, data=hoje)
+        db.add(ponto)
+        db.flush()
+    if dados.tipo == "entrada":
+        if ponto.entrada:
+            return {"status": "erro", "detail": "Entrada já registrada no sistema."}
+        ponto.entrada = hora
+    else:
+        if not ponto.entrada:
+            return {"status": "erro", "detail": "Bata a Entrada antes de registrar a saída."}
+        if ponto.saida:
+            return {"status": "erro", "detail": "Saída já registrada no sistema."}
+        ponto.saida = hora
+        fmt = "%H:%M"
+        try:
+            t1 = datetime.strptime(ponto.entrada, fmt)
+            t2 = datetime.strptime(ponto.saida, fmt)
+            ponto.horas_trabalhadas = round((t2 - t1).total_seconds() / 3600.0, 2)
+        except Exception:
+            pass
+    db.commit()
+    return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} registrado com sucesso às {hora}!"}
+    
+@app.post("/api/gestao/rh/ocorrencias")
+def registrar_ocorrencia(dados: NovaOcorrencia, db: Session = Depends(get_db)):
+    try:
+        nova_oc = OcorrenciaRHModel(
+            funcionario_id=dados.funcionario_id,
+            data_ocorrencia=dados.data_ocorrencia, 
             tipo=dados.tipo, 
             motivo=dados.motivo, 
             horas_abonadas=dados.horas_abonadas, 
@@ -1626,7 +1739,8 @@ def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None,
     query_contas = db.query(ContaPagarModel)
     
     if data_inicio and data_fim and data_inicio != "undefined" and data_fim != "undefined":
-        try:di = datetime.strptime(data_inicio, "%Y-%m-%d").date()
+        try:
+            di = datetime.strptime(data_inicio, "%Y-%m-%d").date()
             df = datetime.strptime(data_fim, "%Y-%m-%d").date()
             query_pedidos = query_pedidos.filter(PedidoModel.data_pedido >= di, PedidoModel.data_pedido <= df)
             query_contas = query_contas.filter(ContaPagarModel.data_vencimento >= di, ContaPagarModel.data_vencimento <= df)
@@ -2001,7 +2115,118 @@ def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
 # ==========================================
 @app.get("/api/gestao/cupons")
 def listar_cupons(db: Session = Depends(get_db)):
-    return db.query(CupomModel).all() @app.post("/api/gestao/cupons") @app.post("/api/cupons-pro/criar") def criar_cupom_pro(dados: dict, db: Session = Depends(get_db)): try: codigo = str(dados.get("codigo", "")).upper().strip() if not codigo: raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.") existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first() if existe: raise HTTPException(status_code=400, detail="Este código de cupom já existe.") tipo_cupom = dados.get("tipo", "PERCENTUAL") val_cupom = float(dados.get("valor", 0.0)) data_val = dados.get("validade") or data_infinita_str() cpf_excl = dados.get("cpf_exclusivo", "") cpf_excl_limpo = str(cpf_excl).replace(".", "").replace("-", "").strip() if cpf_excl else None novo = CupomModel( codigo=codigo, tipo=tipo_cupom, valor=val_cupom, desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0, desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0, data_validade=data_val, ativo=True, qtd_limite=dados.get("qtd_limite"), usos_atuais=0, publico_alvo=dados.get("publico_alvo", "todos"), cpf_exclusivo=cpf_excl_limpo ) db.add(novo) db.commit() return {"status": "sucesso", "mensagem": f"Cupom {codigo} criado com sucesso!"} except HTTPException as he: raise he except Exception as e: db.rollback() raise HTTPException(status_code=500, detail=str(e)) @app.delete("/api/gestao/cupons/{cupom_id}") def excluir_cupom(cupom_id: int, db: Session = Depends(get_db)): cupom = db.query(CupomModel).filter(CupomModel.id == cupom_id).first() if not cupom: raise HTTPException(status_code=404, detail="Cupom não encontrado.") db.delete(cupom) db.commit() return {"status": "sucesso", "mensagem": "Cupom excluído!"} @app.post("/api/carrinho/validar-cupom") def validar_cupom(dados: dict, db: Session = Depends(get_db)): try: codigo = str(dados.get("codigo", "")).upper().strip() cpf_cliente = str(dados.get("cpf", "")).replace(".", "").replace("-", "").strip() is_cadastrado = dados.get("is_cadastrado", False) cupom = db.query(CupomModel).filter(CupomModel.codigo == codigo, CupomModel.ativo == True).first() if not cupom: raise HTTPException(status_code=404,detail="Cupom inválido ou não existe.") if cupom.data_validade: data_val_str = str(cupom.data_validade) if not data_val_str.startswith("203"): try: val_date = datetime.strptime(data_val_str[:10], "%Y-%m-%d").date() if datetime.utcnow().date() > val_date: raise HTTPException(status_code=400, detail=f"Este cupom venceu no dia {val_date.strftime('%d/%m/%Y')}.") except ValueError: pass if cupom.qtd_limite and cupom.qtd_limite > 0: if (cupom.usos_atuais or 0) >= cupom.qtd_limite: raise HTTPException(status_code=400, detail="Esgotado! Limite de usos deste cupom já foi atingido.") publico = cupom.publico_alvo or "todos" if publico == "cadastrados" and not is_cadastrado: raise HTTPException(status_code=400, detail="Cupom exclusivo para clientes com conta/login.") if publico == "visitantes" and is_cadastrado: raise HTTPException(status_code=400, detail="Cupom válido apenas para a primeira compra (visitantes).") if cupom.cpf_exclusivo and cpf_cliente != cupom.cpf_exclusivo: raise HTTPException(status_code=400, detail="Este cupom é nominal e intransferível.") subtotal = float(dados.get("subtotal", 0.0)) desconto = subtotal * (cupom.valor / 100.0) if cupom.tipo == "PERCENTUAL" else cupom.valor desconto = min(desconto, subtotal) return {"status": "sucesso", "codigo": cupom.codigo, "tipo": cupom.tipo, "valor_desconto": round(desconto, 2)} except HTTPException as he: raise he except Exception as e: raise HTTPException(status_code=500, detail=f"Erro ao validar cupom: {str(e)}") # ========================================== # 20. CONTROLE DE TURNOS DO CAIXA # ========================================== @app.get("/api/pdv/caixa/atual") def obter_caixa_atual(db: Session = Depends(get_db)): caixa = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").order_by(CaixaTurnoModel.id.desc()).first() if not caixa: return {"status": "fechado"} data_hoje = datetime.utcnow().date() vendas_hoje = db.query(PedidoModel).filter(PedidoModel.data_pedido == data_hoje, PedidoModel.status != "CANCELADO").all() total_dinheiro = sum(p.total_pago for p in vendas_hoje if "dinheiro" in str(p.forma_pagamento).lower() and p.origem != "SITE (Online)") total_outros = sum(p.total_pago for p in vendas_hoje if "dinheiro" not in str(p.forma_pagamento).lower() and p.origem != "SITE (Online)") caixa.total_vendas_dinheiro = total_dinheiro
+    return db.query(CupomModel).all()
+
+@app.post("/api/gestao/cupons")
+@app.post("/api/cupons-pro/criar")
+def criar_cupom_pro(dados: dict, db: Session = Depends(get_db)):
+    try:
+        codigo = str(dados.get("codigo", "")).upper().strip()
+        if not codigo:
+            raise HTTPException(status_code=400, detail="O código do cupom é obrigatório.")
+            
+        existe = db.query(CupomModel).filter(CupomModel.codigo == codigo).first()
+        if existe:
+            raise HTTPException(status_code=400, detail="Este código de cupom já existe.")
+            
+        tipo_cupom = dados.get("tipo", "PERCENTUAL")
+        val_cupom = float(dados.get("valor", 0.0))
+        data_val = dados.get("validade") or data_infinita_str()
+        
+        cpf_excl = dados.get("cpf_exclusivo", "")
+        cpf_excl_limpo = str(cpf_excl).replace(".", "").replace("-", "").strip() if cpf_excl else None
+
+        novo = CupomModel(
+            codigo=codigo,
+            tipo=tipo_cupom,
+            valor=val_cupom,
+            desconto_percentual=val_cupom if tipo_cupom == "PERCENTUAL" else 0.0,
+            desconto_fixo=val_cupom if tipo_cupom == "VALOR_FIXO" else 0.0,
+            data_validade=data_val,
+            ativo=True,
+            qtd_limite=dados.get("qtd_limite"),
+            usos_atuais=0,
+            publico_alvo=dados.get("publico_alvo", "todos"),
+            cpf_exclusivo=cpf_excl_limpo
+        )
+        db.add(novo)
+        db.commit()
+        return {"status": "sucesso", "mensagem": f"Cupom {codigo} criado com sucesso!"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro interno no Banco de Dados: {str(e)}")
+
+@app.delete("/api/gestao/cupons/{cupom_id}")
+def excluir_cupom(cupom_id: int, db: Session = Depends(get_db)):
+    cupom = db.query(CupomModel).filter(CupomModel.id == cupom_id).first()
+    if not cupom:
+        raise HTTPException(status_code=404, detail="Cupom não encontrado.")
+    db.delete(cupom)
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Cupom excluído!"}
+
+@app.post("/api/carrinho/validar-cupom")
+def validar_cupom(dados: dict, db: Session = Depends(get_db)):
+    try:
+        codigo = str(dados.get("codigo", "")).upper().strip()
+        cpf_cliente = str(dados.get("cpf", "")).replace(".", "").replace("-", "").strip()
+        is_cadastrado = dados.get("is_cadastrado", False)
+        
+        cupom = db.query(CupomModel).filter(CupomModel.codigo == codigo, CupomModel.ativo == True).first()
+        if not cupom:
+            raise HTTPException(status_code=404, detail="Cupom inválido ou não existe.")
+
+        if cupom.data_validade:
+            data_val_str = str(cupom.data_validade)
+            if not data_val_str.startswith("203"):
+                try:
+                    val_date = datetime.strptime(data_val_str[:10], "%Y-%m-%d").date()
+                    if datetime.utcnow().date() > val_date:
+                        raise HTTPException(status_code=400, detail=f"Este cupom venceu no dia {val_date.strftime('%d/%m/%Y')}.")
+                except ValueError:
+                    pass
+
+        if cupom.qtd_limite and cupom.qtd_limite > 0:
+            if (cupom.usos_atuais or 0) >= cupom.qtd_limite:
+                raise HTTPException(status_code=400, detail="Esgotado! Limite de usos deste cupom já foi atingido.")
+
+        publico = cupom.publico_alvo or "todos"
+        if publico == "cadastrados" and not is_cadastrado:
+            raise HTTPException(status_code=400, detail="Cupom exclusivo para clientes com conta/login.")
+        if publico == "visitantes" and is_cadastrado:
+            raise HTTPException(status_code=400, detail="Cupom válido apenas para a primeira compra (visitantes).")
+
+        if cupom.cpf_exclusivo and cpf_cliente != cupom.cpf_exclusivo:
+            raise HTTPException(status_code=400, detail="Este cupom é nominal e intransferível.")
+
+        subtotal = float(dados.get("subtotal", 0.0))
+        desconto = subtotal * (cupom.valor / 100.0) if cupom.tipo == "PERCENTUAL" else cupom.valor
+        desconto = min(desconto, subtotal)
+            
+        return {"status": "sucesso", "codigo": cupom.codigo, "tipo": cupom.tipo, "valor_desconto": round(desconto, 2)}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao validar cupom: {str(e)}")
+        
+# ==========================================
+# 20. CONTROLE DE TURNOS DO CAIXA
+# ==========================================
+@app.get("/api/pdv/caixa/atual")
+def obter_caixa_atual(db: Session = Depends(get_db)):
+    caixa = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").order_by(CaixaTurnoModel.id.desc()).first()
+    if not caixa:
+        return {"status": "fechado"}
+        
+    data_hoje = datetime.utcnow().date()
+    vendas_hoje = db.query(PedidoModel).filter(PedidoModel.data_pedido == data_hoje, PedidoModel.status != "CANCELADO").all()
+    
+    total_dinheiro = sum(p.total_pago for p in vendas_hoje if "dinheiro" in str(p.forma_pagamento).lower() and p.origem != "SITE (Online)")
+    total_outros = sum(p.total_pago for p in vendas_hoje if "dinheiro" not in str(p.forma_pagamento).lower() and p.origem != "SITE (Online)")
+    
+    caixa.total_vendas_dinheiro = total_dinheiro
     caixa.total_vendas_outros = total_outros
     db.commit()
     
@@ -2017,46 +2242,6 @@ def listar_cupons(db: Session = Depends(get_db)):
         "total_vendas_outros": total_outros,
         "saldo_esperado_gaveta": saldo_esperado
     }
-
-@app.post("/api/pdv/caixa/abrir")
-def abrir_caixa(dados: AbrirCaixaSchema, db: Session = Depends(get_db)):
-    caixa_aberto = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
-    if caixa_aberto:
-        raise HTTPException(status_code=400, detail="Já existe um caixa aberto.")
-        
-    novo_caixa = CaixaTurnoModel(
-        operador=dados.operador,
-        saldo_inicial=dados.saldo_inicial,
-        data_abertura=datetime.now().strftime("%d/%m/%Y %H:%M"),
-        status="ABERTO"
-    )
-    db.add(novo_caixa)
-    db.commit()
-    return {"status": "sucesso", "mensagem": "Caixa aberto com sucesso!"}
-
-@app.post("/api/pdv/caixa/movimentacao")
-def movimentar_caixa(dados: MovimentacaoCaixaSchema, db: Session = Depends(get_db)):
-    caixa = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
-    if not caixa:
-        raise HTTPException(status_code=400, detail="Nenhum caixa aberto no momento.")
-        
-    valor_real = dados.valor if dados.tipo == "SUPRIMENTO" else -dados.valor
-    caixa.entradas_saidas += valor_real
-    db.commit()
-    return {"status": "sucesso"}
-
-@app.post("/api/pdv/caixa/fechar")
-def fechar_caixa(dados: FecharCaixaSchema, db: Session = Depends(get_db)):
-    caixa = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
-    if not caixa:
-        raise HTTPException(status_code=400, detail="Nenhum caixa aberto no momento.")
-        
-    caixa.status = "FECHADO"
-    caixa.data_fechamento = datetime.now().strftime("%d/%m/%Y %H:%M")
-    caixa.saldo_informado = dados.saldo_informado
-    db.commit()
-    return {"status": "sucesso", "mensagem": "Caixa fechado com sucesso!"}
-
 
 # ==========================================
 # 21. TAXAS DE ENTREGA (LOGÍSTICA)
@@ -2350,7 +2535,6 @@ def get_service_worker():
     });
     """
     return Response(content=sw_content, media_type="application/javascript")
-
 
 if __name__ == "__main__":
     print("🚀 Servidor Art's Burguer V5 iniciando...")
