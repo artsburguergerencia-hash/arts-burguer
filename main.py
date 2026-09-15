@@ -9,7 +9,6 @@ from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text, Date
 import uvicorn
 from passlib.context import CryptContext
 
-
 # ==========================================
 # IMPORTAÇÕES DOS MÓDULOS (ART'S BURGUER)
 # ==========================================
@@ -83,15 +82,12 @@ def get_db():
     finally:
         db.close()
 
-
 # ==========================================
 # SCHEMAS (MODELOS DE DADOS - PYDANTIC)
 # ==========================================
-
 class ItemCompSchema(BaseModel):
     nome: str
     preco_adicional: float
-
 
 class GrupoCompSchema(BaseModel):
     produto_id: int
@@ -101,12 +97,10 @@ class GrupoCompSchema(BaseModel):
     maximo_opcoes: int = 1
     itens: List[ItemCompSchema]
 
-
 class ItemCarrinho(BaseModel):
     produto_id: int
     quantidade: int
     observacao: str = ""
-
 
 class CheckoutPedido(BaseModel):
     telefone_cliente: str
@@ -118,7 +112,6 @@ class CheckoutPedido(BaseModel):
     payment_method_id: Optional[str] = None
     parcelas: Optional[int] = 1
 
-
 class NovoInsumo(BaseModel):
     nome: str
     unidade: str
@@ -126,11 +119,9 @@ class NovoInsumo(BaseModel):
     minimo: float
     custo: float
 
-
 class FichaItem(BaseModel):
     insumo_id: int
     quantidade: float
-
 
 class NovoProduto(BaseModel):
     nome: str
@@ -141,7 +132,6 @@ class NovoProduto(BaseModel):
     ordem: int = 0  # 🚨 NOVA LINHA AQUI
     fichas: List[FichaItem] = []
 
-
 class CheckoutPDV(BaseModel):
     nome_cliente: str
     telefone_cliente: str = "BALCAO"
@@ -150,7 +140,6 @@ class CheckoutPDV(BaseModel):
     usar_saldo_cashback: float = 0.0
     usar_pontos: bool = False
 
-
 class NovaConta(BaseModel):
     descricao: str
     valor: float
@@ -158,19 +147,15 @@ class NovaConta(BaseModel):
     tipo_despesa: str = "Empresa"
     fornecedor_id: Optional[int] = None
 
-
 class DespachoMotoboy(BaseModel):
     nome_motoboy: str    
-
 
 class AtualizarStatus(BaseModel):
     status: str
 
-
 class LoginData(BaseModel):
     usuario: str
     senha: str
-
 
 class NovoFornecedor(BaseModel):
     nome_fantasia: str
@@ -178,11 +163,9 @@ class NovoFornecedor(BaseModel):
     contato: str = ""
     cnpj: str = ""
 
-
 class LoginClienteData(BaseModel):
     telefone: str
     senha: str
-
 
 class RegistroClienteData(BaseModel):
     nome: str
@@ -197,11 +180,9 @@ class RegistroClienteData(BaseModel):
     complemento: str = ""
 
 # --- SCHEMAS DE RECURSOS HUMANOS (V5 CORPORATIVO) ---
-
 class NovoCargo(BaseModel):
     nome: str
     permissoes: str = "basico"
-
 
 class NovoFuncionario(BaseModel):
     nome: str
@@ -212,11 +193,9 @@ class NovoFuncionario(BaseModel):
     email: str = ""
     cpf: str = ""
 
-
 class RegistroPonto(BaseModel):
     funcionario_id: int
     tipo: str 
-
 
 class NovaOcorrencia(BaseModel):
     funcionario_id: int
@@ -227,13 +206,11 @@ class NovaOcorrencia(BaseModel):
     horas_descontadas: float = 0.0
     anexo_url: str = ""
 
-
 class NovaFerias(BaseModel):
     funcionario_id: int
     tipo: str = "FERIAS"
     data_inicio: str
     data_fim: str
-
 
 class FormularioAdmissao(BaseModel):
     cpf: str = ""
@@ -264,7 +241,6 @@ class FormularioAdmissao(BaseModel):
     aceite_lgpd: bool = True
     foto_3x4: str = ""
 
-
 class AjusteFinanceiroRH(BaseModel):
     salario: float
     recebe_comissao: bool
@@ -275,7 +251,6 @@ class AjusteFinanceiroRH(BaseModel):
     diaria_motoboy: float
     repasse_por_entrega: float
     escala_matriz_json: str
-
 
 # ==========================================
 # FUNÇÕES GERAIS E ÚTEIS
@@ -339,7 +314,6 @@ def abrir_tela_mesas():
 # ==========================================
 # ROTAS DE FORNECEDORES
 # ==========================================
-
 @app.get("/api/gestao/fornecedores")
 def listar_fornecedores(db: Session = Depends(get_db)):
     fornecedores = db.query(FornecedorModel).all()
@@ -355,7 +329,6 @@ def listar_fornecedores(db: Session = Depends(get_db)):
         })
         
     return lista_formatada
-
 
 @app.post("/api/gestao/fornecedores")
 def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
@@ -388,7 +361,6 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
         db.rollback()
         # Se falhar, agora ele envia o erro EXATO para a tela do Gestão mostrar no alerta
         raise HTTPException(status_code=500, detail=f"Falha ao salvar no banco: {str(e)}")
-
 
 # ==========================================
 # ROTAS DE CLIENTES
@@ -445,7 +417,6 @@ def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro interno ao criar conta: {str(e)}")
 
-
 @app.post("/api/cliente/login")
 def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == dados.telefone).first()
@@ -494,7 +465,6 @@ def login_cliente_cardapio(dados: LoginClienteData, db: Session = Depends(get_db
         }
     }
 
-
 @app.get("/api/cliente/{cliente_id}/pedidos")
 def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
     pedidos = db.query(PedidoModel).filter(
@@ -520,11 +490,9 @@ def historico_pedidos_cliente(cliente_id: int, db: Session = Depends(get_db)):
         
     return historico
 
-
 # ==========================================
 # WEBHOOKS DE PAGAMENTO
 # ==========================================
-
 @app.post("/api/webhooks/mercadopago")
 async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
     try:
@@ -535,7 +503,6 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
         return {"status": "ok"}
     except Exception as e:
         return {"status": "erro"}
-
 
 @app.post("/api/webhooks/asaas")
 async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
@@ -560,11 +527,9 @@ async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
         print(f"❌ Erro Webhook Asaas: {e}")
         return {"status": "erro"}
 
-
 # ==========================================
 # VENDAS ONLINE E PDV (CAIXA)
 # ==========================================
-
 @app.post("/api/pedidos/online")
 def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
     from fastapi import HTTPException
@@ -715,7 +680,6 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         print(f"ERRO CRÍTICO: {global_e}", flush=True)
         raise HTTPException(status_code=400, detail=f"Falha no Python: {str(global_e)}")
 
-
 @app.get("/api/pdv/cliente/{telefone}")
 def buscar_cliente_pdv(telefone: str, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == telefone).first()
@@ -730,7 +694,6 @@ def buscar_cliente_pdv(telefone: str, db: Session = Depends(get_db)):
         "bloqueado": getattr(cliente, 'bloqueado', False),
         "permite_fiado": getattr(cliente, 'permite_fiado', False) 
     }
-
 
 @app.post("/api/pedidos/pdv")
 def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_db)):
@@ -805,11 +768,9 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro no PDV: {str(e)}")
 
-
 # ==========================================
 # DEPARTAMENTO PESSOAL E RH CORPORATIVO (V5)
 # ==========================================
-
 @app.get("/api/gestao/cargos")
 def listar_cargos(db: Session = Depends(get_db)):
     return db.query(Cargo).all()
@@ -830,7 +791,6 @@ def criar_cargo_dinamico(dados: NovoCargo, db: Session = Depends(get_db)):
     db.commit()
     
     return {"status": "sucesso", "mensagem": "Cargo criado com sucesso e disponível para uso."}
-
 
 @app.get("/api/gestao/funcionarios")
 def listar_funcionarios_rh(db: Session = Depends(get_db)):
@@ -863,7 +823,6 @@ def listar_funcionarios_rh(db: Session = Depends(get_db)):
         })
         
     return lista
-
 
 @app.post("/api/gestao/funcionarios")
 def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get_db)):
@@ -901,7 +860,6 @@ def cadastrar_funcionario_base(dados: NovoFuncionario, db: Session = Depends(get
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.put("/api/gestao/funcionarios/admissao")
 def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get_db)):
@@ -945,7 +903,6 @@ def preencher_form_admissao(dados: FormularioAdmissao, db: Session = Depends(get
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/gestao/funcionarios/{func_id}/dossie")
 def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
@@ -985,7 +942,6 @@ def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
         "foto_3x4": func.foto_3x4 if func else ""
     }
 
-
 @app.put("/api/gestao/funcionarios/{func_id}/dossie")
 def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
@@ -1022,7 +978,6 @@ def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = D
     db.commit()
     return {"status": "sucesso", "mensagem": "Documentos do Dossiê atualizados com sucesso."}
 
-
 @app.put("/api/gestao/funcionarios/{func_id}/financeiro")
 def atualizar_financeiro_rh(func_id: int, dados: AjusteFinanceiroRH, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
@@ -1042,7 +997,6 @@ def atualizar_financeiro_rh(func_id: int, dados: AjusteFinanceiroRH, db: Session
     
     db.commit()
     return {"status": "sucesso", "mensagem": "Configurações de Remuneração e Escala salvas com sucesso."}
-
 
 @app.delete("/api/gestao/funcionarios/{func_id}")
 def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
@@ -1066,7 +1020,6 @@ def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
     db.commit()
     
     return {"status": "sucesso", "mensagem": "Acesso revogado com sucesso."}
-
 
 @app.put("/api/gestao/funcionarios/{func_id}/readmitir")
 def readmitir_funcionario(func_id: int, senha_nova: str = Query(...), db: Session = Depends(get_db)):
@@ -1132,7 +1085,6 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} registrado com sucesso às {hora}!"}
 
-
 @app.post("/api/gestao/rh/ocorrencias")
 def registrar_ocorrencia(dados: NovaOcorrencia, db: Session = Depends(get_db)):
     try:
@@ -1152,7 +1104,6 @@ def registrar_ocorrencia(dados: NovaOcorrencia, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.post("/api/gestao/rh/ferias")
 def solicitar_ferias(dados: NovaFerias, db: Session = Depends(get_db)):
     try:
@@ -1169,7 +1120,6 @@ def solicitar_ferias(dados: NovaFerias, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/api/gestao/rh/solicitacoes")
 def listar_solicitacoes_rh(db: Session = Depends(get_db)):
@@ -1206,7 +1156,6 @@ def listar_solicitacoes_rh(db: Session = Depends(get_db)):
         
     return resultado
 
-
 @app.put("/api/gestao/rh/ferias/{id_ferias}")
 def aprovar_rejeitar_ferias(id_ferias: int, status: str, observacao: str = "", db: Session = Depends(get_db)):
     ferias = db.query(SolicitacaoFeriasModel).filter(SolicitacaoFeriasModel.id == id_ferias).first()
@@ -1219,7 +1168,6 @@ def aprovar_rejeitar_ferias(id_ferias: int, status: str, observacao: str = "", d
     db.commit()
     
     return {"status": "sucesso"}
-
 
 @app.get("/api/gestao/rh/colaborador/{func_id}/holerite/{mes_ano}")
 def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(get_db)):
@@ -1279,11 +1227,9 @@ def gerar_holerite_dinamico(func_id: int, mes_ano: str, db: Session = Depends(ge
         "dias_trabalhados": len(pontos)
     }
 
-
 # ==========================================
 # ROTAS GERAIS DE CARDÁPIO E COMPLEMENTOS
 # ==========================================
-
 @app.post("/api/gestao/complementos")
 def criar_grupo_complemento(payload: GrupoCompSchema, db: Session = Depends(get_db)):
     try:
@@ -1310,7 +1256,6 @@ def criar_grupo_complemento(payload: GrupoCompSchema, db: Session = Depends(get_
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/produtos/{produto_id}/complementos")
 def listar_complementos(produto_id: int, db: Session = Depends(get_db)):
     grupos = db.query(GrupoComplementoModel).filter(GrupoComplementoModel.produto_id == produto_id).all()
@@ -1328,7 +1273,6 @@ def listar_complementos(produto_id: int, db: Session = Depends(get_db)):
         })
         
     return resultado
-
 
 @app.post("/api/login")
 def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
@@ -1355,7 +1299,6 @@ def fazer_login(dados: LoginData, db: Session = Depends(get_db)):
         "cargo_nome": cargo.nome if cargo else "Indefinido" 
     }
 
-
 @app.get("/api/cardapio")
 def listar_cardapio_digital(db: Session = Depends(get_db)): 
     # Filtro Mágico + Ordenação Personalizada (Do menor número para o maior)
@@ -1375,7 +1318,6 @@ def listar_cardapio_digital(db: Session = Depends(get_db)):
         })
         
     return lista_formatada
-
 
 @app.post("/api/gestao/produto")
 def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
@@ -1421,7 +1363,6 @@ def listar_insumos_disp(db: Session = Depends(get_db)):
         
     return lista_formatada
 
-
 @app.post("/api/gestao/insumo")
 def receber_novo_insumo(insumo: NovoInsumo, db: Session = Depends(get_db)):
     try:
@@ -1441,7 +1382,6 @@ def receber_novo_insumo(insumo: NovoInsumo, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.delete("/api/gestao/produto/{produto_id}")
 def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
     try:
@@ -1456,7 +1396,6 @@ def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500)
 
-
 @app.delete("/api/gestao/insumo/{insumo_id}")
 def deletar_insumo(insumo_id: int, db: Session = Depends(get_db)):
     insumo = db.query(InsumoModel).filter(InsumoModel.id == insumo_id).first()
@@ -1467,11 +1406,9 @@ def deletar_insumo(insumo_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso"}
 
-
 # ==========================================
 # ROTAS FINANCEIRAS E RELATÓRIOS DRE
 # ==========================================
-
 @app.post("/api/gestao/conta")
 def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
     try:
@@ -1502,7 +1439,6 @@ def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.put("/api/gestao/contas/{conta_id}/pagar")
 def pagar_conta(conta_id: int, db: Session = Depends(get_db)):
     conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
@@ -1514,7 +1450,6 @@ def pagar_conta(conta_id: int, db: Session = Depends(get_db)):
     db.commit()
     
     return {"status": "sucesso", "mensagem": "Conta paga e baixada do caixa com sucesso!"}
-
 
 @app.get("/api/gestao/financeiro/resumo")
 def resumo_financeiro(db: Session = Depends(get_db)):
@@ -1535,7 +1470,6 @@ def resumo_financeiro(db: Session = Depends(get_db)):
         })
     
     return {"total_empresa": total_empresa, "total_casa": total_casa, "contas": lista}
-
 
 @app.get("/api/gestao/financeiro/lucratividade")
 def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db)):
@@ -1572,7 +1506,6 @@ def obter_relatorio_lucratividade(data_inicio: str = None, data_fim: str = None,
         "margem_lucro": round(margem_lucro, 2) 
     }
 
-
 @app.get("/api/gestao/relatorios/curva-abc")
 def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db: Session = Depends(get_db)):
     query = db.query(PedidoModel).filter(PedidoModel.status != "CANCELADO")
@@ -1608,7 +1541,6 @@ def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db:
     lista = list(ranking.values())
     lista.sort(key=lambda x: x["faturamento_gerado"], reverse=True)
     return lista[:10]
-
 
 @app.get("/api/pedidos/{pedido_id}/recibo")
 def obter_recibo_pedido(pedido_id: int, db: Session = Depends(get_db)):
@@ -1661,11 +1593,9 @@ def obter_recibo_pedido(pedido_id: int, db: Session = Depends(get_db)):
         "forma_pagamento": str(pedido.forma_pagamento).replace('_', ' ').upper()
     }
     
-
 # ==========================================
 # ROTAS DE LOGÍSTICA E KDS
 # ==========================================
-
 @app.get("/api/logistica/pedidos")
 def listar_pedidos_logistica(db: Session = Depends(get_db)):
     try:
@@ -1723,7 +1653,6 @@ def listar_pedidos_logistica(db: Session = Depends(get_db)):
         print(f"Erro geral da Rota Logística: {e}", flush=True)
         return {"prontos": [], "em_rota": []} # Devolve vazio para não travar a tela!
 
-
 @app.put("/api/logistica/pedidos/{pedido_id}/despachar")
 def despachar_pedido(pedido_id: int, payload: dict, db: Session = Depends(get_db)): # CORREÇÃO 3: dict genérico
     from fastapi import HTTPException
@@ -1745,7 +1674,6 @@ def despachar_pedido(pedido_id: int, payload: dict, db: Session = Depends(get_db
         
     return {"status": "sucesso"}
 
-
 @app.put("/api/logistica/pedidos/{pedido_id}/entregar")
 def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
     from fastapi import HTTPException
@@ -1766,7 +1694,6 @@ def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
             pass
         
     return {"status": "sucesso", "mensagem": "Baixa realizada e cliente notificado!"}
-
 
 @app.get("/api/kds/pedidos")
 def listar_pedidos_cozinha(db: Session = Depends(get_db)):
@@ -1812,7 +1739,6 @@ def listar_pedidos_cozinha(db: Session = Depends(get_db)):
     # Manda as duas caixas com os nomes que o kds.html espera
     return {"recebidos": recebidos, "preparando": preparando}
 
-
 from fastapi import BackgroundTasks # Coloque isso no começo do arquivo se não tiver
 
 @app.put("/api/kds/pedidos/{pedido_id}/status")
@@ -1834,12 +1760,11 @@ def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, background_tas
         
     return {"mensagem": "Status atualizado"}
 
-        # ==========================================
+# ==========================================
 # MÓDULO DE RASTREIO GPS AO VIVO (ESTILO UBER)
 # ==========================================
 # Dicionário em memória: Rápido, não trava o servidor e zera o custo de banco de dados!
 rastreio_ao_vivo = {}
-
 class CoordenadasGPS(BaseModel):
     pedido_id: int
     lat: float
@@ -1916,7 +1841,6 @@ def abrir_mapa_cliente():
 # ==========================================
 # ROTAS DE CONFIGURAÇÃO DA LOJA (SETUP CENTRAL)
 # ==========================================
-
 @app.get("/api/gestao/configuracoes")
 def ler_configuracoes(db: Session = Depends(get_db)):
     config = db.query(ConfiguracaoLojaModel).first()
@@ -1927,7 +1851,6 @@ def ler_configuracoes(db: Session = Depends(get_db)):
         db.refresh(config)
         
     return config
-
 
 @app.put("/api/gestao/configuracoes")
 def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
@@ -1953,7 +1876,6 @@ def salvar_configuracoes(dados: dict, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/api/gestao/clientes")
 def listar_clientes_gestao(db: Session = Depends(get_db)):
@@ -2021,7 +1943,6 @@ def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db
         
     db.commit()
     return {"status": "sucesso", "mensagem": "Produto e Ficha atualizados!"}
-
 
 # ==========================================
 # MOTOR UNIVERSAL DE GESTÃO (CRUD FASE 4)
@@ -2176,7 +2097,6 @@ def editar_cliente(cliente_id: int, dados: dict, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso"}
 
-
 @app.put("/api/gestao/clientes/{cliente_id}/bloqueio")
 def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.id == cliente_id).first()
@@ -2187,7 +2107,6 @@ def alternar_bloqueio_cliente(cliente_id: int, db: Session = Depends(get_db)):
     cliente.bloqueado = not getattr(cliente, 'bloqueado', False)
     db.commit()
     return {"status": "sucesso"}
-
 
 @app.delete("/api/gestao/clientes/{cliente_id}")
 def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
@@ -2215,11 +2134,9 @@ def deletar_cliente(cliente_id: int, db: Session = Depends(get_db)):
         print(f"Erro Crítico ao deletar cliente: {e}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-
 # ==========================================
 # ROTAS VISUAIS (TELAS HTML SERVIDAS PELO FASTAPI)
 # ==========================================
-
 @app.get("/portal", response_class=HTMLResponse)
 def abrir_portal_central(): 
     if Path("templates/portal.html").exists():
@@ -2292,11 +2209,9 @@ def abrir_portal_colaborador():
         return Path("templates/portal_colaborador.html").read_text(encoding="utf-8")
     return "Erro: Arquivo portal_colaborador.html não encontrado."
 
-
 # ==========================================
 # INCLUSÃO DE ROUTERS EXTRAS E WEBHOOKS
 # ==========================================
-
 app.include_router(router_dashboard)
 app.include_router(router_pagamentos)
 app.include_router(router_99food)
@@ -2398,133 +2313,9 @@ def limpar_banco_dados(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/cura-final")
-def forcar_colunas_fidelidade(db: Session = Depends(get_db)):
-    from sqlalchemy import text
-    comandos = [
-        "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
-        "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
-        "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE cupons_desconto ADD COLUMN tipo VARCHAR DEFAULT 'PERCENTUAL';",
-        "ALTER TABLE cupons_desconto ADD COLUMN valor FLOAT DEFAULT 0.0;"
-    ]
-    logs = []
-    for cmd in comandos:
-        try:
-            db.execute(text(cmd))
-            db.commit()
-            logs.append(f"SUCESSO: {cmd}")
-        except Exception as e:
-            db.rollback()
-            logs.append(f"Ignorado (Já existe): {str(e)}")
-            
-    return {"status": "Colunas injetadas e corrigidas!", "resultado": logs}
-
-@app.get("/api/consertar-banco")
-def consertar_banco(db: Session = Depends(get_db)):
-    from sqlalchemy import text
-    comandos = [
-        # Configurações da Loja
-        "ALTER TABLE configuracoes_loja ADD COLUMN nome_empresa VARCHAR DEFAULT 'Art''s Burguer';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN cnpj VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN inscricao_estadual VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN horario_funcionamento VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN endereco VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN telefone VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN logo_url VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_delivery BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_retirada BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN aceite_automatico BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN tempo_preparo INTEGER DEFAULT 30;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN formas_pagamento VARCHAR DEFAULT 'Pix,Dinheiro,Cartão';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN sistema_fidelidade VARCHAR DEFAULT 'CASHBACK';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_cardapio VARCHAR DEFAULT 'Burger Artesanal,Bebidas,Porções';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_fornecedor VARCHAR DEFAULT 'Carnes,Hortifruti,Bebidas,Embalagens';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto,Gympass';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN regra_acumulo VARCHAR DEFAULT 'POR_PEDIDO';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_ganho FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_gasto_minimo FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_resgate FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_elegibilidade VARCHAR DEFAULT 'TODOS';",
-        
-        # Produtos e Cardápio
-        "ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT TRUE;",
-        
-        # Recursos Humanos (RH)
-        "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
-        "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN status_admissao VARCHAR DEFAULT 'PENDENTE_PREENCHIMENTO';",
-        "ALTER TABLE info_rh ADD COLUMN aceite_lgpd BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE info_rh ADD COLUMN data_aceite_lgpd VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN telefone VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN email VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN salario FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN escala VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE info_rh ADD COLUMN tipo_comissao VARCHAR DEFAULT 'PERCENTUAL';",
-        "ALTER TABLE info_rh ADD COLUMN valor_comissao FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN valor_vt FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN valor_va FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN diaria_motoboy FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}';",
-        "ALTER TABLE info_rh ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN naturalidade VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN estado_civil VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN rg VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN cpf VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN pis_pasep VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN titulo_eleitor VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN reservista VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN cep VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN endereco_completo VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN banco VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN agencia VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN conta VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN dados_bancarios VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN escolaridade VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN qtd_filhos_menores INTEGER DEFAULT 0;",
-        "ALTER TABLE info_rh ADD COLUMN cnh VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN plano_saude_escolhido VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN link_pasta_documentos VARCHAR DEFAULT '';",
-        "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
-        "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0;",
-        "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
-        "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';",
-        
-        # CRM e Clientes
-        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN senha VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN numero VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN bairro VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
-        "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
-        "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"
-    ]
-    
-    logs = []
-    for cmd in comandos:
-        try:
-            db.execute(text(cmd))
-            db.commit()
-            logs.append(f"Sucesso: {cmd}")
-        except Exception as e:
-            db.rollback()
-            logs.append(f"Ignorado: {str(e)}")
-            
-    return {"status": "Sincronização Mestra Concluída!", "logs": logs}
-
 # ==========================================
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 1)
 # ==========================================
-
 # 1. Atualizar Fornecedor
 @app.put("/api/fornecedores/{fornecedor_id}")
 def atualizar_fornecedor(fornecedor_id: int, dados: dict, db: Session = Depends(get_db)):
@@ -2601,7 +2392,6 @@ def excluir_conta(conta_id: int, db: Session = Depends(get_db)):
 # ==========================================
 # MOTOR DE EDIÇÃO E EXCLUSÃO (FASE 2)
 # ==========================================
-
 # 🚨 NOVA ROTA: Busca os ingredientes atuais do lanche para mostrar na tela de edição
 @app.get("/api/gestao/produto/{produto_id}/fichas")
 def obter_fichas_produto(produto_id: int, db: Session = Depends(get_db)):
@@ -2616,8 +2406,6 @@ def obter_fichas_produto(produto_id: int, db: Session = Depends(get_db)):
                 "nome": insumo.nome
             })
     return resultado
-
-
 
 # 2. Excluir Produto Definitivamente
 @app.delete("/api/gestao/produto/{produto_id}")
@@ -2740,7 +2528,6 @@ def excluir_funcionario_definitivo(func_id: int, db: Session = Depends(get_db)):
 # ==========================================
 # MÁQUINA DE VENDAS: CUPONS E PROMOÇÕES
 # ==========================================
-
 @app.get("/api/gestao/cupons")
 def listar_cupons(db: Session = Depends(get_db)):
     return db.query(CupomModel).all()
@@ -2871,7 +2658,6 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
 # ==========================================
 # MOTOR DE COMBOS (ASSISTENTE FAST FOOD)
 # ==========================================
-
 class ItemComboSchema(BaseModel):
     nome: str
     preco_adicional: float = 0.0
@@ -2935,7 +2721,6 @@ def criar_combo_fast_food(combo: NovoComboFastFood, db: Session = Depends(get_db
 # ==========================================
 # MÓDULO DE CAIXA (ABERTURA, SANGRIA E FECHAMENTO)
 # ==========================================
-
 class CaixaTurnoModel(Base):
     __tablename__ = "caixa_turnos"
     __table_args__ = {'extend_existing': True}
@@ -3298,7 +3083,6 @@ def receber_pedido_externo(dados: ExtWebhookSchema, db: Session = Depends(get_db
 # ==========================================
 # MOTOR PWA (APLICATIVO INSTALÁVEL)
 # ==========================================
-
 @app.get("/manifest.json")
 def get_manifest():
     manifest = {
@@ -3344,146 +3128,9 @@ def get_service_worker():
     """
     return Response(content=sw_content, media_type="application/javascript")
 
-@app.get("/api/cura-fornecedor")
-def cura_fornecedor(db: Session = Depends(get_db)):
-    from sqlalchemy import text
-    logs = []
-    
-    # Tenta criar a coluna contato
-    try:
-        db.execute(text("ALTER TABLE fornecedores ADD COLUMN contato VARCHAR DEFAULT '';"))
-        db.commit()
-        logs.append("Coluna 'contato' injetada com sucesso!")
-    except Exception as e:
-        db.rollback()
-        logs.append(f"Contato ignorado: {str(e)}")
-
-    # Tenta criar a coluna telefone
-    try:
-        db.execute(text("ALTER TABLE fornecedores ADD COLUMN telefone VARCHAR DEFAULT '';"))
-        db.commit()
-        logs.append("Coluna 'telefone' injetada com sucesso!")
-    except Exception as e:
-        db.rollback()
-        logs.append(f"Telefone ignorado: {str(e)}")
-
-    return {"status": "Operação Concluída!", "detalhes": logs}
-
-@app.get("/api/cura-produtos")
-def cura_produtos(db: Session = Depends(get_db)):
-    from sqlalchemy import text
-    logs = []
-    
-    # 1. Converte a coluna 'ativo' de Número para Boolean
-    try:
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN ativo DROP DEFAULT;"))
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN ativo TYPE boolean USING (ativo != 0);"))
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN ativo SET DEFAULT TRUE;"))
-        db.commit()
-        logs.append("Coluna 'ativo' convertida para BOOLEAN com sucesso!")
-    except Exception as e:
-        db.rollback()
-        logs.append(f"Ativo ignorado (já deve estar correto): {str(e)}")
-
-    # 2. Converte a coluna 'participa_fidelidade' de Número para Boolean
-    try:
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN participa_fidelidade DROP DEFAULT;"))
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN participa_fidelidade TYPE boolean USING (participa_fidelidade != 0);"))
-        db.execute(text("ALTER TABLE produtos ALTER COLUMN participa_fidelidade SET DEFAULT TRUE;"))
-        db.commit()
-        logs.append("Coluna 'participa_fidelidade' convertida para BOOLEAN com sucesso!")
-    except Exception as e:
-        db.rollback()
-        logs.append(f"Fidelidade ignorada (já deve estar correto): {str(e)}")
-
-    return {"status": "Banco Consertado", "logs": logs}
-
-@app.get("/api/cura-produtos-bruta")
-def cura_produtos_bruta(db: Session = Depends(get_db)):
-    from sqlalchemy import text
-    logs = []
-    
-    # 1. Arranca a coluna velha e recria a 'ativo' perfeitamente como Boolean
-    try:
-        db.execute(text("ALTER TABLE produtos DROP COLUMN IF EXISTS ativo;"))
-        db.execute(text("ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT TRUE;"))
-        db.commit()
-        logs.append("Coluna 'ativo' DESTRUÍDA e RECRIADA como BOOLEAN com sucesso!")
-    except Exception as e:
-        db.rollback()
-        logs.append(f"Erro no ativo: {str(e)}")
-
-    # 2. Arranca a coluna velha e recria a 'participa_fidelidade' como Boolean
-    try:
-        db.execute(text("ALTER TABLE produtos DROP COLUMN IF EXISTS participa_fidelidade;"))
-        db.execute(text("ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT TRUE;"))
-        db.commit()
-        logs.append("Coluna 'participa_fidelidade' DESTRUÍDA e RECRIADA como BOOLEAN com sucesso!")
-    except Exception as e:
-        db.rollback()
-        logs.append(f"Erro na fidelidade: {str(e)}")
-
-    return {"status": "Tabela de Produtos Consertada na Força Bruta!", "logs": logs}
-
-@app.get("/api/cura-checkout")
-def cura_checkout(db: Session = Depends(get_db)):
-    from sqlalchemy import text
-    logs = []
-    
-    # 1. Consertando os campos de Verdadeiro/Falso na tabela CLIENTES
-    try:
-        db.execute(text("ALTER TABLE clientes DROP COLUMN IF EXISTS bloqueado;"))
-        db.execute(text("ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;"))
-        
-        db.execute(text("ALTER TABLE clientes DROP COLUMN IF EXISTS permite_fiado;"))
-        db.execute(text("ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;"))
-        db.commit()
-        logs.append("Tabela CLIENTES curada com sucesso!")
-    except Exception as e:
-        db.rollback()
-        logs.append(f"Erro em Clientes: {str(e)}")
-
-    # 2. Consertando os campos de Verdadeiro/Falso na tabela CONFIGURAÇÕES
-    try:
-        db.execute(text("ALTER TABLE configuracoes_loja DROP COLUMN IF EXISTS aceita_delivery;"))
-        db.execute(text("ALTER TABLE configuracoes_loja ADD COLUMN aceita_delivery BOOLEAN DEFAULT TRUE;"))
-        
-        db.execute(text("ALTER TABLE configuracoes_loja DROP COLUMN IF EXISTS aceita_retirada;"))
-        db.execute(text("ALTER TABLE configuracoes_loja ADD COLUMN aceita_retirada BOOLEAN DEFAULT TRUE;"))
-        
-        db.execute(text("ALTER TABLE configuracoes_loja DROP COLUMN IF EXISTS aceite_automatico;"))
-        db.execute(text("ALTER TABLE configuracoes_loja ADD COLUMN aceite_automatico BOOLEAN DEFAULT FALSE;"))
-        db.commit()
-        logs.append("Tabela CONFIGURACOES_LOJA curada com sucesso!")
-    except Exception as e:
-        db.rollback()
-        logs.append(f"Erro em Configurações: {str(e)}")
-
-    # 3. Consertando os Cupons (Bulletproof - Pula o que já existe)
-    comandos_cupons = [
-        "ALTER TABLE cupons_desconto DROP COLUMN IF EXISTS ativo;",
-        "ALTER TABLE cupons_desconto ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE cupons_desconto ADD COLUMN qtd_limite INTEGER;",
-        "ALTER TABLE cupons_desconto ADD COLUMN usos_atuais INTEGER DEFAULT 0;",
-        "ALTER TABLE cupons_desconto ADD COLUMN publico_alvo VARCHAR DEFAULT 'todos';",
-        "ALTER TABLE cupons_desconto ADD COLUMN cpf_exclusivo VARCHAR;"
-    ]
-    
-    for cmd in comandos_cupons:
-        try:
-            db.execute(text(cmd))
-            db.commit()
-        except Exception as e:
-            db.rollback() # Se a coluna já existir, ele simplesmente ignora e vai pra próxima!
-            
-    logs.append("Tabela CUPONS vacinada com sucesso (colunas extras criadas)!")
-
-    return {"status": "Vacina do Checkout Aplicada!", "logs": logs}
-    
- # =======================================================
+# =======================================================
 # ROTAS DE CONEXÃO: TV E LOGÍSTICA (À PROVA DE FALHAS)
 # =======================================================
-
 @app.get("/api/tv/pedidos")
 def obter_pedidos_tv(db: Session = Depends(get_db)):
     """ Rota exclusiva para alimentar a tela da TV do Salão """
@@ -3510,7 +3157,6 @@ def obter_pedidos_tv(db: Session = Depends(get_db)):
         return {"em_preparo": em_preparo, "prontos": prontos}
     except Exception: 
         return {"em_preparo": [], "prontos": []}
-
 
 @app.get("/api/logistica/pedidos")
 def obter_pedidos_logistica(db: Session = Depends(get_db)):
@@ -3542,7 +3188,6 @@ def obter_pedidos_logistica(db: Session = Depends(get_db)):
     except Exception: 
         return {"prontos": [], "em_rota": []}
 
-
 @app.put("/api/logistica/pedidos/{pedido_id}/despachar")
 def despachar_pedido(pedido_id: int, payload: dict, db: Session = Depends(get_db)):
     try:
@@ -3558,7 +3203,6 @@ def despachar_pedido(pedido_id: int, payload: dict, db: Session = Depends(get_db
         return {"ok": True}
     except Exception: 
         return {"ok": False}
-
 
 @app.put("/api/logistica/pedidos/{pedido_id}/entregar")
 def entregar_pedido(pedido_id: int, db: Session = Depends(get_db)):
@@ -3613,15 +3257,12 @@ def gerar_senha_diaria(db: Session):
 # =======================================================
 # ROTAS DO GPS E MOTOBOY (MAPA EM TEMPO REAL)
 # =======================================================
-
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi import Request
 import os
-
 # Memória RAM temporária para guardar as coordenadas das motos ao vivo
 # Estrutura: { 195: {"lat": -25.64, "lng": -49.31, "status": "online", "ultima_atualizacao": datetime} }
 POSICOES_MOTOBOYS_AO_VIVO = {}
-
 @app.get("/mapa", response_class=HTMLResponse)
 def tela_rastreio_mapa(request: Request):
     """ Retorna a tela do mapa para o cliente acompanhar o motoboy """
@@ -3652,9 +3293,6 @@ def atualizar_posicao_motoboy(pedido_id: int, payload: dict):
     except Exception as e:
         return {"ok": False, "erro": str(e)}
 
-# ==========================================
-# ROTA VIP DE CUPONS (BLINDADA CONTRA CONFLITOS)
-# ==========================================
 # ==========================================
 # ROTA VIP DE CUPONS (BLINDADA CONTRA CONFLITOS E ERROS)
 # ==========================================
