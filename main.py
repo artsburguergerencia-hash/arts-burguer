@@ -91,6 +91,22 @@ def get_db():
     finally:
         db.close()
 
+# ==========================================
+# ROTA DE SAÚDE / KEEP-ALIVE (RENDER & NEON)
+# ==========================================
+@app.get("/health")
+def health_check(db: Session = Depends(get_db)):
+    """Rota leve para manter o Render e o Neon sempre aquecidos."""
+    try:
+        # Testa a conexão com o Neon em milissegundos
+        db.execute(text("SELECT 1;"))
+        return {"status": "ok", "app": "online", "database": "connected"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=503, 
+            content={"status": "degraded", "erro": str(e)}
+        )
+        
 # Memória temporária única para telemetria de entregadores
 POSICOES_MOTOBOYS_AO_VIVO = {}
 rastreio_ao_vivo = {}
