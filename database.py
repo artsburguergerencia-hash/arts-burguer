@@ -12,22 +12,25 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./banco_v5_master_rh.db")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# Configuração de Pool otimizada para o Neon PostgreSQL Serverless
 engine = create_engine(
     DATABASE_URL, 
     connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
-    pool_pre_ping=True,      # Testa se a conexão está viva antes de usar (Evita o erro SSL closed)
-    pool_recycle=1800        # Recicla as conexões a cada 30 minutos para mantê-las sempre frescas
+    pool_pre_ping=True,      # Evita erro de conexão fechada pelo SSL do Neon
+    pool_recycle=300,        # Recicla as conexões a cada 5 min (ideal para o Neon)
+    pool_size=5,             # Seguro para o plano gratuito
+    max_overflow=10
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # ==========================================
-# MODELOS DE DADOS
+# 1. CONFIGURAÇÕES DA LOJA
 # ==========================================
-
 class ConfiguracaoLojaModel(Base):
     __tablename__ = "configuracoes_loja"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     nome_empresa = Column(String, default="Art's Burguer")
     cnpj = Column(String, default="")
@@ -52,30 +55,50 @@ class ConfiguracaoLojaModel(Base):
     fidelidade_elegibilidade = Column(String, default="TODOS")
 
 
-class Cliente(Base):
+# ==========================================
+# 2. CLIENTE UNIFICADO (Fim da Guerra dos Clientes!)
+# ==========================================
+class ClienteModel(Base):
+    """Modelo único de clientes: reúne os campos do PDV e do Cardápio."""
     __tablename__ = "clientes"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, index=True)
-    telefone = Column(String, unique=True, index=True)
+    nome = Column(String, index=True, nullable=False)
+    telefone = Column(String, unique=True, index=True, nullable=False)
     senha = Column(String, default="")
-    pontos = Column(Integer, default=0)
-    cashback = Column(Float, default=0.0)
+    senha_hash = Column(String, default="")
+    cpf = Column(String, default="", nullable=True)
+    data_nascimento = Column(String, default="")
+    foto = Column(String, default="")
     bloqueado = Column(Boolean, default=False)
     permite_fiado = Column(Boolean, default=False)
-    cpf = Column(String, default="")
-    data_nascimento = Column(String, default="")
+    
+    # Endereço completo unificado
     cep = Column(String, default="")
     endereco = Column(String, default="")
+    logradouro = Column(String, default="")
     numero = Column(String, default="")
     bairro = Column(String, default="")
     complemento = Column(String, default="")
-    foto = Column(String, default="")
+    
+    # Carteira de fidelidade (sincronizada para PDV e Cardápio)
+    pontos = Column(Integer, default=0)
+    pontos_fidelidade = Column(Integer, default=0)
+    cashback = Column(Float, default=0.0)
+    saldo_cashback = Column(Float, default=0.0)
+
+# Alias para compatibilidade: se algum arquivo importar "Cliente", aponta para o mesmo modelo
+Cliente = ClienteModel
 
 
+# ==========================================
+# 3. RECURSOS HUMANOS E CARGOS
+# ==========================================
 class Cargo(Base):
     __tablename__ = "cargos"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, unique=True, index=True)
     permissoes = Column(String, default="basico") 
@@ -84,6 +107,7 @@ class Cargo(Base):
 class FuncionarioModel(Base):
     __tablename__ = "funcionarios"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String)
     usuario = Column(String, unique=True, index=True)
@@ -96,6 +120,7 @@ class FuncionarioModel(Base):
 class InfoRHModel(Base):
     __tablename__ = "info_rh"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, unique=True)
     status_admissao = Column(String, default="PENDENTE_PREENCHIMENTO") 
@@ -138,6 +163,7 @@ class InfoRHModel(Base):
 class PontoModel(Base):
     __tablename__ = "pontos_rh"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer)
     data = Column(String) 
@@ -150,6 +176,7 @@ class PontoModel(Base):
 class OcorrenciaRHModel(Base):
     __tablename__ = "ocorrencias_rh"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, ForeignKey("funcionarios.id"))
     data_registro = Column(DateTime, default=datetime.utcnow)
@@ -164,6 +191,7 @@ class OcorrenciaRHModel(Base):
 class SolicitacaoFeriasModel(Base):
     __tablename__ = "ferias_rh"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     funcionario_id = Column(Integer, ForeignKey("funcionarios.id"))
     tipo = Column(String, default="FERIAS") 
@@ -174,9 +202,13 @@ class SolicitacaoFeriasModel(Base):
     observacao_gestor = Column(String, default="")
 
 
+# ==========================================
+# 4. INSUMOS, PRODUTOS E CARDÁPIO
+# ==========================================
 class InsumoModel(Base):
     __tablename__ = "insumos"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, index=True)
     unidade_medida = Column(String)
@@ -188,6 +220,7 @@ class InsumoModel(Base):
 class ProdutoModel(Base):
     __tablename__ = "produtos"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, index=True)
     descricao = Column(String, default="")
@@ -196,11 +229,13 @@ class ProdutoModel(Base):
     imagem_url = Column(String, default="")
     ativo = Column(Boolean, default=True)
     participa_fidelidade = Column(Boolean, default=True)
-    ordem = Column(Integer, default=0) # 🚨 ADICIONE ESTA LINHA AQUI
+    ordem = Column(Integer, default=0)
+
 
 class FichaTecnicaModel(Base):
     __tablename__ = "fichas_tecnicas"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     produto_id = Column(Integer, ForeignKey("produtos.id"))
     insumo_id = Column(Integer, ForeignKey("insumos.id"))
@@ -210,6 +245,7 @@ class FichaTecnicaModel(Base):
 class GrupoComplementoModel(Base):
     __tablename__ = "grupos_complementos"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     produto_id = Column(Integer, ForeignKey("produtos.id"))
     nome = Column(String)
@@ -222,28 +258,44 @@ class GrupoComplementoModel(Base):
 class ItemComplementoModel(Base):
     __tablename__ = "itens_complementos"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     grupo_id = Column(Integer, ForeignKey("grupos_complementos.id"))
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
 
 
+# ==========================================
+# 5. CUPONS, CAIXA E LOGÍSTICA
+# ==========================================
+def data_infinita_str():
+    from datetime import timedelta
+    return (datetime.utcnow() + timedelta(days=3650)).strftime("%Y-%m-%d")
+
 class CupomModel(Base):
+    """Modelo canônico e oficial de cupons de desconto."""
     __tablename__ = "cupons_desconto"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     codigo = Column(String, unique=True, index=True)
-    tipo = Column(String, default="PERCENTUAL")
+    tipo = Column(String, default="PERCENTUAL") 
     valor = Column(Float, default=0.0)
     desconto_percentual = Column(Float, default=0.0)
     desconto_fixo = Column(Float, default=0.0)
-    data_validade = Column(DateTime, nullable=True)
+    data_validade = Column(String, default=data_infinita_str, nullable=True) 
     ativo = Column(Boolean, default=True)
+    qtd_limite = Column(Integer, nullable=True)
+    usos_atuais = Column(Integer, default=0)
+    publico_alvo = Column(String, default="todos")
+    cpf_exclusivo = Column(String, nullable=True)
 
 
 class CaixaTurnoModel(Base):
+    """Modelo canônico e oficial de turnos do PDV."""
     __tablename__ = "caixa_turnos"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     operador = Column(String, default="Admin")
     data_abertura = Column(String) 
@@ -259,127 +311,19 @@ class CaixaTurnoModel(Base):
 class TaxaEntregaModel(Base):
     __tablename__ = "taxas_entrega"
     __table_args__ = {'extend_existing': True}
+    
     id = Column(Integer, primary_key=True, index=True)
     bairro = Column(String, unique=True, index=True)
     taxa = Column(Float, default=0.0)
 
 
 # ==========================================
-# INICIALIZAÇÃO & MIGRAÇÕES
+# 6. INICIALIZAÇÃO DO BANCO
 # ==========================================
-
 def inicializar_banco():
+    """Garante que as tabelas e dados mestres existam no boot."""
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
-    
-    colunas_migracao = [
-        "ALTER TABLE cupons_desconto ADD COLUMN tipo VARCHAR DEFAULT 'PERCENTUAL';",
-        "ALTER TABLE cupons_desconto ADD COLUMN valor FLOAT DEFAULT 0.0;",
-        "ALTER TABLE cupons_desconto ADD COLUMN desconto_percentual FLOAT DEFAULT 0.0;",
-        "ALTER TABLE cupons_desconto ADD COLUMN desconto_fixo FLOAT DEFAULT 0.0;",
-        "ALTER TABLE cupons_desconto ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN nome_empresa VARCHAR DEFAULT 'Art''s Burguer';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN cnpj VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN inscricao_estadual VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN horario_funcionamento VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN endereco VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN telefone VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN logo_url VARCHAR DEFAULT '';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_delivery BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN aceita_retirada BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN aceite_automatico BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN tempo_preparo INTEGER DEFAULT 30;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN formas_pagamento VARCHAR DEFAULT 'Pix,Dinheiro,Cartão';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN sistema_fidelidade VARCHAR DEFAULT 'CASHBACK';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_cardapio VARCHAR DEFAULT 'Burger Artesanal,Bebidas,Porções';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN categorias_fornecedor VARCHAR DEFAULT 'Carnes,Hortifruti,Bebidas,Embalagens';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN planos_saude_opcoes VARCHAR DEFAULT 'Nenhum,Amil Básico,Bradesco Odonto,Gympass';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN regra_acumulo VARCHAR DEFAULT 'POR_PEDIDO';",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_ganho FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_gasto_minimo FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_resgate FLOAT DEFAULT 0.0;",
-        "ALTER TABLE configuracoes_loja ADD COLUMN fidelidade_elegibilidade VARCHAR DEFAULT 'TODOS';",
-        "ALTER TABLE produtos ADD COLUMN ativo BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE produtos ADD COLUMN participa_fidelidade BOOLEAN DEFAULT TRUE;",
-        "ALTER TABLE funcionarios ADD COLUMN foto_3x4 VARCHAR DEFAULT '';",
-        "ALTER TABLE funcionarios ADD COLUMN matricula_cracha VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN status_admissao VARCHAR DEFAULT 'PENDENTE_PREENCHIMENTO';",
-        "ALTER TABLE info_rh ADD COLUMN aceite_lgpd BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE info_rh ADD COLUMN data_aceite_lgpd VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN telefone VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN email VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN salario FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN escala VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN recebe_comissao BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE info_rh ADD COLUMN tipo_comissao VARCHAR DEFAULT 'PERCENTUAL';",
-        "ALTER TABLE info_rh ADD COLUMN valor_comissao FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN valor_vt FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN valor_va FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN diaria_motoboy FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN repasse_por_entrega FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN gorjetas_acumuladas FLOAT DEFAULT 0.0;",
-        "ALTER TABLE info_rh ADD COLUMN escala_matriz_json VARCHAR DEFAULT '{}';",
-        "ALTER TABLE info_rh ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN naturalidade VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN estado_civil VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN rg VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN cpf VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN pis_pasep VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN titulo_eleitor VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN reservista VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN cep VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN endereco_completo VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN banco VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN agencia VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN conta VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN dados_bancarios VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN escolaridade VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN qtd_filhos_menores INTEGER DEFAULT 0;",
-        "ALTER TABLE info_rh ADD COLUMN cnh VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN plano_saude_escolhido VARCHAR DEFAULT '';",
-        "ALTER TABLE info_rh ADD COLUMN link_pasta_documentos VARCHAR DEFAULT '';",
-        "ALTER TABLE cargos ADD COLUMN permissoes VARCHAR DEFAULT 'basico';",
-        "ALTER TABLE pontos_rh ADD COLUMN horas_trabalhadas FLOAT DEFAULT 0.0;",
-        "ALTER TABLE pontos_rh ADD COLUMN horas_extras FLOAT DEFAULT 0.0;",
-        "ALTER TABLE ferias_rh ADD COLUMN tipo VARCHAR DEFAULT 'FERIAS';",
-        "ALTER TABLE clientes ADD COLUMN permite_fiado BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE clientes ADD COLUMN cpf VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN cep VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN endereco VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN senha VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN data_nascimento VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN numero VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN bairro VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN complemento VARCHAR DEFAULT '';",
-        "ALTER TABLE clientes ADD COLUMN pontos INTEGER DEFAULT 0;",
-        "ALTER TABLE clientes ADD COLUMN cashback FLOAT DEFAULT 0.0;",
-        "ALTER TABLE clientes ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE clientes ADD COLUMN foto VARCHAR DEFAULT '';",
-        
-        # ---> AQUI ESTÁ A CORREÇÃO EXATA PARA O SEU ERRO DO FORNECEDOR <---
-        "ALTER TABLE fornecedores ADD COLUMN contato VARCHAR DEFAULT '';",
-        "ALTER TABLE fornecedores ADD COLUMN telefone VARCHAR DEFAULT '';"
-        # ---> NOSSA NOVA COLUNA DE ORDENAÇÃO DO CARDÁPIO <---
-        "ALTER TABLE produtos ADD COLUMN ordem INTEGER DEFAULT 0;"
-    ]
-
-    try:
-        with engine.connect() as conn:
-            try:
-                conn.execute(text("ALTER TABLE cupons_desconto ALTER COLUMN data_validade DROP NOT NULL;"))
-                conn.commit()
-            except Exception:
-                pass
-
-            for cmd in colunas_migracao:
-                try:
-                    conn.execute(text(cmd))
-                    conn.commit()
-                except Exception:
-                    pass
-    except Exception as e:
-        print(f"Log Migração: {e}")
-
     try:
         cargo_admin = db.query(Cargo).filter(Cargo.permissoes == "total").first()
         if not cargo_admin:
@@ -387,7 +331,7 @@ def inicializar_banco():
             db.add(cargo_admin)
             db.flush() 
 
-        if not db.query(FuncionarioModel).first():
+        if not db.query(FuncionarioModel).filter(FuncionarioModel.usuario == "admin").first():
             from passlib.context import CryptContext
             pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
             admin = FuncionarioModel(
@@ -405,16 +349,20 @@ def inicializar_banco():
             
         db.commit()
     except Exception as e: 
-        print(f"Log Inicialização: {e}")
+        print(f"Log Inicialização: {e}", flush=True)
         db.rollback()
     finally:
         db.close()
 
 
 def processar_baixa_estoque(db, produto_id: int, quantidade_vendida: float):
+    """
+    Deduz os insumos da Ficha Técnica com trava pessimista (with_for_update) no PostgreSQL.
+    """
     fichas = db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).all()
     for f in fichas:
-        insumo = db.query(InsumoModel).filter(InsumoModel.id == f.insumo_id).first()
+        insumo = db.query(InsumoModel).filter(InsumoModel.id == f.insumo_id).with_for_update().first()
         if insumo: 
-            insumo.quantidade_atual -= (f.quantidade_necessaria * quantidade_vendida)
+            qtd_descontar = f.quantidade_necessaria * quantidade_vendida
+            insumo.quantidade_atual = round(insumo.quantidade_atual - qtd_descontar, 4)
     db.commit()
