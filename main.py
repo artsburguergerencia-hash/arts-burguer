@@ -1090,34 +1090,33 @@ def obter_dossie_rh(func_id: int, db: Session = Depends(get_db)):
     func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
     if not rh:
         raise HTTPException(status_code=404, detail="Dossiê não encontrado.")
-        
     return {
-        "cpf": rh.cpf, 
-        "rg": rh.rg, 
-        "pis_pasep": rh.pis_pasep, 
-        "data_nascimento": rh.data_nascimento, 
-        "estado_civil": rh.estado_civil, 
-        "titulo_eleitor": rh.titulo_eleitor, 
-        "reservista": rh.reservista, 
+        "cpf": rh.cpf,
+        "rg": rh.rg,
+        "pis_pasep": rh.pis_pasep,
+        "data_nascimento": rh.data_nascimento,
+        "estado_civil": rh.estado_civil,
+        "titulo_eleitor": rh.titulo_eleitor,
+        "reservista": rh.reservista,
         "cep": rh.cep,
-        "endereco_completo": rh.endereco_completo, 
+        "endereco_completo": rh.endereco_completo,
         "banco": rh.banco,
         "agencia": rh.agencia,
         "conta": rh.conta,
-        "naturalidade": rh.naturalidade, 
-        "escolaridade": rh.escolaridade, 
-        "qtd_filhos_menores": rh.qtd_filhos_menores, 
-        "cnh": rh.cnh, 
+        "naturalidade": rh.naturalidade,
+        "escolaridade": rh.escolaridade,
+        "qtd_filhos_menores": rh.qtd_filhos_menores,
+        "cnh": rh.cnh,
         "email": rh.email,
-        "plano_saude_escolhido": rh.plano_saude_escolhido, 
-        "salario": rh.salario, 
-        "recebe_comissao": rh.recebe_comissao, 
-        "tipo_comissao": rh.tipo_comissao, 
-        "valor_comissao": rh.valor_comissao, 
-        "valor_vt": rh.valor_vt, 
-        "valor_va": rh.valor_va, 
-        "diaria_motoboy": rh.diaria_motoboy, 
-        "repasse_por_entrega": rh.repasse_por_entrega, 
+        "plano_saude_escolhido": rh.plano_saude_escolhido,
+        "salario": rh.salario,
+        "recebe_comissao": rh.recebe_comissao,
+        "tipo_comissao": rh.tipo_comissao,
+        "valor_comissao": rh.valor_comissao,
+        "valor_vt": rh.valor_vt,
+        "valor_va": rh.valor_va,
+        "diaria_motoboy": rh.diaria_motoboy,
+        "repasse_por_entrega": rh.repasse_por_entrega,
         "escala_matriz_json": rh.escala_matriz_json,
         "foto_3x4": func.foto_3x4 if func else ""
     }
@@ -1129,19 +1128,21 @@ def atualizar_dossie_rh(func_id: int, dados: FormularioAdmissao, db: Session = D
     if not rh:
         raise HTTPException(status_code=404)
         
-    for campo in ["cpf", "rg", "pis_pasep", "data_nascimento", "estado_civil", "titulo_eleitor", 
-                  "reservista", "cep", "endereco_completo", "banco", "agencia", "conta", 
-                  "naturalidade", "escolaridade", "qtd_filhos_menores", "cnh", "email", "plano_saude_escolhido"]:
+    for campo in [
+        "cpf", "rg", "pis_pasep", "data_nascimento", "estado_civil", "titulo_eleitor",
+        "reservista", "cep", "endereco_completo", "banco", "agencia", "conta",
+        "naturalidade", "escolaridade", "qtd_filhos_menores", "cnh", "email", "plano_saude_escolhido"
+    ]:
         setattr(rh, campo, getattr(dados, campo))
         
     if func:
         func.foto_3x4 = dados.foto_3x4
-    if rh.status_admissao == "PENDENTE_PREENCHIMENTO": 
+    if rh.status_admissao == "PENDENTE_PREENCHIMENTO":
         rh.status_admissao = "ATIVO"
         
     db.commit()
     return {"status": "sucesso", "mensagem": "Documentos do Dossiê atualizados com sucesso."}
-    
+
 @app.put("/api/gestao/funcionarios/{func_id}/financeiro")
 def atualizar_financeiro_rh(func_id: int, dados: AjusteFinanceiroRH, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).first()
@@ -1182,12 +1183,13 @@ def demitir_funcionario(func_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "sucesso", "mensagem": "Acesso revogado com sucesso."}
 
-
+@app.delete("/api/gestao/funcionarios/{func_id}/excluir")
 def excluir_funcionario_definitivo(func_id: int, db: Session = Depends(get_db)):
     try:
         func = db.query(FuncionarioModel).filter(FuncionarioModel.id == func_id).first()
         if not func:
             raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
+            
         db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == func_id).delete()
         db.query(PontoModel).filter(PontoModel.funcionario_id == func_id).delete()
         db.query(OcorrenciaRHModel).filter(OcorrenciaRHModel.funcionario_id == func_id).delete()
@@ -1221,6 +1223,7 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
     rh = db.query(InfoRHModel).filter(InfoRHModel.funcionario_id == dados.funcionario_id).first()
     if not rh or rh.status_admissao != "ATIVO":
         return {"status": "erro", "detail": "Acesso negado. Funcionário pendente ou demitido."}
+        
     ponto = db.query(PontoModel).filter(
         PontoModel.funcionario_id == dados.funcionario_id,
         PontoModel.data == hoje
@@ -1229,6 +1232,7 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
         ponto = PontoModel(funcionario_id=dados.funcionario_id, data=hoje)
         db.add(ponto)
         db.flush()
+        
     if dados.tipo == "entrada":
         if ponto.entrada:
             return {"status": "erro", "detail": "Entrada já registrada no sistema."}
@@ -1246,6 +1250,7 @@ def bater_ponto_rh(dados: RegistroPonto, db: Session = Depends(get_db)):
             ponto.horas_trabalhadas = round((t2 - t1).total_seconds() / 3600.0, 2)
         except Exception:
             pass
+            
     db.commit()
     return {"status": "sucesso", "mensagem": f"Ponto de {dados.tipo.upper()} registrado com sucesso às {hora}!"}
     
