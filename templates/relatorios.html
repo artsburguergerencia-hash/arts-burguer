@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central de Inteligência & Relatórios | Art's Burguer</title>
+    <title>Central Executiva de BI | Art's Burguer</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -29,15 +29,17 @@
 </head>
 <body class="bg-slate-50 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- HEADER DE COMANDO -->
+    <!-- HEADER COM A SUA LOGO OFICIAL DINÂMICA -->
     <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-20 px-8 flex items-center justify-between shadow-sm sticky top-0 z-30 no-print">
         <div class="flex items-center">
-            <div class="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl flex items-center justify-center text-white mr-4 shadow-lg shadow-brand-500/20">
-                <i class="ph-bold ph-chart-polar text-2xl"></i>
+            <!-- 🚨 LOGO DINÂMICA PUXADA DO BANCO 🚨 -->
+            <div id="bi-logo-container" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 dark:border-slate-700 flex items-center justify-center mr-4 shadow-md overflow-hidden shrink-0">
+                <img id="bi-logo-img" src="" class="w-full h-full object-cover hidden">
+                <i id="bi-logo-fallback" class="ph-bold ph-chart-polar text-2xl text-brand-500"></i>
             </div>
             <div>
-                <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Art's Analytics & BI</h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Central Executiva de Relatórios</p>
+                <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none" id="bi-nome-empresa">Art's Analytics & BI</h1>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Inteligência de Vendas e Operação</p>
             </div>
         </div>
 
@@ -65,7 +67,7 @@
         </div>
     </header>
 
-    <!-- ÁREA DOS RELATÓRIOS -->
+    <!-- ÁREA PRINCIPAL -->
     <main class="flex-1 p-8 max-w-7xl mx-auto w-full space-y-8 print-full">
 
         <!-- BLOCO 1: CARDS EXECUTIVOS (DRE E TICKET) -->
@@ -77,7 +79,7 @@
             </div>
 
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Despesas Totais (Empresa + Casa)</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Despesas Operacionais (DRE)</p>
                 <h3 class="text-3xl font-black text-red-500" id="card-despesas">R$ 0,00</h3>
                 <p class="text-xs font-bold text-slate-400 mt-2">Empresa: <span id="card-desp-empresa">R$ 0</span> | Casa: <span id="card-desp-casa">R$ 0</span></p>
             </div>
@@ -85,7 +87,7 @@
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Lucro Líquido Real</p>
                 <h3 class="text-3xl font-black text-emerald-500" id="card-lucro">R$ 0,00</h3>
-                <p class="text-xs font-bold text-emerald-600 mt-2">Margem Operacional: <span id="card-margem">0%</span></p>
+                <p class="text-xs font-bold text-emerald-600 mt-2">Margem Líquida: <span id="card-margem">0%</span></p>
             </div>
 
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -95,30 +97,69 @@
             </div>
         </div>
 
-        <!-- BLOCO 2: GRÁFICOS ANALÍTICOS (CHART.JS) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Gráfico Comparativo: Faturamento vs Despesas -->
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center">
-                    <i class="ph-bold ph-scales text-brand-500 mr-2 text-lg"></i> Comparativo: Receitas vs Despesas (R$)
-                </h3>
-                <div class="h-64">
-                    <canvas id="graficoComparativo"></canvas>
+        <!-- BLOCO 2: COMPARATIVO DINÂMICO PERSONALIZÁVEL -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white flex items-center">
+                        <i class="ph-bold ph-scales text-brand-500 mr-2 text-xl"></i> Monte seu Gráfico Comparativo Livre
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Selecione quais métricas deseja cruzar na análise.</p>
+                </div>
+
+                <!-- 🚨 SELETORES INTERATIVOS 🚨 -->
+                <div class="flex flex-wrap gap-2 items-center">
+                    <select id="sel-metrica-1" onchange="atualizarGraficoComparativoLivre()" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none">
+                        <option value="faturamento">Faturamento Bruto</option>
+                        <option value="lucro">Lucro Líquido</option>
+                    </select>
+                    
+                    <span class="text-xs font-black text-slate-400 uppercase">VS</span>
+
+                    <select id="sel-metrica-2" onchange="atualizarGraficoComparativoLivre()" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none">
+                        <option value="despesas_total">Despesas Totais</option>
+                        <option value="despesas_empresa">Despesas Empresa</option>
+                        <option value="despesas_casa">Retiradas da Casa</option>
+                        <option value="descontos">Descontos Concedidos</option>
+                        <option value="cmv">Custo Matéria-Prima (CMV)</option>
+                        <option value="cashback">Cashback Ativo</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Gráfico de Canais de Venda -->
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center">
-                    <i class="ph-bold ph-pie-chart text-blue-500 mr-2 text-lg"></i> Vendas por Canal de Atendimento
+            <div class="h-72">
+                <canvas id="graficoComparativoLivre"></canvas>
+            </div>
+        </div>
+
+        <!-- BLOCO 3: HORÁRIOS DE PICO & CANAIS DE VENDA (COM 99FOOD) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- 🚨 GRÁFICO DE HORÁRIO DE PICO (RUSH HOUR) 🚨 -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white flex items-center">
+                        <i class="ph-bold ph-clock-countdown text-amber-500 mr-2 text-xl"></i> Horários de Pico (Volume de Pedidos)
+                    </h3>
+                    <span id="badge-rush" class="bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg">Carregando...</span>
+                </div>
+                <div class="h-64 flex-1">
+                    <canvas id="graficoHorariosPico"></canvas>
+                </div>
+            </div>
+
+            <!-- 🚨 CANAIS DE VENDA COM 99FOOD 🚨 -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white mb-4 flex items-center">
+                    <i class="ph-bold ph-chart-pie-slice text-blue-500 mr-2 text-xl"></i> Faturamento por Canal de Atendimento
                 </h3>
-                <div class="h-64 flex justify-center">
+                <div class="h-64 flex-1 flex justify-center items-center">
                     <canvas id="graficoCanais"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- BLOCO 3: TABELAS DETALHADAS (TOP CLIENTES E ESTOQUE CRÍTICO) -->
+        <!-- BLOCO 4: TOP CLIENTES E ESTOQUE CRÍTICO -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Top Clientes -->
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
@@ -139,7 +180,7 @@
                 </table>
             </div>
 
-            <!-- Alerta de Estoque Crítico -->
+            <!-- Insumos Críticos -->
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white mb-4 flex items-center">
                     <i class="ph-bold ph-warning-circle text-red-500 mr-2 text-lg"></i> Insumos em Nível Crítico
@@ -163,10 +204,10 @@
 
     <script>
         let dadosBIGlobal = null;
-        let chartComparativo = null;
+        let chartComparativoLivre = null;
+        let chartHorariosPico = null;
         let chartCanais = null;
 
-        // Inicialização de datas (padrão: últimos 30 dias até hoje)
         document.addEventListener('DOMContentLoaded', () => {
             const hoje = new Date();
             const trintaDiasAtras = new Date();
@@ -187,7 +228,18 @@
                 const data = await res.json();
                 dadosBIGlobal = data;
 
-                // Preenche os Cards
+                // 🚨 INJETA A SUA LOGO OFICIAL 🚨
+                if(data.loja && data.loja.logo_url && data.loja.logo_url.trim() !== '') {
+                    const imgLogo = document.getElementById('bi-logo-img');
+                    imgLogo.src = data.loja.logo_url;
+                    imgLogo.classList.remove('hidden');
+                    document.getElementById('bi-logo-fallback').classList.add('hidden');
+                }
+                if(data.loja && data.loja.nome) {
+                    document.getElementById('bi-nome-empresa').innerText = `${data.loja.nome} Analytics`;
+                }
+
+                // Cards DRE
                 const fMoeda = v => `R$ ${parseFloat(v).toFixed(2).replace('.', ',')}`;
                 
                 document.getElementById('card-faturamento').innerText = fMoeda(data.dre.faturamento_bruto);
@@ -205,7 +257,9 @@
                 document.getElementById('card-ticket').innerText = fMoeda(data.vendas.ticket_medio);
 
                 // Renderiza os Gráficos
-                renderizarGraficos(data);
+                atualizarGraficoComparativoLivre();
+                renderizarGraficoHorariosPico(data.vendas.horarios_pico);
+                renderizarGraficoCanais(data.vendas.canais);
 
                 // Renderiza Top Clientes
                 const tbClientes = document.getElementById('tabela-top-clientes');
@@ -232,80 +286,164 @@
             }
         }
 
-        function renderizarGraficos(data) {
-            // 1. Gráfico Comparativo de Barras
-            const ctxComp = document.getElementById('graficoComparativo').getContext('2d');
-            if (chartComparativo) chartComparativo.destroy();
-            
-            chartComparativo = new Chart(ctxComp, {
+        // 🚨 1. COMPARADOR PERSONALIZADO DINÂMICO 🚨
+        function atualizarGraficoComparativoLivre() {
+            if(!dadosBIGlobal) return;
+
+            const mapaValores = {
+                "faturamento": { label: "Faturamento Bruto", valor: dadosBIGlobal.dre.faturamento_bruto, cor: "#10b981" },
+                "lucro": { label: "Lucro Líquido", valor: dadosBIGlobal.dre.lucro_liquido, cor: "#3b82f6" },
+                "despesas_total": { label: "Despesas Totais", valor: dadosBIGlobal.dre.despesas_empresa + dadosBIGlobal.dre.despesas_casa, cor: "#ef4444" },
+                "despesas_empresa": { label: "Despesas Empresa", valor: dadosBIGlobal.dre.despesas_empresa, cor: "#dc2626" },
+                "despesas_casa": { label: "Retiradas da Casa", valor: dadosBIGlobal.dre.despesas_casa, cor: "#f97316" },
+                "descontos": { label: "Descontos / Promoções", valor: dadosBIGlobal.dre.descontos_concedidos, cor: "#ec4899" },
+                "cmv": { label: "Custo Matéria-Prima (CMV)", valor: dadosBIGlobal.dre.cmv_materia_prima, cor: "#8b5cf6" },
+                "cashback": { label: "Cashback Ativo dos Clientes", valor: dadosBIGlobal.crm.saldo_cashback_ativo, cor: "#f59e0b" }
+            };
+
+            const chave1 = document.getElementById('sel-metrica-1').value;
+            const chave2 = document.getElementById('sel-metrica-2').value;
+
+            const item1 = mapaValores[chave1];
+            const item2 = mapaValores[chave2];
+
+            const ctx = document.getElementById('graficoComparativoLivre').getContext('2d');
+            if(chartComparativoLivre) chartComparativoLivre.destroy();
+
+            chartComparativoLivre = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Faturamento', 'Despesas Empresa', 'Despesas Casa', 'Lucro Líquido', 'Descontos'],
+                    labels: [item1.label, item2.label],
                     datasets: [{
-                        label: 'Valor em R$',
-                        data: [
-                            data.dre.faturamento_bruto, 
-                            data.dre.despesas_empresa, 
-                            data.dre.despesas_casa, 
-                            data.dre.lucro_liquido,
-                            data.dre.descontos_concedidos
-                        ],
-                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#3b82f6', '#ec4899'],
-                        borderRadius: 12
+                        data: [item1.valor, item2.valor],
+                        backgroundColor: [item1.cor, item2.cor],
+                        borderRadius: 16,
+                        maxBarThickness: 100
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-
-            // 2. Gráfico Donut de Canais
-            const ctxCan = document.getElementById('graficoCanais').getContext('2d');
-            if (chartCanais) chartCanais.destroy();
-
-            const labelsCanais = Object.keys(data.vendas.canais);
-            const valoresCanais = Object.values(data.vendas.canais);
-
-            chartCanais = new Chart(ctxCan, {
-                type: 'doughnut',
-                data: {
-                    labels: labelsCanais,
-                    datasets: [{
-                        data: valoresCanais,
-                        backgroundColor: ['#ff4757', '#3b82f6', '#f59e0b', '#8b5cf6']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: v => `R$ ${v.toLocaleString('pt-BR')}` }
+                        }
+                    }
+                }
             });
         }
 
-        // Exportar para Planilha Excel nativa (.xlsx)
+        // 🚨 2. GRÁFICO DE HORÁRIOS DE PICO (RUSH HOUR) 🚨
+        function renderizarGraficoHorariosPico(horarios) {
+            const labels = Object.keys(horarios);
+            const valores = Object.values(horarios);
+
+            // Descobre o horário com maior movimento
+            let maxPedidos = -1;
+            let melhorHora = "";
+            labels.forEach((h, i) => {
+                if(valores[i] > maxPedidos) {
+                    maxPedidos = valores[i];
+                    melhorHora = h;
+                }
+            });
+
+            const badge = document.getElementById('badge-rush');
+            if(maxPedidos > 0) {
+                badge.innerText = `Pico Máximo: ${melhorHora} (${maxPedidos} pedidos)`;
+            } else {
+                badge.innerText = "Sem pedidos no período";
+            }
+
+            const ctx = document.getElementById('graficoHorariosPico').getContext('2d');
+            if(chartHorariosPico) chartHorariosPico.destroy();
+
+            chartHorariosPico = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Pedidos',
+                        data: valores,
+                        backgroundColor: labels.map(h => h === melhorHora && maxPedidos > 0 ? '#ff4757' : '#f59e0b'),
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+
+        // 🚨 3. GRÁFICO DE CANAIS COM 99FOOD INCLUÍDO 🚨
+        function renderizarGraficoCanais(canais) {
+            const ctx = document.getElementById('graficoCanais').getContext('2d');
+            if(chartCanais) chartCanais.destroy();
+
+            chartCanais = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Delivery Próprio', 'Balcão / PDV', 'Mesa / Salão', 'iFood', '99Food'],
+                    datasets: [{
+                        data: [
+                            canais["Delivery"] || 0,
+                            canais["Balcão"] || 0,
+                            canais["Mesa"] || 0,
+                            canais["iFood"] || 0,
+                            canais["99Food"] || 0
+                        ],
+                        backgroundColor: [
+                            '#ff4757', // Delivery (Vermelho Art's)
+                            '#3b82f6', // Balcão (Azul)
+                            '#f97316', // Mesa (Laranja)
+                            '#ea1d2c', // iFood (Vermelho oficial)
+                            '#ffd100'  // 99Food (Amarelo oficial da 99)
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Exportação Completa para Excel
         function exportarExcel() {
             if(!dadosBIGlobal) return alert("Carregue os dados antes de exportar.");
             
             const wsData = [
-                ["RELATÓRIO EXECUTIVO ART'S BURGUER", ""],
-                ["Período:", `${dadosBIGlobal.periodo.inicio} até ${dadosBIGlobal.periodo.fim}`],
+                [`RELATÓRIO EXECUTIVO - ${dadosBIGlobal.loja.nome.toUpperCase()}`, ""],
+                ["Período Analisado:", `${dadosBIGlobal.periodo.inicio} até ${dadosBIGlobal.periodo.fim}`],
                 [""],
                 ["MÉTRICAS FINANCEIRAS", "VALOR (R$)"],
                 ["Faturamento Bruto", dadosBIGlobal.dre.faturamento_bruto],
-                ["Despesas da Empresa", dadosBIGlobal.dre.despesas_empresa],
-                ["Despesas da Casa (Pessoal)", dadosBIGlobal.dre.despesas_casa],
+                ["Despesas da Empresa (Operacional)", dadosBIGlobal.dre.despesas_empresa],
+                ["Retiradas da Casa (Pessoal)", dadosBIGlobal.dre.despesas_casa],
                 ["Lucro Líquido Real", dadosBIGlobal.dre.lucro_liquido],
                 ["Descontos Concedidos", dadosBIGlobal.dre.descontos_concedidos],
+                ["Custo Matéria-Prima (CMV Teórico)", dadosBIGlobal.dre.cmv_materia_prima],
                 ["Ticket Médio", dadosBIGlobal.vendas.ticket_medio],
                 ["Total de Pedidos", dadosBIGlobal.vendas.total_pedidos],
                 [""],
-                ["VENDAS POR CANAL", "TOTAL (R$)"]
+                ["FATURAMENTO POR CANAL", "VALOR (R$)"],
+                ["Delivery Próprio", dadosBIGlobal.vendas.canais["Delivery"] || 0],
+                ["Balcão / PDV", dadosBIGlobal.vendas.canais["Balcão"] || 0],
+                ["Mesas / Salão", dadosBIGlobal.vendas.canais["Mesa"] || 0],
+                ["iFood", dadosBIGlobal.vendas.canais["iFood"] || 0],
+                ["99Food", dadosBIGlobal.vendas.canais["99Food"] || 0]
             ];
-
-            for (const [canal, val] of Object.entries(dadosBIGlobal.vendas.canais)) {
-                wsData.push([canal, val]);
-            }
 
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, "Resumo Executivo");
 
-            XLSX.writeFile(wb, `ArtsBurguer_Relatorio_${dadosBIGlobal.periodo.inicio.replace(/\//g, '-')}.xlsx`);
+            XLSX.writeFile(wb, `ArtsBurguer_Analytics_${dadosBIGlobal.periodo.inicio.replace(/\//g, '-')}.xlsx`);
         }
     </script>
 </body>
