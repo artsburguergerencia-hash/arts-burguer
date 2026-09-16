@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Inteligência & Relatórios | Art's Burguer</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Bibliotecas de BI: Gráficos e Exportação Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { 500: '#ff4757', 600: '#e04050' } } } } };
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .print-full { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- HEADER DE COMANDO -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-20 px-8 flex items-center justify-between shadow-sm sticky top-0 z-30 no-print">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl flex items-center justify-center text-white mr-4 shadow-lg shadow-brand-500/20">
+                <i class="ph-bold ph-chart-polar text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Art's Analytics & BI</h1>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Central Executiva de Relatórios</p>
+            </div>
+        </div>
+
+        <!-- FILTROS E EXPORTAÇÕES -->
+        <div class="flex items-center space-x-3">
+            <input type="date" id="filtro-ini" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-brand-500 text-slate-700 dark:text-white">
+            <span class="text-slate-400 text-xs font-bold">até</span>
+            <input type="date" id="filtro-fim" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-brand-500 text-slate-700 dark:text-white">
+            
+            <button onclick="carregarBI()" class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:opacity-90 transition-all flex items-center shadow-md">
+                <i class="ph-bold ph-funnel mr-1.5 text-sm"></i> Filtrar
+            </button>
+
+            <button onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center shadow-md">
+                <i class="ph-bold ph-file-xls mr-1.5 text-base"></i> Excel
+            </button>
+
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center shadow-md">
+                <i class="ph-bold ph-printer mr-1.5 text-base"></i> Imprimir / PDF
+            </button>
+
+            <a href="/gestao" class="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-red-500 transition-colors" title="Voltar ao Painel">
+                <i class="ph-bold ph-sign-out text-lg"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- ÁREA DOS RELATÓRIOS -->
+    <main class="flex-1 p-8 max-w-7xl mx-auto w-full space-y-8 print-full">
+
+        <!-- BLOCO 1: CARDS EXECUTIVOS (DRE E TICKET) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Faturamento Bruto</p>
+                <h3 class="text-3xl font-black text-slate-800 dark:text-white" id="card-faturamento">R$ 0,00</h3>
+                <p class="text-xs font-bold text-slate-400 mt-2"><span id="card-pedidos-qtd" class="text-brand-500">0</span> pedidos realizados</p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Despesas Totais (Empresa + Casa)</p>
+                <h3 class="text-3xl font-black text-red-500" id="card-despesas">R$ 0,00</h3>
+                <p class="text-xs font-bold text-slate-400 mt-2">Empresa: <span id="card-desp-empresa">R$ 0</span> | Casa: <span id="card-desp-casa">R$ 0</span></p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Lucro Líquido Real</p>
+                <h3 class="text-3xl font-black text-emerald-500" id="card-lucro">R$ 0,00</h3>
+                <p class="text-xs font-bold text-emerald-600 mt-2">Margem Operacional: <span id="card-margem">0%</span></p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Descontos / Promoções Concedidos</p>
+                <h3 class="text-3xl font-black text-amber-500" id="card-descontos">R$ 0,00</h3>
+                <p class="text-xs font-bold text-slate-400 mt-2">Ticket Médio: <span id="card-ticket" class="text-slate-700 dark:text-white">R$ 0,00</span></p>
+            </div>
+        </div>
+
+        <!-- BLOCO 2: GRÁFICOS ANALÍTICOS (CHART.JS) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Gráfico Comparativo: Faturamento vs Despesas -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center">
+                    <i class="ph-bold ph-scales text-brand-500 mr-2 text-lg"></i> Comparativo: Receitas vs Despesas (R$)
+                </h3>
+                <div class="h-64">
+                    <canvas id="graficoComparativo"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico de Canais de Venda -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center">
+                    <i class="ph-bold ph-pie-chart text-blue-500 mr-2 text-lg"></i> Vendas por Canal de Atendimento
+                </h3>
+                <div class="h-64 flex justify-center">
+                    <canvas id="graficoCanais"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCO 3: TABELAS DETALHADAS (TOP CLIENTES E ESTOQUE CRÍTICO) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Top Clientes -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white mb-4 flex items-center">
+                    <i class="ph-bold ph-crown text-amber-500 mr-2 text-lg"></i> Top 5 Clientes Mais Rentáveis
+                </h3>
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold uppercase text-[9px]">
+                            <th class="py-3 px-2">Cliente</th>
+                            <th class="py-3 px-2">WhatsApp</th>
+                            <th class="py-3 px-2 text-right">Total Gasto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-top-clientes" class="divide-y divide-slate-100 dark:divide-slate-800 font-bold">
+                        <tr><td colspan="3" class="text-center py-6 text-slate-400">Carregando dados...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Alerta de Estoque Crítico -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white mb-4 flex items-center">
+                    <i class="ph-bold ph-warning-circle text-red-500 mr-2 text-lg"></i> Insumos em Nível Crítico
+                </h3>
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold uppercase text-[9px]">
+                            <th class="py-3 px-2">Insumo</th>
+                            <th class="py-3 px-2 text-center">Saldo Atual</th>
+                            <th class="py-3 px-2 text-center text-red-500">Mínimo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-estoque-critico" class="divide-y divide-slate-100 dark:divide-slate-800 font-bold">
+                        <tr><td colspan="3" class="text-center py-6 text-slate-400">Tudo abastecido!</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let dadosBIGlobal = null;
+        let chartComparativo = null;
+        let chartCanais = null;
+
+        // Inicialização de datas (padrão: últimos 30 dias até hoje)
+        document.addEventListener('DOMContentLoaded', () => {
+            const hoje = new Date();
+            const trintaDiasAtras = new Date();
+            trintaDiasAtras.setDate(hoje.getDate() - 30);
+
+            document.getElementById('filtro-ini').value = trintaDiasAtras.toISOString().split('T')[0];
+            document.getElementById('filtro-fim').value = hoje.toISOString().split('T')[0];
+
+            carregarBI();
+        });
+
+        async function carregarBI() {
+            const ini = document.getElementById('filtro-ini').value;
+            const fim = document.getElementById('filtro-fim').value;
+
+            try {
+                const res = await fetch(`/api/gestao/relatorios/bi-completo?data_inicio=${ini}&data_fim=${fim}`);
+                const data = await res.json();
+                dadosBIGlobal = data;
+
+                // Preenche os Cards
+                const fMoeda = v => `R$ ${parseFloat(v).toFixed(2).replace('.', ',')}`;
+                
+                document.getElementById('card-faturamento').innerText = fMoeda(data.dre.faturamento_bruto);
+                document.getElementById('card-pedidos-qtd').innerText = data.vendas.total_pedidos;
+                
+                const despesasTotais = data.dre.despesas_empresa + data.dre.despesas_casa;
+                document.getElementById('card-despesas').innerText = fMoeda(despesasTotais);
+                document.getElementById('card-desp-empresa').innerText = fMoeda(data.dre.despesas_empresa);
+                document.getElementById('card-desp-casa').innerText = fMoeda(data.dre.despesas_casa);
+                
+                document.getElementById('card-lucro').innerText = fMoeda(data.dre.lucro_liquido);
+                document.getElementById('card-margem').innerText = `${data.dre.margem_lucro_pct}%`;
+
+                document.getElementById('card-descontos').innerText = fMoeda(data.dre.descontos_concedidos);
+                document.getElementById('card-ticket').innerText = fMoeda(data.vendas.ticket_medio);
+
+                // Renderiza os Gráficos
+                renderizarGraficos(data);
+
+                // Renderiza Top Clientes
+                const tbClientes = document.getElementById('tabela-top-clientes');
+                tbClientes.innerHTML = data.crm.top_clientes.length ? data.crm.top_clientes.map(c => `
+                    <tr>
+                        <td class="py-3 px-2 text-slate-800 dark:text-white">${c.nome}</td>
+                        <td class="py-3 px-2 font-mono text-slate-500">${c.telefone}</td>
+                        <td class="py-3 px-2 text-right text-emerald-500 font-black">${fMoeda(c.total_gasto)}</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="3" class="text-center py-4 text-slate-400">Nenhuma compra no período.</td></tr>';
+
+                // Renderiza Estoque Crítico
+                const tbEstoque = document.getElementById('tabela-estoque-critico');
+                tbEstoque.innerHTML = data.estoque.itens_criticos.length ? data.estoque.itens_criticos.map(i => `
+                    <tr>
+                        <td class="py-3 px-2 text-slate-800 dark:text-white">${i.nome}</td>
+                        <td class="py-3 px-2 text-center text-red-500 font-black">${i.atual} ${i.unidade}</td>
+                        <td class="py-3 px-2 text-center text-slate-400">${i.minimo} ${i.unidade}</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="3" class="text-center py-4 text-emerald-500 font-bold">Estoque regular!</td></tr>';
+
+            } catch(e) {
+                console.error("Erro ao carregar BI:", e);
+            }
+        }
+
+        function renderizarGraficos(data) {
+            // 1. Gráfico Comparativo de Barras
+            const ctxComp = document.getElementById('graficoComparativo').getContext('2d');
+            if (chartComparativo) chartComparativo.destroy();
+            
+            chartComparativo = new Chart(ctxComp, {
+                type: 'bar',
+                data: {
+                    labels: ['Faturamento', 'Despesas Empresa', 'Despesas Casa', 'Lucro Líquido', 'Descontos'],
+                    datasets: [{
+                        label: 'Valor em R$',
+                        data: [
+                            data.dre.faturamento_bruto, 
+                            data.dre.despesas_empresa, 
+                            data.dre.despesas_casa, 
+                            data.dre.lucro_liquido,
+                            data.dre.descontos_concedidos
+                        ],
+                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#3b82f6', '#ec4899'],
+                        borderRadius: 12
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // 2. Gráfico Donut de Canais
+            const ctxCan = document.getElementById('graficoCanais').getContext('2d');
+            if (chartCanais) chartCanais.destroy();
+
+            const labelsCanais = Object.keys(data.vendas.canais);
+            const valoresCanais = Object.values(data.vendas.canais);
+
+            chartCanais = new Chart(ctxCan, {
+                type: 'doughnut',
+                data: {
+                    labels: labelsCanais,
+                    datasets: [{
+                        data: valoresCanais,
+                        backgroundColor: ['#ff4757', '#3b82f6', '#f59e0b', '#8b5cf6']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // Exportar para Planilha Excel nativa (.xlsx)
+        function exportarExcel() {
+            if(!dadosBIGlobal) return alert("Carregue os dados antes de exportar.");
+            
+            const wsData = [
+                ["RELATÓRIO EXECUTIVO ART'S BURGUER", ""],
+                ["Período:", `${dadosBIGlobal.periodo.inicio} até ${dadosBIGlobal.periodo.fim}`],
+                [""],
+                ["MÉTRICAS FINANCEIRAS", "VALOR (R$)"],
+                ["Faturamento Bruto", dadosBIGlobal.dre.faturamento_bruto],
+                ["Despesas da Empresa", dadosBIGlobal.dre.despesas_empresa],
+                ["Despesas da Casa (Pessoal)", dadosBIGlobal.dre.despesas_casa],
+                ["Lucro Líquido Real", dadosBIGlobal.dre.lucro_liquido],
+                ["Descontos Concedidos", dadosBIGlobal.dre.descontos_concedidos],
+                ["Ticket Médio", dadosBIGlobal.vendas.ticket_medio],
+                ["Total de Pedidos", dadosBIGlobal.vendas.total_pedidos],
+                [""],
+                ["VENDAS POR CANAL", "TOTAL (R$)"]
+            ];
+
+            for (const [canal, val] of Object.entries(dadosBIGlobal.vendas.canais)) {
+                wsData.push([canal, val]);
+            }
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, "Resumo Executivo");
+
+            XLSX.writeFile(wb, `ArtsBurguer_Relatorio_${dadosBIGlobal.periodo.inicio.replace(/\//g, '-')}.xlsx`);
+        }
+    </script>
+</body>
+</html>
