@@ -232,8 +232,11 @@
         }
 
         function imprimirPedido(id) {
-            fetch(`/api/pedidos/${id}/imprimir`, { method: 'POST' }).catch(()=>{});
-            alert(`Comanda #${id} enviada para a impressora!`);
+            // Abre o recibo oficial do pedido em nova aba já formatado para impressora térmica 80mm
+            const janelaRecibo = window.open(`/api/pedidos/${id}/recibo`, '_blank');
+            if (janelaRecibo) {
+                janelaRecibo.focus();
+            }
         }
 
         async function mudarStatus(id, novoStatus, botao) {
