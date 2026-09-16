@@ -15,10 +15,12 @@
             window.location.replace('/login');
         }
         
-        // Função para checar se é admin antes de tentar abrir o Gestão
+        // Função para checar se é admin e abrir em NOVA ABA
         function tentarAcessarGestao() {
-            if (cargoAtual === '1') {
-                window.location.href = '/gestao';
+            const cargoAtual = localStorage.getItem('funcionario_cargo');
+            if (cargoAtual === '1' || cargoAtual === 1) {
+                // 🚨 Abre o painel de Gestão em uma NOVA ABA sem fechar o Portal
+                window.open('/gestao', '_blank');
             } else {
                 alert("⛔ Acesso Restrito! Apenas Administradores podem acessar o Backoffice.");
             }
@@ -93,20 +95,18 @@
                 <i class="ph-bold ph-buildings mr-2 text-lg"></i> Corporativo & Backoffice
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- GESTÃO -->
-                <!-- CARTÃO DO PAINEL DE GESTÃO COM TRAVA DE SEGURANÇA -->
-<div onclick="tentarAcessarGestao()" class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col items-start cursor-pointer">
-    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4">
-        <i class="ph-bold ph-chart-pie-slice text-2xl"></i>
+                
+                <!-- CARTÃO DO PAINEL DE GESTÃO (COM EFEITO HOVER, FLUTUAÇÃO E DARK MODE) -->
+<div onclick="tentarAcessarGestao()" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-blue-500 dark:hover:border-blue-500 group shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between">
+    <div>
+        <div class="w-12 h-12 bg-blue-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition-colors">
+            <i class="ph-bold ph-chart-pie-slice text-xl text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors"></i>
+        </div>
+        <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Painel de Gestão</h3>
+        <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Relatórios, Financeiro, CRM, Estoque e Setup da Loja.</p>
     </div>
-    <h3 class="text-xl font-black text-slate-800 mb-2">Painel de Gestão</h3>
-    <p class="text-sm text-slate-500 font-medium leading-relaxed mb-6">Relatórios, Financeiro, CRM, Estoque e Setup da Loja.</p>
-    <span class="mt-auto bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">/gestao</span>
+    <span class="text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded w-fit">/gestao</span>
 </div>
-    <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Portal do RH</h3>
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Holerites, Atestados e Solicitações de Folgas da equipe.</p>
-                    <span class="text-[10px] font-mono font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-2 py-1 rounded">/portal_colaborador</span>
-                </a>
                 
                 <!-- 🚨 COLE O NOVO CARTÃO EXECUTIVO DE BI EXATAMENTE AQUI: 🚨 -->
                 <a href="/relatorios" onclick="window.open(this.href, '_blank'); return false;" class="card-link bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-8 rounded-[2rem] hover:border-emerald-500 dark:hover:border-emerald-500 group shadow-sm hover:shadow-xl transition-all">
