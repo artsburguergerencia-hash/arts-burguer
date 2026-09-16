@@ -1892,19 +1892,22 @@ def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db:
 # ==========================================
 # CENTRAL DE INTELIGÊNCIA & RELATÓRIOS (BI)
 # ==========================================
+# ==========================================
+# CENTRAL DE INTELIGÊNCIA & RELATÓRIOS (BI PRO)
+# ==========================================
 @app.get("/api/gestao/relatorios/bi-completo")
 def relatorio_bi_completo(
     data_inicio: Optional[str] = Query(None), 
     data_fim: Optional[str] = Query(None), 
     db: Session = Depends(get_db)
 ):
-    """
-    Motor analítico que cruza todas as tabelas do ERP por período.
-    """
     hoje = datetime.utcnow().date()
     di = datetime.strptime(data_inicio, "%Y-%m-%d").date() if data_inicio and data_inicio != "undefined" else (hoje - timedelta(days=30))
     df = datetime.strptime(data_fim, "%Y-%m-%d").date() if data_fim and data_fim != "undefined" else hoje
 
+    config = db.query(ConfiguracaoLojaModel).first()
+
+    # 1. Pedidos no período
     pedidos_periodo = db.query(PedidoModel).filter(
         cast(PedidoModel.data_hora, Date) >= di,
         cast(PedidoModel.data_hora, Date) <= df
@@ -1913,24 +1916,51 @@ def relatorio_bi_completo(
     pedidos_validos = [p for p in pedidos_periodo if str(p.status).upper() != "CANCELADO"]
     pedidos_cancelados = [p for p in pedidos_periodo if str(p.status).upper() == "CANCELADO"]
 
+    # 2. Métricas Financeiras
     faturamento_bruto = sum(float(p.total_pago or 0.0) for p in pedidos_validos)
     total_pedidos = len(pedidos_validos)
     ticket_medio = (faturamento_bruto / total_pedidos) if total_pedidos > 0 else 0.0
     descontos_totais = sum(float(getattr(p, 'desconto', 0.0) or 0.0) for p in pedidos_validos)
 
-    canais = {"Delivery": 0, "Balcão": 0, "Mesa": 0, "iFood": 0}
+    # 3. Canais de Venda (com 99Food incluído)
+    canais = {"Delivery": 0.0, "Balcão": 0.0, "Mesa": 0.0, "iFood": 0.0, "99Food": 0.0}
     for p in pedidos_validos:
-        tp = str(p.tipo_pedido).split('.')[-1]
-        if "DELIVERY" in tp.upper(): canais["Delivery"] += float(p.total_pago or 0.0)
-        elif "MESA" in tp.upper(): canais["Mesa"] += float(p.total_pago or 0.0)
-        elif "IFOOD" in tp.upper(): canais["iFood"] += float(p.total_pago or 0.0)
-        else: canais["Balcão"] += float(p.total_pago or 0.0)
+        tp = str(p.tipo_pedido).split('.')[-1].upper()
+        origem = str(getattr(p, 'origem', '')).upper()
+        val = float(p.total_pago or 0.0)
 
-    pagamentos = {}
+        if "99FOOD" in tp or "99FOOD" in origem or "99" in origem:
+            canais["99Food"] += val
+        elif "IFOOD" in tp or "IFOOD" in origem:
+            canais["iFood"] += val
+        elif "MESA" in tp or "MESA" in origem:
+            canais["Mesa"] += val
+        elif "DELIVERY" in tp:
+            canais["Delivery"] += val
+        else:
+            canais["Balcão"] += val
+
+    # 4. Horários de Pico (Distribuição por Hora do Dia)
+    horas_pico = {f"{h:02d}h": 0 for h in range(11, 24)} # das 11h às 23h
     for p in pedidos_validos:
-        forma = str(p.forma_pagamento or "Outros").strip()
-        pagamentos[forma] = pagamentos.get(forma, 0.0) + float(p.total_pago or 0.0)
+        if p.data_hora:
+            h_str = f"{p.data_hora.hour:02d}h"
+            if h_str in horas_pico:
+                horas_pico[h_str] += 1
+            else:
+                horas_pico[h_str] = 1
 
+    # 5. Custo Teórico de Matéria-Prima (CMV) via Fichas Técnicas
+    cmv_total = 0.0
+    for p in pedidos_validos:
+        for item in p.itens:
+            fichas = db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == item.produto_id).all()
+            for f in fichas:
+                insumo = db.query(InsumoModel).filter(InsumoModel.id == f.insumo_id).first()
+                if insumo:
+                    cmv_total += (f.quantidade_necessaria * insumo.custo_unitario * item.quantidade)
+
+    # 6. DRE & Contas
     contas_periodo = db.query(ContaPagarModel).filter(
         ContaPagarModel.data_vencimento >= di,
         ContaPagarModel.data_vencimento <= df
@@ -1943,14 +1973,12 @@ def relatorio_bi_completo(
     lucro_liquido = lucro_operacional - despesas_casa
     margem_lucro = (lucro_operacional / faturamento_bruto * 100) if faturamento_bruto > 0 else 0.0
 
-    taxas_motoboy_total = sum(float(p.taxa_entrega or 0.0) for p in pedidos_validos if "DELIVERY" in str(p.tipo_pedido).upper())
-    entregas_qtd = len([p for p in pedidos_validos if "DELIVERY" in str(p.tipo_pedido).upper()])
-
+    # 7. Clientes & Cashback Circulando
     clientes_todos = db.query(ClienteModel).all()
-    total_clientes = len(clientes_todos)
-    clientes_bloqueados = len([c for c in clientes_todos if c.bloqueado])
-    cashback_circulando = sum(float(c.cashback or 0.0) for c in clientes_todos)
+    cashback_ativo = sum(float(c.cashback or 0.0) for c in clientes_todos)
+    pontos_ativos = sum(int(c.pontos or 0) for c in clientes_todos)
 
+    # Ranking Top 5 Clientes
     ranking_clientes = {}
     for p in pedidos_validos:
         if p.cliente_id:
@@ -1967,6 +1995,7 @@ def relatorio_bi_completo(
                 "pontos": cli.pontos
             })
 
+    # 8. Estoque Crítico
     insumos = db.query(InsumoModel).all()
     estoque_critico = [
         {"nome": i.nome, "atual": i.quantidade_atual, "minimo": i.quantidade_minima, "unidade": i.unidade_medida}
@@ -1974,6 +2003,10 @@ def relatorio_bi_completo(
     ]
 
     return {
+        "loja": {
+            "nome": config.nome_empresa if config else "Art's Burguer",
+            "logo_url": config.logo_url if config and config.logo_url else ""
+        },
         "periodo": {"inicio": di.strftime("%d/%m/%Y"), "fim": df.strftime("%d/%m/%Y")},
         "dre": {
             "faturamento_bruto": round(faturamento_bruto, 2),
@@ -1982,23 +2015,20 @@ def relatorio_bi_completo(
             "lucro_operacional": round(lucro_operacional, 2),
             "lucro_liquido": round(lucro_liquido, 2),
             "margem_lucro_pct": round(margem_lucro, 1),
-            "descontos_concedidos": round(descontos_totais, 2)
+            "descontos_concedidos": round(descontos_totais, 2),
+            "cmv_materia_prima": round(cmv_total, 2)
         },
         "vendas": {
             "total_pedidos": total_pedidos,
             "ticket_medio": round(ticket_medio, 2),
             "cancelados_qtd": len(pedidos_cancelados),
             "canais": canais,
-            "formas_pagamento": pagamentos
-        },
-        "logistica": {
-            "entregas_realizadas": entregas_qtd,
-            "taxas_arrecadadas": round(taxas_motoboy_total, 2)
+            "horarios_pico": horas_pico
         },
         "crm": {
-            "total_clientes": total_clientes,
-            "bloqueados": clientes_bloqueados,
-            "saldo_cashback_ativo": round(cashback_circulando, 2),
+            "total_clientes": len(clientes_todos),
+            "saldo_cashback_ativo": round(cashback_ativo, 2),
+            "total_pontos_acumulados": pontos_ativos,
             "top_clientes": top_clientes
         },
         "estoque": {
