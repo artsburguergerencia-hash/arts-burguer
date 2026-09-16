@@ -293,7 +293,30 @@
                 }
             } catch(e) {}
         }
-        setInterval(atualizarTV, 3000); 
+        // 🚨 WEBSOCKET EM TEMPO REAL (TV DE SENHAS) 🚨
+        function conectarWebSocketTV() {
+            const protocolo = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(`${protocolo}//${window.location.host}/ws/tv`);
+
+            ws.onmessage = (event) => {
+                try {
+                    const dados = JSON.parse(event.data);
+                    if (dados.evento === 'PEDIDO_PRONTO') {
+                        // Chama o áudio imediatamente e atualiza o visual da TV
+                        chamarSenhaVoz(dados.senha, dados.cliente, false);
+                        atualizarTV();
+                    }
+                } catch(e) {}
+            };
+
+            ws.onclose = () => {
+                setTimeout(conectarWebSocketTV, 3000);
+            };
+        }
+        conectarWebSocketTV();
+
+        // Intervalo de segurança relaxado (apenas contingência)
+        setInterval(atualizarTV, 30000); 
     </script>
 </body>
 </html>
