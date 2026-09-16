@@ -2649,6 +2649,12 @@ def abrir_tela_relatorios():
         return Path("templates/relatorios.html").read_text(encoding="utf-8")
     return "Erro: Arquivo relatorios.html não encontrado na pasta templates."
 
+@app.get("/marketing", response_class=HTMLResponse)
+def abrir_estudio_marketing():
+    if Path("templates/marketing.html").exists():
+        return Path("templates/marketing.html").read_text(encoding="utf-8")
+    return "Erro: Arquivo marketing.html não encontrado na pasta templates."
+    
 @app.get("/pdv", response_class=HTMLResponse)
 def abrir_pdv(): 
     if Path("templates/pdv.html").exists():
