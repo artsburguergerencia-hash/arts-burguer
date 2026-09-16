@@ -59,7 +59,7 @@ class PedidoModel(Base):
     total_pago = Column(Float, default=0.0)
 
     # Relacionamentos com Cliente e Itens
-    cliente = relationship("ClienteModel", back_populates="pedidos")
+    cliente = relationship("ClienteModel", backref="pedidos")
     itens = relationship("ItemPedidoModel", back_populates="pedido", cascade="all, delete-orphan")
 
 
