@@ -75,6 +75,12 @@ from auth_security import (
 )
 
 # ==========================================
+# RELATÓRIOS
+# ==========================================
+from datetime import datetime, date, timedelta  # 👈 Adicione 'timedelta' aqui se não tiver
+from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text, DateTime, func, cast, Date  # 👈 Adicione 'func, cast, Date'
+
+# ==========================================
 # 4. CONFIGURAÇÃO DO SERVIDOR FASTAPI
 # ==========================================
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -1883,6 +1889,124 @@ def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db:
     lista.sort(key=lambda x: x["faturamento_gerado"], reverse=True)
     return lista[:10]
 
+# ==========================================
+# CENTRAL DE INTELIGÊNCIA & RELATÓRIOS (BI)
+# ==========================================
+@app.get("/api/gestao/relatorios/bi-completo")
+def relatorio_bi_completo(
+    data_inicio: Optional[str] = Query(None), 
+    data_fim: Optional[str] = Query(None), 
+    db: Session = Depends(get_db)
+):
+    """
+    Motor analítico que cruza todas as tabelas do ERP por período.
+    """
+    hoje = datetime.utcnow().date()
+    di = datetime.strptime(data_inicio, "%Y-%m-%d").date() if data_inicio and data_inicio != "undefined" else (hoje - timedelta(days=30))
+    df = datetime.strptime(data_fim, "%Y-%m-%d").date() if data_fim and data_fim != "undefined" else hoje
+
+    pedidos_periodo = db.query(PedidoModel).filter(
+        cast(PedidoModel.data_hora, Date) >= di,
+        cast(PedidoModel.data_hora, Date) <= df
+    ).all()
+
+    pedidos_validos = [p for p in pedidos_periodo if str(p.status).upper() != "CANCELADO"]
+    pedidos_cancelados = [p for p in pedidos_periodo if str(p.status).upper() == "CANCELADO"]
+
+    faturamento_bruto = sum(float(p.total_pago or 0.0) for p in pedidos_validos)
+    total_pedidos = len(pedidos_validos)
+    ticket_medio = (faturamento_bruto / total_pedidos) if total_pedidos > 0 else 0.0
+    descontos_totais = sum(float(getattr(p, 'desconto', 0.0) or 0.0) for p in pedidos_validos)
+
+    canais = {"Delivery": 0, "Balcão": 0, "Mesa": 0, "iFood": 0}
+    for p in pedidos_validos:
+        tp = str(p.tipo_pedido).split('.')[-1]
+        if "DELIVERY" in tp.upper(): canais["Delivery"] += float(p.total_pago or 0.0)
+        elif "MESA" in tp.upper(): canais["Mesa"] += float(p.total_pago or 0.0)
+        elif "IFOOD" in tp.upper(): canais["iFood"] += float(p.total_pago or 0.0)
+        else: canais["Balcão"] += float(p.total_pago or 0.0)
+
+    pagamentos = {}
+    for p in pedidos_validos:
+        forma = str(p.forma_pagamento or "Outros").strip()
+        pagamentos[forma] = pagamentos.get(forma, 0.0) + float(p.total_pago or 0.0)
+
+    contas_periodo = db.query(ContaPagarModel).filter(
+        ContaPagarModel.data_vencimento >= di,
+        ContaPagarModel.data_vencimento <= df
+    ).all()
+
+    despesas_empresa = sum(float(c.valor or 0.0) for c in contas_periodo if c.tipo_despesa == "Empresa")
+    despesas_casa = sum(float(c.valor or 0.0) for c in contas_periodo if c.tipo_despesa == "Casa")
+    
+    lucro_operacional = faturamento_bruto - despesas_empresa
+    lucro_liquido = lucro_operacional - despesas_casa
+    margem_lucro = (lucro_operacional / faturamento_bruto * 100) if faturamento_bruto > 0 else 0.0
+
+    taxas_motoboy_total = sum(float(p.taxa_entrega or 0.0) for p in pedidos_validos if "DELIVERY" in str(p.tipo_pedido).upper())
+    entregas_qtd = len([p for p in pedidos_validos if "DELIVERY" in str(p.tipo_pedido).upper()])
+
+    clientes_todos = db.query(ClienteModel).all()
+    total_clientes = len(clientes_todos)
+    clientes_bloqueados = len([c for c in clientes_todos if c.bloqueado])
+    cashback_circulando = sum(float(c.cashback or 0.0) for c in clientes_todos)
+
+    ranking_clientes = {}
+    for p in pedidos_validos:
+        if p.cliente_id:
+            ranking_clientes[p.cliente_id] = ranking_clientes.get(p.cliente_id, 0.0) + float(p.total_pago or 0.0)
+    
+    top_clientes = []
+    for c_id, total_gasto in sorted(ranking_clientes.items(), key=lambda x: x[1], reverse=True)[:5]:
+        cli = db.query(ClienteModel).filter(ClienteModel.id == c_id).first()
+        if cli:
+            top_clientes.append({
+                "nome": cli.nome,
+                "telefone": cli.telefone,
+                "total_gasto": round(total_gasto, 2),
+                "pontos": cli.pontos
+            })
+
+    insumos = db.query(InsumoModel).all()
+    estoque_critico = [
+        {"nome": i.nome, "atual": i.quantidade_atual, "minimo": i.quantidade_minima, "unidade": i.unidade_medida}
+        for i in insumos if i.quantidade_atual <= i.quantidade_minima
+    ]
+
+    return {
+        "periodo": {"inicio": di.strftime("%d/%m/%Y"), "fim": df.strftime("%d/%m/%Y")},
+        "dre": {
+            "faturamento_bruto": round(faturamento_bruto, 2),
+            "despesas_empresa": round(despesas_empresa, 2),
+            "despesas_casa": round(despesas_casa, 2),
+            "lucro_operacional": round(lucro_operacional, 2),
+            "lucro_liquido": round(lucro_liquido, 2),
+            "margem_lucro_pct": round(margem_lucro, 1),
+            "descontos_concedidos": round(descontos_totais, 2)
+        },
+        "vendas": {
+            "total_pedidos": total_pedidos,
+            "ticket_medio": round(ticket_medio, 2),
+            "cancelados_qtd": len(pedidos_cancelados),
+            "canais": canais,
+            "formas_pagamento": pagamentos
+        },
+        "logistica": {
+            "entregas_realizadas": entregas_qtd,
+            "taxas_arrecadadas": round(taxas_motoboy_total, 2)
+        },
+        "crm": {
+            "total_clientes": total_clientes,
+            "bloqueados": clientes_bloqueados,
+            "saldo_cashback_ativo": round(cashback_circulando, 2),
+            "top_clientes": top_clientes
+        },
+        "estoque": {
+            "total_insumos": len(insumos),
+            "itens_criticos": estoque_critico
+        }
+    }
+
 @app.get("/api/pedidos/{pedido_id}/recibo")
 def obter_recibo_pedido(pedido_id: int, db: Session = Depends(get_db)):
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
@@ -2488,6 +2612,12 @@ def abrir_gestao():
     if Path("templates/gestao.html").exists():
         return Path("templates/gestao.html").read_text(encoding="utf-8")
     return "Erro: Arquivo gestao.html não encontrado."
+
+@app.get("/relatorios", response_class=HTMLResponse)
+def abrir_tela_relatorios(): 
+    if Path("templates/relatorios.html").exists():
+        return Path("templates/relatorios.html").read_text(encoding="utf-8")
+    return "Erro: Arquivo relatorios.html não encontrado na pasta templates."
 
 @app.get("/pdv", response_class=HTMLResponse)
 def abrir_pdv(): 
