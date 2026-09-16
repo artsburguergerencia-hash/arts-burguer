@@ -21,6 +21,15 @@
     </script>
     
     <style>
+        /* 🚨 TRAVA DE AUTOATENDIMENTO (KIOSK MODE) 🚨 */
+        *, html, body { 
+            touch-action: manipulation; 
+            -webkit-touch-callout: none;
+        }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; user-select: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
         body { font-family: 'Inter', sans-serif; overflow: hidden; user-select: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
