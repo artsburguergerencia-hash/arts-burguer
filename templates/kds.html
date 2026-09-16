@@ -192,7 +192,19 @@
             } catch(e) {}
         });
 
-        setInterval(carregarKDS, 4000); 
+        // 🚨 WEBSOCKET EM TEMPO REAL (KDS) 🚨
+        function conectarWebSocketKDS() {
+            const protocolo = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(`${protocolo}//${window.location.host}/ws/kds`);
+
+            ws.onmessage = (event) => {
+                try {
+                    const dados = JSON.parse(event.data);
+                    if (dados.evento === 'ATUALIZAR_COZINHA') {
+                        carregarKDS(); // Atualiza a tela no milissegundo em que o pedido entrar
+                    }
+                } catch(e) {}
+            };
 
         async function carregarKDS() {
             try {
