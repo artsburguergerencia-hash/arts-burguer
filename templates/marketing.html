@@ -8,8 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Biblioteca de conversão de HTML para Imagem PNG em Alta Resolução -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
@@ -19,10 +17,8 @@
     
     <style>
         .font-promo { font-family: 'Montserrat', sans-serif; }
-        .text-stroke { -webkit-text-stroke: 2px #000; }
-        .text-stroke-white { -webkit-text-stroke: 1.5px #fff; }
-        .shadow-hard { filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.8)); }
-        .shadow-glow { filter: drop-shadow(0 0 20px rgba(255, 71, 87, 0.6)); }
+        .shadow-hard { filter: drop-shadow(0 4px 10px rgba(0,0,0,0.9)); }
+        .shadow-glow { filter: drop-shadow(0 0 15px rgba(255, 71, 87, 0.6)); }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
@@ -35,7 +31,7 @@
             </div>
             <div>
                 <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Estúdio de Marketing & Anúncios</h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Gerador de Flyers para WhatsApp & Instagram</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Gerador de Flyers com Desconto Real</p>
             </div>
         </div>
 
@@ -49,13 +45,13 @@
         </div>
     </header>
 
-    <!-- ÁREA PRINCIPAL DIVIDIDA EM 2 COLUNAS -->
+    <!-- ÁREA PRINCIPAL -->
     <main class="flex-1 p-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        <!-- COLUNA ESQUERDA: CONTROLES & PERSONALIZAÇÃO (5 Colunas) -->
+        <!-- CONTROLES (5 Colunas) -->
         <div class="lg:col-span-5 space-y-6">
             
-            <!-- 1. ATALHO: IMPORTAR DO PRÓPRIO CARDÁPIO -->
+            <!-- 1. IMPORTAR DO CARDÁPIO -->
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center">
                     <i class="ph-bold ph-lightning text-amber-500 mr-2 text-base"></i> 1-Clique: Puxar do seu Cardápio
@@ -65,134 +61,152 @@
                 </select>
             </div>
 
-            <!-- 2. ESCOLHA DA IMAGEM -->
+            <!-- 2. DESCONTO INTELIGENTE (% E PREÇOS) -->
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
                 <label class="block text-xs font-black uppercase tracking-widest text-slate-400 flex items-center">
-                    <i class="ph-bold ph-image text-brand-500 mr-2 text-base"></i> Imagem do Anúncio
+                    <i class="ph-bold ph-percent text-emerald-500 mr-2 text-base"></i> Configuração do Desconto
                 </label>
-                
-                <!-- Galeria de Fotos Prontas de Alta Qualidade -->
+
+                <!-- Escolha do que vai aparecer no flyer -->
                 <div>
-                    <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Ou escolha uma foto de alta definição pronta:</p>
-                    <div class="grid grid-cols-4 gap-2">
-                        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop" onclick="selecionarFotoPronta(this.src)" class="h-16 w-full object-cover rounded-xl border-2 border-transparent hover:border-brand-500 cursor-pointer shadow-sm active:scale-95 transition-all">
-                        <img src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=800&auto=format&fit=crop" onclick="selecionarFotoPronta(this.src)" class="h-16 w-full object-cover rounded-xl border-2 border-transparent hover:border-brand-500 cursor-pointer shadow-sm active:scale-95 transition-all">
-                        <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop" onclick="selecionarFotoPronta(this.src)" class="h-16 w-full object-cover rounded-xl border-2 border-transparent hover:border-brand-500 cursor-pointer shadow-sm active:scale-95 transition-all">
-                        <img src="https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?q=80&w=800&auto=format&fit=crop" onclick="selecionarFotoPronta(this.src)" class="h-16 w-full object-cover rounded-xl border-2 border-transparent hover:border-brand-500 cursor-pointer shadow-sm active:scale-95 transition-all">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">O que deve aparecer no Anúncio?</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="flex flex-col items-center p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer text-center hover:border-brand-500 transition-colors">
+                            <input type="radio" name="modo_exibicao" value="ambos" checked onchange="atualizarModoExibicao(this.value)" class="sr-only peer">
+                            <span class="text-[10px] font-black uppercase tracking-wider peer-checked:text-brand-500">Preço + %</span>
+                            <span class="w-2 h-2 rounded-full bg-brand-500 mt-1 opacity-0 peer-checked:opacity-100"></span>
+                        </label>
+                        <label class="flex flex-col items-center p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer text-center hover:border-brand-500 transition-colors">
+                            <input type="radio" name="modo_exibicao" value="preco" onchange="atualizarModoExibicao(this.value)" class="sr-only peer">
+                            <span class="text-[10px] font-black uppercase tracking-wider peer-checked:text-brand-500">Só Preço</span>
+                            <span class="w-2 h-2 rounded-full bg-brand-500 mt-1 opacity-0 peer-checked:opacity-100"></span>
+                        </label>
+                        <label class="flex flex-col items-center p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer text-center hover:border-brand-500 transition-colors">
+                            <input type="radio" name="modo_exibicao" value="porcentagem" onchange="atualizarModoExibicao(this.value)" class="sr-only peer">
+                            <span class="text-[10px] font-black uppercase tracking-wider peer-checked:text-brand-500">Só % OFF</span>
+                            <span class="w-2 h-2 rounded-full bg-brand-500 mt-1 opacity-0 peer-checked:opacity-100"></span>
+                        </label>
                     </div>
                 </div>
 
-                <!-- Upload do Celular / Computador -->
-                <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Subir Foto do Celular / Galeria</label>
-                    <input type="file" accept="image/*" onchange="subirFotoUsuario(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-brand-500 file:text-white hover:file:bg-brand-600 cursor-pointer">
+                <!-- Inputs sincronizados -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Preço (De)</label>
+                        <input type="text" id="input-preco-de" value="R$ 8,90" oninput="calcularPorPrecoDe(this.value)" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-red-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1">Desconto (%)</label>
+                        <input type="number" id="input-desconto-pct" value="15" min="1" max="90" oninput="calcularPorPorcentagem(this.value)" class="w-full px-3 py-2.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl text-xs font-black text-amber-600 dark:text-amber-400 outline-none text-center">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Preço (Por)</label>
+                        <input type="text" id="input-preco-por" value="R$ 7,57" oninput="calcularPorPrecoPor(this.value)" class="w-full px-3 py-2.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-xs font-black text-emerald-600 outline-none">
+                    </div>
                 </div>
             </div>
 
-            <!-- 3. TEXTOS DA PROPAGANDA -->
+            <!-- 3. TEXTOS & LOGO -->
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
                 <label class="block text-xs font-black uppercase tracking-widest text-slate-400 flex items-center">
                     <i class="ph-bold ph-text-t text-blue-500 mr-2 text-base"></i> Textos da Propaganda
                 </label>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Selo / Chamada de Topo</label>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Selo Superior</label>
                     <input type="text" id="input-tag" value="🔥 PROMOÇÃO DO DIA" oninput="atualizarPreview()" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none uppercase">
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Título do Lanche / Combo</label>
-                    <input type="text" id="input-titulo" value="2 ART'S BACON BURGER" oninput="atualizarPreview()" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-black outline-none uppercase">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Preço Normal (De)</label>
-                        <input type="text" id="input-preco-de" value="R$ 30,00" oninput="atualizarPreview()" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-red-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Preço Promoção (Por)</label>
-                        <input type="text" id="input-preco-por" value="R$ 20,00" oninput="atualizarPreview()" class="w-full px-4 py-2.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-sm font-black text-emerald-600 outline-none">
-                    </div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Lanche / Combo</label>
+                    <input type="text" id="input-titulo" value="COCA-COLA NORMAL LATA 350ML" oninput="atualizarPreview()" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-black outline-none uppercase">
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chamada para Ação / Rodapé</label>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chamada do Rodapé</label>
                     <input type="text" id="input-rodape" value="⚡ Peça agora pelo WhatsApp ou Cardápio Online!" oninput="atualizarPreview()" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Estilo do Tema</label>
-                        <select id="sel-tema" onchange="atualizarTema(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none">
-                            <option value="brasa">Chapa & Fogo (Escuro)</option>
-                            <option value="fastfood">Ouro & Amarelo Fast-Food</option>
-                            <option value="neon">Neon Noturno (Cyber)</option>
-                            <option value="clean">Artesanal Clean</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Formato</label>
-                        <select id="sel-formato" onchange="atualizarFormato(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none">
-                            <option value="quadrado">Quadrado (1:1 - WhatsApp)</option>
-                            <option value="stories">Vertical (9:16 - Status/Stories)</option>
-                        </select>
-                    </div>
+                <!-- Configuração da Logo -->
+                <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Exibir Logo da Hamburgueria?</label>
+                    <input type="checkbox" id="check-mostrar-logo" checked onchange="toggleLogo(this.checked)" class="w-5 h-5 accent-brand-500 rounded cursor-pointer">
                 </div>
+            </div>
+
+            <!-- 4. IMAGEM DE FUNDO -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 flex items-center">
+                    <i class="ph-bold ph-image text-purple-500 mr-2 text-base"></i> Trocar Foto
+                </label>
+                <div class="grid grid-cols-4 gap-2">
+                    <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop" onclick="selecionarFotoPronta(this.src)" class="h-14 w-full object-cover rounded-xl border-2 hover:border-brand-500 cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=800&auto=format&fit=crop" onclick="selecionarFotoPronta(this.src)" class="h-14 w-full object-cover rounded-xl border-2 hover:border-brand-500 cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop" onclick="selecionarFotoPronta(this.src)" class="h-14 w-full object-cover rounded-xl border-2 hover:border-brand-500 cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?q=80&w=800&auto=format&fit=crop" onclick="selecionarFotoPronta(this.src)" class="h-14 w-full object-cover rounded-xl border-2 hover:border-brand-500 cursor-pointer">
+                </div>
+                <input type="file" accept="image/*" onchange="subirFotoUsuario(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-brand-500 file:text-white hover:file:bg-brand-600 cursor-pointer pt-2">
             </div>
 
         </div>
 
-        <!-- COLUNA DIREITA: PREVIEW DO ANÚNCIO AO VIVO (7 Colunas) -->
+        <!-- PRÉVIA DO ANÚNCIO (7 Colunas) -->
         <div class="lg:col-span-7 flex flex-col items-center sticky top-28">
             <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center">
-                <i class="ph-bold ph-eye text-emerald-500 mr-2 text-base"></i> Prévia do Anúncio (Ao Vivo)
+                <i class="ph-bold ph-eye text-emerald-500 mr-2 text-base"></i> Prévia em Alta Resolução
             </p>
 
-            <!-- 🚨 O CANVAS / CARD DO ANÚNCIO (FORMATADO COMO FLYER DE PROPAGANDA) 🚨 -->
-            <div id="card-anuncio" class="w-[480px] h-[480px] bg-slate-900 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-between p-8 border-4 border-amber-400/80 transition-all">
+            <!-- 🚨 FLYER PROFISSIONAL: ESPAÇO RESPONSIVO ANTI-CORTE 🚨 -->
+            <div id="card-anuncio" class="w-[480px] h-[520px] bg-slate-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-between p-6 pb-6 border-4 border-amber-400">
                 
-                <!-- Imagem de Fundo com Fade de Fumaça/Gradiente -->
-                <img id="card-img-fundo" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none transform scale-105">
-                <div id="card-overlay" class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/70 pointer-events-none"></div>
+                <!-- Imagem com degradê escurecido nas bordas para contraste perfeito -->
+                <img id="card-img-fundo" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-65 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/70 pointer-events-none"></div>
 
-                <!-- TOPO: SELO DE IMPACTO E LOGO -->
-                <div class="relative z-10 flex items-center justify-between">
-                    <span id="card-tag" class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-promo font-black text-sm px-4 py-1.5 rounded-full shadow-lg tracking-widest uppercase border-2 border-white/80 animate-pulse">
+                <!-- TOPO: SELO DE CHAMADA E LOGO DA LOJA -->
+                <div class="relative z-10 flex items-start justify-between">
+                    <span id="card-tag" class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-promo font-black text-xs px-4 py-2 rounded-full shadow-lg tracking-widest uppercase border border-white/80">
                         🔥 PROMOÇÃO DO DIA
                     </span>
 
-                    <!-- Logo Oficial da Loja -->
-                    <div id="card-logo-container" class="w-14 h-14 rounded-2xl bg-white p-1 border-2 border-amber-400 shadow-xl overflow-hidden flex items-center justify-center">
+                    <!-- Logo oficial -->
+                    <div id="card-logo-box" class="w-16 h-16 rounded-2xl bg-white/95 p-1.5 border-2 border-amber-400 shadow-xl flex items-center justify-center shrink-0">
                         <img id="card-logo-img" src="" class="w-full h-full object-contain hidden">
                         <i id="card-logo-fallback" class="ph-fill ph-hamburger text-3xl text-brand-500"></i>
                     </div>
                 </div>
 
-                <!-- CENTRO / RODAPÉ: TÍTULO GIGANTE E PREÇOS DE PROPAGANDA -->
-                <div class="relative z-10 space-y-3 mt-auto">
+                <!-- RODAPÉ: TÍTULO, PREÇOS E SELO DE % (SEM NENHUM CORTE) -->
+                <div class="relative z-10 flex flex-col justify-end space-y-3">
                     
-                    <!-- Título em Destaque com Sombra Pesada -->
-                    <h2 id="card-titulo" class="font-promo font-black text-4xl text-white uppercase tracking-tighter leading-none shadow-hard drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">
-                        2 ART'S BACON BURGER
+                    <!-- Selo de % Flutuante (Aparece se o modo for 'ambos' ou 'porcentagem') -->
+                    <div id="card-badge-pct-container" class="flex items-center">
+                        <span id="card-badge-pct" class="bg-red-600 text-yellow-300 font-promo font-black text-sm px-3.5 py-1 rounded-xl shadow-lg border-2 border-yellow-300 transform -rotate-2">
+                            ⚡ 15% DE DESCONTO
+                        </span>
+                    </div>
+
+                    <!-- Título com espaçamento ajustado -->
+                    <h2 id="card-titulo" class="font-promo font-black text-3xl text-white uppercase tracking-tight leading-tight shadow-hard">
+                        COCA-COLA NORMAL LATA 350ML
                     </h2>
 
-                    <!-- BLOCO DE PREÇOS ESTILO VAREJO / FAST FOOD -->
-                    <div class="flex items-center space-x-3 pt-1">
-                        <div class="bg-black/60 backdrop-blur-md px-3 py-1 rounded-xl border border-white/20">
-                            <span class="text-[10px] font-bold text-slate-300 uppercase block leading-none">De:</span>
-                            <span id="card-preco-de" class="text-sm font-black text-red-400 line-through tracking-tight">R$ 30,00</span>
+                    <!-- Bloco de Preços -->
+                    <div id="card-bloco-precos" class="flex items-center space-x-3">
+                        <div id="card-box-de" class="bg-black/70 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/20">
+                            <span class="text-[9px] font-bold text-slate-300 uppercase block leading-none">De:</span>
+                            <span id="card-preco-de" class="text-xs font-black text-red-400 line-through tracking-tight">R$ 8,90</span>
                         </div>
 
-                        <div class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 px-5 py-2 rounded-2xl shadow-xl flex items-center border-2 border-white transform -rotate-1 shadow-glow">
-                            <span class="text-xs font-black uppercase tracking-widest mr-1.5">POR</span>
-                            <span id="card-preco-por" class="font-promo font-black text-3xl tracking-tighter">R$ 20,00</span>
+                        <div id="card-box-por" class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 px-5 py-2 rounded-2xl shadow-xl flex items-center border-2 border-white transform -rotate-1">
+                            <span class="text-[11px] font-black uppercase tracking-widest mr-1.5">POR</span>
+                            <span id="card-preco-por" class="font-promo font-black text-2xl tracking-tight">R$ 7,57</span>
                         </div>
                     </div>
 
-                    <!-- Rodapé / Chamada de Ação -->
-                    <div class="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl text-center">
-                        <p id="card-rodape" class="text-xs font-bold text-amber-300 uppercase tracking-wider truncate">
+                    <!-- Barra de Rodapé com margem segura anti-corte -->
+                    <div class="bg-black/80 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl text-center">
+                        <p id="card-rodape" class="text-[11px] font-bold text-amber-300 uppercase tracking-wider truncate">
                             ⚡ Peça agora pelo WhatsApp ou Cardápio Online!
                         </p>
                     </div>
@@ -200,9 +214,8 @@
 
             </div>
 
-            <!-- Botão auxiliar de copiar texto do WhatsApp -->
-            <button onclick="copiarTextoZap()" class="mt-4 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-500 flex items-center transition-colors">
-                <i class="ph-bold ph-copy mr-1.5 text-base"></i> Copiar texto pronto para colar no WhatsApp junto com a imagem
+            <button onclick="copiarTextoZap()" class="mt-4 text-xs font-bold text-slate-500 hover:text-emerald-500 flex items-center transition-colors">
+                <i class="ph-bold ph-copy mr-1.5 text-base"></i> Copiar texto para colar no WhatsApp junto com a imagem
             </button>
         </div>
 
@@ -210,6 +223,7 @@
 
     <script>
         let produtosCatalogo = [];
+        let modoExibicaoAtual = "ambos";
 
         document.addEventListener('DOMContentLoaded', async () => {
             await carregarConfiguracoesLoja();
@@ -217,7 +231,7 @@
             atualizarPreview();
         });
 
-        // Puxa a Logo Oficial da Hamburgueria do Banco
+        // Puxa a Logo Oficial do Banco e injeta na prévia
         async function carregarConfiguracoesLoja() {
             try {
                 const res = await fetch('/api/gestao/configuracoes');
@@ -225,42 +239,101 @@
                 if(config.logo_url && config.logo_url.trim() !== '') {
                     const img = document.getElementById('card-logo-img');
                     img.src = config.logo_url;
+                    img.crossOrigin = "anonymous";
                     img.classList.remove('hidden');
                     document.getElementById('card-logo-fallback').classList.add('hidden');
                 }
             } catch(e) {}
         }
 
-        // Puxa os Produtos do Cardápio para o 1-Clique
         async function carregarProdutosCardapio() {
             try {
                 const res = await fetch('/api/cardapio');
                 produtosCatalogo = await res.json();
                 const sel = document.getElementById('sel-cardapio-importar');
-                sel.innerHTML = '<option value="">-- Escolher do seu Cardápio --</option>' + 
+                sel.innerHTML = '<option value="">-- Selecione um Lanche Cadastrado --</option>' + 
                     produtosCatalogo.map(p => `<option value="${p.id}">${p.nome} - R$ ${p.preco_venda.toFixed(2).replace('.',',')}</option>`).join('');
             } catch(e) {}
         }
 
-        // 1-Clique: Preenche o flyer com dados do lanche
+        function parseMoeda(str) {
+            if(!str) return 0;
+            return parseFloat(str.replace('R$', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
+        }
+
+        function formatarMoeda(val) {
+            return `R$ ${val.toFixed(2).replace('.', ',')}`;
+        }
+
+        // 1-Clique: Puxa o produto e aplica a % atual
         function importarProdutoSelecionado(prodId) {
             if(!prodId) return;
             const p = produtosCatalogo.find(x => x.id === parseInt(prodId));
             if(!p) return;
 
             document.getElementById('input-titulo').value = p.nome.toUpperCase();
+            document.getElementById('input-preco-de').value = formatarMoeda(p.preco_venda);
             
-            // Sugestão de Preço Promocional (15% de desconto automático)
-            const precoNormal = p.preco_venda;
-            const precoPromo = precoNormal * 0.85;
-            
-            document.getElementById('input-preco-de').value = `R$ ${precoNormal.toFixed(2).replace('.', ',')}`;
-            document.getElementById('input-preco-por').value = `R$ ${precoPromo.toFixed(2).replace('.', ',')}`;
-            
+            const pct = parseFloat(document.getElementById('input-desconto-pct').value) || 15;
+            const precoFinal = p.preco_venda * (1 - (pct / 100));
+            document.getElementById('input-preco-por').value = formatarMoeda(precoFinal);
+
             if(p.imagem_url && p.imagem_url.trim() !== '') {
                 document.getElementById('card-img-fundo').src = p.imagem_url;
             }
             atualizarPreview();
+        }
+
+        // Cálculos Sincronizados Bidirecionais
+        function calcularPorPorcentagem(pctStr) {
+            const pct = parseFloat(pctStr) || 0;
+            const precoDe = parseMoeda(document.getElementById('input-preco-de').value);
+            if(precoDe > 0) {
+                const precoPor = precoDe * (1 - (pct / 100));
+                document.getElementById('input-preco-por').value = formatarMoeda(precoPor);
+            }
+            atualizarPreview();
+        }
+
+        function calcularPorPrecoPor(porStr) {
+            const precoPor = parseMoeda(porStr);
+            const precoDe = parseMoeda(document.getElementById('input-preco-de').value);
+            if(precoDe > 0 && precoPor > 0 && precoPor < precoDe) {
+                const pct = ((precoDe - precoPor) / precoDe) * 100;
+                document.getElementById('input-desconto-pct').value = Math.round(pct);
+            }
+            atualizarPreview();
+        }
+
+        function calcularPorPrecoDe(deStr) {
+            const precoDe = parseMoeda(deStr);
+            const pct = parseFloat(document.getElementById('input-desconto-pct').value) || 0;
+            if(precoDe > 0) {
+                const precoPor = precoDe * (1 - (pct / 100));
+                document.getElementById('input-preco-por').value = formatarMoeda(precoPor);
+            }
+            atualizarPreview();
+        }
+
+        function atualizarModoExibicao(modo) {
+            modoExibicaoAtual = modo;
+            const containerBadge = document.getElementById('card-badge-pct-container');
+            const blocoPrecos = document.getElementById('card-bloco-precos');
+
+            if(modo === 'ambos') {
+                containerBadge.classList.remove('hidden');
+                blocoPrecos.classList.remove('hidden');
+            } else if(modo === 'preco') {
+                containerBadge.classList.add('hidden');
+                blocoPrecos.classList.remove('hidden');
+            } else if(modo === 'porcentagem') {
+                containerBadge.classList.remove('hidden');
+                blocoPrecos.classList.add('hidden');
+            }
+        }
+
+        function toggleLogo(mostrar) {
+            document.getElementById('card-logo-box').style.display = mostrar ? 'flex' : 'none';
         }
 
         function selecionarFotoPronta(url) {
@@ -278,90 +351,70 @@
             }
         }
 
-        // Atualização em Tempo Real na Prévia
         function atualizarPreview() {
             document.getElementById('card-tag').innerText = document.getElementById('input-tag').value.toUpperCase();
             document.getElementById('card-titulo').innerText = document.getElementById('input-titulo').value.toUpperCase();
             document.getElementById('card-preco-de').innerText = document.getElementById('input-preco-de').value;
             document.getElementById('card-preco-por').innerText = document.getElementById('input-preco-por').value;
             document.getElementById('card-rodape').innerText = document.getElementById('input-rodape').value;
-        }
-
-        // Muda as Cores e Estilo do Card
-        function atualizarTema(tema) {
-            const card = document.getElementById('card-anuncio');
-            const overlay = document.getElementById('card-overlay');
-            const tag = document.getElementById('card-tag');
             
-            if(tema === 'brasa') {
-                card.className = "w-[480px] h-[480px] bg-slate-900 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-between p-8 border-4 border-amber-400/80 transition-all";
-                overlay.className = "absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/70 pointer-events-none";
-                tag.className = "bg-gradient-to-r from-red-600 to-amber-500 text-white font-promo font-black text-sm px-4 py-1.5 rounded-full shadow-lg tracking-widest uppercase border-2 border-white/80 animate-pulse";
-            } else if(tema === 'fastfood') {
-                card.className = "w-[480px] h-[480px] bg-red-700 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-between p-8 border-4 border-yellow-400 transition-all";
-                overlay.className = "absolute inset-0 bg-gradient-to-t from-red-950 via-red-900/40 to-black/60 pointer-events-none";
-                tag.className = "bg-yellow-400 text-slate-950 font-promo font-black text-sm px-4 py-1.5 rounded-full shadow-lg tracking-widest uppercase border-2 border-white";
-            } else if(tema === 'neon') {
-                card.className = "w-[480px] h-[480px] bg-purple-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-between p-8 border-4 border-cyan-400 transition-all shadow-[0_0_30px_rgba(6,182,212,0.4)]";
-                overlay.className = "absolute inset-0 bg-gradient-to-t from-purple-950 via-black/50 to-cyan-950/40 pointer-events-none";
-                tag.className = "bg-cyan-400 text-slate-950 font-promo font-black text-sm px-4 py-1.5 rounded-full shadow-lg tracking-widest uppercase border-2 border-white";
-            } else if(tema === 'clean') {
-                card.className = "w-[480px] h-[480px] bg-stone-900 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-between p-8 border-4 border-emerald-400 transition-all";
-                overlay.className = "absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/40 to-black/50 pointer-events-none";
-                tag.className = "bg-emerald-500 text-white font-promo font-black text-sm px-4 py-1.5 rounded-full shadow-lg tracking-widest uppercase border-2 border-white";
-            }
+            const pct = document.getElementById('input-desconto-pct').value;
+            document.getElementById('card-badge-pct').innerText = `⚡ ${pct}% DE DESCONTO`;
         }
 
-        // Alterna entre Formato Quadrado e Formato Stories (Status WhatsApp)
-        function atualizarFormato(formato) {
-            const card = document.getElementById('card-anuncio');
-            if(formato === 'stories') {
-                card.style.width = '360px';
-                card.style.height = '640px'; // Proporção 9:16
-            } else {
-                card.style.width = '480px';
-                card.style.height = '480px'; // Proporção 1:1
-            }
-        }
-
-        // 🚨 BAIXAR O CARD COMO IMAGEM PNG EM ALTA DEFINIÇÃO 🚨
+        // 🚨 BAIXAR A IMAGEM EM ALTA RESOLUÇÃO SEM CORTE 🚨
         function baixarImagemCard() {
             const card = document.getElementById('card-anuncio');
             const btn = document.getElementById('btn-baixar');
             const txtOriginal = btn.innerHTML;
             
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Renderizando Imagem...';
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Renderizando...';
             btn.disabled = true;
 
-            html2canvas(card, {
-                scale: 2.5, // Gera a imagem em dobro da resolução para não pixelar no WhatsApp
-                useCORS: true, // Permite baixar com fotos externas
-                allowTaint: true,
-                backgroundColor: null
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `Anuncio_${document.getElementById('input-titulo').value.replace(/\s+/g, '_')}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                btn.innerHTML = '<i class="ph-bold ph-check mr-2 text-lg"></i> Imagem Baixada!';
-                setTimeout(() => { btn.innerHTML = txtOriginal; btn.disabled = false; }, 2000);
-            }).catch(err => {
-                alert("Erro ao gerar imagem. Tente novamente.");
-                btn.innerHTML = txtOriginal; btn.disabled = false;
+            // Garante o carregamento das fontes antes de converter para imagem
+            document.fonts.ready.then(() => {
+                html2canvas(card, {
+                    scale: 3, // Resolução 3x ultra-nítida para WhatsApp
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null,
+                    scrollX: 0,
+                    scrollY: 0
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    const nomeArquivo = document.getElementById('input-titulo').value.replace(/[^a-zA-Z0-9]/g, '_');
+                    link.download = `Promo_${nomeArquivo}.png`;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+                    
+                    btn.innerHTML = '<i class="ph-bold ph-check mr-2 text-lg"></i> Imagem Baixada!';
+                    setTimeout(() => { btn.innerHTML = txtOriginal; btn.disabled = false; }, 2000);
+                }).catch(err => {
+                    alert("Falha ao gerar imagem.");
+                    btn.innerHTML = txtOriginal; btn.disabled = false;
+                });
             });
         }
 
-        // Copia a Mensagem do WhatsApp com Emojis
         function copiarTextoZap() {
             const tag = document.getElementById('input-tag').value;
             const tit = document.getElementById('input-titulo').value;
             const de = document.getElementById('input-preco-de').value;
             const por = document.getElementById('input-preco-por').value;
+            const pct = document.getElementById('input-desconto-pct').value;
             
-            const msg = `${tag}\n\n🍔 *${tit}*\n❌ De: ${de}\n✅ *Por apenas: ${por}!*\n\n👉 Peça agora pelo nosso cardápio digital ou responda essa mensagem! 🔥`;
+            let linhaPreco = "";
+            if(modoExibicaoAtual === 'ambos') {
+                linhaPreco = `🔥 Desconto de ${pct}%\n❌ De: ${de}\n✅ *Por apenas: ${por}!*`;
+            } else if(modoExibicaoAtual === 'preco') {
+                linhaPreco = `❌ De: ${de}\n✅ *Por apenas: ${por}!*`;
+            } else {
+                linhaPreco = `⚡ *SUPER DESCONTO DE ${pct}% OFF!*`;
+            }
+
+            const msg = `${tag}\n\n🍔 *${tit}*\n${linhaPreco}\n\n👉 Peça agora pelo nosso cardápio digital ou responda essa mensagem!`;
             navigator.clipboard.writeText(msg);
-            alert("Texto copiado! 📋\nBasta colar no WhatsApp junto com a foto que você baixou.");
+            alert("Texto copiado! 📋\nCole no WhatsApp junto com a imagem baixada.");
         }
     </script>
 </body>
