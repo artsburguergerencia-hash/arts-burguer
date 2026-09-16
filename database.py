@@ -82,11 +82,14 @@ class ClienteModel(Base):
     bairro = Column(String, default="")
     complemento = Column(String, default="")
     
-    # Carteira de fidelidade (sincronizada para PDV e Cardápio)
+    # Carteira de fidelidade
     pontos = Column(Integer, default=0)
     pontos_fidelidade = Column(Integer, default=0)
     cashback = Column(Float, default=0.0)
     saldo_cashback = Column(Float, default=0.0)
+
+    # 🚨 ADICIONE ESTA LINHA:
+    pedidos = relationship("PedidoModel", back_populates="cliente", lazy="dynamic")
 
 # Alias para compatibilidade: se algum arquivo importar "Cliente", aponta para o mesmo modelo
 Cliente = ClienteModel
