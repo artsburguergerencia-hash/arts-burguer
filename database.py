@@ -88,12 +88,8 @@ class ClienteModel(Base):
     cashback = Column(Float, default=0.0)
     saldo_cashback = Column(Float, default=0.0)
 
-    # 🚨 ADICIONE ESTA LINHA:
-    pedidos = relationship("PedidoModel", back_populates="cliente", lazy="dynamic")
-
 # Alias para compatibilidade: se algum arquivo importar "Cliente", aponta para o mesmo modelo
 Cliente = ClienteModel
-
 
 # ==========================================
 # 3. RECURSOS HUMANOS E CARGOS
