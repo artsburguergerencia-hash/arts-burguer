@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Art's Creative Studio Pro | IA, Imagem & Vídeo</title>
+    <title>Art's Creative Studio Pro | Canva & IA Gastronômica</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;600;700;900&family=Oswald:wght@700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -18,7 +18,8 @@
                     fontFamily: { 
                         sans: ['Inter', 'sans-serif'], 
                         promo: ['Montserrat', 'sans-serif'],
-                        cake: ['Playfair Display', 'serif']
+                        cake: ['Playfair Display', 'serif'],
+                        impacto: ['Oswald', 'sans-serif']
                     }, 
                     colors: { brand: { 500: '#ff4757', 600: '#e04050' }, cake: { 500: '#ec4899', 600: '#db2777' } } 
                 } 
@@ -28,8 +29,6 @@
     </script>
     
     <style>
-        .font-promo { font-family: 'Montserrat', sans-serif; }
-        .font-cake { font-family: 'Playfair Display', serif; }
         .tab-btn.active { border-color: #ff4757; color: #ff4757; background: rgba(255, 71, 87, 0.08); }
         .canvas-container { margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); border-radius: 2rem; overflow: hidden; }
     </style>
@@ -39,18 +38,16 @@
     <!-- CABEÇALHO -->
     <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-20 px-8 flex items-center justify-between shadow-sm sticky top-0 z-30">
         <div class="flex items-center">
-            <!-- Logo Oficial da Loja -->
             <div id="header-logo-container" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 dark:border-slate-700 flex items-center justify-center mr-4 shadow-md overflow-hidden shrink-0">
                 <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
                 <i id="header-logo-letra" class="ph-bold ph-storefront text-2xl text-brand-500"></i>
             </div>
             <div>
                 <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none" id="header-nome-loja">Art's Creative Studio Pro</h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Estúdio de Imagem, Vídeo & IA Generativa</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Estúdio Livre de Camadas & IA Gastronômica</p>
             </div>
         </div>
 
-        <!-- AÇÕES DE EXPORTAÇÃO -->
         <div class="flex items-center space-x-3">
             <button onclick="gerarVideoAnimado()" id="btn-video" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black px-5 py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-wider text-xs flex items-center">
                 <i class="ph-bold ph-video-camera text-lg mr-2"></i> Criar Vídeo (Status / Reels)
@@ -70,20 +67,20 @@
         <!-- CONTROLES DO ESTÚDIO (5 Colunas) -->
         <div class="lg:col-span-5 space-y-5">
             
-            <!-- ABAS DE NAVEGAÇÃO -->
+            <!-- ABAS -->
             <div class="bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-5 gap-1 text-center shadow-sm">
                 <button onclick="mudarAba('dados', this)" class="tab-btn active py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Textos</button>
-                <button onclick="mudarAba('ia', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-purple-600 dark:text-purple-400 flex items-center justify-center"><i class="ph-bold ph-sparkle mr-1"></i> IA Studio</button>
-                <button onclick="mudarAba('foto', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Foto & Zoom</button>
-                <button onclick="mudarAba('retoque', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Varinha</button>
+                <button onclick="mudarAba('estilo_texto', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-blue-600 dark:text-blue-400 flex items-center justify-center"><i class="ph-bold ph-paint-bucket mr-1"></i> Cores</button>
+                <button onclick="mudarAba('produto_camada', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-emerald-600 flex items-center justify-center"><i class="ph-bold ph-arrows-out mr-1"></i> Doce/Lanche</button>
+                <button onclick="mudarAba('ia', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-purple-600 flex items-center justify-center"><i class="ph-bold ph-sparkle mr-1"></i> IA</button>
                 <button onclick="mudarAba('marca', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Marca</button>
             </div>
 
-            <!-- PAINEL 1: DADOS & PREÇO -->
+            <!-- PAINEL 1: TEXTOS & PREÇOS -->
             <div id="painel-dados" class="space-y-4">
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center">
-                        <i class="ph-bold ph-lightning text-amber-500 mr-1.5 text-base"></i> Puxar do seu Cardápio
+                        <i class="ph-bold ph-lightning text-amber-500 mr-1.5 text-base"></i> Puxar do Cardápio
                     </label>
                     <select id="sel-cardapio" onchange="importarDoCardapio(this.value)" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none">
                         <option value="">-- Selecione um Lanche ou Doce --</option>
@@ -103,7 +100,7 @@
 
                     <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Preço (De)</label>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Preço Normal (De)</label>
                             <input type="text" id="inp-de" value="R$ 14,90" oninput="sincronizarPreco('de', this.value)" class="w-full px-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-red-500 text-center outline-none">
                         </div>
                         <div>
@@ -111,7 +108,7 @@
                             <input type="number" id="inp-pct" value="20" min="1" max="90" oninput="sincronizarPreco('pct', this.value)" class="w-full px-2 py-2 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl text-xs font-black text-amber-600 text-center outline-none">
                         </div>
                         <div>
-                            <label class="block text-[9px] font-bold text-emerald-600 uppercase mb-1">Preço (Por)</label>
+                            <label class="block text-[9px] font-bold text-emerald-600 uppercase mb-1">Preço Promo (Por)</label>
                             <input type="text" id="inp-por" value="R$ 11,92" oninput="sincronizarPreco('por', this.value)" class="w-full px-2 py-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-xs font-black text-emerald-600 text-center outline-none">
                         </div>
                     </div>
@@ -120,135 +117,130 @@
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Rodapé Chamada</label>
                         <input type="text" id="inp-rodape" value="⚡ PEÇA AGORA PELO CARDÁPIO ONLINE!" oninput="atualizarTextoObjeto('rodape', this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none">
                     </div>
+                </div>
+            </div>
 
+            <!-- PAINEL 2: FORMATAÇÃO LIVRE DE CORES E FONTES -->
+            <div id="painel-estilo_texto" class="hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Elemento Selecionado</label>
+                        <span id="lbl-elemento-selecionado" class="text-xs font-black text-brand-500">Título</span>
+                    </div>
+
+                    <!-- Tipo de Fonte -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Família da Fonte</label>
+                        <select id="sel-fonte" onchange="aplicarFonteAtiva(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none">
+                            <option value="Playfair Display">🍰 Playfair (Elegante / Doces / Cake)</option>
+                            <option value="Montserrat">🔥 Montserrat (Comercial / Fast Food)</option>
+                            <option value="Oswald">⚡ Oswald (Impacto Alto / Promoção)</option>
+                            <option value="Inter">📱 Inter (Clean e Moderno)</option>
+                        </select>
+                    </div>
+
+                    <!-- Tamanho da Fonte -->
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                            <span>Tamanho do Texto</span><span id="lbl-tam-fonte">24px</span>
+                        </div>
+                        <input type="range" id="rng-tam-fonte" min="10" max="60" value="24" oninput="aplicarTamanhoFonte(this.value)" class="w-full accent-brand-500">
+                    </div>
+
+                    <!-- Cores da Letra e do Fundo da Caixinha -->
+                    <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Cor da Letra</label>
+                            <input type="color" id="cp-cor-letra" value="#ffffff" onchange="aplicarCorLetra(this.value)" class="w-full h-10 rounded-xl cursor-pointer border border-slate-200 p-1 bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Fundo da Caixa</label>
+                            <input type="color" id="cp-cor-fundo" value="#ec4899" onchange="aplicarCorFundo(this.value)" class="w-full h-10 rounded-xl cursor-pointer border border-slate-200 p-1 bg-white">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Caixa 100% Transparente?</label>
+                        <button onclick="tornarFundoTransparente()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-black hover:border-brand-500 border border-slate-200 dark:border-slate-700">
+                            Sem Fundo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL 3: CAMADA DO DOCE/LANCHE (AUMENTAR SÓ O DOCE) -->
+            <div id="painel-produto_camada" class="hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div>
+                        <h3 class="text-xs font-black uppercase tracking-widest text-emerald-600 mb-1 flex items-center">
+                            <i class="ph-bold ph-arrows-out text-lg mr-1.5"></i> Controle do Doce / Lanche
+                        </h3>
+                        <p class="text-[10px] text-slate-400">Aumente ou diminua o tamanho do doce sem mexer no fundo!</p>
+                    </div>
+
+                    <!-- Zoom do Doce -->
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                            <span>Tamanho do Doce/Lanche</span><span id="lbl-zoom-doce">100%</span>
+                        </div>
+                        <input type="range" id="rng-zoom-doce" min="30" max="220" value="100" oninput="ajustarTamanhoDoce(this.value)" class="w-full accent-emerald-500">
+                    </div>
+
+                    <!-- Subir Foto do Doce Separada -->
                     <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Exibir no Flyer:</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Trocar Foto do Doce/Lanche</label>
+                        <input type="file" accept="image/*" onchange="carregarFotoDoce(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-emerald-600 file:text-white cursor-pointer">
+                    </div>
+
+                    <!-- Cenário de Fundo (Independente) -->
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Cenário de Fundo</label>
                         <div class="grid grid-cols-3 gap-2">
-                            <button onclick="definirModoPreco('ambos')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase hover:border-brand-500 border border-transparent">Preço + %</button>
-                            <button onclick="definirModoPreco('preco')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase hover:border-brand-500 border border-transparent">Só Preço</button>
-                            <button onclick="definirModoPreco('pct')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase hover:border-brand-500 border border-transparent">Só % OFF</button>
+                            <button onclick="setFundoCenario('toalha_cake')" class="p-2 bg-pink-50 text-pink-700 rounded-xl text-[9px] font-black uppercase border border-pink-200">🍰 Toalha Doce</button>
+                            <button onclick="setFundoCenario('madeira_burguer')" class="p-2 bg-amber-50 text-amber-800 rounded-xl text-[9px] font-black uppercase border border-amber-200">🔥 Madeira Chapa</button>
+                            <button onclick="setFundoCenario('estudio_escuro')" class="p-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase border border-slate-700">🖤 Escuro VIP</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- PAINEL 2: IA & IMAGEN 3 (GERAÇÃO & TROCA DE OBJETO) -->
+            <!-- PAINEL 4: IA GENERATIVA & VARINHA -->
             <div id="painel-ia" class="hidden space-y-4">
-                <!-- 1. GERAR FOTO DO ZERO -->
                 <div class="bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-transparent p-5 rounded-3xl border border-purple-200 dark:border-purple-800/50 shadow-sm space-y-3">
                     <div class="flex items-center justify-between">
                         <h3 class="text-xs font-black uppercase tracking-widest text-purple-600 dark:text-purple-400 flex items-center">
-                            <i class="ph-fill ph-sparkle mr-1.5 text-lg animate-pulse"></i> Criar Foto com IA (Imagen 3)
+                            <i class="ph-fill ph-sparkle mr-1.5 text-lg"></i> Criar Foto com IA 4K
                         </h3>
-                        <span class="text-[9px] font-bold text-purple-600 bg-purple-100 dark:bg-purple-900/40 px-2 py-0.5 rounded">Sem Watermark</span>
+                        <span class="text-[9px] font-bold text-purple-600 bg-purple-100 dark:bg-purple-900/40 px-2 py-0.5 rounded">Zero Marcas d'Água</span>
                     </div>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">Descreva o lanche ou sobremesa que deseja criar com qualidade de estúdio:</p>
-                    <textarea id="ai-prompt-imagem" rows="2" placeholder="Ex: Taça de pudim gourmet com calda de caramelo brilhante e fatias de morango sobre mesa rústica..." class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 rounded-xl text-xs font-medium outline-none"></textarea>
+                    <textarea id="ai-prompt-imagem" rows="2" placeholder="Ex: Taça de pudim gourmet com calda de caramelo brilhante e morangos frescos..." class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 rounded-xl text-xs font-medium outline-none"></textarea>
                     <button onclick="gerarFotoDoZeroIA()" id="btn-gerar-img-ia" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white font-black py-3 rounded-xl uppercase tracking-wider text-xs shadow-md active:scale-95 transition-all flex items-center justify-center">
                         <i class="ph-bold ph-magic-wand mr-2 text-base"></i> Gerar Foto Profissional
                     </button>
                 </div>
 
-                <!-- 2. TROCAR OBJETO (INPAINTING) -->
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
                     <h3 class="text-xs font-black uppercase tracking-widest text-brand-500 flex items-center">
                         <i class="ph-bold ph-arrows-clockwise mr-1.5 text-base"></i> Varinha: Trocar o Doce/Lanche
                     </h3>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">Substitua o doce/lanche atual da foto por outro mantendo o mesmo cenário e fundo:</p>
-                    <input type="text" id="ai-instrucao-troca" placeholder="Ex: Trocar por uma fatia de bolo de cenoura com brigadeiro" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none">
+                    <input type="text" id="ai-instrucao-troca" placeholder="Ex: Trocar por taça de brownie com sorvete e calda de chocolate" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none">
                     <button onclick="trocarObjetoIA()" id="btn-trocar-objeto" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black py-3 rounded-xl uppercase tracking-wider text-xs shadow-md active:scale-95 transition-all flex items-center justify-center">
                         <i class="ph-bold ph-arrows-left-right mr-2 text-base"></i> Substituir Item na Foto
                     </button>
                 </div>
             </div>
 
-            <!-- PAINEL 3: FOTO & ZOOM -->
-            <div id="painel-foto" class="hidden space-y-4">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Subir Foto do Lanche ou Doce</label>
-                        <input type="file" accept="image/*" onchange="carregarFotoCustomizada(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-brand-500 file:text-white cursor-pointer">
-                    </div>
-
-                    <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <div>
-                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
-                                <span>Zoom da Foto</span><span id="lbl-zoom">100%</span>
-                            </div>
-                            <input type="range" id="rng-zoom" min="40" max="250" value="100" oninput="ajustarZoomFoto(this.value)" class="w-full accent-brand-500">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2 pt-1">
-                            <button onclick="moverFoto('cima')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold flex items-center justify-center"><i class="ph-bold ph-arrow-up mr-1"></i> Subir Foto</button>
-                            <button onclick="moverFoto('baixo')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold flex items-center justify-center"><i class="ph-bold ph-arrow-down mr-1"></i> Descer Foto</button>
-                            <button onclick="moverFoto('esq')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold flex items-center justify-center"><i class="ph-bold ph-arrow-left mr-1"></i> Esquerda</button>
-                            <button onclick="moverFoto('dir')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold flex items-center justify-center"><i class="ph-bold ph-arrow-right mr-1"></i> Direita</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PAINEL 4: RETOQUE, BORRACHA & FILTROS -->
-            <div id="painel-retoque" class="hidden space-y-4">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                    <!-- Borracha / Pincel de Retoque -->
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center">
-                            <i class="ph-bold ph-eraser text-amber-500 mr-1.5 text-base"></i> Pincel de Retoque / Limpeza
-                        </label>
-                        <div class="flex space-x-2">
-                            <button onclick="ativarModoPintura(true)" id="btn-pincel" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center">
-                                <i class="ph-bold ph-paint-brush mr-1.5 text-base"></i> Ativar Pincel
-                            </button>
-                            <button onclick="ativarModoPintura(false)" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 rounded-xl text-xs font-black uppercase">
-                                Parar
-                            </button>
-                        </div>
-                        <div class="flex items-center space-x-3 mt-3">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Tamanho:</label>
-                            <input type="range" id="rng-pincel-tam" min="5" max="70" value="25" oninput="mudarTamanhoPincel(this.value)" class="flex-1 accent-amber-500">
-                            <input type="color" id="cor-pincel" value="#ffffff" onchange="mudarCorPincel(this.value)" class="w-8 h-8 rounded-lg cursor-pointer border border-slate-200">
-                        </div>
-                    </div>
-
-                    <!-- Filtros Rápidos -->
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Filtros de Estúdio</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="aplicarFiltroInstagram('normal')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[10px] font-black uppercase">Original</button>
-                            <button onclick="aplicarFiltroInstagram('cake')" class="p-2 rounded-xl bg-pink-50 dark:bg-pink-500/10 text-pink-600 text-[10px] font-black uppercase">🍰 Doces/Cake</button>
-                            <button onclick="aplicarFiltroInstagram('burger')" class="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase">🔥 Suculento</button>
-                            <button onclick="aplicarFiltroInstagram('vivid')" class="p-2 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 text-[10px] font-black uppercase">⚡ Vívido</button>
-                            <button onclick="aplicarFiltroInstagram('pb')" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 text-[10px] font-black uppercase">P & B</button>
-                            <button onclick="resetarFiltros()" class="p-2 rounded-xl bg-red-50 text-red-500 text-[10px] font-black uppercase">Resetar</button>
-                        </div>
-                    </div>
-
-                    <!-- Brilho e Contraste -->
-                    <div class="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <div>
-                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1"><span>Brilho</span><span id="lbl-brilho">0%</span></div>
-                            <input type="range" id="rng-brilho" min="-0.5" max="0.5" step="0.05" value="0" oninput="aplicarFiltroManual()" class="w-full accent-blue-500">
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1"><span>Saturação</span><span id="lbl-saturacao">0%</span></div>
-                            <input type="range" id="rng-saturacao" min="-0.8" max="1" step="0.05" value="0" oninput="aplicarFiltroManual()" class="w-full accent-blue-500">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PAINEL 5: MARCA & IDENTIDADE (BURGUER VS CAKE) -->
+            <!-- PAINEL 5: MARCA (BURGUER VS CAKE) -->
             <div id="painel-marca" class="hidden space-y-4">
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400">Escolha a Marca do Anúncio</label>
                     <div class="grid grid-cols-2 gap-3">
-                        <button onclick="selecionarTemaVisual('burguer')" id="btn-tema-burguer" class="p-4 rounded-2xl border-2 border-brand-500 bg-brand-50/50 dark:bg-brand-500/10 text-left transition-all">
+                        <button onclick="selecionarTemaVisual('burguer')" id="btn-tema-burguer" class="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-brand-500 transition-all">
                             <div class="w-8 h-8 rounded-xl bg-brand-500 text-white flex items-center justify-center mb-2"><i class="ph-fill ph-hamburger text-lg"></i></div>
                             <h4 class="font-black text-xs text-slate-900 dark:text-white">Art's Burguer</h4>
                             <p class="text-[9px] text-slate-500">Lanches & Burgers</p>
                         </button>
-                        <button onclick="selecionarTemaVisual('cake')" id="btn-tema-cake" class="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-cake-500 transition-all">
+                        <button onclick="selecionarTemaVisual('cake')" id="btn-tema-cake" class="p-4 rounded-2xl border-2 border-cake-500 bg-pink-50 dark:bg-pink-500/10 text-left transition-all">
                             <div class="w-8 h-8 rounded-xl bg-cake-500 text-white flex items-center justify-center mb-2"><i class="ph-fill ph-cake text-lg"></i></div>
                             <h4 class="font-black text-xs text-slate-900 dark:text-white">Art's Cake</h4>
                             <p class="text-[9px] text-slate-500">Doces & Bolos</p>
@@ -264,21 +256,21 @@
 
         </div>
 
-        <!-- COLUNA DIREITA: O CANVAS PROFISSIONAL (7 Colunas) -->
+        <!-- COLUNA DIREITA: O CANVAS NATIVO INTERATIVO (7 Colunas) -->
         <div class="lg:col-span-7 flex flex-col items-center sticky top-24">
             <div class="flex justify-between items-center w-[480px] mb-2 px-2">
                 <span class="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center">
-                    <i class="ph-bold ph-hand-pointing text-brand-500 mr-1.5 text-base"></i> Arraste os textos para onde quiser!
+                    <i class="ph-bold ph-hand-pointing text-brand-500 mr-1.5 text-base"></i> Clique no doce ou textos para mover livremente!
                 </span>
                 <span class="text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-500/20">Zero Cortes</span>
             </div>
 
-            <!-- O CANVAS NATIVO INTERATIVO (480 x 600 px) -->
-            <div class="canvas-container relative border-4 border-amber-400 dark:border-slate-700 bg-black">
+            <!-- CANVAS NATIVO (480 x 600 px) -->
+            <div class="canvas-container relative border-4 border-cake-500 bg-black">
                 <canvas id="canvas-studio" width="480" height="600"></canvas>
             </div>
 
-            <!-- Controles de Camadas / Alinhamento -->
+            <!-- Controles Rápidos -->
             <div class="flex items-center space-x-2 mt-4">
                 <button onclick="centralizarElemento()" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:border-brand-500 shadow-sm flex items-center">
                     <i class="ph-bold ph-align-center-horizontal mr-1 text-sm"></i> Centralizar
@@ -294,11 +286,12 @@
 
     </main>
 
-    <!-- MOTOR JAVASCRIPT DO CANVAS STUDIO -->
     <script>
         let canvas;
-        let imgFundo;
+        let imgCenarioFundo;
+        let objDoceCamada; // 🚨 A CAMADA INDEPENDENTE DO DOCE/LANCHE!
         let objTitulo, objSelo, objDe, objPor, objBadgePct, objRodape, objLogo;
+        let objetoSelecionadoAtivo = null;
         let produtosCatalogo = [];
         let temaAtual = 'cake';
 
@@ -315,12 +308,22 @@
                 selection: true
             });
 
-            // Foto padrão inicial (Pudim Gourmet)
-            const fotoInicial = "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop";
-            setFotoFundo(fotoInicial);
+            // 1. Cenário de Fundo (Toalha de confeitaria limpa)
+            setFundoCenario('toalha_cake');
+
+            // 2. Camada Independente do Doce (Pudim Supreme)
+            const fotoDoceInicial = "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=600&auto=format&fit=crop";
+            carregarDoceCamada(fotoDoceInicial);
+
+            // 3. Textos e Selos Livres
             criarElementosCanvas();
+
+            // Listener: quando você clica em qualquer texto no canvas, a barra de cores se atualiza
+            canvas.on('selection:created', (e) => atualizarPainelEstilo(e.selected[0]));
+            canvas.on('selection:updated', (e) => atualizarPainelEstilo(e.selected[0]));
         }
 
+        // Carrega a logo oficial para o Header da página
         async function carregarConfiguracoes() {
             try {
                 const res = await fetch('/api/gestao/configuracoes');
@@ -350,30 +353,82 @@
             } catch(e) {}
         }
 
-        function setFotoFundo(url) {
+        // 🚨 CENÁRIO DE FUNDO (INDEPENDENTE DO DOCE) 🚨
+        function setFundoCenario(tipo) {
+            const cenarios = {
+                'toalha_cake': 'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?q=80&w=800&auto=format&fit=crop',
+                'madeira_burguer': 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop',
+                'estudio_escuro': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop'
+            };
+
+            const url = cenarios[tipo] || tipo;
+
             fabric.Image.fromURL(url, function(img) {
-                if(imgFundo) canvas.remove(imgFundo);
-                imgFundo = img;
+                if(imgCenarioFundo) canvas.remove(imgCenarioFundo);
+                imgCenarioFundo = img;
                 
-                const canvasW = canvas.width;
-                const canvasH = canvas.height;
-                const scale = Math.max(canvasW / img.width, canvasH / img.height);
-                
+                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
                 img.set({
-                    originX: 'center',
-                    originY: 'center',
-                    left: canvasW / 2,
-                    top: canvasH / 2,
-                    scaleX: scale,
-                    scaleY: scale,
-                    selectable: false,
-                    evented: false
+                    originX: 'center', originY: 'center',
+                    left: canvas.width / 2, top: canvas.height / 2,
+                    scaleX: scale, scaleY: scale,
+                    selectable: false, evented: false
                 });
 
                 canvas.add(img);
                 canvas.sendToBack(img);
                 canvas.renderAll();
             }, { crossOrigin: 'anonymous' });
+        }
+
+        // 🚨 CAMADA INDEPENDENTE DO DOCE / LANCHE (AUMENTAR SÓ O DOCE!) 🚨
+        function carregarDoceCamada(url) {
+            fabric.Image.fromURL(url, function(img) {
+                if(objDoceCamada) canvas.remove(objDoceCamada);
+                objDoceCamada = img;
+
+                // Enquadramento com proporção protegida
+                const maxDim = 320;
+                const scale = maxDim / Math.max(img.width, img.height);
+
+                img.set({
+                    left: canvas.width / 2,
+                    top: 250,
+                    originX: 'center',
+                    originY: 'center',
+                    scaleX: scale,
+                    scaleY: scale,
+                    cornerColor: '#10b981',
+                    borderColor: '#10b981',
+                    cornerSize: 12,
+                    transparentCorners: false,
+                    selectable: true // 👈 VOCÊ PODE CLICAR E MOVER SÓ O DOCE!
+                });
+
+                canvas.add(img);
+                // Coloca acima do fundo, mas abaixo dos textos
+                canvas.moveTo(img, 1);
+                canvas.renderAll();
+            }, { crossOrigin: 'anonymous' });
+        }
+
+        function ajustarTamanhoDoce(val) {
+            if(!objDoceCamada) return;
+            const pct = parseInt(val);
+            document.getElementById('lbl-zoom-doce').innerText = `${pct}%`;
+            
+            const baseScale = 320 / Math.max(objDoceCamada.width, objDoceCamada.height);
+            objDoceCamada.scale(baseScale * (pct / 100));
+            canvas.renderAll();
+        }
+
+        function carregarFotoDoce(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => carregarDoceCamada(e.target.result);
+                reader.readAsDataURL(file);
+            }
         }
 
         function setLogoFlyer(url) {
@@ -385,14 +440,9 @@
                 const scale = targetSize / Math.max(img.width, img.height);
                 
                 img.set({
-                    left: 390,
-                    top: 20,
-                    scaleX: scale,
-                    scaleY: scale,
-                    cornerColor: '#ff4757',
-                    borderColor: '#ff4757',
-                    cornerSize: 8,
-                    transparentCorners: false
+                    left: 390, top: 20,
+                    scaleX: scale, scaleY: scale,
+                    cornerColor: '#ff4757', cornerSize: 8
                 });
 
                 canvas.add(img);
@@ -401,120 +451,197 @@
             }, { crossOrigin: 'anonymous' });
         }
 
-        // 🚨 CRIAÇÃO DE ELEMENTOS LIVRES E POSICIONÁVEIS 🚨
+        // 🚨 CRIAÇÃO DOS ELEMENTOS LIVRES E POSICIONÁVEIS 🚨
         function criarElementosCanvas() {
             objSelo = new fabric.Textbox('🔥 PROMOÇÃO DO DIA', {
-                left: 20,
-                top: 20,
-                width: 200,
-                fontSize: 13,
-                fontFamily: 'Montserrat',
-                fontWeight: '900',
-                fill: '#ffffff',
-                backgroundColor: '#ec4899',
-                textAlign: 'center',
-                padding: 6,
-                cornerColor: '#ec4899'
+                left: 20, top: 20, width: 200, fontSize: 13,
+                fontFamily: 'Montserrat', fontWeight: '900',
+                fill: '#ffffff', backgroundColor: '#ec4899',
+                textAlign: 'center', padding: 6, cornerColor: '#ec4899'
             });
 
-            // Título colocado estrategicamente mais para baixo ou para cima conforme você quiser arrastar
+            // Título estrategicamente posicionado
             objTitulo = new fabric.Textbox('BOLO SUPREME: NINHO, MARACUJÁ & PUDIM', {
-                left: 20,
-                top: 360,
-                width: 440,
-                fontSize: 24,
-                fontFamily: 'Playfair Display',
-                fontStyle: 'italic',
-                fontWeight: 'bold',
-                fill: '#ffffff',
-                stroke: '#000000',
-                strokeWidth: 1,
-                textAlign: 'left',
-                cornerColor: '#ec4899',
-                shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.8)', blur: 8, offsetX: 2, offsetY: 2 })
+                left: 20, top: 390, width: 440, fontSize: 22,
+                fontFamily: 'Playfair Display', fontStyle: 'italic', fontWeight: 'bold',
+                fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.55)',
+                textAlign: 'left', padding: 6, cornerColor: '#ec4899'
             });
 
             objBadgePct = new fabric.Textbox('⚡ 20% DE DESCONTO', {
-                left: 20,
-                top: 450,
-                width: 170,
-                fontSize: 13,
-                fontFamily: 'Montserrat',
-                fontWeight: '900',
-                fill: '#ffffff',
-                backgroundColor: '#db2777',
-                textAlign: 'center',
-                angle: -2,
-                padding: 6,
-                cornerColor: '#db2777'
+                left: 20, top: 460, width: 170, fontSize: 13,
+                fontFamily: 'Montserrat', fontWeight: '900',
+                fill: '#ffffff', backgroundColor: '#db2777',
+                textAlign: 'center', angle: -2, padding: 6, cornerColor: '#db2777'
             });
 
             objDe = new fabric.Textbox('De: R$ 14,90', {
-                left: 20,
-                top: 500,
-                width: 110,
-                fontSize: 14,
-                fontFamily: 'Montserrat',
-                fontWeight: '800',
-                fill: '#f87171',
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                textAlign: 'center',
-                padding: 6,
-                cornerColor: '#f87171'
+                left: 20, top: 505, width: 110, fontSize: 14,
+                fontFamily: 'Montserrat', fontWeight: '800',
+                fill: '#f87171', backgroundColor: 'rgba(0,0,0,0.7)',
+                textAlign: 'center', padding: 6, cornerColor: '#f87171'
             });
 
             objPor = new fabric.Textbox('POR R$ 11,92', {
-                left: 140,
-                top: 495,
-                width: 170,
-                fontSize: 20,
-                fontFamily: 'Montserrat',
-                fontWeight: '900',
-                fill: '#ffffff',
-                backgroundColor: '#ec4899',
-                textAlign: 'center',
-                padding: 8,
-                cornerColor: '#ec4899'
+                left: 140, top: 500, width: 170, fontSize: 20,
+                fontFamily: 'Montserrat', fontWeight: '900',
+                fill: '#ffffff', backgroundColor: '#ec4899',
+                textAlign: 'center', padding: 8, cornerColor: '#ec4899'
             });
 
             objRodape = new fabric.Textbox('⚡ PEÇA AGORA PELO CARDÁPIO ONLINE!', {
-                left: 20,
-                top: 550,
-                width: 440,
-                fontSize: 11,
-                fontFamily: 'Montserrat',
-                fontWeight: '800',
-                fill: '#db2777',
-                backgroundColor: '#ffffff',
-                textAlign: 'center',
-                padding: 8,
-                cornerColor: '#db2777'
+                left: 20, top: 550, width: 440, fontSize: 11,
+                fontFamily: 'Montserrat', fontWeight: '800',
+                fill: '#db2777', backgroundColor: '#ffffff',
+                textAlign: 'center', padding: 8, cornerColor: '#db2777'
             });
 
             canvas.add(objSelo, objTitulo, objBadgePct, objDe, objPor, objRodape);
             canvas.renderAll();
         }
 
+        // 🚨 FORMATAÇÃO DINÂMICA DE FONTES, CORES E FUNDOS 🚨
+        function atualizarPainelEstilo(obj) {
+            if(!obj || !obj.text) return;
+            objetoSelecionadoAtivo = obj;
+
+            document.getElementById('lbl-elemento-selecionado').innerText = obj.text.substring(0, 15) + '...';
+            if(obj.fontFamily) document.getElementById('sel-fonte').value = obj.fontFamily;
+            if(obj.fontSize) {
+                document.getElementById('rng-tam-fonte').value = obj.fontSize;
+                document.getElementById('lbl-tam-fonte').innerText = `${obj.fontSize}px`;
+            }
+            if(obj.fill) document.getElementById('cp-cor-letra').value = obj.fill;
+            if(obj.backgroundColor && obj.backgroundColor !== 'transparent') {
+                document.getElementById('cp-cor-fundo').value = obj.backgroundColor;
+            }
+        }
+
+        function aplicarFonteAtiva(fonte) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('fontFamily', fonte); canvas.renderAll(); }
+        }
+
+        function aplicarTamanhoFonte(tam) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) {
+                obj.set('fontSize', parseInt(tam));
+                document.getElementById('lbl-tam-fonte').innerText = `${tam}px`;
+                canvas.renderAll();
+            }
+        }
+
+        function aplicarCorLetra(cor) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('fill', cor); canvas.renderAll(); }
+        }
+
+        function aplicarCorFundo(cor) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('backgroundColor', cor); canvas.renderAll(); }
+        }
+
+        function tornarFundoTransparente() {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('backgroundColor', 'transparent'); canvas.renderAll(); }
+        }
+
+        // 🚨 IA GENERATIVA RESILIENTE (SEM ERRO 400 E SEM WATERMARK) 🚨
+        async function gerarFotoDoZeroIA() {
+            const prompt = document.getElementById('ai-prompt-imagem').value.trim();
+            if(!prompt) return alert("Digite o doce ou lanche que quer criar!");
+
+            const btn = document.getElementById('btn-gerar-img-ia');
+            const txt = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Criando Foto em 4K...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/marketing/gerar-imagem-ia', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ prompt: prompt, aspect_ratio: "1:1" })
+                });
+                const data = await res.json();
+
+                if(res.ok && data.imagem_base64) {
+                    carregarDoceCamada(data.imagem_base64);
+                    alert("Fotografia 4K criada com sucesso e sem marca d'água!");
+                } else {
+                    alert("Aviso: " + (data.detail || "Erro ao gerar imagem."));
+                }
+            } catch(e) {
+                alert("Erro de conexão ao gerar.");
+            } finally {
+                btn.innerHTML = txt;
+                btn.disabled = false;
+            }
+        }
+
+        async function trocarObjetoIA() {
+            const instrucao = document.getElementById('ai-instrucao-troca').value.trim();
+            if(!instrucao) return alert("Digite o item substituto!");
+
+            const btn = document.getElementById('btn-trocar-objeto');
+            const txt = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Trocando Item...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/marketing/trocar-objeto-ia', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ imagem_base64: "", instrucao_troca: instrucao })
+                });
+                const data = await res.json();
+                if(res.ok && data.imagem_base64) {
+                    carregarDoceCamada(data.imagem_base64);
+                    alert("Item substituído com sucesso!");
+                }
+            } catch(e) {
+                alert("Erro ao trocar item.");
+            } finally {
+                btn.innerHTML = txt;
+                btn.disabled = false;
+            }
+        }
+
+        // Temas Art's Burguer vs Art's Cake
+        function selecionarTemaVisual(tema) {
+            temaAtual = tema;
+            const bB = document.getElementById('btn-tema-burguer');
+            const bC = document.getElementById('btn-tema-cake');
+
+            if(tema === 'cake') {
+                bC.className = "p-4 rounded-2xl border-2 border-cake-500 bg-pink-50 dark:bg-pink-500/10 text-left transition-all";
+                bB.className = "p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-brand-500 transition-all";
+
+                objTitulo.set({ fontFamily: 'Playfair Display', fontStyle: 'italic', fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.55)' });
+                objSelo.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
+                objPor.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
+                objBadgePct.set({ backgroundColor: '#db2777', fill: '#ffffff' });
+                objRodape.set({ backgroundColor: '#ffffff', fill: '#db2777' });
+                document.querySelector('.canvas-container').style.borderColor = '#ec4899';
+            } else {
+                bB.className = "p-4 rounded-2xl border-2 border-brand-500 bg-brand-50/50 dark:bg-brand-500/10 text-left transition-all";
+                bC.className = "p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-cake-500 transition-all";
+
+                objTitulo.set({ fontFamily: 'Montserrat', fontStyle: 'normal', fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.7)' });
+                objSelo.set({ backgroundColor: '#ff4757', fill: '#ffffff' });
+                objPor.set({ backgroundColor: '#f59e0b', fill: '#000000' });
+                objBadgePct.set({ backgroundColor: '#dc2626', fill: '#fef08a' });
+                objRodape.set({ backgroundColor: 'rgba(0,0,0,0.85)', fill: '#f59e0b' });
+                document.querySelector('.canvas-container').style.borderColor = '#f59e0b';
+            }
+            canvas.renderAll();
+        }
+
+        // Funções auxiliares
         function atualizarTextoObjeto(tipo, valor) {
             if(tipo === 'titulo' && objTitulo) objTitulo.set('text', valor.toUpperCase());
             if(tipo === 'selo' && objSelo) objSelo.set('text', valor.toUpperCase());
             if(tipo === 'rodape' && objRodape) objRodape.set('text', valor.toUpperCase());
             canvas.renderAll();
-        }
-
-        function importarDoCardapio(id) {
-            if(!id) return;
-            const p = produtosCatalogo.find(x => x.id === parseInt(id));
-            if(!p) return;
-
-            document.getElementById('inp-titulo').value = p.nome.toUpperCase();
-            atualizarTextoObjeto('titulo', p.nome);
-
-            const deVal = `R$ ${p.preco_venda.toFixed(2).replace('.', ',')}`;
-            document.getElementById('inp-de').value = deVal;
-            sincronizarPreco('de', deVal);
-
-            if(p.imagem_url) setFotoFundo(p.imagem_url);
         }
 
         function sincronizarPreco(origem, val) {
@@ -539,267 +666,56 @@
             canvas.renderAll();
         }
 
-        function definirModoPreco(modo) {
-            if(!objDe || !objPor || !objBadgePct) return;
-            objDe.set('visible', modo === 'ambos' || modo === 'preco');
-            objPor.set('visible', modo === 'ambos' || modo === 'preco');
-            objBadgePct.set('visible', modo === 'ambos' || modo === 'pct');
-            canvas.renderAll();
-        }
+        function importarDoCardapio(id) {
+            if(!id) return;
+            const p = produtosCatalogo.find(x => x.id === parseInt(id));
+            if(!p) return;
 
-        function ajustarZoomFoto(val) {
-            if(!imgFundo) return;
-            const pct = parseInt(val);
-            document.getElementById('lbl-zoom').innerText = `${pct}%`;
-            const novoScale = (Math.max(canvas.width / imgFundo.width, canvas.height / imgFundo.height)) * (pct / 100);
-            imgFundo.scale(novoScale);
-            canvas.renderAll();
-        }
+            document.getElementById('inp-titulo').value = p.nome.toUpperCase();
+            atualizarTextoObjeto('titulo', p.nome);
 
-        function moverFoto(direcao) {
-            if(!imgFundo) return;
-            const passo = 25;
-            if(direcao === 'cima') imgFundo.top -= passo;
-            if(direcao === 'baixo') imgFundo.top += passo;
-            if(direcao === 'esq') imgFundo.left -= passo;
-            if(direcao === 'dir') imgFundo.left += passo;
-            canvas.renderAll();
-        }
+            const deVal = `R$ ${p.preco_venda.toFixed(2).replace('.', ',')}`;
+            document.getElementById('inp-de').value = deVal;
+            sincronizarPreco('de', deVal);
 
-        function carregarFotoCustomizada(event) {
-            const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = (e) => setFotoFundo(e.target.result);
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function carregarLogoFlyer(event) {
-            const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = (e) => setLogoFlyer(e.target.result);
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // 🚨 1. GERAR FOTO DO ZERO VIA IMAGEN 3 (SEM SÍMBOLOS DE IA) 🚨
-        async function gerarFotoDoZeroIA() {
-            const prompt = document.getElementById('ai-prompt-imagem').value.trim();
-            if(!prompt) return alert("Digite a descrição da foto desejada!");
-
-            const btn = document.getElementById('btn-gerar-img-ia');
-            const txt = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Criando Fotografia com IA...';
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/api/marketing/gerar-imagem-ia', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ prompt: prompt, aspect_ratio: "1:1" })
-                });
-                const data = await res.json();
-
-                if(res.ok && data.imagem_base64) {
-                    setFotoFundo(data.imagem_base64);
-                    alert("Foto criada com sucesso em alta definição!");
-                } else {
-                    alert("Aviso: " + (data.detail || "Erro ao gerar imagem."));
-                }
-            } catch(e) {
-                alert("Erro de conexão ao gerar imagem.");
-            } finally {
-                btn.innerHTML = txt;
-                btn.disabled = false;
-            }
-        }
-
-        // 🚨 2. VARINHA MÁGICA: TROCA DE OBJETO MANTENDO O FUNDO 🚨
-        async function trocarObjetoIA() {
-            const instrucao = document.getElementById('ai-instrucao-troca').value.trim();
-            if(!instrucao) return alert("Digite qual item quer colocar no lugar!");
-
-            const btn = document.getElementById('btn-trocar-objeto');
-            const txt = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Trocando Objeto na Foto...';
-            btn.disabled = true;
-
-            // Pega a imagem de fundo atual
-            const b64Atual = imgFundo ? imgFundo.toDataURL() : canvas.toDataURL();
-
-            try {
-                const res = await fetch('/api/marketing/trocar-objeto-ia', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ imagem_base64: b64Atual, instrucao_troca: instrucao })
-                });
-                const data = await res.json();
-
-                if(res.ok && data.imagem_base64) {
-                    setFotoFundo(data.imagem_base64);
-                    alert("Item substituído com sucesso mantendo o mesmo cenário!");
-                } else {
-                    alert("Aviso: " + (data.detail || "Não foi possível trocar o item."));
-                }
-            } catch(e) {
-                alert("Erro de conexão com o estúdio de IA.");
-            } finally {
-                btn.innerHTML = txt;
-                btn.disabled = false;
-            }
-        }
-
-        // Filtros de Estúdio
-        function aplicarFiltroInstagram(tipo) {
-            if(!imgFundo) return;
-            imgFundo.filters = [];
-
-            if(tipo === 'cake') {
-                imgFundo.filters.push(new fabric.Image.filters.Brightness({ brightness: 0.08 }));
-                imgFundo.filters.push(new fabric.Image.filters.Contrast({ contrast: 0.05 }));
-                imgFundo.filters.push(new fabric.Image.filters.Saturation({ saturation: 0.15 }));
-            } else if(tipo === 'burger') {
-                imgFundo.filters.push(new fabric.Image.filters.Brightness({ brightness: -0.02 }));
-                imgFundo.filters.push(new fabric.Image.filters.Contrast({ contrast: 0.18 }));
-                imgFundo.filters.push(new fabric.Image.filters.Saturation({ saturation: 0.35 }));
-            } else if(tipo === 'vivid') {
-                imgFundo.filters.push(new fabric.Image.filters.Saturation({ saturation: 0.5 }));
-            } else if(tipo === 'pb') {
-                imgFundo.filters.push(new fabric.Image.filters.Grayscale());
-            }
-
-            imgFundo.applyFilters();
-            canvas.renderAll();
-        }
-
-        function aplicarFiltroManual() {
-            if(!imgFundo) return;
-            const b = parseFloat(document.getElementById('rng-brilho').value);
-            const s = parseFloat(document.getElementById('rng-saturacao').value);
-
-            document.getElementById('lbl-brilho').innerText = `${Math.round(b*100)}%`;
-            document.getElementById('lbl-saturacao').innerText = `${Math.round(s*100)}%`;
-
-            imgFundo.filters = [
-                new fabric.Image.filters.Brightness({ brightness: b }),
-                new fabric.Image.filters.Saturation({ saturation: s })
-            ];
-            imgFundo.applyFilters();
-            canvas.renderAll();
-        }
-
-        function resetarFiltros() {
-            if(!imgFundo) return;
-            imgFundo.filters = [];
-            imgFundo.applyFilters();
-            document.getElementById('rng-brilho').value = 0;
-            document.getElementById('rng-saturacao').value = 0;
-            canvas.renderAll();
-        }
-
-        // Pincel / Borracha de Retoque
-        function ativarModoPintura(ativo) {
-            canvas.isDrawingMode = ativo;
-            if(ativo) {
-                canvas.freeDrawingBrush.width = parseInt(document.getElementById('rng-pincel-tam').value);
-                canvas.freeDrawingBrush.color = document.getElementById('cor-pincel').value;
-            }
-        }
-
-        function mudarTamanhoPincel(val) {
-            if(canvas.isDrawingMode) canvas.freeDrawingBrush.width = parseInt(val);
-        }
-
-        function mudarCorPincel(val) {
-            if(canvas.isDrawingMode) canvas.freeDrawingBrush.color = val;
-        }
-
-        // Temas
-        function selecionarTemaVisual(tema) {
-            temaAtual = tema;
-            const bB = document.getElementById('btn-tema-burguer');
-            const bC = document.getElementById('btn-tema-cake');
-
-            if(tema === 'cake') {
-                bC.className = "p-4 rounded-2xl border-2 border-cake-500 bg-pink-50 dark:bg-pink-500/10 text-left transition-all";
-                bB.className = "p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-brand-500 transition-all";
-
-                objTitulo.set({ fontFamily: 'Playfair Display', fontStyle: 'italic', fill: '#ffffff' });
-                objSelo.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
-                objPor.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
-                objBadgePct.set({ backgroundColor: '#db2777', fill: '#ffffff' });
-                objRodape.set({ backgroundColor: '#ffffff', fill: '#db2777' });
-            } else {
-                bB.className = "p-4 rounded-2xl border-2 border-brand-500 bg-brand-50/50 dark:bg-brand-500/10 text-left transition-all";
-                bC.className = "p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-cake-500 transition-all";
-
-                objTitulo.set({ fontFamily: 'Montserrat', fontStyle: 'normal', fill: '#ffffff' });
-                objSelo.set({ backgroundColor: '#ff4757', fill: '#ffffff' });
-                objPor.set({ backgroundColor: '#f59e0b', fill: '#000000' });
-                objBadgePct.set({ backgroundColor: '#dc2626', fill: '#fef08a' });
-                objRodape.set({ backgroundColor: 'rgba(0,0,0,0.85)', fill: '#f59e0b' });
-            }
-            canvas.renderAll();
+            if(p.imagem_url) carregarDoceCamada(p.imagem_url);
         }
 
         function centralizarElemento() {
             const ativo = canvas.getActiveObject();
-            if(ativo) {
-                canvas.centerObjectH(ativo);
-                canvas.renderAll();
-            }
+            if(ativo) { canvas.centerObjectH(ativo); canvas.renderAll(); }
         }
         function trazerFrente() {
             const ativo = canvas.getActiveObject();
-            if(ativo) {
-                canvas.bringToFront(ativo);
-                canvas.renderAll();
-            }
+            if(ativo) { canvas.bringToFront(ativo); canvas.renderAll(); }
         }
 
         function mudarAba(aba, el) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-            ['dados', 'ia', 'foto', 'retoque', 'marca'].forEach(id => {
-                document.getElementById(`painel-${id}`).classList.toggle('hidden', id !== aba);
+            ['dados', 'estilo_texto', 'produto_camada', 'ia', 'marca'].forEach(id => {
+                const p = document.getElementById(`painel-${id}`);
+                if(p) p.classList.toggle('hidden', id !== aba);
             });
-            if(aba !== 'retoque') ativarModoPintura(false);
         }
 
-        // 🚨 3. EXPORTAÇÃO NATIVA (ZERO CORTES NO RODAPÉ) 🚨
         function baixarImagemPNG() {
-            const btn = document.getElementById('btn-baixar');
-            const txt = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Renderizando...';
-            btn.disabled = true;
-
             canvas.discardActiveObject();
             canvas.renderAll();
 
             setTimeout(() => {
-                const dataURL = canvas.toDataURL({
-                    format: 'png',
-                    multiplier: 2
-                });
-
+                const dataURL = canvas.toDataURL({ format: 'png', multiplier: 2 });
                 const link = document.createElement('a');
-                const nomeLimpo = (objTitulo ? objTitulo.text : 'Anuncio').replace(/[^a-zA-Z0-9]/g, '_');
-                link.download = `Flyer_${temaAtual.toUpperCase()}_${nomeLimpo}.png`;
+                const nome = (objTitulo ? objTitulo.text : 'Anuncio').replace(/[^a-zA-Z0-9]/g, '_');
+                link.download = `Flyer_${temaAtual.toUpperCase()}_${nome}.png`;
                 link.href = dataURL;
                 link.click();
-
-                btn.innerHTML = '<i class="ph-bold ph-check mr-2 text-lg"></i> Imagem Salva!';
-                setTimeout(() => { btn.innerHTML = txt; btn.disabled = false; }, 2000);
-            }, 300);
+            }, 200);
         }
 
-        // 🚨 4. VÍDEO ANIMADO (REELS / STATUS) 🚨
         function gerarVideoAnimado() {
             const btn = document.getElementById('btn-video');
-            const txt = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Gravando Vídeo...';
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Gravando...';
             btn.disabled = true;
 
             canvas.discardActiveObject();
@@ -807,13 +723,7 @@
 
             const canvasDom = document.getElementById('canvas-studio');
             const stream = canvasDom.captureStream(30);
-            let recorder;
-            try {
-                recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-            } catch(e) {
-                recorder = new MediaRecorder(stream);
-            }
-
+            let recorder = new MediaRecorder(stream);
             const chunks = [];
             recorder.ondataavailable = e => chunks.push(e.data);
             recorder.onstop = () => {
@@ -821,38 +731,22 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `Video_Status_${temaAtual.toUpperCase()}.webm`;
+                a.download = `Status_Animado_${temaAtual.toUpperCase()}.webm`;
                 a.click();
-
-                btn.innerHTML = '<i class="ph-bold ph-check mr-2 text-lg"></i> Vídeo Pronto!';
-                setTimeout(() => { btn.innerHTML = txt; btn.disabled = false; }, 2000);
+                btn.innerHTML = '<i class="ph-bold ph-video-camera text-lg mr-2"></i> Criar Vídeo (Status / Reels)';
+                btn.disabled = false;
             };
 
             recorder.start();
-
             let frame = 0;
-            const totalFrames = 150;
-            const scaleInicial = imgFundo ? imgFundo.scaleX : 1;
-
             function animar() {
                 frame++;
-                if(imgFundo) {
-                    imgFundo.scale(scaleInicial * (1 + 0.0006 * frame));
-                }
-                if(objBadgePct) {
-                    objBadgePct.set('scaleX', 1 + 0.06 * Math.sin(frame * 0.15));
-                    objBadgePct.set('scaleY', 1 + 0.06 * Math.sin(frame * 0.15));
-                }
+                if(objDoceCamada) objDoceCamada.scale(objDoceCamada.scaleX * 1.0005);
+                if(objBadgePct) objBadgePct.set('scaleX', 1 + 0.05 * Math.sin(frame * 0.15));
                 canvas.renderAll();
 
-                if(frame < totalFrames) {
-                    requestAnimationFrame(animar);
-                } else {
-                    recorder.stop();
-                    if(imgFundo) imgFundo.scale(scaleInicial);
-                    if(objBadgePct) { objBadgePct.set('scaleX', 1); objBadgePct.set('scaleY', 1); }
-                    canvas.renderAll();
-                }
+                if(frame < 150) requestAnimationFrame(animar);
+                else recorder.stop();
             }
             animar();
         }
@@ -862,10 +756,9 @@
             const de = document.getElementById('inp-de').value;
             const por = document.getElementById('inp-por').value;
             const pct = document.getElementById('inp-pct').value;
-
             const msg = `✨ *${tit}*\n\n🔥 *SUPER OFERTA DE ${pct}% OFF!*\n❌ De: ${de}\n✅ *Por apenas: ${por}!* 😋\n\n👉 Peça agora pelo cardápio ou mande seu pedido por aqui!`;
             navigator.clipboard.writeText(msg);
-            alert("Legenda copiada para o WhatsApp! 📋");
+            alert("Texto copiado para o WhatsApp! 📋");
         }
     </script>
 </body>
