@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Art's Studio Pro | Editor de Camadas & Varinha Mágica</title>
+    <title>Art's Creative Studio Pro | IA, Varinha & Colagem</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;600;700;900&family=Oswald:wght@700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -35,7 +35,7 @@
 </head>
 <body class="bg-slate-100 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- CABEÇALHO -->
+    <!-- CABEÇALHO COM LOGO OFICIAL DINÂMICA -->
     <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-20 px-8 flex items-center justify-between shadow-sm sticky top-0 z-30">
         <div class="flex items-center">
             <div id="header-logo-container" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 dark:border-slate-700 flex items-center justify-center mr-4 shadow-md overflow-hidden shrink-0">
@@ -44,11 +44,14 @@
             </div>
             <div>
                 <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none" id="header-nome-loja">Art's Studio Pro</h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Editor de Camadas Livres & Varinha Mágica</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Estúdio de Design, IA & Varinha Mágica</p>
             </div>
         </div>
 
         <div class="flex items-center space-x-3">
+            <button onclick="gerarVideoAnimado()" id="btn-video" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white font-black px-5 py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-wider text-xs flex items-center">
+                <i class="ph-bold ph-video-camera text-lg mr-2"></i> Criar Vídeo (Status)
+            </button>
             <button onclick="baixarImagemPNG()" id="btn-baixar" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-wider text-xs flex items-center">
                 <i class="ph-bold ph-download-simple text-lg mr-2"></i> Baixar Flyer (PNG)
             </button>
@@ -64,126 +67,29 @@
         <!-- CONTROLES DO ESTÚDIO (5 Colunas) -->
         <div class="lg:col-span-5 space-y-5">
             
-            <!-- ABAS -->
-            <div class="bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-4 gap-1 text-center shadow-sm">
-                <button onclick="mudarAba('camadas', this)" class="tab-btn active py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Camadas</button>
-                <button onclick="mudarAba('varinha', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-purple-600 flex items-center justify-center"><i class="ph-bold ph-magic-wand mr-1"></i> Varinha</button>
-                <button onclick="mudarAba('textos', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Textos</button>
+            <!-- 5 ABAS COMPLETAS -->
+            <div class="bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-5 gap-1 text-center shadow-sm">
+                <button onclick="mudarAba('item', this)" class="tab-btn active py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Item & Preço</button>
+                <button onclick="mudarAba('ia', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-purple-600 flex items-center justify-center"><i class="ph-bold ph-sparkle mr-1"></i> IA Studio</button>
+                <button onclick="mudarAba('varinha', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-amber-500 flex items-center justify-center"><i class="ph-bold ph-magic-wand mr-1"></i> Varinha</button>
+                <button onclick="mudarAba('grade', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-blue-500 flex items-center justify-center"><i class="ph-bold ph-grid-four mr-1"></i> Grade</button>
                 <button onclick="mudarAba('estilo', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Cores</button>
             </div>
 
-            <!-- PAINEL 1: GERENCIADOR DE CAMADAS (CONTROLE TOTAL) -->
-            <div id="painel-camadas" class="space-y-4">
-                
-                <!-- CAMADA DO DOCE / PRODUTO -->
+            <!-- PAINEL 1: ITEM & PREÇO (COM 1-CLIQUE DO CARDÁPIO) -->
+            <div id="painel-item" class="space-y-4">
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center">
-                            <i class="ph-bold ph-cake text-lg mr-1.5"></i> Foto do Doce / Lanche
-                        </span>
-                        <div class="space-x-1">
-                            <button onclick="deletarCamadaDoce()" class="px-2 py-1 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[10px] font-bold transition-all" title="Excluir apenas o doce">
-                                <i class="ph-bold ph-trash mr-1"></i> Excluir Doce
-                            </button>
-                        </div>
-                    </div>
-
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Trocar Foto do Produto:</label>
-                    <input type="file" accept="image/*" onchange="carregarNovaFotoProduto(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-emerald-600 file:text-white cursor-pointer">
-
-                    <!-- Modo Tela Cheia vs Doce Isolado -->
-                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <button onclick="ajustarFotoModo('cheia')" class="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase border hover:border-emerald-500">
-                            📐 Preencher Flyer Todo
-                        </button>
-                        <button onclick="ajustarFotoModo('isolado')" class="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase border hover:border-emerald-500">
-                            🧁 Doce Livre no Centro
-                        </button>
-                    </div>
-
-                    <!-- Slider de Zoom Exclusivo do Doce -->
-                    <div>
-                        <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
-                            <span>Tamanho do Doce</span><span id="lbl-zoom-doce">100%</span>
-                        </div>
-                        <input type="range" id="rng-zoom-doce" min="30" max="250" value="100" oninput="ajustarZoomDoce(this.value)" class="w-full accent-emerald-500">
-                    </div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center">
+                        <i class="ph-bold ph-lightning text-amber-500 mr-1.5 text-base"></i> Puxar do seu Cardápio Oficial
+                    </label>
+                    <select id="sel-cardapio" onchange="importarDoCardapio(this.value)" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none">
+                        <option value="">-- Selecione um Lanche ou Doce --</option>
+                    </select>
                 </div>
 
-                <!-- CAMADA DE FUNDO DO FLYER -->
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center">
-                            <i class="ph-bold ph-paint-brush-broad text-lg mr-1.5"></i> Fundo do Flyer
-                        </span>
-                        <button onclick="removerFundoCenario()" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 rounded-lg text-[10px] font-bold transition-all">
-                            Excluir Fundo
-                        </button>
-                    </div>
-
-                    <!-- Opções de Cor Sólida de Fundo -->
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Cor do Fundo:</label>
-                        <div class="flex space-x-2">
-                            <button onclick="setCorFundoCanvas('#fdf2f8')" class="w-8 h-8 rounded-xl bg-pink-100 border-2 border-pink-300" title="Rosa Claro"></button>
-                            <button onclick="setCorFundoCanvas('#ffffff')" class="w-8 h-8 rounded-xl bg-white border-2 border-slate-300" title="Branco Limpo"></button>
-                            <button onclick="setCorFundoCanvas('#0f172a')" class="w-8 h-8 rounded-xl bg-slate-900 border-2 border-slate-700" title="Escuro"></button>
-                            <button onclick="setCorFundoCanvas('#fef3c7')" class="w-8 h-8 rounded-xl bg-amber-100 border-2 border-amber-300" title="Amarelo Suave"></button>
-                            <input type="color" id="cp-fundo-canvas" value="#fdf2f8" onchange="setCorFundoCanvas(this.value)" class="w-8 h-8 rounded-xl cursor-pointer p-0.5 border border-slate-300" title="Escolher Cor Livre">
-                        </div>
-                    </div>
-
-                    <!-- Opção de Sombra / Escurecimento -->
-                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
-                            <span>Sombra Escura Sobre o Fundo</span><span id="lbl-sombra">0%</span>
-                        </div>
-                        <input type="range" id="rng-sombra" min="0" max="85" value="0" oninput="ajustarSombra(this.value)" class="w-full accent-slate-800">
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- PAINEL 2: VARINHA MÁGICA & RECORTE DO DOCE -->
-            <div id="painel-varinha" class="hidden space-y-4">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                    <div>
-                        <h3 class="text-xs font-black uppercase tracking-widest text-purple-600 mb-1 flex items-center">
-                            <i class="ph-bold ph-magic-wand text-lg mr-1.5"></i> Varinha de Transparência
-                        </h3>
-                        <p class="text-[10px] text-slate-500 leading-relaxed">Clique no botão abaixo e depois <strong>toque na toalha/fundo da foto</strong> no canvas para apagar essa cor e deixar transparente!</p>
-                    </div>
-
-                    <button onclick="ativarVarinhaMagica()" id="btn-varinha" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md hover:opacity-90 active:scale-95 transition-all flex items-center justify-center">
-                        <i class="ph-bold ph-cursor-click mr-2 text-base"></i> Ativar Varinha Mágica (Clicar no Fundo)
-                    </button>
-
-                    <!-- Borracha Manual -->
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400">Ou use a Borracha Manual:</label>
-                        <div class="flex space-x-2">
-                            <button onclick="ativarBorrachaManual(true)" id="btn-borracha" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-black uppercase hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center">
-                                <i class="ph-bold ph-eraser mr-1 text-base"></i> Usar Borracha
-                            </button>
-                            <button onclick="ativarBorrachaManual(false)" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 rounded-xl text-xs font-black uppercase">
-                                Parar
-                            </button>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
-                                <span>Espessura da Borracha</span><span id="lbl-borracha-tam">25px</span>
-                            </div>
-                            <input type="range" id="rng-borracha" min="5" max="80" value="25" oninput="ajustarTamanhoBorracha(this.value)" class="w-full accent-amber-500">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PAINEL 3: TEXTOS DA OFERTA -->
-            <div id="painel-textos" class="hidden space-y-4">
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Título do Produto</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Título da Oferta</label>
                         <input type="text" id="inp-titulo" value="BOLO SUPREME: NINHO, MARACUJÁ & PUDIM" oninput="atualizarTextoObjeto('titulo', this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase outline-none">
                     </div>
 
@@ -194,7 +100,7 @@
 
                     <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Preço Normal (De)</label>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Preço (De)</label>
                             <input type="text" id="inp-de" value="R$ 14,90" oninput="sincronizarPreco('de', this.value)" class="w-full px-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-red-500 text-center outline-none">
                         </div>
                         <div>
@@ -211,18 +117,146 @@
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Rodapé Chamada</label>
                         <input type="text" id="inp-rodape" value="⚡ PEÇA AGORA PELO CARDÁPIO ONLINE!" oninput="atualizarTextoObjeto('rodape', this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none">
                     </div>
+
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Exibir no Flyer:</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="definirModoPreco('ambos')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase hover:border-brand-500 border border-transparent">Preço + %</button>
+                            <button onclick="definirModoPreco('preco')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase hover:border-brand-500 border border-transparent">Só Preço</button>
+                            <button onclick="definirModoPreco('pct')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase hover:border-brand-500 border border-transparent">Só % OFF</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- PAINEL 4: CORES, FONTES E FUNDO DA CAIXINHA -->
-            <div id="painel-estilo" class="hidden space-y-4">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <!-- PAINEL 2: IA STUDIO (GEMINI PRO + FOTOS 4K) -->
+            <div id="painel-ia" class="hidden space-y-4">
+                <!-- 1. Textos com Gemini -->
+                <div class="bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-transparent p-5 rounded-3xl border border-purple-200 dark:border-purple-800/50 shadow-sm space-y-3">
                     <div class="flex items-center justify-between">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Texto em Edição:</label>
-                        <span id="lbl-elemento-ativo" class="text-xs font-black text-brand-500">Título</span>
+                        <h3 class="text-xs font-black uppercase tracking-widest text-purple-600 dark:text-purple-400 flex items-center">
+                            <i class="ph-fill ph-sparkle mr-1.5 text-lg animate-pulse"></i> Copiloto Gemini Pro
+                        </h3>
+                        <span class="text-[9px] font-black bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded">Textos & WhatsApp</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">Deixe o Gemini criar títulos irresistíveis e ganchos de venda para o seu produto:</p>
+                    <button type="button" onclick="pedirIdeiasAoGemini()" id="btn-gerar-ia" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white font-black py-3 rounded-xl uppercase tracking-wider text-xs shadow-md active:scale-95 transition-all flex items-center justify-center">
+                        <i class="ph-bold ph-sparkle mr-2 text-base"></i> Gerar Ideias com Gemini
+                    </button>
+                    <div id="container-respostas-ia" class="hidden space-y-2 pt-2 border-t border-purple-200/50">
+                        <div id="ai-lista-titulos" class="space-y-1"></div>
+                    </div>
+                </div>
+
+                <!-- 2. Criar Foto com IA 4K -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-brand-500 flex items-center">
+                        <i class="ph-bold ph-camera mr-1.5 text-base"></i> Criar Fotografia Gastronômica 4K
+                    </h3>
+                    <textarea id="ai-prompt-imagem" rows="2" placeholder="Ex: Foto de estúdio de taça de bolo de pote com pudim dourado e morangos, iluminação suave..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none"></textarea>
+                    <button onclick="gerarFotoDoZeroIA()" id="btn-gerar-img-ia" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black py-3 rounded-xl uppercase tracking-wider text-xs shadow-md active:scale-95 transition-all flex items-center justify-center">
+                        <i class="ph-bold ph-magic-wand mr-2 text-base"></i> Gerar Foto Profissional
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAINEL 3: VARINHA MÁGICA CONTÍNUA & RETOQUE -->
+            <div id="painel-varinha" class="hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div>
+                        <h3 class="text-xs font-black uppercase tracking-widest text-amber-500 mb-1 flex items-center">
+                            <i class="ph-bold ph-magic-wand text-lg mr-1.5"></i> Varinha de Transparência Contínua
+                        </h3>
+                        <p class="text-[10px] text-slate-500 leading-relaxed">Ative a varinha e <strong>toque em quantas partes do fundo/toalha quiser</strong> no canvas. Ela não desliga sozinha até você clicar em Parar!</p>
                     </div>
 
-                    <!-- Escolha da Fonte -->
+                    <!-- Botão Liga/Desliga da Varinha -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="alternarVarinhaContinua(true)" id="btn-varinha-ligar" class="py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md hover:opacity-95 active:scale-95 transition-all flex items-center justify-center">
+                            <i class="ph-bold ph-cursor-click mr-1.5 text-base"></i> Ativar Varinha
+                        </button>
+                        <button onclick="alternarVarinhaContinua(false)" id="btn-varinha-desligar" class="py-3 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-slate-300 transition-all">
+                            Parar Varinha
+                        </button>
+                    </div>
+
+                    <!-- Sensibilidade / Tolerância da Varinha -->
+                    <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400">
+                            <span>Sensibilidade da Varinha:</span><span id="lbl-tolerancia" class="text-amber-500 font-black">55</span>
+                        </div>
+                        <input type="range" id="rng-tolerancia" min="15" max="95" value="55" oninput="document.getElementById('lbl-tolerancia').innerText = this.value" class="w-full accent-amber-500">
+                    </div>
+
+                    <!-- Botão Desfazer da Varinha -->
+                    <button onclick="desfazerVarinha()" class="w-full py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase text-slate-600 dark:text-slate-400 hover:text-red-500 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                        <i class="ph-bold ph-arrow-u-up-left mr-1.5 text-sm"></i> Desfazer Último Clique
+                    </button>
+
+                    <!-- Borracha Manual com Espessura -->
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400">Borracha Manual (Passar com o mouse):</label>
+                        <div class="flex space-x-2">
+                            <button onclick="ativarBorrachaManual(true)" id="btn-borracha" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-black uppercase hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center">
+                                <i class="ph-bold ph-eraser mr-1.5 text-base"></i> Pincel Borracha
+                            </button>
+                            <button onclick="ativarBorrachaManual(false)" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 rounded-xl text-xs font-black uppercase">
+                                Parar
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-2 pt-1">
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">Espessura:</label>
+                            <input type="range" id="rng-borracha" min="5" max="80" value="25" oninput="mudarTamBorracha(this.value)" class="flex-1 accent-brand-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL 4: GRADE DE FOTOS (ESTILO INSTAGRAM COLAGEM) -->
+            <div id="painel-grade" class="hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400">Layout de Colagem de Fotos</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="definirLayoutGrade(1)" class="p-3 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-500/10 text-xs font-black text-center" id="btn-col-1">1 Foto</button>
+                        <button onclick="definirLayoutGrade(2)" class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-black text-center" id="btn-col-2">2 Fotos</button>
+                        <button onclick="definirLayoutGrade(3)" class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-black text-center" id="btn-col-3">3 Fotos</button>
+                        <button onclick="definirLayoutGrade(4)" class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-black text-center" id="btn-col-4">4 Fotos</button>
+                    </div>
+
+                    <!-- Uploads individuais da Grade -->
+                    <div id="container-slots-grade" class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Subir Foto Principal:</p>
+                        <input type="file" accept="image/*" onchange="subirFotoParaGrade(event, 0)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-brand-500 file:text-white cursor-pointer">
+                    </div>
+
+                    <!-- Zoom e Posição do Item Principal -->
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400">
+                            <span>Zoom do Doce/Lanche:</span><span id="lbl-zoom-grade" class="text-brand-500 font-black">100%</span>
+                        </div>
+                        <input type="range" id="rng-zoom-grade" min="30" max="250" value="100" oninput="ajustarZoomFotoGrade(this.value)" class="w-full accent-brand-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL 5: CORES, FONTES & MARCA -->
+            <div id="painel-estilo" class="hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    
+                    <!-- Alternar Marca -->
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Marca do Anúncio</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="aplicarMarcaEstilo('cake')" id="btn-marca-cake" class="p-3 rounded-xl border-2 border-cake-500 bg-pink-50 dark:bg-pink-500/10 text-xs font-black flex items-center justify-center text-cake-500">
+                                <i class="ph-fill ph-cake mr-1.5 text-base"></i> Art's Cake
+                            </button>
+                            <button onclick="aplicarMarcaEstilo('burguer')" id="btn-marca-burguer" class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-black flex items-center justify-center text-slate-600 dark:text-slate-300">
+                                <i class="ph-fill ph-hamburger mr-1.5 text-base"></i> Art's Burguer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Fontes -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Família da Fonte</label>
                         <select id="sel-fonte" onchange="aplicarFonte(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none">
@@ -233,51 +267,41 @@
                         </select>
                     </div>
 
-                    <!-- Tamanho da Fonte -->
-                    <div>
-                        <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
-                            <span>Tamanho da Fonte</span><span id="lbl-tam-fonte">22px</span>
-                        </div>
-                        <input type="range" id="rng-tam-fonte" min="10" max="55" value="22" oninput="aplicarTamanhoFonte(this.value)" class="w-full accent-brand-500">
-                    </div>
-
                     <!-- Cores -->
-                    <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <div>
                             <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Cor da Letra</label>
-                            <input type="color" id="cp-cor-letra" value="#ffffff" onchange="aplicarCorLetra(this.value)" class="w-full h-10 rounded-xl cursor-pointer border p-1 bg-white">
+                            <input type="color" id="cp-cor-letra" value="#ffffff" onchange="aplicarCorLetra(this.value)" class="w-full h-9 rounded-xl cursor-pointer border p-0.5 bg-white">
                         </div>
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Fundo da Caixinha</label>
-                            <input type="color" id="cp-cor-fundo" value="#ec4899" onchange="aplicarCorFundo(this.value)" class="w-full h-10 rounded-xl cursor-pointer border p-1 bg-white">
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Fundo da Caixa</label>
+                            <input type="color" id="cp-cor-fundo" value="#ec4899" onchange="aplicarCorFundo(this.value)" class="w-full h-9 rounded-xl cursor-pointer border p-0.5 bg-white">
                         </div>
                     </div>
 
-                    <div class="pt-2">
-                        <button onclick="tornarCaixaTransparente()" class="w-full py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-black uppercase hover:border-brand-500 border border-slate-200 dark:border-slate-700">
-                            Deixar Caixinha Transparente
-                        </button>
-                    </div>
+                    <button onclick="tornarCaixaTransparente()" class="w-full py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-black uppercase hover:border-brand-500 border border-slate-200 dark:border-slate-700">
+                        Deixar Caixinha Transparente
+                    </button>
                 </div>
             </div>
 
         </div>
 
-        <!-- COLUNA DIREITA: O CANVAS (480 x 600 px) -->
+        <!-- COLUNA DIREITA: O CANVAS NATIVO INTERATIVO (7 Colunas) -->
         <div class="lg:col-span-7 flex flex-col items-center sticky top-24">
             <div class="flex justify-between items-center w-[480px] mb-2 px-2">
                 <span class="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center">
-                    <i class="ph-bold ph-hand-pointing text-brand-500 mr-1.5 text-base"></i> Arraste o doce ou os textos livremente!
+                    <i class="ph-bold ph-hand-pointing text-brand-500 mr-1.5 text-base"></i> Clique e arraste qualquer item livremente!
                 </span>
-                <span class="text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-500/20">Zero Cortes</span>
+                <span id="badge-status-varinha" class="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700">Modo Normal</span>
             </div>
 
-            <!-- CANVAS NATIVO -->
+            <!-- CANVAS NATIVO (480 x 600 px) -->
             <div class="canvas-container relative border-4 border-cake-500 bg-pink-50" id="canvas-wrapper">
                 <canvas id="canvas-studio" width="480" height="600"></canvas>
             </div>
 
-            <!-- Botões de Ação Rápida -->
+            <!-- Controles Rápidos de Alinhamento -->
             <div class="flex items-center space-x-2 mt-4">
                 <button onclick="centralizarElemento()" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:border-brand-500 shadow-sm flex items-center">
                     <i class="ph-bold ph-align-center-horizontal mr-1 text-sm"></i> Centralizar
@@ -293,52 +317,42 @@
 
     </main>
 
+    <!-- MOTOR JAVASCRIPT TOTALMENTE INTEGRADO -->
     <script>
         let canvas;
-        let objFotoProduto = null; // A camada da foto do doce/lanche
-        let objSombraOverlay = null; // Camada escura ajustável
+        let objFotoPrincipal = null;
+        let historicoVarinha = []; // Guarda estados para o botão Desfazer!
+        let modoVarinhaAtivo = false;
         let objTitulo, objSelo, objDe, objPor, objBadgePct, objRodape, objLogo;
         let produtosCatalogo = [];
-        let modoVarinhaAtivo = false;
+        let marcaAtiva = 'cake';
+        let layoutGradeAtual = 1;
 
         document.addEventListener('DOMContentLoaded', async () => {
             inicializarCanvas();
             await carregarConfiguracoes();
             await carregarCardapio();
+            aplicarMarcaEstilo('cake');
         });
 
         function inicializarCanvas() {
             canvas = new fabric.Canvas('canvas-studio', {
                 preserveObjectStacking: true,
                 selection: true,
-                backgroundColor: '#fdf2f8' // Fundo rosa claro limpo por padrão (Art's Cake)
+                backgroundColor: '#fdf2f8'
             });
 
-            // Cria a camada de sombra escura ajustável (começa em 0%)
-            objSombraOverlay = new fabric.Rect({
-                left: 0, top: 0,
-                width: 480, height: 600,
-                fill: 'rgba(0,0,0,0)',
-                selectable: false,
-                evented: false
-            });
-            canvas.add(objSombraOverlay);
-
-            // Carrega a foto do doce como camada independente
+            // Foto inicial
             const fotoInicial = "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop";
-            setFotoProduto(fotoInicial, 'isolado');
+            carregarFotoNoCanvas(fotoInicial);
 
-            // Cria os textos livres
+            // Cria textos
             criarTextos();
 
-            // Atualiza barra de cores quando clicar em qualquer texto
-            canvas.on('selection:created', (e) => atualizarPainelEstilos(e.selected[0]));
-            canvas.on('selection:updated', (e) => atualizarPainelEstilos(e.selected[0]));
-
-            // Varinha Mágica de Clique
+            // 🚨 VARINHA MÁGICA CONTÍNUA: NÃO DESLIGA APÓS O PRIMEIRO CLIQUE! 🚨
             canvas.on('mouse:down', function(opt) {
-                if (modoVarinhaAtivo && objFotoProduto) {
-                    executarVarinhaMagicaNoPonto(opt.e);
+                if (modoVarinhaAtivo && objFotoPrincipal) {
+                    executarVarinhaMagicaContinua(opt.e);
                 }
             });
         }
@@ -372,93 +386,33 @@
             } catch(e) {}
         }
 
-        // 🚨 CAMADA INDEPENDENTE DA FOTO DO PRODUTO (NUNCA MAIS ACHATA) 🚨
-        function setFotoProduto(url, modo = 'isolado') {
+        function carregarFotoNoCanvas(url) {
             fabric.Image.fromURL(url, function(img) {
-                if(objFotoProduto) canvas.remove(objFotoProduto);
-                objFotoProduto = img;
+                if(objFotoPrincipal) canvas.remove(objFotoPrincipal);
+                objFotoPrincipal = img;
 
-                let scale;
-                if (modo === 'cheia') {
-                    // Preenche o flyer inteiro de ponta a ponta
-                    scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-                    img.set({
-                        left: canvas.width / 2, top: canvas.height / 2,
-                        originX: 'center', originY: 'center',
-                        scaleX: scale, scaleY: scale,
-                        selectable: true
-                    });
-                } else {
-                    // Doce no centro com tamanho ideal e proporcional
-                    scale = 380 / Math.max(img.width, img.height);
-                    img.set({
-                        left: canvas.width / 2, top: 270,
-                        originX: 'center', originY: 'center',
-                        scaleX: scale, scaleY: scale,
-                        cornerColor: '#10b981', borderColor: '#10b981',
-                        cornerSize: 10, transparentCorners: false,
-                        selectable: true // 👈 PODE MOVER E REDIMENSIONAR LIVREMENTE!
-                    });
-                }
+                const scale = 360 / Math.max(img.width, img.height);
+                img.set({
+                    left: canvas.width / 2,
+                    top: 280,
+                    originX: 'center',
+                    originY: 'center',
+                    scaleX: scale,
+                    scaleY: scale,
+                    cornerColor: '#10b981',
+                    borderColor: '#10b981',
+                    cornerSize: 10,
+                    transparentCorners: false,
+                    selectable: true
+                });
 
                 canvas.add(img);
-                // Coloca acima do fundo e da sombra, mas atrás dos textos
                 canvas.moveTo(img, 1);
                 canvas.renderAll();
+                
+                // Salva estado inicial para desfazer se precisar
+                salvarEstadoFoto();
             }, { crossOrigin: 'anonymous' });
-        }
-
-        function ajustarFotoModo(modo) {
-            if(!objFotoProduto) return;
-            const src = objFotoProduto.getSrc();
-            setFotoProduto(src, modo);
-        }
-
-        function ajustarZoomDoce(val) {
-            if(!objFotoProduto) return;
-            const pct = parseInt(val);
-            document.getElementById('lbl-zoom-doce').innerText = `${pct}%`;
-            
-            const baseScale = 380 / Math.max(objFotoProduto.width, objFotoProduto.height);
-            objFotoProduto.scale(baseScale * (pct / 100));
-            canvas.renderAll();
-        }
-
-        function deletarCamadaDoce() {
-            if(objFotoProduto) {
-                canvas.remove(objFotoProduto);
-                objFotoProduto = null;
-                canvas.renderAll();
-            }
-        }
-
-        function carregarNovaFotoProduto(event) {
-            const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = (e) => setFotoProduto(e.target.result, 'isolado');
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Fundo do Canvas
-        function setCorFundoCanvas(cor) {
-            canvas.backgroundColor = cor;
-            document.getElementById('cp-fundo-canvas').value = cor;
-            canvas.renderAll();
-        }
-
-        function removerFundoCenario() {
-            setCorFundoCanvas('transparent');
-        }
-
-        function ajustarSombra(val) {
-            const num = parseInt(val);
-            document.getElementById('lbl-sombra').innerText = `${num}%`;
-            if(objSombraOverlay) {
-                objSombraOverlay.set('fill', `rgba(0,0,0,${num / 100})`);
-                canvas.renderAll();
-            }
         }
 
         function setLogoFlyer(url) {
@@ -479,7 +433,6 @@
             }, { crossOrigin: 'anonymous' });
         }
 
-        // 🚨 TEXTOS LIVRES E POSICIONÁVEIS 🚨
         function criarTextos() {
             objSelo = new fabric.Textbox('🔥 PROMOÇÃO DO DIA', {
                 left: 20, top: 20, width: 200, fontSize: 13,
@@ -488,11 +441,10 @@
                 textAlign: 'center', padding: 6, cornerColor: '#ec4899'
             });
 
-            // Título mais baixo para nunca tampar o doce
             objTitulo = new fabric.Textbox('BOLO SUPREME: NINHO, MARACUJÁ & PUDIM', {
                 left: 20, top: 400, width: 440, fontSize: 22,
                 fontFamily: 'Playfair Display', fontStyle: 'italic', fontWeight: 'bold',
-                fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.5)',
+                fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.6)',
                 textAlign: 'left', padding: 6, cornerColor: '#ec4899'
             });
 
@@ -506,7 +458,7 @@
             objDe = new fabric.Textbox('De: R$ 14,90', {
                 left: 20, top: 510, width: 110, fontSize: 14,
                 fontFamily: 'Montserrat', fontWeight: '800',
-                fill: '#f87171', backgroundColor: 'rgba(0,0,0,0.7)',
+                fill: '#f87171', backgroundColor: 'rgba(0,0,0,0.75)',
                 textAlign: 'center', padding: 6, cornerColor: '#f87171'
             });
 
@@ -517,7 +469,6 @@
                 textAlign: 'center', padding: 8, cornerColor: '#ec4899'
             });
 
-            // Rodapé com altura segura garantida
             objRodape = new fabric.Textbox('⚡ PEÇA AGORA PELO CARDÁPIO ONLINE!', {
                 left: 20, top: 550, width: 440, fontSize: 11,
                 fontFamily: 'Montserrat', fontWeight: '800',
@@ -529,91 +480,93 @@
             canvas.renderAll();
         }
 
-        // Atualização de Textos
-        function atualizarTextoObjeto(tipo, valor) {
-            if(tipo === 'titulo' && objTitulo) objTitulo.set('text', valor.toUpperCase());
-            if(tipo === 'selo' && objSelo) objSelo.set('text', valor.toUpperCase());
-            if(tipo === 'rodape' && objRodape) objRodape.set('text', valor.toUpperCase());
-            canvas.renderAll();
-        }
+        // 🚨 1. VARINHA MÁGICA CONTÍNUA (NÃO DESLIGA APÓS 1 CLIQUE) 🚨
+        function alternarVarinhaContinua(ligar) {
+            modoVarinhaAtivo = ligar;
+            const badge = document.getElementById('badge-status-varinha');
+            const btnLigar = document.getElementById('btn-varinha-ligar');
 
-        // Formatação de Cores, Fontes e Caixinhas
-        function atualizarPainelEstilos(obj) {
-            if(!obj || !obj.text) return;
-            document.getElementById('lbl-elemento-ativo').innerText = obj.text.substring(0, 15) + '...';
-            if(obj.fontFamily) document.getElementById('sel-fonte').value = obj.fontFamily;
-            if(obj.fontSize) {
-                document.getElementById('rng-tam-fonte').value = obj.fontSize;
-                document.getElementById('lbl-tam-fonte').innerText = `${obj.fontSize}px`;
-            }
-            if(obj.fill) document.getElementById('cp-cor-letra').value = obj.fill;
-            if(obj.backgroundColor && obj.backgroundColor !== 'transparent') {
-                document.getElementById('cp-cor-fundo').value = obj.backgroundColor;
-            }
-        }
-
-        function aplicarFonte(fonte) {
-            const obj = canvas.getActiveObject() || objTitulo;
-            if(obj) { obj.set('fontFamily', fonte); canvas.renderAll(); }
-        }
-
-        function aplicarTamanhoFonte(tam) {
-            const obj = canvas.getActiveObject() || objTitulo;
-            if(obj) {
-                obj.set('fontSize', parseInt(tam));
-                document.getElementById('lbl-tam-fonte').innerText = `${tam}px`;
-                canvas.renderAll();
-            }
-        }
-
-        function aplicarCorLetra(cor) {
-            const obj = canvas.getActiveObject() || objTitulo;
-            if(obj) { obj.set('fill', cor); canvas.renderAll(); }
-        }
-
-        function aplicarCorFundo(cor) {
-            const obj = canvas.getActiveObject() || objTitulo;
-            if(obj) { obj.set('backgroundColor', cor); canvas.renderAll(); }
-        }
-
-        function tornarCaixaTransparente() {
-            const obj = canvas.getActiveObject() || objTitulo;
-            if(obj) { obj.set('backgroundColor', 'transparent'); canvas.renderAll(); }
-        }
-
-        // 🚨 VARINHA MÁGICA: APAGAR A TOALHA / FUNDO DA FOTO 🚨
-        function ativarVarinhaMagica() {
-            modoVarinhaAtivo = !modoVarinhaAtivo;
-            const btn = document.getElementById('btn-varinha');
-            if(modoVarinhaAtivo) {
-                btn.classList.add('animate-pulse', 'ring-4', 'ring-purple-300');
-                btn.innerHTML = '<i class="ph-bold ph-crosshair mr-2"></i> Toque no Fundo/Toalha no Canvas';
-                alert("Modo Varinha Ativo! Clique na toalha ou no fundo que deseja apagar.");
+            if(ligar) {
+                btnLigar.classList.add('ring-4', 'ring-amber-300', 'animate-pulse');
+                badge.innerText = "Varinha Ativa (Toque nas cores para apagar)";
+                badge.className = "text-[10px] font-black text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-300 animate-pulse";
+                canvas.defaultCursor = 'crosshair';
             } else {
-                btn.classList.remove('animate-pulse', 'ring-4', 'ring-purple-300');
-                btn.innerHTML = '<i class="ph-bold ph-cursor-click mr-2"></i> Ativar Varinha Mágica';
+                btnLigar.classList.remove('ring-4', 'ring-amber-300', 'animate-pulse');
+                badge.innerText = "Modo Normal";
+                badge.className = "text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700";
+                canvas.defaultCursor = 'default';
             }
         }
 
-        function executarVarinhaMagicaNoPonto(event) {
-            if (!objFotoProduto) return;
-            
-            // Converte a imagem para canvas temporário para aplicar transparência cromática
-            const imgElement = objFotoProduto.getElement();
+        function salvarEstadoFoto() {
+            if(!objFotoPrincipal) return;
+            const src = objFotoPrincipal.toDataURL();
+            historicoVarinha.push(src);
+            if(historicoVarinha.length > 8) historicoVarinha.shift(); // Guarda até 8 passos
+        }
+
+        function desfazerVarinha() {
+            if(historicoVarinha.length > 1) {
+                historicoVarinha.pop(); // Remove atual
+                const anterior = historicoVarinha[historicoVarinha.length - 1];
+                
+                fabric.Image.fromURL(anterior, function(img) {
+                    const l = objFotoPrincipal.left;
+                    const t = objFotoPrincipal.top;
+                    const sx = objFotoPrincipal.scaleX;
+                    const sy = objFotoPrincipal.scaleY;
+
+                    canvas.remove(objFotoPrincipal);
+                    objFotoPrincipal = img;
+                    img.set({
+                        left: l, top: t,
+                        originX: 'center', originY: 'center',
+                        scaleX: sx, scaleY: sy,
+                        selectable: true
+                    });
+                    canvas.add(img);
+                    canvas.moveTo(img, 1);
+                    canvas.renderAll();
+                });
+            } else {
+                alert("Nenhum clique anterior para desfazer.");
+            }
+        }
+
+        function executarVarinhaMagicaContinua(event) {
+            if (!objFotoPrincipal) return;
+
+            salvarEstadoFoto(); // Guarda antes de apagar
+
+            const pointer = canvas.getPointer(event);
+            const imgEl = objFotoPrincipal.getElement();
+
             const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = imgElement.naturalWidth || imgElement.width;
-            tempCanvas.height = imgElement.naturalHeight || imgElement.height;
+            tempCanvas.width = imgEl.naturalWidth || imgEl.width;
+            tempCanvas.height = imgEl.naturalHeight || imgEl.height;
             const ctx = tempCanvas.getContext('2d');
-            ctx.drawImage(imgElement, 0, 0);
+            ctx.drawImage(imgEl, 0, 0);
+
+            // Mapeia onde o clique caiu dentro da imagem
+            const matrix = objFotoPrincipal.calcTransformMatrix();
+            const inverted = fabric.util.invertTransform(matrix);
+            const pointInImg = fabric.util.transformPoint(new fabric.Point(pointer.x, pointer.y), inverted);
+
+            const x = Math.floor(pointInImg.x + (tempCanvas.width / 2));
+            const y = Math.floor(pointInImg.y + (tempCanvas.height / 2));
 
             const imgData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
             const data = imgData.data;
 
-            // Pega a cor do canto superior esquerdo como cor de fundo base
-            const targetR = data[0];
-            const targetG = data[1];
-            const targetB = data[2];
-            const tolerancia = 65; // Tolerância para toalha/mesa
+            if (x < 0 || y < 0 || x >= tempCanvas.width || y >= tempCanvas.height) return;
+
+            const targetIdx = (y * tempCanvas.width + x) * 4;
+            const targetR = data[targetIdx];
+            const targetG = data[targetIdx + 1];
+            const targetB = data[targetIdx + 2];
+            
+            const tolerancia = parseInt(document.getElementById('rng-tolerancia').value) || 55;
 
             for (let i = 0; i < data.length; i += 4) {
                 const diff = Math.abs(data[i] - targetR) + Math.abs(data[i+1] - targetG) + Math.abs(data[i+2] - targetB);
@@ -623,46 +576,191 @@
             }
 
             ctx.putImageData(imgData, 0, 0);
-            setFotoProduto(tempCanvas.toDataURL(), 'isolado');
-            ativarVarinhaMagica(); // Desativa
+            
+            // Recarrega no canvas mantendo exatamente o mesmo tamanho e posição
+            fabric.Image.fromURL(tempCanvas.toDataURL(), function(novaImg) {
+                const l = objFotoPrincipal.left;
+                const t = objFotoPrincipal.top;
+                const sx = objFotoPrincipal.scaleX;
+                const sy = objFotoPrincipal.scaleY;
+
+                canvas.remove(objFotoPrincipal);
+                objFotoPrincipal = novaImg;
+                novaImg.set({
+                    left: l, top: t,
+                    originX: 'center', originY: 'center',
+                    scaleX: sx, scaleY: sy,
+                    cornerColor: '#10b981', borderColor: '#10b981',
+                    cornerSize: 10, transparentCorners: false,
+                    selectable: true
+                });
+                canvas.add(novaImg);
+                canvas.moveTo(novaImg, 1);
+                canvas.renderAll();
+            });
+
+            // ⚠️ NÃO DESLIGA! O modo continua ativo para você dar mais cliques se quiser!
         }
 
-        // Borracha Manual
+        // Borracha manual
         function ativarBorrachaManual(ativo) {
             canvas.isDrawingMode = ativo;
             if(ativo) {
+                alternarVarinhaContinua(false); // desliga varinha se ligar borracha
                 canvas.freeDrawingBrush.width = parseInt(document.getElementById('rng-borracha').value);
-                // Cor da borracha igual ao fundo do canvas para simular apagar
                 canvas.freeDrawingBrush.color = canvas.backgroundColor || '#fdf2f8';
             }
         }
-
-        function ajustarTamanhoBorracha(val) {
-            document.getElementById('lbl-borracha-tam').innerText = `${val}px`;
+        function mudarTamBorracha(val) {
             if(canvas.isDrawingMode) canvas.freeDrawingBrush.width = parseInt(val);
         }
 
-        // Alinhamento
-        function centralizarElemento() {
-            const ativo = canvas.getActiveObject();
-            if(ativo) { canvas.centerObjectH(ativo); canvas.renderAll(); }
-        }
-        function trazerFrente() {
-            const ativo = canvas.getActiveObject();
-            if(ativo) { canvas.bringToFront(ativo); canvas.renderAll(); }
-        }
-
-        function mudarAba(aba, el) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            ['camadas', 'varinha', 'textos', 'estilo'].forEach(id => {
-                const p = document.getElementById(`painel-${id}`);
-                if(p) p.classList.toggle('hidden', id !== aba);
+        // 🚨 2. GRADE DE FOTOS (COLAGEM ESTILO INSTAGRAM) 🚨
+        function definirLayoutGrade(qtd) {
+            layoutGradeAtual = qtd;
+            [1,2,3,4].forEach(n => {
+                const b = document.getElementById(`btn-col-${n}`);
+                if(n === qtd) {
+                    b.className = "p-3 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-500/10 text-xs font-black text-center text-brand-500";
+                } else {
+                    b.className = "p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-black text-center";
+                }
             });
-            ativarBorrachaManual(false);
+
+            const containerSlots = document.getElementById('container-slots-grade');
+            if(qtd === 1) {
+                containerSlots.innerHTML = `
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Subir Foto Principal:</p>
+                    <input type="file" accept="image/*" onchange="subirFotoParaGrade(event, 0)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-brand-500 file:text-white cursor-pointer">`;
+            } else if(qtd === 2) {
+                containerSlots.innerHTML = `
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Foto 1 (Esquerda):</p>
+                    <input type="file" accept="image/*" onchange="subirFotoParaGrade(event, 0)" class="w-full text-xs text-slate-400 mb-2">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Foto 2 (Direita):</p>
+                    <input type="file" accept="image/*" onchange="subirFotoParaGrade(event, 1)" class="w-full text-xs text-slate-400">`;
+            } else {
+                containerSlots.innerHTML = `
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Subir Fotos da Colagem (${qtd} slots):</p>
+                    ${Array.from({length: qtd}).map((_, i) => `<input type="file" accept="image/*" onchange="subirFotoParaGrade(event, ${i})" class="w-full text-xs text-slate-400 mb-1">`).join('')}`;
+            }
         }
 
-        // Preços e Cardápio
+        function subirFotoParaGrade(event, slotIndex) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if(slotIndex === 0) {
+                        carregarFotoNoCanvas(e.target.result);
+                    } else {
+                        // Adiciona foto extra ao lado
+                        fabric.Image.fromURL(e.target.result, function(img) {
+                            const scale = 200 / Math.max(img.width, img.height);
+                            img.set({
+                                left: 100 + (slotIndex * 80), top: 280,
+                                scaleX: scale, scaleY: scale,
+                                selectable: true
+                            });
+                            canvas.add(img);
+                            canvas.moveTo(img, 1);
+                            canvas.renderAll();
+                        });
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function ajustarZoomFotoGrade(val) {
+            if(!objFotoPrincipal) return;
+            document.getElementById('lbl-zoom-grade').innerText = `${val}%`;
+            const baseScale = 360 / Math.max(objFotoPrincipal.width, objFotoPrincipal.height);
+            objFotoPrincipal.scale(baseScale * (parseInt(val) / 100));
+            canvas.renderAll();
+        }
+
+        // 🚨 3. IA STUDIO: GEMINI COPYWRITING & IMAGEM 4K 🚨
+        async function pedirIdeiasAoGemini() {
+            const titAtual = document.getElementById('inp-titulo').value.trim();
+            const btn = document.getElementById('btn-gerar-ia');
+            const txt = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Gemini pensando...';
+            btn.disabled = true;
+
+            const payload = {
+                produto: titAtual,
+                marca: marcaAtiva === 'cake' ? "Art's Cake (Confeitaria/Doces)" : "Art's Burguer (Hamburgueria)",
+                tom: "urgencia_fome"
+            };
+
+            try {
+                const res = await fetch('/api/marketing/gerar-copy-ia', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    const c = document.getElementById('container-respostas-ia');
+                    c.classList.remove('hidden');
+                    document.getElementById('ai-lista-titulos').innerHTML = (data.titulos || []).map(t => `
+                        <button type="button" onclick="document.getElementById('inp-titulo').value = '${t.replace(/'/g, "\\'")}'; atualizarTextoObjeto('titulo', '${t.replace(/'/g, "\\'")}');" class="w-full text-left text-xs font-black uppercase p-2 bg-slate-50 dark:bg-slate-800 rounded-xl hover:border-purple-500 border border-slate-200 dark:border-slate-700 transition-all flex justify-between">
+                            <span>${t}</span> <i class="ph-bold ph-arrow-down-left text-purple-500"></i>
+                        </button>
+                    `).join('');
+                }
+            } catch(e) {
+                alert("Erro ao conectar com o Gemini.");
+            } finally {
+                btn.innerHTML = txt;
+                btn.disabled = false;
+            }
+        }
+
+        async function gerarFotoDoZeroIA() {
+            const prompt = document.getElementById('ai-prompt-imagem').value.trim();
+            if(!prompt) return alert("Digite o doce ou lanche desejado!");
+
+            const btn = document.getElementById('btn-gerar-img-ia');
+            const txt = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Gerando 4K...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/marketing/gerar-imagem-ia', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ prompt: prompt, aspect_ratio: "1:1" })
+                });
+                const data = await res.json();
+                if(res.ok && data.imagem_base64) {
+                    carregarFotoNoCanvas(data.imagem_base64);
+                    alert("Foto criada com sucesso sem nenhuma marca d'água!");
+                }
+            } catch(e) {
+                alert("Erro ao gerar imagem.");
+            } finally {
+                btn.innerHTML = txt;
+                btn.disabled = false;
+            }
+        }
+
+        // 🚨 4. INTEGRAÇÃO COM CARDÁPIO & PREÇOS 🚨
+        function importarDoCardapio(id) {
+            if(!id) return;
+            const p = produtosCatalogo.find(x => x.id === parseInt(id));
+            if(!p) return;
+
+            document.getElementById('inp-titulo').value = p.nome.toUpperCase();
+            atualizarTextoObjeto('titulo', p.nome);
+
+            const deVal = `R$ ${p.preco_venda.toFixed(2).replace('.', ',')}`;
+            document.getElementById('inp-de').value = deVal;
+            sincronizarPreco('de', deVal);
+
+            if(p.imagem_url) carregarFotoNoCanvas(p.imagem_url);
+        }
+
         function sincronizarPreco(origem, val) {
             let de = parseFloat(document.getElementById('inp-de').value.replace('R$','').replace(',','.').trim()) || 0;
             let pct = parseFloat(document.getElementById('inp-pct').value) || 0;
@@ -685,27 +783,140 @@
             canvas.renderAll();
         }
 
-        // 🚨 EXPORTAÇÃO NATIVA PERFEITA (SEM CORTAR O RODAPÉ) 🚨
+        function definirModoPreco(modo) {
+            if(!objDe || !objPor || !objBadgePct) return;
+            objDe.set('visible', modo === 'ambos' || modo === 'preco');
+            objPor.set('visible', modo === 'ambos' || modo === 'preco');
+            objBadgePct.set('visible', modo === 'ambos' || modo === 'pct');
+            canvas.renderAll();
+        }
+
+        function atualizarTextoObjeto(tipo, valor) {
+            if(tipo === 'titulo' && objTitulo) objTitulo.set('text', valor.toUpperCase());
+            if(tipo === 'selo' && objSelo) objSelo.set('text', valor.toUpperCase());
+            if(tipo === 'rodape' && objRodape) objRodape.set('text', valor.toUpperCase());
+            canvas.renderAll();
+        }
+
+        // Marcas & Estilo
+        function aplicarMarcaEstilo(marca) {
+            marcaAtiva = marca;
+            const bB = document.getElementById('btn-marca-burguer');
+            const bC = document.getElementById('btn-marca-cake');
+
+            if(marca === 'cake') {
+                bC.className = "p-3 rounded-xl border-2 border-cake-500 bg-pink-50 dark:bg-pink-500/10 text-xs font-black text-cake-500 flex items-center justify-center";
+                bB.className = "p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-black text-slate-600 dark:text-slate-300 flex items-center justify-center";
+
+                canvas.backgroundColor = '#fdf2f8';
+                document.querySelector('.canvas-container').style.borderColor = '#ec4899';
+
+                objTitulo.set({ fontFamily: 'Playfair Display', fontStyle: 'italic', fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.55)' });
+                objSelo.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
+                objPor.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
+                objBadgePct.set({ backgroundColor: '#db2777', fill: '#ffffff' });
+                objRodape.set({ backgroundColor: '#ffffff', fill: '#db2777' });
+            } else {
+                bB.className = "p-3 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-500/10 text-xs font-black text-brand-500 flex items-center justify-center";
+                bC.className = "p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-black text-slate-600 dark:text-slate-300 flex items-center justify-center";
+
+                canvas.backgroundColor = '#0f172a';
+                document.querySelector('.canvas-container').style.borderColor = '#f59e0b';
+
+                objTitulo.set({ fontFamily: 'Montserrat', fontStyle: 'normal', fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.7)' });
+                objSelo.set({ backgroundColor: '#ff4757', fill: '#ffffff' });
+                objPor.set({ backgroundColor: '#f59e0b', fill: '#000000' });
+                objBadgePct.set({ backgroundColor: '#dc2626', fill: '#fef08a' });
+                objRodape.set({ backgroundColor: 'rgba(0,0,0,0.85)', fill: '#f59e0b' });
+            }
+            canvas.renderAll();
+        }
+
+        // Formatação de Cores
+        function aplicarFonte(f) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('fontFamily', f); canvas.renderAll(); }
+        }
+        function aplicarCorLetra(c) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('fill', c); canvas.renderAll(); }
+        }
+        function aplicarCorFundo(c) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('backgroundColor', c); canvas.renderAll(); }
+        }
+        function tornarCaixaTransparente() {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('backgroundColor', 'transparent'); canvas.renderAll(); }
+        }
+
+        // Controle de Abas
+        function mudarAba(aba, el) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            ['item', 'ia', 'varinha', 'grade', 'estilo'].forEach(id => {
+                const p = document.getElementById(`painel-${id}`);
+                if(p) p.classList.toggle('hidden', id !== aba);
+            });
+            if(aba !== 'varinha') alternarVarinhaContinua(false);
+        }
+
+        function centralizarElemento() {
+            const a = canvas.getActiveObject();
+            if(a) { canvas.centerObjectH(a); canvas.renderAll(); }
+        }
+        function trazerFrente() {
+            const a = canvas.getActiveObject();
+            if(a) { canvas.bringToFront(a); canvas.renderAll(); }
+        }
+
+        // Download PNG e Vídeo
         function baixarImagemPNG() {
-            const btn = document.getElementById('btn-baixar');
-            const txt = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Renderizando...';
+            canvas.discardActiveObject();
+            canvas.renderAll();
+            setTimeout(() => {
+                const dataURL = canvas.toDataURL({ format: 'png', multiplier: 2 });
+                const link = document.createElement('a');
+                link.download = `Flyer_${marcaAtiva.toUpperCase()}_Promo.png`;
+                link.href = dataURL;
+                link.click();
+            }, 150);
+        }
+
+        function gerarVideoAnimado() {
+            const btn = document.getElementById('btn-video');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Gravando...';
             btn.disabled = true;
 
             canvas.discardActiveObject();
             canvas.renderAll();
 
-            setTimeout(() => {
-                const dataURL = canvas.toDataURL({ format: 'png', multiplier: 2 });
-                const link = document.createElement('a');
-                const nome = (objTitulo ? objTitulo.text : 'Flyer').replace(/[^a-zA-Z0-9]/g, '_');
-                link.download = `Flyer_Arts_${nome}.png`;
-                link.href = dataURL;
-                link.click();
+            const stream = document.getElementById('canvas-studio').captureStream(30);
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `Status_${marcaAtiva}.webm`;
+                a.click();
+                btn.innerHTML = '<i class="ph-bold ph-video-camera text-lg mr-2"></i> Criar Vídeo (Status)';
+                btn.disabled = false;
+            };
 
-                btn.innerHTML = '<i class="ph-bold ph-check mr-2 text-lg"></i> Baixado!';
-                setTimeout(() => { btn.innerHTML = txt; btn.disabled = false; }, 2000);
-            }, 200);
+            recorder.start();
+            let frame = 0;
+            function animar() {
+                frame++;
+                if(objFotoPrincipal) objFotoPrincipal.scale(objFotoPrincipal.scaleX * 1.0006);
+                if(objBadgePct) objBadgePct.set('scaleX', 1 + 0.05 * Math.sin(frame * 0.15));
+                canvas.renderAll();
+
+                if(frame < 150) requestAnimationFrame(animar);
+                else recorder.stop();
+            }
+            animar();
         }
 
         function copiarLegendaZap() {
