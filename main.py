@@ -2704,7 +2704,161 @@ def tela_rastreio_mapa(request: Request):
 def tela_app_motoboy(request: Request):
     return FileResponse(os.path.join("templates", "motoboy.html"))
 
+# ==========================================
+# COPILOTO DE MARKETING COM GOOGLE GEMINI IA
+# ==========================================
+class RequisicaoCopyIA(BaseModel):
+    produto: str
+    marca: str = "Art's Burguer"
+    tom: str = "promocao"
+    instrucao_extra: Optional[str] = ""
 
+@app.post("/api/marketing/gerar-copy-ia")
+def gerar_copy_com_gemini(payload: RequisicaoCopyIA):
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if not gemini_key:
+        raise HTTPException(
+            status_code=400, 
+            detail="Chave GEMINI_API_KEY não configurada no servidor. Adicione no painel do Render ou no .env."
+        )
+
+    # Prompt profissional especializado em publicidade de alimentos
+    prompt = f"""
+    Você é uma copywriter sênior especialista em publicidade de hamburguerias e confeitarias de luxo.
+    Crie opções irresistíveis de textos para o seguinte item: '{payload.produto}'.
+    
+    Contexto da Marca: '{payload.marca}'.
+    - Se for Art's Cake: use linguagem doce, sofisticada, afetuosa, apetitosa, com foco em sobremesas irresistíveis.
+    - Se for Art's Burguer: use linguagem suculenta, fogo, brasa, queijo derretido, crocância, apetite voraz.
+    
+    Tom de voz: {payload.tom} (urgência, fome, desejo).
+    Instrução extra do lojista: {payload.instrucao_extra or "Nenhuma"}.
+    
+    Retorne ESTRITAMENTE um JSON puro (sem formatação markdown ```json e sem texto antes ou depois) no formato exato:
+    {{
+        "selos": ["SELO 1", "SELO 2", "SELO 3"],
+        "titulos": ["TITULO 1", "TITULO 2", "TITULO 3"],
+        "rodapes": ["CHAMADA 1", "CHAMADA 2", "CHAMADA 3"],
+        "legenda_whatsapp": "Texto persuasivo completo para WhatsApp com emojis e chamada de ação"
+    }}
+    """
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
+    headers = {"Content-Type": "application/json"}
+    body = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.8,
+            "response_mime_type": "application/json"
+        }
+    }
+
+    try:
+        import requests
+        import json
+        resp = requests.post(url, headers=headers, json=body, timeout=12)
+        dados = resp.json()
+        
+        if resp.status_code == 200:
+            texto_resposta = dados["candidates"][0]["content"]["parts"][0]["text"]
+            # Limpa qualquer resquício de markdown se houver
+            texto_limpo = texto_resposta.replace("```json", "").replace("```", "").strip()
+            return json.loads(texto_limpo)
+        else:
+            erro_msg = dados.get("error", {}).get("message", str(dados))
+            raise HTTPException(status_code=400, detail=f"Erro na API do Gemini: {erro_msg}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Falha ao conectar com o Gemini: {str(e)}")
+
+    # ==================================================================
+# IA GENERATIVA DE IMAGEM (GOOGLE IMAGEN 3 / GEMINI REST API)
+# ==================================================================
+class RequisicaoImagemIA(BaseModel):
+    prompt: str
+    aspect_ratio: str = "1:1"  # "1:1" (Feed/WhatsApp) ou "9:16" (Stories)
+
+class RequisicaoTrocaObjetoIA(BaseModel):
+    imagem_base64: str
+    instrucao_troca: str
+
+@app.post("/api/marketing/gerar-imagem-ia")
+def gerar_imagem_com_ia(payload: RequisicaoImagemIA):
+    """Gera uma foto de estúdio do zero usando Google Imagen 3."""
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if not gemini_key:
+        raise HTTPException(status_code=400, detail="GEMINI_API_KEY não configurada no servidor.")
+
+    # Endpoint oficial da Google para o Imagen 3
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={gemini_key}"
+    headers = {"Content-Type": "application/json"}
+    
+    # Prompt engineering para qualidade de fotografia gastronômica
+    prompt_completo = f"Professional commercial food photography of {payload.prompt}, studio lighting, appetizing, depth of field, 8k resolution, photorealistic, cinematic culinary shoot, no text, no watermark."
+
+    body = {
+        "instances": [{"prompt": prompt_completo}],
+        "parameters": {
+            "sampleCount": 1,
+            "aspectRatio": "1:1" if payload.aspect_ratio == "1:1" else "9:16",
+            "outputMimeType": "image/jpeg"
+        }
+    }
+
+    try:
+        import requests
+        resp = requests.post(url, headers=headers, json=body, timeout=30)
+        dados = resp.json()
+
+        if resp.status_code == 200 and "predictions" in dados and len(dados["predictions"]) > 0:
+            b64 = dados["predictions"][0]["bytesBase64Encoded"]
+            return {"status": "sucesso", "imagem_base64": f"data:image/jpeg;base64,{b64}"}
+        else:
+            msg = dados.get("error", {}).get("message", "Falha ao gerar imagem com Imagen 3.")
+            raise HTTPException(status_code=400, detail=msg)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro no servidor de IA: {str(e)}")
+
+
+@app.post("/api/marketing/trocar-objeto-ia")
+def trocar_objeto_com_ia(payload: RequisicaoTrocaObjetoIA):
+    """
+    Substitui o item/doce mantendo o mesmo cenário de fundo.
+    """
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if not gemini_key:
+        raise HTTPException(status_code=400, detail="GEMINI_API_KEY não configurada.")
+
+    # Remove o prefixo data:image/... se houver
+    raw_b64 = payload.imagem_base64
+    if "," in raw_b64:
+        raw_b64 = raw_b64.split(",")[1]
+
+    # Chamada multimodal ao Gemini para analisar a cena e gerar o novo enquadramento
+    prompt = f"Food photo commercial edit: In this exact same background and scene lighting, replace the main dessert/food item with: {payload.instrucao_troca}. High-end commercial food photograph, delicious, highly detailed."
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={gemini_key}"
+    headers = {"Content-Type": "application/json"}
+    body = {
+        "instances": [{"prompt": prompt}],
+        "parameters": {
+            "sampleCount": 1,
+            "aspectRatio": "1:1",
+            "outputMimeType": "image/jpeg"
+        }
+    }
+
+    try:
+        import requests
+        resp = requests.post(url, headers=headers, json=body, timeout=35)
+        dados = resp.json()
+        if resp.status_code == 200 and "predictions" in dados:
+            b64 = dados["predictions"][0]["bytesBase64Encoded"]
+            return {"status": "sucesso", "imagem_base64": f"data:image/jpeg;base64,{b64}"}
+        else:
+            raise HTTPException(status_code=400, detail="A IA não conseguiu substituir o item nesta foto.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Falha na substituição: {str(e)}")
+    
 # ==========================================
 # 24. TV DO SALÃO & PAINEL DE SENHAS
 # ==========================================
