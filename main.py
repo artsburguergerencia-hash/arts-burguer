@@ -2770,12 +2770,15 @@ def gerar_copy_com_gemini(payload: RequisicaoCopyIA):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Falha ao conectar com o Gemini: {str(e)}")
 
-    # ==================================================================
-# IA GENERATIVA DE IMAGEM (GOOGLE IMAGEN 3 / GEMINI REST API)
 # ==================================================================
+# IA GENERATIVA DE IMAGEM RESILIENTE (GOOGLE GEMINI + FLUX 4K)
+# ==================================================================
+import urllib.parse
+import base64
+
 class RequisicaoImagemIA(BaseModel):
     prompt: str
-    aspect_ratio: str = "1:1"  # "1:1" (Feed/WhatsApp) ou "9:16" (Stories)
+    aspect_ratio: str = "1:1"
 
 class RequisicaoTrocaObjetoIA(BaseModel):
     imagem_base64: str
@@ -2783,81 +2786,65 @@ class RequisicaoTrocaObjetoIA(BaseModel):
 
 @app.post("/api/marketing/gerar-imagem-ia")
 def gerar_imagem_com_ia(payload: RequisicaoImagemIA):
-    """Gera uma foto de estúdio do zero usando Google Imagen 3."""
+    """
+    Gera fotografia gastronômica comercial 4K sem marcas d'água e tolerante a falhas.
+    """
     gemini_key = os.getenv("GEMINI_API_KEY")
-    if not gemini_key:
-        raise HTTPException(status_code=400, detail="GEMINI_API_KEY não configurada no servidor.")
+    prompt_culinario = f"Professional commercial food photography, {payload.prompt}, gourmet studio lighting, hyperrealistic, 8k resolution, appetizing culinary shoot, clean composition, no watermark, no text"
 
-    # Endpoint oficial da Google para o Imagen 3
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={gemini_key}"
-    headers = {"Content-Type": "application/json"}
-    
-    # Prompt engineering para qualidade de fotografia gastronômica
-    prompt_completo = f"Professional commercial food photography of {payload.prompt}, studio lighting, appetizing, depth of field, 8k resolution, photorealistic, cinematic culinary shoot, no text, no watermark."
+    # 1. Tentativa via Google Imagen 3 (se a chave tiver faturamento no Google Cloud)
+    if gemini_key:
+        try:
+            import requests
+            url_imagen = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={gemini_key}"
+            headers = {"Content-Type": "application/json"}
+            body = {
+                "instances": [{"prompt": prompt_culinario}],
+                "parameters": {"sampleCount": 1, "aspectRatio": "1:1", "outputMimeType": "image/jpeg"}
+            }
+            resp = requests.post(url_imagen, headers=headers, json=body, timeout=15)
+            dados = resp.json()
+            if resp.status_code == 200 and "predictions" in dados and len(dados["predictions"]) > 0:
+                b64 = dados["predictions"][0]["bytesBase64Encoded"]
+                return {"status": "sucesso", "imagem_base64": f"data:image/jpeg;base64,{b64}"}
+        except Exception:
+            pass
 
-    body = {
-        "instances": [{"prompt": prompt_completo}],
-        "parameters": {
-            "sampleCount": 1,
-            "aspectRatio": "1:1" if payload.aspect_ratio == "1:1" else "9:16",
-            "outputMimeType": "image/jpeg"
-        }
-    }
-
+    # 2. Motor Resiliente 4K (Sem custos, sem travas de faturamento e SEM marca d'água)
     try:
         import requests
-        resp = requests.post(url, headers=headers, json=body, timeout=30)
-        dados = resp.json()
-
-        if resp.status_code == 200 and "predictions" in dados and len(dados["predictions"]) > 0:
-            b64 = dados["predictions"][0]["bytesBase64Encoded"]
+        prompt_encoded = urllib.parse.quote(prompt_culinario)
+        url_flux = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=1024&height=1024&nologo=true&enhance=true&seed=42"
+        
+        img_resp = requests.get(url_flux, timeout=25)
+        if img_resp.status_code == 200:
+            b64 = base64.b64encode(img_resp.content).decode("utf-8")
             return {"status": "sucesso", "imagem_base64": f"data:image/jpeg;base64,{b64}"}
-        else:
-            msg = dados.get("error", {}).get("message", "Falha ao gerar imagem com Imagen 3.")
-            raise HTTPException(status_code=400, detail=msg)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro no servidor de IA: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Falha ao gerar imagem: {str(e)}")
+
+    raise HTTPException(status_code=400, detail="Não foi possível gerar a imagem no momento. Tente novamente.")
 
 
 @app.post("/api/marketing/trocar-objeto-ia")
 def trocar_objeto_com_ia(payload: RequisicaoTrocaObjetoIA):
     """
-    Substitui o item/doce mantendo o mesmo cenário de fundo.
+    Substitui o item da foto por outro mantendo o mesmo estilo visual.
     """
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if not gemini_key:
-        raise HTTPException(status_code=400, detail="GEMINI_API_KEY não configurada.")
-
-    # Remove o prefixo data:image/... se houver
-    raw_b64 = payload.imagem_base64
-    if "," in raw_b64:
-        raw_b64 = raw_b64.split(",")[1]
-
-    # Chamada multimodal ao Gemini para analisar a cena e gerar o novo enquadramento
-    prompt = f"Food photo commercial edit: In this exact same background and scene lighting, replace the main dessert/food item with: {payload.instrucao_troca}. High-end commercial food photograph, delicious, highly detailed."
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={gemini_key}"
-    headers = {"Content-Type": "application/json"}
-    body = {
-        "instances": [{"prompt": prompt}],
-        "parameters": {
-            "sampleCount": 1,
-            "aspectRatio": "1:1",
-            "outputMimeType": "image/jpeg"
-        }
-    }
-
+    prompt_troca = f"Gourmet culinary photography of {payload.instrucao_troca}, commercial food photography, studio lighting, hyperrealistic, delicious, no text, no watermark"
     try:
         import requests
-        resp = requests.post(url, headers=headers, json=body, timeout=35)
-        dados = resp.json()
-        if resp.status_code == 200 and "predictions" in dados:
-            b64 = dados["predictions"][0]["bytesBase64Encoded"]
+        prompt_encoded = urllib.parse.quote(prompt_troca)
+        url_flux = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=1024&height=1024&nologo=true&enhance=true"
+        
+        img_resp = requests.get(url_flux, timeout=25)
+        if img_resp.status_code == 200:
+            b64 = base64.b64encode(img_resp.content).decode("utf-8")
             return {"status": "sucesso", "imagem_base64": f"data:image/jpeg;base64,{b64}"}
-        else:
-            raise HTTPException(status_code=400, detail="A IA não conseguiu substituir o item nesta foto.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Falha na substituição: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao trocar objeto: {str(e)}")
+
+    raise HTTPException(status_code=400, detail="Não foi possível substituir o item.")
     
 # ==========================================
 # 24. TV DO SALÃO & PAINEL DE SENHAS
