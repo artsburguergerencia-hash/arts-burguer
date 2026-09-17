@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estúdio de Anúncios Multimarcas | Art's Burguer & Art's Cake</title>
+    <title>Art's Creative Studio Pro | Canva & Story Maker</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Engine Gráfica de Canvas Profissional (Fabric.js) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 
     <script>
         tailwind.config = { 
@@ -28,12 +30,8 @@
     </script>
     
     <style>
-        .font-promo { font-family: 'Montserrat', sans-serif; }
-        .font-cake { font-family: 'Playfair Display', serif; }
-        .shadow-hard { filter: drop-shadow(0 4px 10px rgba(0,0,0,0.85)); }
-        .shadow-cake { filter: drop-shadow(0 4px 12px rgba(219, 39, 119, 0.3)); }
         .tab-btn.active { border-color: #ff4757; color: #ff4757; background: rgba(255, 71, 87, 0.08); }
-        .dark .tab-btn.active { border-color: #ff4757; color: #ff6b81; background: rgba(255, 71, 87, 0.15); }
+        .canvas-container { margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border-radius: 2rem; overflow: hidden; }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
@@ -41,291 +39,271 @@
     <!-- 🚨 CABEÇALHO COM A SUA LOGO OFICIAL DINÂMICA 🚨 -->
     <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-20 px-8 flex items-center justify-between shadow-sm sticky top-0 z-30">
         <div class="flex items-center">
-            <!-- Container da Logo Oficial da Loja -->
             <div id="header-logo-container" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 dark:border-slate-700 flex items-center justify-center mr-4 shadow-md overflow-hidden shrink-0">
                 <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
                 <i id="header-logo-letra" class="ph-bold ph-storefront text-2xl text-brand-500"></i>
             </div>
             <div>
-                <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none" id="header-nome-loja">Art's Studio Criativo</h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Gerador de Flyers para WhatsApp & Instagram</p>
+                <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none" id="header-nome-loja">Art's Creative Studio Pro</h1>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Editor Visual Livre (Imagens & Vídeos Animados)</p>
             </div>
         </div>
 
+        <!-- AÇÕES DE DOWNLOAD -->
         <div class="flex items-center space-x-3">
-            <button onclick="baixarImagemCard()" id="btn-baixar" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-wider text-xs flex items-center">
+            <button onclick="gerarVideoAnimado()" id="btn-video" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black px-5 py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-wider text-xs flex items-center">
+                <i class="ph-bold ph-video-camera text-lg mr-2"></i> Criar Vídeo Animado (Status)
+            </button>
+            <button onclick="baixarImagemPNG()" id="btn-baixar" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-3 rounded-xl shadow-lg transition-transform active:scale-95 uppercase tracking-wider text-xs flex items-center">
                 <i class="ph-bold ph-download-simple text-lg mr-2"></i> Baixar Imagem (PNG)
             </button>
-            <a href="/gestao" class="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-red-500 transition-colors" title="Voltar ao Painel">
+            <a href="/gestao" class="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-red-500 transition-colors">
                 <i class="ph-bold ph-sign-out text-lg"></i>
             </a>
         </div>
     </header>
 
-    <!-- ÁREA PRINCIPAL -->
+    <!-- ÁREA PRINCIPAL DIVIDIDA EM 2 COLUNAS -->
     <main class="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        <!-- CONTROLES / CONFIGURAÇÃO (5 Colunas) -->
-        <div class="lg:col-span-5 space-y-6">
+        <!-- COLUNA ESQUERDA: FERRAMENTAS DO ESTÚDIO (5 Colunas) -->
+        <div class="lg:col-span-5 space-y-5">
             
-            <!-- ABAS DE EDIÇÃO -->
+            <!-- ABAS DE NAVEGAÇÃO -->
             <div class="bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-4 gap-1 text-center shadow-sm">
-                <button onclick="mudarAbaStudio('dados', this)" class="tab-btn active py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Textos</button>
-                <button onclick="mudarAbaStudio('marca', this)" class="tab-btn py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Marca</button>
-                <button onclick="mudarAbaStudio('layout', this)" class="tab-btn py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Fotos</button>
-                <button onclick="mudarAbaStudio('filtros', this)" class="tab-btn py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Filtros</button>
+                <button onclick="mudarAba('produto', this)" class="tab-btn active py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Item</button>
+                <button onclick="mudarAba('foto', this)" class="tab-btn py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Foto & Zoom</button>
+                <button onclick="mudarAba('edicao', this)" class="tab-btn py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Retoque</button>
+                <button onclick="mudarAba('marca', this)" class="tab-btn py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Marca</button>
             </div>
 
-            <!-- ABA 1: DADOS & PREÇO -->
-            <div id="painel-dados" class="space-y-4">
-                <!-- 1-Clique Cardápio -->
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center">
+            <!-- PAINEL 1: PRODUTO & PREÇOS -->
+            <div id="painel-produto" class="space-y-4">
+                <!-- 1-Clique do Cardápio -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center">
                         <i class="ph-bold ph-lightning text-amber-500 mr-1.5 text-base"></i> Puxar do seu Cardápio
                     </label>
-                    <select id="sel-cardapio-importar" onchange="importarProduto(this.value)" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none">
-                        <option value="">-- Escolha um Item Cadastrado --</option>
+                    <select id="sel-cardapio" onchange="importarDoCardapio(this.value)" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none">
+                        <option value="">-- Selecione um Lanche ou Doce --</option>
                     </select>
                 </div>
 
-                <!-- Textos -->
+                <!-- Textos e Preços -->
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Título da Oferta</label>
+                        <input type="text" id="inp-titulo" value="BOLO SUPREME: NINHO, MARACUJÁ & PUDIM" oninput="atualizarTextoObjeto('titulo', this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase outline-none">
+                    </div>
+
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Selo Superior</label>
-                        <input type="text" id="input-tag" value="🔥 PROMOÇÃO DO DIA" oninput="atualizarPreview()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold uppercase outline-none">
+                        <input type="text" id="inp-selo" value="🔥 PROMOÇÃO DO DIA" oninput="atualizarTextoObjeto('selo', this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold uppercase outline-none">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Título do Produto / Combo</label>
-                        <input type="text" id="input-titulo" value="COMBO ART'S SALAD" oninput="atualizarPreview()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Rodapé (Chamada)</label>
-                        <input type="text" id="input-rodape" value="⚡ Peça agora pelo WhatsApp ou Cardápio Online!" oninput="atualizarPreview()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none">
-                    </div>
-                </div>
 
-                <!-- Desconto & Exibição -->
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">O que exibir no Anúncio?</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <label class="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer text-center hover:border-brand-500">
-                            <input type="radio" name="modo_exibicao" value="ambos" checked onchange="atualizarModo(this.value)" class="sr-only peer">
-                            <span class="text-[9px] font-black uppercase peer-checked:text-brand-500 block">Preço + %</span>
-                        </label>
-                        <label class="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer text-center hover:border-brand-500">
-                            <input type="radio" name="modo_exibicao" value="preco" onchange="atualizarModo(this.value)" class="sr-only peer">
-                            <span class="text-[9px] font-black uppercase peer-checked:text-brand-500 block">Só Preço</span>
-                        </label>
-                        <label class="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer text-center hover:border-brand-500">
-                            <input type="radio" name="modo_exibicao" value="porcentagem" onchange="atualizarModo(this.value)" class="sr-only peer">
-                            <span class="text-[9px] font-black uppercase peer-checked:text-brand-500 block">Só % OFF</span>
-                        </label>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2 pt-2">
                         <div>
                             <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Preço Normal (De)</label>
-                            <input type="text" id="input-preco-de" value="R$ 32,00" oninput="calcularDePrecoDe(this.value)" class="w-full px-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-red-500 outline-none text-center">
+                            <input type="text" id="inp-de" value="R$ 14,90" oninput="sincronizarPreco('de', this.value)" class="w-full px-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-red-500 text-center outline-none">
                         </div>
                         <div>
                             <label class="block text-[9px] font-bold text-amber-500 uppercase mb-1">Desconto (%)</label>
-                            <input type="number" id="input-desconto-pct" value="15" min="1" max="95" oninput="calcularDePorcentagem(this.value)" class="w-full px-2 py-2 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl text-xs font-black text-amber-600 outline-none text-center">
+                            <input type="number" id="inp-pct" value="20" min="1" max="90" oninput="sincronizarPreco('pct', this.value)" class="w-full px-2 py-2 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl text-xs font-black text-amber-600 text-center outline-none">
                         </div>
                         <div>
                             <label class="block text-[9px] font-bold text-emerald-600 uppercase mb-1">Preço Promo (Por)</label>
-                            <input type="text" id="input-preco-por" value="R$ 27,20" oninput="calcularDePrecoPor(this.value)" class="w-full px-2 py-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-xs font-black text-emerald-600 outline-none text-center">
+                            <input type="text" id="inp-por" value="R$ 11,92" oninput="sincronizarPreco('por', this.value)" class="w-full px-2 py-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-xs font-black text-emerald-600 text-center outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Rodapé Chamada</label>
+                        <input type="text" id="inp-rodape" value="⚡ PEÇA AGORA PELO CARDÁPIO ONLINE!" oninput="atualizarTextoObjeto('rodape', this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none">
+                    </div>
+
+                    <!-- Modo de Exibição do Preço -->
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Como quer exibir o preço?</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="definirModoPreco('ambos')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase hover:border-brand-500 border border-transparent" id="btn-modo-ambos">Preço + %</button>
+                            <button onclick="definirModoPreco('preco')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase hover:border-brand-500 border border-transparent" id="btn-modo-preco">Só Preço</button>
+                            <button onclick="definirModoPreco('pct')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase hover:border-brand-500 border border-transparent" id="btn-modo-pct">Só % OFF</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ABA 2: MARCA & TEMA (ART'S BURGUER VS ART'S CAKE) -->
+            <!-- PAINEL 2: FOTO, ZOOM E POSIÇÃO -->
+            <div id="painel-foto" class="hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Subir Foto do Lanche ou Doce</label>
+                        <input type="file" accept="image/*" onchange="carregarFotoCustomizada(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-brand-500 file:text-white cursor-pointer">
+                    </div>
+
+                    <!-- Controle de Zoom e Posição da Foto -->
+                    <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                                <span>Zoom da Foto</span><span id="lbl-zoom">100%</span>
+                            </div>
+                            <input type="range" id="rng-zoom" min="40" max="250" value="100" oninput="ajustarZoomFoto(this.value)" class="w-full accent-brand-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="moverFoto('cima')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold flex items-center justify-center"><i class="ph-bold ph-arrow-up mr-1"></i> Subir Foto</button>
+                            <button onclick="moverFoto('baixo')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold flex items-center justify-center"><i class="ph-bold ph-arrow-down mr-1"></i> Descer Foto</button>
+                            <button onclick="moverFoto('esq')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold flex items-center justify-center"><i class="ph-bold ph-arrow-left mr-1"></i> Esquerda</button>
+                            <button onclick="moverFoto('dir')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold flex items-center justify-center"><i class="ph-bold ph-arrow-right mr-1"></i> Direita</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL 3: RETOQUE, BORRACHA E FILTROS INSTAGRAM -->
+            <div id="painel-edicao" class="hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <!-- Ferramenta de Borracha / Pincel -->
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center">
+                            <i class="ph-bold ph-eraser text-amber-500 mr-1.5 text-base"></i> Pincel de Retoque / Borracha
+                        </label>
+                        <div class="flex space-x-2">
+                            <button onclick="ativarModoPintura(true)" id="btn-pincel" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center">
+                                <i class="ph-bold ph-paint-brush mr-1.5 text-base"></i> Ativar Pincel
+                            </button>
+                            <button onclick="ativarModoPintura(false)" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 rounded-xl text-xs font-black uppercase">
+                                Parar
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-3 mt-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Tamanho:</label>
+                            <input type="range" id="rng-pincel-tam" min="5" max="60" value="20" oninput="mudarTamanhoPincel(this.value)" class="flex-1 accent-amber-500">
+                            <input type="color" id="cor-pincel" value="#ffffff" onchange="mudarCorPincel(this.value)" class="w-8 h-8 rounded-lg cursor-pointer border border-slate-200">
+                        </div>
+                    </div>
+
+                    <!-- Filtros Rápidos Instagram -->
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Filtros Rápidos de Comida</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="aplicarFiltroInstagram('normal')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[10px] font-black uppercase">Original</button>
+                            <button onclick="aplicarFiltroInstagram('cake')" class="p-2 rounded-xl bg-pink-50 dark:bg-pink-500/10 text-pink-600 text-[10px] font-black uppercase">🍰 Doces/Cake</button>
+                            <button onclick="aplicarFiltroInstagram('burger')" class="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase">🔥 Suculento</button>
+                            <button onclick="aplicarFiltroInstagram('vivid')" class="p-2 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 text-[10px] font-black uppercase">⚡ Vívido</button>
+                            <button onclick="aplicarFiltroInstagram('pb')" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 text-[10px] font-black uppercase">P & B</button>
+                            <button onclick="resetarFiltros()" class="p-2 rounded-xl bg-red-50 text-red-500 text-[10px] font-black uppercase">Resetar</button>
+                        </div>
+                    </div>
+
+                    <!-- Ajustes Finos de Luz -->
+                    <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1"><span>Brilho</span><span id="lbl-brilho">0%</span></div>
+                            <input type="range" id="rng-brilho" min="-0.5" max="0.5" step="0.05" value="0" oninput="aplicarFiltroManual()" class="w-full accent-blue-500">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1"><span>Contraste</span><span id="lbl-contraste">0%</span></div>
+                            <input type="range" id="rng-contraste" min="-0.5" max="0.5" step="0.05" value="0" oninput="aplicarFiltroManual()" class="w-full accent-blue-500">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1"><span>Saturação de Cores</span><span id="lbl-saturacao">0%</span></div>
+                            <input type="range" id="rng-saturacao" min="-0.8" max="1" step="0.05" value="0" oninput="aplicarFiltroManual()" class="w-full accent-blue-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL 4: MARCA & IDENTIDADE (BURGUER VS CAKE) -->
             <div id="painel-marca" class="hidden space-y-4">
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400">Qual é a Marca do Anúncio?</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400">Escolha o Tema do Anúncio</label>
                     <div class="grid grid-cols-2 gap-3">
-                        <button onclick="aplicarPerfilMarca('burguer')" id="btn-marca-burguer" class="p-4 rounded-2xl border-2 border-brand-500 bg-brand-50/50 dark:bg-brand-500/10 text-left transition-all">
+                        <button onclick="selecionarTemaVisual('burguer')" id="btn-tema-burguer" class="p-4 rounded-2xl border-2 border-brand-500 bg-brand-50/50 dark:bg-brand-500/10 text-left transition-all">
                             <div class="w-8 h-8 rounded-xl bg-brand-500 text-white flex items-center justify-center mb-2"><i class="ph-fill ph-hamburger text-lg"></i></div>
                             <h4 class="font-black text-xs text-slate-900 dark:text-white">Art's Burguer</h4>
                             <p class="text-[9px] text-slate-500">Lanches, Burgers & Porções</p>
                         </button>
-                        <button onclick="aplicarPerfilMarca('cake')" id="btn-marca-cake" class="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-cake-500 transition-all">
+                        <button onclick="selecionarTemaVisual('cake')" id="btn-tema-cake" class="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-cake-500 transition-all">
                             <div class="w-8 h-8 rounded-xl bg-cake-500 text-white flex items-center justify-center mb-2"><i class="ph-fill ph-cake text-lg"></i></div>
                             <h4 class="font-black text-xs text-slate-900 dark:text-white">Art's Cake</h4>
                             <p class="text-[9px] text-slate-500">Doces, Bolos & Sobremesas</p>
                         </button>
                     </div>
 
-                    <!-- Upload da Logo do Flyer -->
+                    <!-- Upload da Logo para o Flyer -->
                     <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Logo Exibida no Flyer</label>
-                        <div class="flex items-center space-x-3">
-                            <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
-                                <img id="flyer-logo-preview" src="" class="w-full h-full object-contain">
-                            </div>
-                            <label class="flex-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-center py-2.5 rounded-xl font-black text-xs uppercase tracking-wider cursor-pointer shadow-sm hover:opacity-90">
-                                Trocar Logo do Flyer
-                                <input type="file" accept="image/*" onchange="subirLogoFlyer(event)" class="hidden">
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ABA 3: FOTOS & MONTAGEM (INSTAGRAM LAYOUT) -->
-            <div id="painel-layout" class="hidden space-y-4">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400">Montagem de Fotos (Grid Instagram)</label>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="mudarModoGrid(1)" class="p-3 bg-slate-50 dark:bg-slate-800 border-2 border-brand-500 rounded-xl text-center font-black text-xs" id="btn-grid-1">1 Foto</button>
-                        <button onclick="mudarModoGrid(2)" class="p-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-xs" id="btn-grid-2">2 Fotos</button>
-                        <button onclick="mudarModoGrid(3)" class="p-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-xs" id="btn-grid-3">3 Fotos</button>
-                        <button onclick="mudarModoGrid(4)" class="p-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-xs" id="btn-grid-4">4 Fotos</button>
-                    </div>
-
-                    <div id="slots-fotos-container" class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Subir Foto Principal:</p>
-                        <input type="file" accept="image/*" onchange="subirFotoSlot(event, 0)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-brand-500 file:text-white cursor-pointer">
-                    </div>
-                </div>
-            </div>
-
-            <!-- ABA 4: FILTROS & SOMBRA DE FUNDO -->
-            <div id="painel-filtros" class="hidden space-y-4">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                    
-                    <!-- 🚨 CONTROLE DA SOMBRA / ESCURECIMENTO 🚨 -->
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Escurecimento de Fundo (Sombra)</label>
-                            <span id="txt-sombra-val" class="text-xs font-black text-brand-500">40%</span>
-                        </div>
-                        <input type="range" id="range-sombra" min="0" max="90" value="40" oninput="aplicarSombraFundo(this.value)" class="w-full accent-brand-500 cursor-pointer">
-                        <div class="flex justify-between text-[9px] font-bold text-slate-400 mt-1">
-                            <span>0% (100% Nítida / Sem Sombra)</span>
-                            <span>90% (Fundo Noturno)</span>
-                        </div>
-                    </div>
-
-                    <!-- Filtros Rápidos Instagram -->
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Filtros Rápidos</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="aplicarFiltroPronto('normal')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[10px] font-black uppercase">Normal</button>
-                            <button onclick="aplicarFiltroPronto('comida')" class="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase">🔥 Suculento</button>
-                            <button onclick="aplicarFiltroPronto('doce')" class="p-2 rounded-xl bg-pink-50 dark:bg-pink-500/10 text-pink-600 text-[10px] font-black uppercase">🍰 Confeitaria</button>
-                            <button onclick="aplicarFiltroPronto('vivido')" class="p-2 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 text-[10px] font-black uppercase">⚡ Vívido</button>
-                            <button onclick="aplicarFiltroPronto('pb')" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 text-[10px] font-black uppercase">P & B</button>
-                        </div>
-                    </div>
-
-                    <!-- Ajustes Finos -->
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                        <div>
-                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1"><span>Brilho</span><span id="txt-brilho">100%</span></div>
-                            <input type="range" id="range-brilho" min="70" max="150" value="100" oninput="atualizarFiltrosCustom()" class="w-full accent-blue-500">
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1"><span>Saturação</span><span id="txt-saturacao">100%</span></div>
-                            <input type="range" id="range-saturacao" min="50" max="180" value="100" oninput="atualizarFiltrosCustom()" class="w-full accent-blue-500">
-                        </div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Subir Logo do Flyer (PNG Transparente)</label>
+                        <input type="file" accept="image/*" onchange="carregarLogoFlyer(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-slate-900 dark:file:bg-white file:text-white dark:file:text-slate-900 cursor-pointer">
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <!-- PRÉVIA DO FLYER (7 Colunas) -->
-        <div class="lg:col-span-7 flex flex-col items-center sticky top-28">
-            <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center">
-                <i class="ph-bold ph-eye text-emerald-500 mr-1.5 text-base"></i> Prévia em Alta Resolução (Sem Distorção)
-            </p>
-
-            <!-- 🚨 O CANVAS DO FLYER COM PROPORÇÃO PERFEITA E ANTI-ACHATAMENTO 🚨 -->
-            <div id="card-anuncio" class="w-[460px] h-[520px] bg-slate-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-between p-6 border-4 border-amber-400 transition-all">
-                
-                <!-- 🚨 ÁREA DE FOTOS (GRADE / COLAGEM COM OBJECT-COVER PARA NUNCA ACHAR) 🚨 -->
-                <div id="grid-imagens-flyer" class="absolute inset-0 w-full h-full grid grid-cols-1 overflow-hidden pointer-events-none transition-all">
-                    <img id="img-slot-0" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover transition-all">
-                </div>
-
-                <!-- 🚨 CAMADA DE SOMBRA COM OPACIDADE AJUSTÁVEL 🚨 -->
-                <div id="card-overlay" class="absolute inset-0 bg-black/40 pointer-events-none transition-opacity duration-300"></div>
-
-                <!-- TOPO DO FLYER: SELO & LOGO DA MARCA -->
-                <div class="relative z-10 flex items-start justify-between">
-                    <span id="card-tag" class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-promo font-black text-xs px-4 py-1.5 rounded-full shadow-lg tracking-widest uppercase border border-white/80">
-                        🔥 PROMOÇÃO DO DIA
-                    </span>
-
-                    <!-- Logo da Marca Escolhida -->
-                    <div id="card-logo-box" class="w-16 h-16 rounded-2xl bg-white/95 p-1.5 border-2 border-amber-400 shadow-xl flex items-center justify-center shrink-0">
-                        <img id="card-logo-img" src="" class="w-full h-full object-contain">
-                    </div>
-                </div>
-
-                <!-- RODAPÉ DO FLYER COM MARGEM DE SEGURANÇA (NUNCA CORTA) -->
-                <div class="relative z-10 flex flex-col justify-end space-y-2.5 pb-1">
-                    
-                    <!-- Selo de % Flutuante -->
-                    <div id="card-badge-pct-container" class="flex items-center">
-                        <span id="card-badge-pct" class="bg-red-600 text-yellow-300 font-promo font-black text-xs px-3 py-1 rounded-xl shadow-lg border border-yellow-300 transform -rotate-1">
-                            ⚡ 15% DE DESCONTO
-                        </span>
-                    </div>
-
-                    <!-- Título -->
-                    <h2 id="card-titulo" class="font-promo font-black text-3xl text-white uppercase tracking-tight leading-tight shadow-hard">
-                        COMBO ART'S SALAD
-                    </h2>
-
-                    <!-- Preços -->
-                    <div id="card-bloco-precos" class="flex items-center space-x-2.5">
-                        <div id="card-box-de" class="bg-black/70 backdrop-blur-md px-3 py-1 rounded-xl border border-white/20">
-                            <span class="text-[8px] font-bold text-slate-300 uppercase block leading-none">De:</span>
-                            <span id="card-preco-de" class="text-xs font-black text-red-400 line-through">R$ 32,00</span>
-                        </div>
-
-                        <div id="card-box-por" class="bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 px-4 py-1.5 rounded-xl shadow-xl flex items-center border-2 border-white transform -rotate-1">
-                            <span class="text-[10px] font-black uppercase tracking-widest mr-1.5">POR</span>
-                            <span id="card-preco-por" class="font-promo font-black text-2xl tracking-tight">R$ 27,20</span>
-                        </div>
-                    </div>
-
-                    <!-- Rodapé / Chamada com margem limpa -->
-                    <div id="card-rodape-box" class="bg-black/80 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-xl text-center">
-                        <p id="card-rodape" class="text-[10px] font-bold text-amber-300 uppercase tracking-wider truncate">
-                            ⚡ Peça agora pelo WhatsApp ou Cardápio Online!
-                        </p>
-                    </div>
-                </div>
-
+        <!-- COLUNA DIREITA: O CANVAS PROFISSIONAL DRAG-AND-DROP (7 Colunas) -->
+        <div class="lg:col-span-7 flex flex-col items-center sticky top-24">
+            <div class="flex justify-between items-center w-[480px] mb-2 px-2">
+                <span class="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center">
+                    <i class="ph-bold ph-hand-pointing text-brand-500 mr-1.5 text-base"></i> Arraste os textos para onde quiser!
+                </span>
+                <span class="text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-500/20">Zero Cortes</span>
             </div>
 
-            <!-- Botão copiar texto -->
-            <button onclick="copiarTextoZap()" class="mt-4 text-xs font-bold text-slate-500 hover:text-emerald-500 flex items-center transition-colors">
-                <i class="ph-bold ph-copy mr-1.5 text-base"></i> Copiar texto para o WhatsApp
-            </button>
+            <!-- 🚨 O CANVAS NATIVO DO ESTÚDIO (480x600 px) 🚨 -->
+            <div class="canvas-container relative border-4 border-amber-400 dark:border-slate-700 bg-black">
+                <canvas id="canvas-studio" width="480" height="600"></canvas>
+            </div>
+
+            <!-- Ações rápidas de alinhamento -->
+            <div class="flex items-center space-x-2 mt-4">
+                <button onclick="centralizarElemento()" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:border-brand-500 shadow-sm flex items-center">
+                    <i class="ph-bold ph-align-center-horizontal mr-1 text-sm"></i> Centralizar
+                </button>
+                <button onclick="trazerFrente()" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:border-brand-500 shadow-sm flex items-center">
+                    <i class="ph-bold ph-stack mr-1 text-sm"></i> Para Frente
+                </button>
+                <button onclick="copiarLegendaZap()" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-xs font-bold shadow-sm flex items-center">
+                    <i class="ph-bold ph-copy mr-1 text-sm"></i> Copiar Legenda WhatsApp
+                </button>
+            </div>
         </div>
 
     </main>
 
+    <!-- MOTOR JAVASCRIPT DO CANVAS STUDIO -->
     <script>
+        let canvas;
+        let imgFundo;
+        let objTitulo, objSelo, objDe, objPor, objBadgePct, objRodape, objLogo;
         let produtosCatalogo = [];
-        let logoBurguerUrl = "";
-        let logoCakeUrl = "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=200&auto=format&fit=crop"; // Fallback doce
-        let marcaAtiva = "burguer";
-        let modoExibicaoAtual = "ambos";
-        let gridModoAtual = 1;
+        let temaAtual = 'cake'; // Começa com Cake como no print!
 
         document.addEventListener('DOMContentLoaded', async () => {
-            await carregarConfiguracoesLoja();
-            await carregarProdutosCardapio();
-            atualizarPreview();
+            inicializarCanvas();
+            await carregarConfiguracoes();
+            await carregarCardapio();
+            
+            // Inicia com o tema Cake para resolver o problema do doce
+            selecionarTemaVisual('cake');
         });
 
-        // 🚨 1. PUXA A SUA LOGO OFICIAL DO BANCO E INJETA NO HEADER E NO FLYER 🚨
-        async function carregarConfiguracoesLoja() {
+        function inicializarCanvas() {
+            canvas = new fabric.Canvas('canvas-studio', {
+                preserveObjectStacking: true,
+                selection: true
+            });
+
+            // Carrega foto inicial padrão (Pudim/Bolo Supreme)
+            const fotoInicial = "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop";
+            setFotoFundo(fotoInicial);
+
+            // Cria os Elementos Interativos Arrastáveis
+            criarElementosCanvas();
+        }
+
+        // Puxa a Logo Oficial para o Header e para o Canvas
+        async function carregarConfiguracoes() {
             try {
                 const res = await fetch('/api/gestao/configuracoes');
                 const config = await res.json();
@@ -333,324 +311,506 @@
                 if(config.nome_empresa) {
                     document.getElementById('header-nome-loja').innerText = `${config.nome_empresa} Studio`;
                 }
-
                 if(config.logo_url && config.logo_url.trim() !== '') {
-                    logoBurguerUrl = config.logo_url;
-
-                    // Injeta na barra superior da página (Header)
-                    const headerImg = document.getElementById('header-logo-img');
-                    headerImg.src = logoBurguerUrl;
-                    headerImg.classList.remove('hidden');
+                    const img = document.getElementById('header-logo-img');
+                    img.src = config.logo_url;
+                    img.classList.remove('hidden');
                     document.getElementById('header-logo-letra').classList.add('hidden');
 
-                    // Injeta na logo do flyer
-                    aplicarPerfilMarca('burguer');
+                    // Carrega no Canvas
+                    setLogoFlyer(config.logo_url);
                 }
             } catch(e) {}
         }
 
-        async function carregarProdutosCardapio() {
+        async function carregarCardapio() {
             try {
                 const res = await fetch('/api/cardapio');
                 produtosCatalogo = await res.json();
-                const sel = document.getElementById('sel-cardapio-importar');
-                sel.innerHTML = '<option value="">-- Selecione um Item do seu Cardápio --</option>' + 
+                const sel = document.getElementById('sel-cardapio');
+                sel.innerHTML = '<option value="">-- Selecione um Lanche ou Doce --</option>' + 
                     produtosCatalogo.map(p => `<option value="${p.id}">${p.nome} - R$ ${p.preco_venda.toFixed(2).replace('.',',')}</option>`).join('');
             } catch(e) {}
         }
 
-        // 🚨 2. MARCAS: ART'S BURGUER VS ART'S CAKE 🚨
-        function aplicarPerfilMarca(marca) {
-            marcaAtiva = marca;
-            const flyerLogo = document.getElementById('card-logo-img');
-            const previewMini = document.getElementById('flyer-logo-preview');
-            const card = document.getElementById('card-anuncio');
-            const tag = document.getElementById('card-tag');
-            const badgePct = document.getElementById('card-badge-pct');
-            const boxPor = document.getElementById('card-box-por');
-            const rodapeBox = document.getElementById('card-rodape-box');
-            const logoBox = document.getElementById('card-logo-box');
-            const btnB = document.getElementById('btn-marca-burguer');
-            const btnC = document.getElementById('btn-marca-cake');
-
-            if(marca === 'burguer') {
-                btnB.className = "p-4 rounded-2xl border-2 border-brand-500 bg-brand-50/50 dark:bg-brand-500/10 text-left transition-all";
-                btnC.className = "p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-cake-500 transition-all";
-
-                flyerLogo.src = logoBurguerUrl || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=200&auto=format&fit=crop";
-                previewMini.src = flyerLogo.src;
-
-                card.className = "w-[460px] h-[520px] bg-slate-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-between p-6 border-4 border-amber-400 transition-all";
-                tag.className = "bg-gradient-to-r from-red-600 to-amber-500 text-white font-promo font-black text-xs px-4 py-1.5 rounded-full shadow-lg tracking-widest uppercase border border-white/80";
-                badgePct.className = "bg-red-600 text-yellow-300 font-promo font-black text-xs px-3 py-1 rounded-xl shadow-lg border border-yellow-300 transform -rotate-1";
-                boxPor.className = "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 px-4 py-1.5 rounded-xl shadow-xl flex items-center border-2 border-white transform -rotate-1";
-                rodapeBox.className = "bg-black/80 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-xl text-center";
-                logoBox.className = "w-16 h-16 rounded-2xl bg-white/95 p-1.5 border-2 border-amber-400 shadow-xl flex items-center justify-center shrink-0";
-                document.getElementById('card-titulo').className = "font-promo font-black text-3xl text-white uppercase tracking-tight leading-tight shadow-hard";
+        function setFotoFundo(url) {
+            fabric.Image.fromURL(url, function(img) {
+                if(imgFundo) canvas.remove(imgFundo);
+                imgFundo = img;
                 
-                aplicarSombraFundo(40);
-            } else {
-                // TEMA CONFEITARIA (ART'S CAKE - IGUAL IMAGEM 2)
-                btnC.className = "p-4 rounded-2xl border-2 border-cake-500 bg-pink-50/50 dark:bg-pink-500/10 text-left transition-all";
-                btnB.className = "p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-brand-500 transition-all";
-
-                flyerLogo.src = logoCakeUrl;
-                previewMini.src = flyerLogo.src;
-
-                card.className = "w-[460px] h-[520px] bg-pink-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col justify-between p-6 border-4 border-pink-400 transition-all";
-                tag.className = "bg-gradient-to-r from-pink-500 to-rose-400 text-white font-cake italic font-bold text-sm px-4 py-1.5 rounded-full shadow-lg tracking-wider border border-white";
-                badgePct.className = "bg-pink-500 text-white font-promo font-black text-xs px-3 py-1 rounded-xl shadow-cake border border-white transform -rotate-1";
-                boxPor.className = "bg-gradient-to-r from-pink-500 to-rose-400 text-white px-4 py-1.5 rounded-xl shadow-xl flex items-center border-2 border-white transform -rotate-1";
-                rodapeBox.className = "bg-white/90 backdrop-blur-md border border-pink-200 px-3 py-1.5 rounded-xl text-center";
-                document.getElementById('card-rodape').className = "text-[10px] font-black text-pink-600 uppercase tracking-wider truncate";
-                logoBox.className = "w-16 h-16 rounded-2xl bg-white p-1 border-2 border-pink-300 shadow-xl flex items-center justify-center shrink-0";
-                document.getElementById('card-titulo').className = "font-cake font-bold italic text-3xl text-white tracking-normal leading-tight shadow-hard";
+                // Enquadramento sem achatar
+                const canvasW = canvas.width;
+                const canvasH = canvas.height;
+                const scale = Math.max(canvasW / img.width, canvasH / img.height);
                 
-                // Doces ficam lindos com fundo nítido (sem sombra preta pesada)
-                aplicarSombraFundo(10);
-            }
+                img.set({
+                    originX: 'center',
+                    originY: 'center',
+                    left: canvasW / 2,
+                    top: canvasH / 2,
+                    scaleX: scale,
+                    scaleY: scale,
+                    selectable: false,
+                    evented: false
+                });
+
+                canvas.add(img);
+                canvas.sendToBack(img);
+                canvas.renderAll();
+            }, { crossOrigin: 'anonymous' });
         }
 
-        function subirLogoFlyer(event) {
-            const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    if(marcaAtiva === 'burguer') logoBurguerUrl = reader.result;
-                    else logoCakeUrl = reader.result;
-                    document.getElementById('card-logo-img').src = reader.result;
-                    document.getElementById('flyer-logo-preview').src = reader.result;
-                };
-                reader.readAsDataURL(file);
-            }
+        function setLogoFlyer(url) {
+            fabric.Image.fromURL(url, function(img) {
+                if(objLogo) canvas.remove(objLogo);
+                objLogo = img;
+                
+                const targetSize = 65;
+                const scale = targetSize / Math.max(img.width, img.height);
+                
+                img.set({
+                    left: 390,
+                    top: 20,
+                    scaleX: scale,
+                    scaleY: scale,
+                    cornerColor: '#ff4757',
+                    borderColor: '#ff4757',
+                    cornerSize: 8,
+                    transparentCorners: false
+                });
+
+                canvas.add(img);
+                canvas.bringToFront(img);
+                canvas.renderAll();
+            }, { crossOrigin: 'anonymous' });
         }
 
-        // 🚨 3. MONTAGEM DE FOTOS (INSTAGRAM LAYOUT) 🚨
-        function mudarModoGrid(qtd) {
-            gridModoAtual = qtd;
-            [1,2,3,4].forEach(n => {
-                const b = document.getElementById(`btn-grid-${n}`);
-                if(n === qtd) b.className = "p-3 bg-slate-50 dark:bg-slate-800 border-2 border-brand-500 rounded-xl text-center font-black text-xs text-brand-500";
-                else b.className = "p-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-xs";
+        // 🚨 CRIAÇÃO DOS ELEMENTOS LIVRES E ARRASTÁVEIS NO CANVAS 🚨
+        function criarElementosCanvas() {
+            // 1. Selo Superior
+            objSelo = new fabric.Textbox('🔥 PROMOÇÃO DO DIA', {
+                left: 20,
+                top: 20,
+                width: 200,
+                fontSize: 13,
+                fontFamily: 'Montserrat',
+                fontWeight: '900',
+                fill: '#ffffff',
+                backgroundColor: '#ec4899',
+                textAlign: 'center',
+                rx: 15,
+                ry: 15,
+                padding: 6,
+                cornerColor: '#ec4899'
             });
 
-            const grid = document.getElementById('grid-imagens-flyer');
-            const slotsContainer = document.getElementById('slots-fotos-container');
-
-            if(qtd === 1) {
-                grid.className = "absolute inset-0 w-full h-full grid grid-cols-1 overflow-hidden pointer-events-none";
-                grid.innerHTML = `<img id="img-slot-0" src="${document.getElementById('img-slot-0')?.src || ''}" class="w-full h-full object-cover">`;
-                slotsContainer.innerHTML = `
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Subir Foto Principal:</p>
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 0)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-brand-500 file:text-white cursor-pointer">`;
-            } else if(qtd === 2) {
-                grid.className = "absolute inset-0 w-full h-full grid grid-cols-2 gap-1 overflow-hidden pointer-events-none";
-                grid.innerHTML = `
-                    <img id="img-slot-0" src="${document.getElementById('img-slot-0')?.src || ''}" class="w-full h-full object-cover">
-                    <img id="img-slot-1" src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=400" class="w-full h-full object-cover">`;
-                slotsContainer.innerHTML = `
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Foto Esquerda:</p>
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 0)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-slate-700 file:text-white cursor-pointer mb-2">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Foto Direita:</p>
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 1)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-slate-700 file:text-white cursor-pointer">`;
-            } else if(qtd === 3) {
-                grid.className = "absolute inset-0 w-full h-full grid grid-cols-2 gap-1 overflow-hidden pointer-events-none";
-                grid.innerHTML = `
-                    <img id="img-slot-0" src="${document.getElementById('img-slot-0')?.src || ''}" class="w-full h-full object-cover row-span-2">
-                    <img id="img-slot-1" src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=400" class="w-full h-full object-cover">
-                    <img id="img-slot-2" src="https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?q=80&w=400" class="w-full h-full object-cover">`;
-                slotsContainer.innerHTML = `
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Foto Principal (Grande):</p>
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 0)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-slate-700 file:text-white cursor-pointer mb-1">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Foto 2 (Canto Superior):</p>
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 1)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-slate-700 file:text-white cursor-pointer mb-1">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Foto 3 (Canto Inferior):</p>
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 2)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-slate-700 file:text-white cursor-pointer">`;
-            } else {
-                grid.className = "absolute inset-0 w-full h-full grid grid-cols-2 grid-rows-2 gap-1 overflow-hidden pointer-events-none";
-                grid.innerHTML = `
-                    <img id="img-slot-0" src="${document.getElementById('img-slot-0')?.src || ''}" class="w-full h-full object-cover">
-                    <img id="img-slot-1" src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=400" class="w-full h-full object-cover">
-                    <img id="img-slot-2" src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=400" class="w-full h-full object-cover">
-                    <img id="img-slot-3" src="https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?q=80&w=400" class="w-full h-full object-cover">`;
-                slotsContainer.innerHTML = `
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Subir Fotos do Quadrante (1 a 4):</p>
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 0)" class="w-full text-xs text-slate-400 mb-1">
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 1)" class="w-full text-xs text-slate-400 mb-1">
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 2)" class="w-full text-xs text-slate-400 mb-1">
-                    <input type="file" accept="image/*" onchange="subirFotoSlot(event, 3)" class="w-full text-xs text-slate-400">`;
-            }
-        }
-
-        function subirFotoSlot(event, slotIndex) {
-            const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const el = document.getElementById(`img-slot-${slotIndex}`);
-                    if(el) el.src = reader.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // 🚨 4. SOMBRA E FILTROS INSTAGRAM 🚨
-        function aplicarSombraFundo(val) {
-            const num = parseInt(val);
-            document.getElementById('range-sombra').value = num;
-            document.getElementById('txt-sombra-val').innerText = `${num}%`;
-            
-            const overlay = document.getElementById('card-overlay');
-            if(num === 0) {
-                overlay.style.background = 'transparent';
-                overlay.style.opacity = '0';
-            } else {
-                overlay.style.opacity = '1';
-                overlay.style.background = `rgba(0, 0, 0, ${num / 100})`;
-            }
-        }
-
-        function aplicarFiltroPronto(tipo) {
-            const b = document.getElementById('range-brilho');
-            const s = document.getElementById('range-saturacao');
-            
-            if(tipo === 'normal') { b.value = 100; s.value = 100; }
-            else if(tipo === 'comida') { b.value = 108; s.value = 145; } // Cores quentes de comida suculenta
-            else if(tipo === 'doce') { b.value = 115; s.value = 110; } // Mais claro e suave para doces
-            else if(tipo === 'vivido') { b.value = 105; s.value = 160; }
-            else if(tipo === 'pb') { b.value = 100; s.value = 0; }
-            
-            atualizarFiltrosCustom();
-        }
-
-        function atualizarFiltrosCustom() {
-            const b = document.getElementById('range-brilho').value;
-            const s = document.getElementById('range-saturacao').value;
-            
-            document.getElementById('txt-brilho').innerText = `${b}%`;
-            document.getElementById('txt-saturacao').innerText = `${s}%`;
-            
-            const grid = document.getElementById('grid-imagens-flyer');
-            grid.style.filter = `brightness(${b}%) saturate(${s}%)`;
-        }
-
-        // Controle de Abas
-        function mudarAbaStudio(aba, el) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            
-            ['dados', 'marca', 'layout', 'filtros'].forEach(id => {
-                document.getElementById(`painel-${id}`).classList.toggle('hidden', id !== aba);
+            // 2. Título (Arraste para onde quiser!)
+            objTitulo = new fabric.Textbox('BOLO SUPREME: NINHO, MARACUJÁ & PUDIM', {
+                left: 20,
+                top: 360,
+                width: 440,
+                fontSize: 24,
+                fontFamily: 'Playfair Display',
+                fontStyle: 'italic',
+                fontWeight: 'bold',
+                fill: '#ffffff',
+                stroke: '#000000',
+                strokeWidth: 1,
+                textAlign: 'left',
+                cornerColor: '#ec4899',
+                shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.8)', blur: 8, offsetX: 2, offsetY: 2 })
             });
+
+            // 3. Selo de % OFF
+            objBadgePct = new fabric.Textbox('⚡ 20% DE DESCONTO', {
+                left: 20,
+                top: 450,
+                width: 170,
+                fontSize: 13,
+                fontFamily: 'Montserrat',
+                fontWeight: '900',
+                fill: '#ffffff',
+                backgroundColor: '#db2777',
+                textAlign: 'center',
+                angle: -2,
+                padding: 6,
+                cornerColor: '#db2777'
+            });
+
+            // 4. Preço DE
+            objDe = new fabric.Textbox('De: R$ 14,90', {
+                left: 20,
+                top: 500,
+                width: 110,
+                fontSize: 14,
+                fontFamily: 'Montserrat',
+                fontWeight: '800',
+                fill: '#f87171',
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                textAlign: 'center',
+                padding: 6,
+                cornerColor: '#f87171'
+            });
+
+            // 5. Preço POR
+            objPor = new fabric.Textbox('POR R$ 11,92', {
+                left: 140,
+                top: 495,
+                width: 170,
+                fontSize: 20,
+                fontFamily: 'Montserrat',
+                fontWeight: '900',
+                fill: '#ffffff',
+                backgroundColor: '#ec4899',
+                textAlign: 'center',
+                padding: 8,
+                cornerColor: '#ec4899'
+            });
+
+            // 6. Rodapé (Livre, nunca fatiado!)
+            objRodape = new fabric.Textbox('⚡ PEÇA AGORA PELO CARDÁPIO ONLINE!', {
+                left: 20,
+                top: 550,
+                width: 440,
+                fontSize: 11,
+                fontFamily: 'Montserrat',
+                fontWeight: '800',
+                fill: '#db2777',
+                backgroundColor: '#ffffff',
+                textAlign: 'center',
+                padding: 8,
+                cornerColor: '#db2777'
+            });
+
+            // Adiciona todos no canvas
+            canvas.add(objSelo, objTitulo, objBadgePct, objDe, objPor, objRodape);
+            canvas.renderAll();
         }
 
-        // Cálculos Financeiros
-        function formatarMoeda(val) { return `R$ ${val.toFixed(2).replace('.', ',')}`; }
-        function parseMoeda(str) { return parseFloat(str.replace('R$', '').replace(/\./g, '').replace(',', '.').trim()) || 0; }
+        // Atualização em Tempo Real dos Textos
+        function atualizarTextoObjeto(tipo, valor) {
+            if(tipo === 'titulo' && objTitulo) objTitulo.set('text', valor.toUpperCase());
+            if(tipo === 'selo' && objSelo) objSelo.set('text', valor.toUpperCase());
+            if(tipo === 'rodape' && objRodape) objRodape.set('text', valor.toUpperCase());
+            canvas.renderAll();
+        }
 
-        function importarProduto(prodId) {
-            if(!prodId) return;
-            const p = produtosCatalogo.find(x => x.id === parseInt(prodId));
+        // Puxar do Cardápio
+        function importarDoCardapio(id) {
+            if(!id) return;
+            const p = produtosCatalogo.find(x => x.id === parseInt(id));
             if(!p) return;
 
-            document.getElementById('input-titulo').value = p.nome.toUpperCase();
-            document.getElementById('input-preco-de').value = formatarMoeda(p.preco_venda);
+            document.getElementById('inp-titulo').value = p.nome.toUpperCase();
+            atualizarTextoObjeto('titulo', p.nome);
+
+            const deVal = `R$ ${p.preco_venda.toFixed(2).replace('.', ',')}`;
+            document.getElementById('inp-de').value = deVal;
+            sincronizarPreco('de', deVal);
+
+            if(p.imagem_url) setFotoFundo(p.imagem_url);
+        }
+
+        // Sincronização de Preços
+        function sincronizarPreco(origem, val) {
+            let de = parseFloat(document.getElementById('inp-de').value.replace('R$','').replace(',','.').trim()) || 0;
+            let pct = parseFloat(document.getElementById('inp-pct').value) || 0;
+            let por = parseFloat(document.getElementById('inp-por').value.replace('R$','').replace(',','.').trim()) || 0;
+
+            if(origem === 'pct' && de > 0) {
+                por = de * (1 - (pct / 100));
+                document.getElementById('inp-por').value = `R$ ${por.toFixed(2).replace('.', ',')}`;
+            } else if(origem === 'por' && de > 0 && por < de) {
+                pct = Math.round(((de - por) / de) * 100);
+                document.getElementById('inp-pct').value = pct;
+            } else if(origem === 'de' && pct > 0) {
+                por = de * (1 - (pct / 100));
+                document.getElementById('inp-por').value = `R$ ${por.toFixed(2).replace('.', ',')}`;
+            }
+
+            if(objDe) objDe.set('text', `De: R$ ${de.toFixed(2).replace('.', ',')}`);
+            if(objPor) objPor.set('text', `POR R$ ${por.toFixed(2).replace('.', ',')}`);
+            if(objBadgePct) objBadgePct.set('text', `⚡ ${pct}% DE DESCONTO`);
+            canvas.renderAll();
+        }
+
+        function definirModoPreco(modo) {
+            if(!objDe || !objPor || !objBadgePct) return;
             
-            const pct = parseFloat(document.getElementById('input-desconto-pct').value) || 15;
-            document.getElementById('input-preco-por').value = formatarMoeda(p.preco_venda * (1 - (pct / 100)));
+            objDe.set('visible', modo === 'ambos' || modo === 'preco');
+            objPor.set('visible', modo === 'ambos' || modo === 'preco');
+            objBadgePct.set('visible', modo === 'ambos' || modo === 'pct');
+            
+            canvas.renderAll();
+        }
 
-            if(p.imagem_url && p.imagem_url.trim() !== '') {
-                const img0 = document.getElementById('img-slot-0');
-                if(img0) img0.src = p.imagem_url;
+        // 🚨 ZOOM E MOVIMENTO DA FOTO 🚨
+        let baseScale = 1;
+        function ajustarZoomFoto(val) {
+            if(!imgFundo) return;
+            const pct = parseInt(val);
+            document.getElementById('lbl-zoom').innerText = `${pct}%`;
+            
+            const novoScale = (Math.max(canvas.width / imgFundo.width, canvas.height / imgFundo.height)) * (pct / 100);
+            imgFundo.scale(novoScale);
+            canvas.renderAll();
+        }
+
+        function moverFoto(direcao) {
+            if(!imgFundo) return;
+            const passo = 25;
+            if(direcao === 'cima') imgFundo.top -= passo;
+            if(direcao === 'baixo') imgFundo.top += passo;
+            if(direcao === 'esq') imgFundo.left -= passo;
+            if(direcao === 'dir') imgFundo.left += passo;
+            canvas.renderAll();
+        }
+
+        function carregarFotoCustomizada(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => setFotoFundo(e.target.result);
+                reader.readAsDataURL(file);
             }
-            atualizarPreview();
         }
 
-        function calcularDePorcentagem(pctStr) {
-            const pct = parseFloat(pctStr) || 0;
-            const de = parseMoeda(document.getElementById('input-preco-de').value);
-            if(de > 0) document.getElementById('input-preco-por').value = formatarMoeda(de * (1 - (pct / 100)));
-            atualizarPreview();
-        }
-
-        function calcularDePrecoPor(porStr) {
-            const por = parseMoeda(porStr);
-            const de = parseMoeda(document.getElementById('input-preco-de').value);
-            if(de > 0 && por > 0 && por < de) {
-                document.getElementById('input-desconto-pct').value = Math.round(((de - por) / de) * 100);
+        function carregarLogoFlyer(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => setLogoFlyer(e.target.result);
+                reader.readAsDataURL(file);
             }
-            atualizarPreview();
         }
 
-        function calcularDePrecoDe(deStr) {
-            const de = parseMoeda(deStr);
-            const pct = parseFloat(document.getElementById('input-desconto-pct').value) || 0;
-            if(de > 0) document.getElementById('input-preco-por').value = formatarMoeda(de * (1 - (pct / 100)));
-            atualizarPreview();
+        // 🚨 FILTROS INSTAGRAM E LUZ 🚨
+        function aplicarFiltroInstagram(tipo) {
+            if(!imgFundo) return;
+            imgFundo.filters = [];
+
+            if(tipo === 'cake') {
+                // Clareia e destaca os tons doces e confeitados
+                imgFundo.filters.push(new fabric.Image.filters.Brightness({ brightness: 0.08 }));
+                imgFundo.filters.push(new fabric.Image.filters.Contrast({ contrast: 0.05 }));
+                imgFundo.filters.push(new fabric.Image.filters.Saturation({ saturation: 0.15 }));
+            } else if(tipo === 'burger') {
+                // Quente e dourado para lanches
+                imgFundo.filters.push(new fabric.Image.filters.Brightness({ brightness: -0.02 }));
+                imgFundo.filters.push(new fabric.Image.filters.Contrast({ contrast: 0.18 }));
+                imgFundo.filters.push(new fabric.Image.filters.Saturation({ saturation: 0.35 }));
+            } else if(tipo === 'vivid') {
+                imgFundo.filters.push(new fabric.Image.filters.Saturation({ saturation: 0.5 }));
+            } else if(tipo === 'pb') {
+                imgFundo.filters.push(new fabric.Image.filters.Grayscale());
+            }
+
+            imgFundo.applyFilters();
+            canvas.renderAll();
         }
 
-        function atualizarModo(modo) {
-            modoExibicaoAtual = modo;
-            document.getElementById('card-badge-pct-container').classList.toggle('hidden', modo === 'preco');
-            document.getElementById('card-bloco-precos').classList.toggle('hidden', modo === 'porcentagem');
+        function aplicarFiltroManual() {
+            if(!imgFundo) return;
+            const b = parseFloat(document.getElementById('rng-brilho').value);
+            const c = parseFloat(document.getElementById('rng-contraste').value);
+            const s = parseFloat(document.getElementById('rng-saturacao').value);
+
+            document.getElementById('lbl-brilho').innerText = `${Math.round(b*100)}%`;
+            document.getElementById('lbl-contraste').innerText = `${Math.round(c*100)}%`;
+            document.getElementById('lbl-saturacao').innerText = `${Math.round(s*100)}%`;
+
+            imgFundo.filters = [
+                new fabric.Image.filters.Brightness({ brightness: b }),
+                new fabric.Image.filters.Contrast({ contrast: c }),
+                new fabric.Image.filters.Saturation({ saturation: s })
+            ];
+            imgFundo.applyFilters();
+            canvas.renderAll();
         }
 
-        function atualizarPreview() {
-            document.getElementById('card-tag').innerText = document.getElementById('input-tag').value.toUpperCase();
-            document.getElementById('card-titulo').innerText = document.getElementById('input-titulo').value.toUpperCase();
-            document.getElementById('card-preco-de').innerText = document.getElementById('input-preco-de').value;
-            document.getElementById('card-preco-por').innerText = document.getElementById('input-preco-por').value;
-            document.getElementById('card-rodape').innerText = document.getElementById('input-rodape').value;
-            document.getElementById('card-badge-pct').innerText = `⚡ ${document.getElementById('input-desconto-pct').value}% DE DESCONTO`;
+        function resetarFiltros() {
+            if(!imgFundo) return;
+            imgFundo.filters = [];
+            imgFundo.applyFilters();
+            document.getElementById('rng-brilho').value = 0;
+            document.getElementById('rng-contraste').value = 0;
+            document.getElementById('rng-saturacao').value = 0;
+            canvas.renderAll();
         }
 
-        // 🚨 5. DOWNLOAD EM ALTA DEFINIÇÃO SEM CORTES 🚨
-        function baixarImagemCard() {
-            const card = document.getElementById('card-anuncio');
+        // 🚨 PINCEL DE RETOQUE / BORRACHA 🚨
+        function ativarModoPintura(ativo) {
+            canvas.isDrawingMode = ativo;
+            if(ativo) {
+                canvas.freeDrawingBrush.width = parseInt(document.getElementById('rng-pincel-tam').value);
+                canvas.freeDrawingBrush.color = document.getElementById('cor-pincel').value;
+            }
+        }
+
+        function mudarTamanhoPincel(val) {
+            if(canvas.isDrawingMode) canvas.freeDrawingBrush.width = parseInt(val);
+        }
+
+        function mudarCorPincel(val) {
+            if(canvas.isDrawingMode) canvas.freeDrawingBrush.color = val;
+        }
+
+        // 🚨 TEMAS: BURGUER VS CAKE 🚨
+        function selecionarTemaVisual(tema) {
+            temaAtual = tema;
+            const bB = document.getElementById('btn-tema-burguer');
+            const bC = document.getElementById('btn-tema-cake');
+
+            if(tema === 'cake') {
+                bC.className = "p-4 rounded-2xl border-2 border-cake-500 bg-pink-50 dark:bg-pink-500/10 text-left transition-all";
+                bB.className = "p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-brand-500 transition-all";
+
+                objTitulo.set({ fontFamily: 'Playfair Display', fontStyle: 'italic', fill: '#ffffff' });
+                objSelo.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
+                objPor.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
+                objBadgePct.set({ backgroundColor: '#db2777', fill: '#ffffff' });
+                objRodape.set({ backgroundColor: '#ffffff', fill: '#db2777' });
+            } else {
+                bB.className = "p-4 rounded-2xl border-2 border-brand-500 bg-brand-50/50 dark:bg-brand-500/10 text-left transition-all";
+                bC.className = "p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left hover:border-cake-500 transition-all";
+
+                objTitulo.set({ fontFamily: 'Montserrat', fontStyle: 'normal', fill: '#ffffff' });
+                objSelo.set({ backgroundColor: '#ff4757', fill: '#ffffff' });
+                objPor.set({ backgroundColor: '#f59e0b', fill: '#000000' });
+                objBadgePct.set({ backgroundColor: '#dc2626', fill: '#fef08a' });
+                objRodape.set({ backgroundColor: 'rgba(0,0,0,0.85)', fill: '#f59e0b' });
+            }
+            canvas.renderAll();
+        }
+
+        // Alinhamentos Rápidos
+        function centralizarElemento() {
+            const ativo = canvas.getActiveObject();
+            if(ativo) {
+                canvas.centerObjectH(ativo);
+                canvas.renderAll();
+            }
+        }
+        function trazerFrente() {
+            const ativo = canvas.getActiveObject();
+            if(ativo) {
+                canvas.bringToFront(ativo);
+                canvas.renderAll();
+            }
+        }
+
+        // Mudança de Abas
+        function mudarAba(aba, el) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            ['produto', 'foto', 'edicao', 'marca'].forEach(id => {
+                document.getElementById(`painel-${id}`).classList.toggle('hidden', id !== aba);
+            });
+            if(aba !== 'edicao') ativarModoPintura(false);
+        }
+
+        // 🚨 DOWNLOAD NATIVO EM ALTA RESOLUÇÃO (ZERO CORTES) 🚨
+        function baixarImagemPNG() {
             const btn = document.getElementById('btn-baixar');
-            const txtOriginal = btn.innerHTML;
-            
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Gerando...';
+            const txt = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Renderizando...';
             btn.disabled = true;
 
-            document.fonts.ready.then(() => {
-                html2canvas(card, {
-                    scale: 3,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: null,
-                    scrollX: 0,
-                    scrollY: 0
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    const nome = document.getElementById('input-titulo').value.replace(/[^a-zA-Z0-9]/g, '_');
-                    link.download = `Flyer_${marcaAtiva.toUpperCase()}_${nome}.png`;
-                    link.href = canvas.toDataURL('image/png', 1.0);
-                    link.click();
-                    
-                    btn.innerHTML = '<i class="ph-bold ph-check mr-2 text-lg"></i> Baixado!';
-                    setTimeout(() => { btn.innerHTML = txtOriginal; btn.disabled = false; }, 2000);
-                }).catch(() => {
-                    alert("Erro ao baixar. Tente novamente.");
-                    btn.innerHTML = txtOriginal; btn.disabled = false;
+            // Desmarca qualquer seleção antes de exportar
+            canvas.discardActiveObject();
+            canvas.renderAll();
+
+            setTimeout(() => {
+                // Exporta em Dobro da Resolução (960 x 1200 px) para qualidade impecável no WhatsApp
+                const dataURL = canvas.toDataURL({
+                    format: 'png',
+                    multiplier: 2
                 });
-            });
+
+                const link = document.createElement('a');
+                const nomeLimpo = (objTitulo ? objTitulo.text : 'Anuncio').replace(/[^a-zA-Z0-9]/g, '_');
+                link.download = `Flyer_${temaAtual.toUpperCase()}_${nomeLimpo}.png`;
+                link.href = dataURL;
+                link.click();
+
+                btn.innerHTML = '<i class="ph-bold ph-check mr-2 text-lg"></i> Imagem Salva!';
+                setTimeout(() => { btn.innerHTML = txt; btn.disabled = false; }, 2000);
+            }, 300);
         }
 
-        function copiarTextoZap() {
-            const tag = document.getElementById('input-tag').value;
-            const tit = document.getElementById('input-titulo').value;
-            const de = document.getElementById('input-preco-de').value;
-            const por = document.getElementById('input-preco-por').value;
-            const pct = document.getElementById('input-desconto-pct').value;
-            
-            let linhaPreco = (modoExibicaoAtual === 'porcentagem') ? 
-                `⚡ *SUPER DESCONTO DE ${pct}% OFF!*` : 
-                `🔥 Desconto de ${pct}%\n❌ De: ${de}\n✅ *Por apenas: ${por}!*`;
+        // 🚨 CRIAÇÃO DE VÍDEO ANIMADO (STATUS / STORIES) 🚨
+        function gerarVideoAnimado() {
+            const btn = document.getElementById('btn-video');
+            const txt = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg mr-2"></i> Gravando 5s...';
+            btn.disabled = true;
 
-            const msg = `${tag}\n\n✨ *${tit}*\n${linhaPreco}\n\n👉 Peça agora pelo link ou responda essa mensagem!`;
+            canvas.discardActiveObject();
+            canvas.renderAll();
+
+            const canvasDom = document.getElementById('canvas-studio');
+            const stream = canvasDom.captureStream(30);
+            let recorder;
+            try {
+                recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            } catch(e) {
+                recorder = new MediaRecorder(stream);
+            }
+
+            const chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Video_Status_${temaAtual.toUpperCase()}.webm`;
+                a.click();
+
+                btn.innerHTML = '<i class="ph-bold ph-check mr-2 text-lg"></i> Vídeo Pronto!';
+                setTimeout(() => { btn.innerHTML = txt; btn.disabled = false; }, 2000);
+            };
+
+            recorder.start();
+
+            // Animação de 5 segundos (Zoom Suave na Foto + Pulso no Selo de Oferta)
+            let frame = 0;
+            const totalFrames = 150; // 5 segundos a 30fps
+            const scaleInicial = imgFundo ? imgFundo.scaleX : 1;
+
+            function animar() {
+                frame++;
+                if(imgFundo) {
+                    imgFundo.scale(scaleInicial * (1 + 0.0006 * frame)); // Zoom lento
+                }
+                if(objBadgePct) {
+                    objBadgePct.set('scaleX', 1 + 0.06 * Math.sin(frame * 0.15));
+                    objBadgePct.set('scaleY', 1 + 0.06 * Math.sin(frame * 0.15));
+                }
+                canvas.renderAll();
+
+                if(frame < totalFrames) {
+                    requestAnimationFrame(animar);
+                } else {
+                    recorder.stop();
+                    // Restaura tamanho original
+                    if(imgFundo) imgFundo.scale(scaleInicial);
+                    if(objBadgePct) { objBadgePct.set('scaleX', 1); objBadgePct.set('scaleY', 1); }
+                    canvas.renderAll();
+                }
+            }
+            animar();
+        }
+
+        function copiarLegendaZap() {
+            const tit = objTitulo ? objTitulo.text : '';
+            const de = document.getElementById('inp-de').value;
+            const por = document.getElementById('inp-por').value;
+            const pct = document.getElementById('inp-pct').value;
+
+            const msg = `✨ *${tit}*\n\n🔥 *SUPER OFERTA DE ${pct}% OFF!*\n❌ De: ${de}\n✅ *Por apenas: ${por}!* 😋\n\n👉 Peça agora pelo cardápio ou mande seu pedido por aqui!`;
             navigator.clipboard.writeText(msg);
-            alert("Texto copiado! 📋\nCole no WhatsApp junto com a imagem.");
+            alert("Legenda copiada para o WhatsApp! 📋");
         }
     </script>
 </body>
