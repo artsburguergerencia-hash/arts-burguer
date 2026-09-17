@@ -2705,13 +2705,12 @@ def tela_app_motoboy(request: Request):
     return FileResponse(os.path.join("templates", "motoboy.html"))
 
 # ==========================================
-# COPILOTO DE MARKETING COM GOOGLE GEMINI IA
+# COPILOTO DE MARKETING COM COMANDO LIVRE GEMINI
 # ==========================================
 class RequisicaoCopyIA(BaseModel):
-    produto: str
-    marca: str = "Art's Burguer"
-    tom: str = "promocao"
-    instrucao_extra: Optional[str] = ""
+    comando: str
+    marca: Optional[str] = "Art's Cake"
+    produto: Optional[str] = ""
 
 @app.post("/api/marketing/gerar-copy-ia")
 def gerar_copy_com_gemini(payload: RequisicaoCopyIA):
@@ -2719,27 +2718,23 @@ def gerar_copy_com_gemini(payload: RequisicaoCopyIA):
     if not gemini_key:
         raise HTTPException(
             status_code=400, 
-            detail="Chave GEMINI_API_KEY não configurada no servidor. Adicione no painel do Render ou no .env."
+            detail="Chave GEMINI_API_KEY não configurada no painel do Render (aba Environment)."
         )
 
-    # Prompt profissional especializado em publicidade de alimentos
     prompt = f"""
-    Você é uma copywriter sênior especialista em publicidade de hamburguerias e confeitarias de luxo.
-    Crie opções irresistíveis de textos para o seguinte item: '{payload.produto}'.
+    Você é a diretora de marketing oficial da marca '{payload.marca}'.
+    O lojista te deu o seguinte comando de criação:
+    "{payload.comando}"
     
-    Contexto da Marca: '{payload.marca}'.
-    - Se for Art's Cake: use linguagem doce, sofisticada, afetuosa, apetitosa, com foco em sobremesas irresistíveis.
-    - Se for Art's Burguer: use linguagem suculenta, fogo, brasa, queijo derretido, crocância, apetite voraz.
+    Item de referência: {payload.produto or "Produto da loja"}.
     
-    Tom de voz: {payload.tom} (urgência, fome, desejo).
-    Instrução extra do lojista: {payload.instrucao_extra or "Nenhuma"}.
-    
-    Retorne ESTRITAMENTE um JSON puro (sem formatação markdown ```json e sem texto antes ou depois) no formato exato:
+    Crie opções altamente persuasivas, apetitosas e comerciais.
+    Retorne ESTRITAMENTE um JSON puro no formato:
     {{
-        "selos": ["SELO 1", "SELO 2", "SELO 3"],
-        "titulos": ["TITULO 1", "TITULO 2", "TITULO 3"],
-        "rodapes": ["CHAMADA 1", "CHAMADA 2", "CHAMADA 3"],
-        "legenda_whatsapp": "Texto persuasivo completo para WhatsApp com emojis e chamada de ação"
+        "titulos": ["TÍTULO 1", "TÍTULO 2", "TÍTULO 3"],
+        "bilhetes": ["BILHETE 1 CURTO", "BILHETE 2 CURTO"],
+        "faixas": ["CHAMADA DE VENDA 1", "CHAMADA DE VENDA 2"],
+        "legenda_whatsapp": "Texto completo para WhatsApp com emojis chamativos e chamada para ação"
     }}
     """
 
@@ -2748,27 +2743,28 @@ def gerar_copy_com_gemini(payload: RequisicaoCopyIA):
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
-            "temperature": 0.8,
+            "temperature": 0.85,
             "response_mime_type": "application/json"
         }
     }
 
     try:
-        import requests
-        import json
-        resp = requests.post(url, headers=headers, json=body, timeout=12)
+        import requests, json, re
+        resp = requests.post(url, headers=headers, json=body, timeout=15)
         dados = resp.json()
         
         if resp.status_code == 200:
             texto_resposta = dados["candidates"][0]["content"]["parts"][0]["text"]
-            # Limpa qualquer resquício de markdown se houver
-            texto_limpo = texto_resposta.replace("```json", "").replace("```", "").strip()
+            texto_limpo = re.sub(r"^```json\s*", "", texto_resposta.strip())
+            texto_limpo = re.sub(r"```$", "", texto_limpo).strip()
             return json.loads(texto_limpo)
         else:
-            erro_msg = dados.get("error", {}).get("message", str(dados))
-            raise HTTPException(status_code=400, detail=f"Erro na API do Gemini: {erro_msg}")
+            erro_detalhe = dados.get("error", {}).get("message", str(dados))
+            raise HTTPException(status_code=400, detail=f"Google API: {erro_detalhe}")
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Falha ao conectar com o Gemini: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Falha de conexão com a IA: {str(e)}")
 
 # ==================================================================
 # IA GENERATIVA DE IMAGEM RESILIENTE (GOOGLE GEMINI + FLUX 4K)
