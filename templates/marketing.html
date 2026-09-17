@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Art's Creative Studio Pro | Suíte Completa</title>
+    <title>Art's Creative Studio Pro | Controle Total de Fundo & Camadas</title>
     
-    <!-- Fontes Oficiais: Manuscrita, Cake, Fast-Food e Clean -->
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Montserrat:wght@400;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;600;700;900&family=Oswald:wght@700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -40,7 +39,7 @@
 </head>
 <body class="bg-slate-100 dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- CABEÇALHO -->
+    <!-- CABEÇALHO COM LOGO OFICIAL DINÂMICA -->
     <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-20 px-8 flex items-center justify-between shadow-sm sticky top-0 z-30">
         <div class="flex items-center">
             <div id="header-logo-container" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 dark:border-slate-700 flex items-center justify-center mr-4 shadow-md overflow-hidden shrink-0">
@@ -49,7 +48,7 @@
             </div>
             <div>
                 <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none" id="header-nome-loja">Art's Studio Pro</h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Design Livre, IA & Varinha Mágica</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Estúdio Livre com Controle Total de Fundo</p>
             </div>
         </div>
 
@@ -94,18 +93,74 @@
                 </div>
             </div>
 
-            <!-- 5 ABAS DE CONTROLE -->
+            <!-- 🚨 AS 5 ABAS DE CONTROLE (COM A ABA "FUNDO" EM DESTAQUE) 🚨 -->
             <div class="bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-5 gap-1 text-center shadow-sm">
-                <button onclick="mudarAba('item', this)" class="tab-btn active py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Item</button>
-                <button onclick="mudarAba('grade', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-blue-500 flex items-center justify-center"><i class="ph-bold ph-grid-four mr-1"></i> Grade</button>
+                <button onclick="mudarAba('fundo', this)" class="tab-btn active py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-blue-600 flex items-center justify-center"><i class="ph-bold ph-paint-brush-broad mr-1"></i> Fundo</button>
+                <button onclick="mudarAba('item', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Cardápio</button>
+                <button onclick="mudarAba('grade', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-emerald-600 flex items-center justify-center"><i class="ph-bold ph-grid-four mr-1"></i> Grade</button>
                 <button onclick="mudarAba('varinha', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-amber-500 flex items-center justify-center"><i class="ph-bold ph-magic-wand mr-1"></i> Varinha</button>
                 <button onclick="mudarAba('ia', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all text-purple-600 flex items-center justify-center"><i class="ph-bold ph-sparkle mr-1"></i> Gemini</button>
-                <button onclick="mudarAba('estilo', this)" class="tab-btn py-2 rounded-xl text-[9px] font-black uppercase tracking-wider border-2 border-transparent transition-all">Cores</button>
             </div>
 
-            <!-- PAINEL 1: ITEM & PREÇO (PUXAR DO CARDÁPIO) -->
-            <div id="painel-item" class="space-y-4">
-                <!-- Dropdown do Cardápio -->
+            <!-- 🚨 PAINEL 1: CONTROLE TOTAL DO FUNDO DO FLYER 🚨 -->
+            <div id="painel-fundo" class="space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-white flex items-center">
+                            <i class="ph-bold ph-paint-brush-broad text-blue-500 mr-2 text-lg"></i> Fundo do Flyer
+                        </h3>
+                        <!-- Botão Excluir Imagem de Fundo -->
+                        <button onclick="removerImagemFundoFlyer()" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded-xl text-[10px] font-black uppercase transition-all flex items-center">
+                            <i class="ph-bold ph-trash mr-1 text-sm"></i> Limpar Fundo
+                        </button>
+                    </div>
+
+                    <!-- 1. Cores Sólidas Prontas -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Cores Prontas de Fundo:</label>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="setCorFundoCanvas('#fdf2f8')" class="w-9 h-9 rounded-xl bg-pink-100 border-2 border-pink-300 shadow-sm hover:scale-110 transition-transform" title="Rosa Art's Cake"></button>
+                            <button onclick="setCorFundoCanvas('#ffffff')" class="w-9 h-9 rounded-xl bg-white border-2 border-slate-300 shadow-sm hover:scale-110 transition-transform" title="Branco Limpo"></button>
+                            <button onclick="setCorFundoCanvas('#0f172a')" class="w-9 h-9 rounded-xl bg-slate-900 border-2 border-slate-700 shadow-sm hover:scale-110 transition-transform" title="Preto Brasa"></button>
+                            <button onclick="setCorFundoCanvas('#fef3c7')" class="w-9 h-9 rounded-xl bg-amber-100 border-2 border-amber-300 shadow-sm hover:scale-110 transition-transform" title="Dourado Suave"></button>
+                            <button onclick="setCorFundoCanvas('#ec4899')" class="w-9 h-9 rounded-xl bg-pink-500 border-2 border-pink-600 shadow-sm hover:scale-110 transition-transform" title="Rosa Vibrante"></button>
+                            <input type="color" id="cp-fundo-canvas" value="#fdf2f8" onchange="setCorFundoCanvas(this.value)" class="w-9 h-9 rounded-xl cursor-pointer p-0.5 border border-slate-300" title="Escolher Cor Livre">
+                        </div>
+                    </div>
+
+                    <!-- 2. Cenários Prontos -->
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Cenários Prontos em Alta Definição:</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setCenarioFundoPronto('marmore')" class="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase border hover:border-blue-500 text-center">
+                                🏛️ Mármore Branco
+                            </button>
+                            <button onclick="setCenarioFundoPronto('madeira')" class="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase border hover:border-amber-500 text-center">
+                                🪵 Madeira Rústica
+                            </button>
+                            <button onclick="setCenarioFundoPronto('estudio')" class="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl text-[10px] font-black uppercase border hover:border-purple-500 text-center">
+                                🖤 Estúdio Noturno
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Subir Sua Própria Imagem de Fundo -->
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Subir Imagem de Fundo do seu Computador/Celular:</label>
+                        <input type="file" accept="image/*" onchange="subirImagemFundoCustom(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white cursor-pointer">
+                    </div>
+
+                    <!-- 4. Opção de Fazer a Foto do Doce Ocupar o Fundo Todo -->
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <button onclick="fazerFotoDoceFundoTotal()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md hover:opacity-95 active:scale-95 transition-all flex items-center justify-center">
+                            <i class="ph-bold ph-corners-out mr-2 text-base"></i> 📐 Usar Foto do Doce como Fundo Total
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL 2: CARDÁPIO & PREÇOS -->
+            <div id="painel-item" class="hidden space-y-4">
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center">
                         <i class="ph-bold ph-lightning text-amber-500 mr-1.5 text-base"></i> Puxar do seu Cardápio Oficial
@@ -119,11 +174,6 @@
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Título da Oferta</label>
                         <input type="text" id="inp-titulo" value="BOLO SUPREME: NINHO, MARACUJÁ & PUDIM" oninput="atualizarTextoObjeto('titulo', this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Selo Superior</label>
-                        <input type="text" id="inp-selo" value="🔥 PROMOÇÃO DO DIA" oninput="atualizarTextoObjeto('selo', this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold uppercase outline-none">
                     </div>
 
                     <div class="grid grid-cols-3 gap-2">
@@ -148,7 +198,7 @@
                 </div>
             </div>
 
-            <!-- PAINEL 2: GRADE DE FOTOS (INSTAGRAM LAYOUT COM 1, 2, 3, 4 FOTOS) -->
+            <!-- PAINEL 3: GRADE DE FOTOS (INSTAGRAM LAYOUT) -->
             <div id="painel-grade" class="hidden space-y-4">
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400">Montagem de Fotos (Grid Instagram)</label>
@@ -165,24 +215,24 @@
                         <input type="file" accept="image/*" onchange="subirFotoParaGrade(event, 0)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-brand-500 file:text-white cursor-pointer">
                     </div>
 
-                    <!-- Zoom da Foto Principal -->
+                    <!-- Zoom e Posição do Doce/Lanche -->
                     <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
                         <div class="flex justify-between text-[10px] font-bold text-slate-400">
-                            <span>Zoom da Foto:</span><span id="lbl-zoom-grade" class="text-brand-500 font-black">100%</span>
+                            <span>Zoom do Doce/Lanche:</span><span id="lbl-zoom-grade" class="text-brand-500 font-black">100%</span>
                         </div>
                         <input type="range" id="rng-zoom-grade" min="30" max="250" value="100" oninput="ajustarZoomFotoGrade(this.value)" class="w-full accent-brand-500">
                     </div>
                 </div>
             </div>
 
-            <!-- PAINEL 3: VARINHA CONTÍNUA & RETOQUE -->
+            <!-- PAINEL 4: VARINHA CONTÍNUA & RETOQUE -->
             <div id="painel-varinha" class="hidden space-y-4">
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
                     <div>
                         <h3 class="text-xs font-black uppercase tracking-widest text-amber-500 mb-1 flex items-center">
                             <i class="ph-bold ph-magic-wand text-lg mr-1.5"></i> Varinha de Transparência Contínua
                         </h3>
-                        <p class="text-[10px] text-slate-500 leading-relaxed">Ative e toque no fundo/toalha da foto. Ela não desliga sozinha para você dar vários toques!</p>
+                        <p class="text-[10px] text-slate-500 leading-relaxed">Ative e dê quantos toques quiser no fundo da foto para apagar a toalha ou mesa!</p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -207,7 +257,7 @@
                 </div>
             </div>
 
-            <!-- PAINEL 4: IA GEMINI PRO (TEXTOS & FOTOS 4K) -->
+            <!-- PAINEL 5: IA GEMINI PRO -->
             <div id="painel-ia" class="hidden space-y-4">
                 <div class="bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-transparent p-5 rounded-3xl border border-purple-200 dark:border-purple-800/50 shadow-sm space-y-3">
                     <div class="flex items-center justify-between">
@@ -223,52 +273,11 @@
                         <div id="ai-lista-titulos" class="space-y-1"></div>
                     </div>
                 </div>
-
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-brand-500 flex items-center">
-                        <i class="ph-bold ph-camera mr-1.5 text-base"></i> Criar Fotografia 4K com IA
-                    </h3>
-                    <textarea id="ai-prompt-imagem" rows="2" placeholder="Ex: Taça de bolo de pote supreme com pudim dourado brilhante e morangos..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none"></textarea>
-                    <button onclick="gerarFotoDoZeroIA()" id="btn-gerar-img-ia" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black py-3 rounded-xl uppercase tracking-wider text-xs shadow-md active:scale-95 transition-all flex items-center justify-center">
-                        <i class="ph-bold ph-magic-wand mr-2 text-base"></i> Gerar Foto Profissional
-                    </button>
-                </div>
-            </div>
-
-            <!-- PAINEL 5: CORES & FONTES -->
-            <div id="painel-estilo" class="hidden space-y-4">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Família da Fonte</label>
-                        <select id="sel-fonte" onchange="aplicarFonte(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none">
-                            <option value="Playfair Display">🍰 Playfair (Elegante / Doces / Cake)</option>
-                            <option value="Caveat">✍️ Caveat (Manuscrita / Carinho)</option>
-                            <option value="Montserrat">🔥 Montserrat (Comercial / Fast Food)</option>
-                            <option value="Oswald">⚡ Oswald (Impacto Alto / Promoção)</option>
-                            <option value="Inter">📱 Inter (Clean e Moderno)</option>
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Cor da Letra</label>
-                            <input type="color" id="cp-cor-letra" value="#ffffff" onchange="aplicarCorLetra(this.value)" class="w-full h-9 rounded-xl cursor-pointer border p-0.5 bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Fundo da Caixa</label>
-                            <input type="color" id="cp-cor-fundo" value="#ec4899" onchange="aplicarCorFundo(this.value)" class="w-full h-9 rounded-xl cursor-pointer border p-0.5 bg-white">
-                        </div>
-                    </div>
-
-                    <button onclick="tornarCaixaTransparente()" class="w-full py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-black uppercase hover:border-brand-500 border border-slate-200 dark:border-slate-700">
-                        Deixar Caixinha Transparente
-                    </button>
-                </div>
             </div>
 
         </div>
 
-        <!-- COLUNA DIREITA: CANVAS INTERATIVO -->
+        <!-- COLUNA DIREITA: O CANVAS (480 x 600 px) -->
         <div class="lg:col-span-7 flex flex-col items-center sticky top-24">
             <div class="flex justify-between items-center w-[480px] mb-2 px-2">
                 <span class="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center">
@@ -303,11 +312,11 @@
         let objFotoPrincipal = null;
         let historicoVarinha = [];
         let modoVarinhaAtivo = false;
-        let objTitulo, objSelo, objDe, objPor, objBadgePct, objFaixa, objLogo;
+        let objTitulo, objBilhete, objFaixa, objLogo;
         let produtosCatalogo = [];
         let marcaAtiva = 'cake';
 
-        // Armazenamento em Cache das Logos das duas marcas
+        // Logos salvas
         let logoCakeBase64 = localStorage.getItem('logo_arts_cake') || "";
         let logoBurguerBase64 = localStorage.getItem('logo_arts_burguer') || "";
 
@@ -323,11 +332,11 @@
             canvas = new fabric.Canvas('canvas-studio', {
                 preserveObjectStacking: true,
                 selection: true,
-                backgroundColor: '#fff1f2'
+                backgroundColor: '#fff1f2' // Fundo rosa limpo inicial
             });
 
-            // Cria todos os elementos para nunca dar erro de undefined
-            criarElementosCompletos();
+            // Cria textos de agência
+            criarTextosAgencia();
 
             // Varinha contínua
             canvas.on('mouse:down', function(opt) {
@@ -337,7 +346,75 @@
             });
         }
 
-        // 🚨 TECLA DELETE & BACKSPACE DO TECLADO 🚨
+        // 🚨 1. GERENCIADOR DE FUNDO DO FLYER 🚨
+        function setCorFundoCanvas(cor) {
+            canvas.backgroundImage = null; // Tira qualquer foto de fundo antiga
+            canvas.backgroundColor = cor;
+            canvas.renderAll();
+        }
+
+        function removerImagemFundoFlyer() {
+            canvas.backgroundImage = null;
+            canvas.backgroundColor = '#ffffff'; // Deixa branco limpo
+            canvas.renderAll();
+            alert("Imagem de fundo removida! O flyer agora está com fundo limpo.");
+        }
+
+        function setCenarioFundoPronto(tipo) {
+            const cenarios = {
+                'marmore': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=800&auto=format&fit=crop',
+                'madeira': 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop',
+                'estudio': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop'
+            };
+            const url = cenarios[tipo];
+            if(!url) return;
+
+            fabric.Image.fromURL(url, function(img) {
+                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                    originX: 'center', originY: 'center',
+                    left: canvas.width / 2, top: canvas.height / 2,
+                    scaleX: scale, scaleY: scale
+                });
+            }, { crossOrigin: 'anonymous' });
+        }
+
+        function subirImagemFundoCustom(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fabric.Image.fromURL(e.target.result, function(img) {
+                        const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+                        canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                            originX: 'center', originY: 'center',
+                            left: canvas.width / 2, top: canvas.height / 2,
+                            scaleX: scale, scaleY: scale
+                        });
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function fazerFotoDoceFundoTotal() {
+            if(!objFotoPrincipal) return alert("Suba uma foto de doce ou lanche primeiro.");
+            const src = objFotoPrincipal.toDataURL();
+            fabric.Image.fromURL(src, function(img) {
+                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                    originX: 'center', originY: 'center',
+                    left: canvas.width / 2, top: canvas.height / 2,
+                    scaleX: scale, scaleY: scale
+                });
+                // Remove a foto flutuante da frente para não duplicar
+                canvas.remove(objFotoPrincipal);
+                objFotoPrincipal = null;
+                canvas.renderAll();
+            });
+        }
+
+        // 🚨 2. TECLA DELETE & BACKSPACE NO TECLADO 🚨
         function configurarTeclaDelete() {
             window.addEventListener('keydown', function(e) {
                 if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -362,76 +439,24 @@
             }
         }
 
-        // 🚨 CRIAÇÃO ROBUSTA DE TODOS OS ELEMENTOS 🚨
-        function criarElementosCompletos() {
-            // Foto padrão
-            const fotoInicial = "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop";
-            carregarFotoNoCanvas(fotoInicial);
-
-            // Selo
-            objSelo = new fabric.Textbox('🔥 PROMOÇÃO DO DIA', {
-                left: 20, top: 20, width: 200, fontSize: 13,
-                fontFamily: 'Montserrat', fontWeight: '900', fill: '#ffffff',
-                backgroundColor: '#ec4899', textAlign: 'center', padding: 6
-            });
-
-            // Título
-            objTitulo = new fabric.Textbox('BOLO SUPREME: NINHO, MARACUJÁ & PUDIM', {
-                left: 20, top: 380, width: 440, fontSize: 24,
-                fontFamily: 'Playfair Display', fontStyle: 'italic', fontWeight: 'bold',
-                fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.6)', textAlign: 'left', padding: 6
-            });
-
-            // Preço De
-            objDe = new fabric.Textbox('De: R$ 14,90', {
-                left: 20, top: 480, width: 110, fontSize: 14,
-                fontFamily: 'Montserrat', fontWeight: '800', fill: '#f87171',
-                backgroundColor: 'rgba(0,0,0,0.75)', textAlign: 'center', padding: 6
-            });
-
-            // Preço Por
-            objPor = new fabric.Textbox('POR R$ 11,92', {
-                left: 140, top: 475, width: 170, fontSize: 20,
-                fontFamily: 'Montserrat', fontWeight: '900', fill: '#ffffff',
-                backgroundColor: '#ec4899', textAlign: 'center', padding: 8
-            });
-
-            // % Desconto
-            objBadgePct = new fabric.Textbox('⚡ 20% DE DESCONTO', {
-                left: 20, top: 445, width: 170, fontSize: 12,
-                fontFamily: 'Montserrat', fontWeight: '900', fill: '#ffffff',
-                backgroundColor: '#db2777', textAlign: 'center', angle: -2, padding: 5
-            });
-
-            // Faixa
-            objFaixa = new fabric.Textbox('💕 Garanta já o seu! 💕', {
-                left: 20, top: 545, width: 440, fontSize: 16,
-                fontFamily: 'Caveat', fontWeight: 'bold', fill: '#ffffff',
-                backgroundColor: '#f43f5e', textAlign: 'center', padding: 6
-            });
-
-            canvas.add(objSelo, objTitulo, objBadgePct, objDe, objPor, objFaixa);
-            canvas.renderAll();
-        }
-
-        // 🚨 IMPORTAR DO CARDÁPIO COM 1 CLIQUE 🚨
+        // 🚨 3. IMPORTAR DO CARDÁPIO (ATUALIZAÇÃO INSTANTÂNEA) 🚨
         function importarDoCardapio(id) {
             if(!id) return;
             const p = produtosCatalogo.find(x => x.id === parseInt(id));
             if(!p) return;
 
-            // 1. Atualiza os campos de texto
+            // 1. Atualiza o input e o título no canvas
             document.getElementById('inp-titulo').value = p.nome.toUpperCase();
             if(objTitulo) {
                 objTitulo.set('text', p.nome.toUpperCase());
             }
 
-            // 2. Atualiza preços e cálculos
+            // 2. Preços e Desconto
             const deVal = `R$ ${p.preco_venda.toFixed(2).replace('.', ',')}`;
             document.getElementById('inp-de').value = deVal;
             sincronizarPreco('de', deVal);
 
-            // 3. Atualiza a imagem do produto no canvas!
+            // 3. Carrega a foto do item do cardápio imediatamente no Canvas
             if(p.imagem_url && p.imagem_url.trim() !== '') {
                 carregarFotoNoCanvas(p.imagem_url);
             }
@@ -453,29 +478,45 @@
                 por = de * (1 - (pct / 100));
                 document.getElementById('inp-por').value = `R$ ${por.toFixed(2).replace('.', ',')}`;
             }
+        }
 
-            if(objDe) objDe.set('text', `De: R$ ${de.toFixed(2).replace('.', ',')}`);
-            if(objPor) objPor.set('text', `POR R$ ${por.toFixed(2).replace('.', ',')}`);
-            if(objBadgePct) objBadgePct.set('text', `⚡ ${pct}% DE DESCONTO`);
+        function criarTextosAgencia() {
+            objTitulo = new fabric.Textbox('Doces que encantam\nem cada colherada!', {
+                left: 30, top: 30, width: 320, fontSize: 34,
+                fontFamily: 'Caveat', fontWeight: 'bold', fill: '#be185d',
+                lineHeight: 0.9,
+                shadow: new fabric.Shadow({ color: 'rgba(255,255,255,0.8)', blur: 4, offsetX: 1, offsetY: 1 })
+            });
+
+            objBilhete = new fabric.Textbox('Feitos com\nmuito carinho! 💕', {
+                left: 320, top: 140, width: 140, fontSize: 18,
+                fontFamily: 'Caveat', fontWeight: 'bold', fill: '#9d174d',
+                lineHeight: 0.9, angle: -5
+            });
+
+            const selo1 = new fabric.Textbox('🧁\nIngredientes\nde qualidade', {
+                left: 30, top: 480, width: 120, fontSize: 11,
+                fontFamily: 'Montserrat', fontWeight: 'bold', fill: '#831843', textAlign: 'center', lineHeight: 1.1
+            });
+            const selo2 = new fabric.Textbox('💖\nSabor que\nconquista', {
+                left: 180, top: 480, width: 120, fontSize: 11,
+                fontFamily: 'Montserrat', fontWeight: 'bold', fill: '#831843', textAlign: 'center', lineHeight: 1.1
+            });
+            const selo3 = new fabric.Textbox('😊\nPerfeito para\ntoda ocasião', {
+                left: 330, top: 480, width: 120, fontSize: 11,
+                fontFamily: 'Montserrat', fontWeight: 'bold', fill: '#831843', textAlign: 'center', lineHeight: 1.1
+            });
+
+            objFaixa = new fabric.Textbox('💕 Garanta já o seu! 💕', {
+                left: 50, top: 545, width: 380, fontSize: 18,
+                fontFamily: 'Caveat', fontWeight: 'bold', fill: '#ffffff',
+                backgroundColor: '#f43f5e', textAlign: 'center', padding: 6
+            });
+
+            canvas.add(objTitulo, objBilhete, selo1, selo2, selo3, objFaixa);
             canvas.renderAll();
         }
 
-        function definirModoPreco(modo) {
-            if(!objDe || !objPor || !objBadgePct) return;
-            objDe.set('visible', modo === 'ambos' || modo === 'preco');
-            objPor.set('visible', modo === 'ambos' || modo === 'preco');
-            objBadgePct.set('visible', modo === 'ambos' || modo === 'pct');
-            canvas.renderAll();
-        }
-
-        function atualizarTextoObjeto(tipo, val) {
-            if(tipo === 'titulo' && objTitulo) objTitulo.set('text', val.toUpperCase());
-            if(tipo === 'selo' && objSelo) objSelo.set('text', val.toUpperCase());
-            if(tipo === 'faixa' && objFaixa) objFaixa.set('text', val.toUpperCase());
-            canvas.renderAll();
-        }
-
-        // 🚨 ALTERNADOR DE MARCAS: ART'S BURGUER VS ART'S CAKE 🚨
         function alternarMarca(marca) {
             marcaAtiva = marca;
             const bCake = document.getElementById('btn-sel-cake');
@@ -486,33 +527,21 @@
                 bCake.className = "p-3 rounded-2xl border-2 border-cake-500 bg-pink-50 dark:bg-pink-500/10 text-left transition-all flex items-center space-x-2";
                 bBurguer.className = "p-3 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-left transition-all flex items-center space-x-2 opacity-60";
                 wrapper.style.borderColor = '#ec4899';
-                canvas.backgroundColor = '#fff1f2';
-
-                if(objTitulo) objTitulo.set({ fontFamily: 'Playfair Display', fontStyle: 'italic', fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.55)' });
-                if(objSelo) objSelo.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
-                if(objPor) objPor.set({ backgroundColor: '#ec4899', fill: '#ffffff' });
-                if(objBadgePct) objBadgePct.set({ backgroundColor: '#db2777', fill: '#ffffff' });
-                if(objFaixa) objFaixa.set({ backgroundColor: '#f43f5e', fill: '#ffffff' });
+                setCorFundoCanvas('#fff1f2');
 
                 if(logoCakeBase64) setLogoFlyer(logoCakeBase64);
             } else {
                 bBurguer.className = "p-3 rounded-2xl border-2 border-brand-500 bg-amber-50 dark:bg-amber-500/10 text-left transition-all flex items-center space-x-2";
                 bCake.className = "p-3 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-left transition-all flex items-center space-x-2 opacity-60";
                 wrapper.style.borderColor = '#f59e0b';
-                canvas.backgroundColor = '#0f172a';
-
-                if(objTitulo) objTitulo.set({ fontFamily: 'Montserrat', fontStyle: 'normal', fill: '#ffffff', backgroundColor: 'rgba(0,0,0,0.7)' });
-                if(objSelo) objSelo.set({ backgroundColor: '#ff4757', fill: '#ffffff' });
-                if(objPor) objPor.set({ backgroundColor: '#f59e0b', fill: '#000000' });
-                if(objBadgePct) objBadgePct.set({ backgroundColor: '#dc2626', fill: '#fef08a' });
-                if(objFaixa) objFaixa.set({ backgroundColor: '#000000', fill: '#f59e0b' });
+                setCorFundoCanvas('#0f172a');
 
                 if(logoBurguerBase64) setLogoFlyer(logoBurguerBase64);
             }
             canvas.renderAll();
         }
 
-        // 🚨 GRADE DE FOTOS (COLAGEM INSTAGRAM) 🚨
+        // 🚨 GRADE DE FOTOS (INSTAGRAM) 🚨
         function definirLayoutGrade(qtd) {
             [1,2,3,4].forEach(n => {
                 const b = document.getElementById(`btn-col-${n}`);
@@ -567,7 +596,7 @@
             canvas.renderAll();
         }
 
-        // 🚨 VARINHA CONTÍNUA 🚨
+        // 🚨 VARINHA MÁGICA CONTÍNUA 🚨
         function alternarVarinhaContinua(ligar) {
             modoVarinhaAtivo = ligar;
             const btn = document.getElementById('btn-varinha-ligar');
@@ -602,7 +631,7 @@
                     objFotoPrincipal = img;
                     img.set({ left: l, top: t, originX: 'center', originY: 'center', scaleX: sx, scaleY: sy, selectable: true });
                     canvas.add(img);
-                    canvas.moveTo(img, 0);
+                    canvas.moveTo(img, 1);
                     canvas.renderAll();
                 });
             } else {
@@ -652,14 +681,14 @@
                 objFotoPrincipal = novaImg;
                 novaImg.set({ left: l, top: t, originX: 'center', originY: 'center', scaleX: sx, scaleY: sy, cornerColor: '#10b981', borderColor: '#10b981', cornerSize: 10, selectable: true });
                 canvas.add(novaImg);
-                canvas.moveTo(novaImg, 0);
+                canvas.moveTo(novaImg, 1);
                 canvas.renderAll();
             });
         }
 
-        // 🚨 IA GEMINI PRO ROBUSTA 🚨
+        // IA Gemini (Textos)
         async function pedirIdeiasAoGemini() {
-            const titAtual = objTitulo ? objTitulo.text : "Oferta Especial";
+            const titAtual = objTitulo ? objTitulo.text : "Doces que encantam";
             const btn = document.getElementById('btn-gerar-ia');
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Criando...';
             btn.disabled = true;
@@ -675,59 +704,17 @@
                     const c = document.getElementById('container-respostas-ia');
                     c.classList.remove('hidden');
                     document.getElementById('ai-lista-titulos').innerHTML = data.titulos.map(t => `
-                        <button type="button" onclick="document.getElementById('inp-titulo').value='${t.replace(/'/g, "\\'")}'; if(objTitulo){objTitulo.set('text', '${t.replace(/'/g, "\\'")}'); canvas.renderAll();}" class="w-full text-left text-xs font-bold p-2 bg-slate-50 dark:bg-slate-800 rounded-xl hover:border-purple-500 border border-slate-200 dark:border-slate-700 flex justify-between">
-                            <span>${t}</span> <i class="ph-bold ph-arrow-down-left text-purple-500"></i>
-                        </button>
-                    `).join('');
-                } else {
-                    // Sugestões inteligentes automáticas caso a chave não esteja ativa no Render
-                    const c = document.getElementById('container-respostas-ia');
-                    c.classList.remove('hidden');
-                    const sugestoes = marcaAtiva === 'cake' 
-                        ? ["BOLO SUPREME: PECADO DE NINHO & PUDIM", "DOCE PERFEITO: EXPLOSÃO DE SABOR", "A SOBREMESA QUE VOCÊ MERECE HOJE"]
-                        : ["SMASH BURGER DUPLO COM CHEDDAR DERRETIDO", "MONSTRO DA BRASA COM BACON CROCANTE", "O MELHOR BURGER DA CIDADE SÓ HOJE"];
-                    document.getElementById('ai-lista-titulos').innerHTML = sugestoes.map(t => `
-                        <button type="button" onclick="document.getElementById('inp-titulo').value='${t}'; if(objTitulo){objTitulo.set('text', '${t}'); canvas.renderAll();}" class="w-full text-left text-xs font-bold p-2 bg-slate-50 dark:bg-slate-800 rounded-xl hover:border-purple-500 border border-slate-200 dark:border-slate-700 flex justify-between">
+                        <button type="button" onclick="if(objTitulo){objTitulo.set('text', '${t.replace(/'/g, "\\'")}'); canvas.renderAll();}" class="w-full text-left text-xs font-bold p-2 bg-slate-50 dark:bg-slate-800 rounded-xl hover:border-purple-500 border border-slate-200 dark:border-slate-700 flex justify-between">
                             <span>${t}</span> <i class="ph-bold ph-arrow-down-left text-purple-500"></i>
                         </button>
                     `).join('');
                 }
-            } catch(e) {
-                alert("Copiloto ativado em modo offline.");
-            } finally {
+            } catch(e) {} finally {
                 btn.innerHTML = '<i class="ph-bold ph-sparkle mr-2 text-base"></i> Gerar Textos com Gemini';
                 btn.disabled = false;
             }
         }
 
-        async function gerarFotoDoZeroIA() {
-            const prompt = document.getElementById('ai-prompt-imagem').value.trim();
-            if(!prompt) return alert("Digite o doce ou lanche desejado!");
-
-            const btn = document.getElementById('btn-gerar-img-ia');
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Criando Fotografia 4K...';
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/api/marketing/gerar-imagem-ia', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ prompt: prompt, aspect_ratio: "1:1" })
-                });
-                const data = await res.json();
-                if(res.ok && data.imagem_base64) {
-                    carregarFotoNoCanvas(data.imagem_base64);
-                    alert("Foto criada com sucesso sem marcas d'água!");
-                }
-            } catch(e) {
-                alert("Erro ao conectar ao gerador.");
-            } finally {
-                btn.innerHTML = '<i class="ph-bold ph-magic-wand mr-2 text-base"></i> Gerar Foto Profissional';
-                btn.disabled = false;
-            }
-        }
-
-        // Carregar Foto
         function carregarFotoNoCanvas(url) {
             fabric.Image.fromURL(url, function(img) {
                 if(objFotoPrincipal) canvas.remove(objFotoPrincipal);
@@ -743,7 +730,7 @@
                 });
 
                 canvas.add(img);
-                canvas.moveTo(img, 0);
+                canvas.moveTo(img, 1);
                 canvas.renderAll();
                 salvarEstadoFoto();
             }, { crossOrigin: 'anonymous' });
@@ -770,7 +757,7 @@
                         img.src = config.logo_url;
                         img.classList.remove('hidden');
                         document.getElementById('header-logo-letra').classList.add('hidden');
-                        if(!logoBurguerBase64) logoBurguerBase64 = config.logo_url;
+                        setLogoFlyer(config.logo_url);
                     }
                 }).catch(()=>{});
         }
@@ -787,11 +774,10 @@
             }, { crossOrigin: 'anonymous' });
         }
 
-        // Navegação de Abas
         function mudarAba(aba, el) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-            ['item', 'grade', 'varinha', 'ia', 'estilo'].forEach(id => {
+            ['fundo', 'item', 'grade', 'varinha', 'ia'].forEach(id => {
                 const p = document.getElementById(`painel-${id}`);
                 if(p) p.classList.toggle('hidden', id !== aba);
             });
@@ -805,23 +791,6 @@
         function trazerFrente() {
             const a = canvas.getActiveObject();
             if(a) { canvas.bringToFront(a); canvas.renderAll(); }
-        }
-
-        function aplicarFonte(f) {
-            const obj = canvas.getActiveObject() || objTitulo;
-            if(obj) { obj.set('fontFamily', f); canvas.renderAll(); }
-        }
-        function aplicarCorLetra(c) {
-            const obj = canvas.getActiveObject() || objTitulo;
-            if(obj) { obj.set('fill', c); canvas.renderAll(); }
-        }
-        function aplicarCorFundo(c) {
-            const obj = canvas.getActiveObject() || objTitulo;
-            if(obj) { obj.set('backgroundColor', c); canvas.renderAll(); }
-        }
-        function tornarCaixaTransparente() {
-            const obj = canvas.getActiveObject() || objTitulo;
-            if(obj) { obj.set('backgroundColor', 'transparent'); canvas.renderAll(); }
         }
 
         function baixarImagemPNG() {
