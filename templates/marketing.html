@@ -540,3 +540,426 @@
         // 🚨 2. GRADE DE FOTOS (INSTAGRAM LAYOUT) 🚨
         function definirLayoutGrade(qtd) {
             [1,2,3,4].forEach(n => {
+                const b = document.getElementById(`btn-col-${n}`);
+                if(n === qtd) b.className = "p-3 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-500/10 text-xs font-black text-center text-brand-500";
+                else b.className = "p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-black text-center";
+            });
+
+            const containerSlots = document.getElementById('container-slots-grade');
+            if(qtd === 1) {
+                containerSlots.innerHTML = `
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Subir Foto Principal:</p>
+                    <input type="file" accept="image/*" onchange="subirFotoParaGrade(event, 0)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-brand-500 file:text-white cursor-pointer">`;
+            } else if(qtd === 2) {
+                containerSlots.innerHTML = `
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Foto 1 (Esquerda):</p>
+                    <input type="file" accept="image/*" onchange="subirFotoParaGrade(event, 0)" class="w-full text-xs text-slate-400 mb-2">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Foto 2 (Direita):</p>
+                    <input type="file" accept="image/*" onchange="subirFotoParaGrade(event, 1)" class="w-full text-xs text-slate-400">`;
+            } else {
+                containerSlots.innerHTML = `
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Subir Fotos da Colagem (${qtd} slots):</p>
+                    ${Array.from({length: qtd}).map((_, i) => `<input type="file" accept="image/*" onchange="subirFotoParaGrade(event, ${i})" class="w-full text-xs text-slate-400 mb-1">`).join('')}`;
+            }
+        }
+
+        function subirFotoParaGrade(event, slotIndex) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if(slotIndex === 0) {
+                        carregarFotoNoCanvas(e.target.result);
+                    } else {
+                        fabric.Image.fromURL(e.target.result, function(img) {
+                            const scale = 180 / Math.max(img.width, img.height);
+                            img.set({ left: 80 + (slotIndex * 80), top: 280, scaleX: scale, scaleY: scale, selectable: true });
+                            canvas.add(img);
+                            canvas.moveTo(img, 1);
+                            canvas.renderAll();
+                        });
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function ajustarZoomFotoGrade(val) {
+            if(!objFotoPrincipal) return;
+            document.getElementById('lbl-zoom-grade').innerText = `${val}%`;
+            const baseScale = 360 / Math.max(objFotoPrincipal.width, objFotoPrincipal.height);
+            objFotoPrincipal.scale(baseScale * (parseInt(val) / 100));
+            canvas.renderAll();
+        }
+
+        // 🚨 3. VARINHA MÁGICA CONTÍNUA 🚨
+        function alternarVarinhaContinua(ligar) {
+            modoVarinhaAtivo = ligar;
+            const btn = document.getElementById('btn-varinha-ligar');
+            const badge = document.getElementById('badge-status-varinha');
+            if(ligar) {
+                btn.classList.add('ring-4', 'ring-amber-300', 'animate-pulse');
+                badge.innerText = "Varinha Ativa (Toque para apagar)";
+                badge.className = "text-[10px] font-black text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-300 animate-pulse";
+                canvas.defaultCursor = 'crosshair';
+            } else {
+                btn.classList.remove('ring-4', 'ring-amber-300', 'animate-pulse');
+                badge.innerText = "Modo Normal";
+                badge.className = "text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700";
+                canvas.defaultCursor = 'default';
+            }
+        }
+
+        function salvarEstadoFoto() {
+            if(!objFotoPrincipal) return;
+            historicoVarinha.push(objFotoPrincipal.toDataURL());
+            if(historicoVarinha.length > 8) historicoVarinha.shift();
+        }
+
+        function desfazerVarinha() {
+            if(historicoVarinha.length > 1) {
+                historicoVarinha.pop();
+                const anterior = historicoVarinha[historicoVarinha.length - 1];
+                fabric.Image.fromURL(anterior, function(img) {
+                    const l = objFotoPrincipal.left; const t = objFotoPrincipal.top;
+                    const sx = objFotoPrincipal.scaleX; const sy = objFotoPrincipal.scaleY;
+                    canvas.remove(objFotoPrincipal);
+                    objFotoPrincipal = img;
+                    img.set({ left: l, top: t, originX: 'center', originY: 'center', scaleX: sx, scaleY: sy, selectable: true });
+                    canvas.add(img);
+                    canvas.moveTo(img, 0);
+                    canvas.renderAll();
+                });
+            } else {
+                alert("Nenhum toque anterior para desfazer.");
+            }
+        }
+
+        function executarVarinhaMagicaContinua(event) {
+            if (!objFotoPrincipal) return;
+            salvarEstadoFoto();
+
+            const pointer = canvas.getPointer(event);
+            const imgEl = objFotoPrincipal.getElement();
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = imgEl.naturalWidth || imgEl.width;
+            tempCanvas.height = imgEl.naturalHeight || imgEl.height;
+            const ctx = tempCanvas.getContext('2d');
+            ctx.drawImage(imgEl, 0, 0);
+
+            const matrix = objFotoPrincipal.calcTransformMatrix();
+            const inverted = fabric.util.invertTransform(matrix);
+            const pointInImg = fabric.util.transformPoint(new fabric.Point(pointer.x, pointer.y), inverted);
+
+            const x = Math.floor(pointInImg.x + (tempCanvas.width / 2));
+            const y = Math.floor(pointInImg.y + (tempCanvas.height / 2));
+
+            const imgData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            const data = imgData.data;
+            if (x < 0 || y < 0 || x >= tempCanvas.width || y >= tempCanvas.height) return;
+
+            const targetIdx = (y * tempCanvas.width + x) * 4;
+            const targetR = data[targetIdx];
+            const targetG = data[targetIdx + 1];
+            const targetB = data[targetIdx + 2];
+            const tolerancia = parseInt(document.getElementById('rng-tolerancia').value) || 55;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const diff = Math.abs(data[i] - targetR) + Math.abs(data[i+1] - targetG) + Math.abs(data[i+2] - targetB);
+                if (diff < tolerancia * 3) data[i + 3] = 0;
+            }
+
+            ctx.putImageData(imgData, 0, 0);
+            fabric.Image.fromURL(tempCanvas.toDataURL(), function(novaImg) {
+                const l = objFotoPrincipal.left; const t = objFotoPrincipal.top;
+                const sx = objFotoPrincipal.scaleX; const sy = objFotoPrincipal.scaleY;
+                canvas.remove(objFotoPrincipal);
+                objFotoPrincipal = novaImg;
+                novaImg.set({ left: l, top: t, originX: 'center', originY: 'center', scaleX: sx, scaleY: sy, cornerColor: '#10b981', borderColor: '#10b981', cornerSize: 10, selectable: true });
+                canvas.add(novaImg);
+                canvas.moveTo(novaImg, 0);
+                canvas.renderAll();
+            });
+        }
+
+        // 🚨 4. GEMINI IA (COMANDO LIVRE COMO NA WEB) 🚨
+        function preencherComando(texto) {
+            document.getElementById('ai-comando-livre').value = texto;
+        }
+
+        async function executarComandoGemini() {
+            let comando = document.getElementById('ai-comando-livre').value.trim();
+            const titAtual = objTitulo ? objTitulo.text.replace(/\n/g, ' ') : "Item da Foto";
+
+            if (!comando) {
+                comando = `crie uma promoção irresistível do ${titAtual}`;
+                document.getElementById('ai-comando-livre').value = comando;
+            }
+
+            const btn = document.getElementById('btn-gerar-ia');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Gemini pensando...';
+            btn.disabled = true;
+
+            const payload = {
+                comando: comando,
+                marca: marcaAtiva === 'cake' ? "Art's Cake (Confeitaria/Doces)" : "Art's Burguer (Hamburgueria)",
+                produto: titAtual
+            };
+
+            try {
+                const res = await fetch('/api/marketing/gerar-copy-ia', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok && data.titulos) {
+                    renderizarResultadosIa(data);
+                } else {
+                    gerarSugestoesLocais(comando, titAtual);
+                }
+            } catch (e) {
+                gerarSugestoesLocais(comando, titAtual);
+            } finally {
+                btn.innerHTML = txtOriginal;
+                btn.disabled = false;
+            }
+        }
+
+        function renderizarResultadosIa(data) {
+            const c = document.getElementById('container-respostas-ia');
+            c.classList.remove('hidden');
+
+            document.getElementById('ai-lista-titulos').innerHTML = (data.titulos || []).map(t => `
+                <button type="button" onclick="aplicarTextoIa('titulo', '${t.replace(/'/g, "\\'")}')" class="w-full text-left text-xs font-bold p-2 bg-white dark:bg-slate-800 rounded-xl hover:border-purple-500 border border-slate-200 dark:border-slate-700 flex justify-between items-center transition-all">
+                    <span>${t}</span> <i class="ph-bold ph-arrow-elbow-down-left text-purple-500"></i>
+                </button>
+            `).join('');
+
+            document.getElementById('ai-lista-bilhetes').innerHTML = (data.bilhetes || []).map(b => `
+                <button type="button" onclick="aplicarTextoIa('bilhete', '${b.replace(/'/g, "\\'")}')" class="w-full text-left text-xs font-bold p-2 bg-white dark:bg-slate-800 rounded-xl hover:border-pink-500 border border-slate-200 dark:border-slate-700 flex justify-between items-center transition-all">
+                    <span>${b}</span> <i class="ph-bold ph-arrow-elbow-down-left text-pink-500"></i>
+                </button>
+            `).join('');
+
+            document.getElementById('ai-lista-faixas').innerHTML = (data.faixas || []).map(f => `
+                <button type="button" onclick="aplicarTextoIa('faixa', '${f.replace(/'/g, "\\'")}')" class="w-full text-left text-xs font-bold p-2 bg-white dark:bg-slate-800 rounded-xl hover:border-emerald-500 border border-slate-200 dark:border-slate-700 flex justify-between items-center transition-all">
+                    <span>${f}</span> <i class="ph-bold ph-arrow-elbow-down-left text-emerald-500"></i>
+                </button>
+            `).join('');
+        }
+
+        function gerarSugestoesLocais(comando, item) {
+            const isCake = marcaAtiva === 'cake';
+            const dataSimulada = {
+                titulos: isCake ? [
+                    `${item.toUpperCase()}: AMOR EM CADA PEDAÇO! 💕`,
+                    `A SOBREMESA PERFEITA: ${item.toUpperCase()}`,
+                    `DOCES QUE ENCANTAM: ${item.toUpperCase()} ✨`
+                ] : [
+                    `${item.toUpperCase()}: SUCULÊNCIA NA BRASA! 🔥`,
+                    `O MELHOR DA CASA: ${item.toUpperCase()}`,
+                    `PROMOÇÃO RELÂMPAGO: ${item.toUpperCase()} 🍔`
+                ],
+                bilhetes: isCake ? [
+                    "Feito com muito carinho! 💕",
+                    "Adoce o seu dia hoje! ✨"
+                ] : [
+                    "Sabor de brasa de verdade! 🔥",
+                    "Crocante e quentinho! 🍔"
+                ],
+                faixas: [
+                    "💕 Garanta já o seu pelo WhatsApp! 💕",
+                    "⚡ Peça pelo nosso Cardápio Online!"
+                ]
+            };
+            renderizarResultadosIa(dataSimulada);
+        }
+
+        function aplicarTextoIa(tipo, texto) {
+            if (tipo === 'titulo' && objTitulo) {
+                document.getElementById('inp-titulo').value = texto;
+                objTitulo.set('text', texto);
+            } else if (tipo === 'bilhete' && objBilhete) {
+                objBilhete.set('text', texto);
+            } else if (tipo === 'faixa' && objFaixa) {
+                document.getElementById('inp-faixa').value = texto;
+                objFaixa.set('text', texto);
+            }
+            canvas.renderAll();
+        }
+
+        // Foto & Câmera
+        function carregarFotoNoCanvas(url) {
+            fabric.Image.fromURL(url, function(img) {
+                if(objFotoPrincipal) canvas.remove(objFotoPrincipal);
+                objFotoPrincipal = img;
+
+                const scale = 360 / Math.max(img.width, img.height);
+                img.set({
+                    left: canvas.width / 2, top: 300,
+                    originX: 'center', originY: 'center',
+                    scaleX: scale, scaleY: scale,
+                    cornerColor: '#10b981', borderColor: '#10b981', cornerSize: 10,
+                    selectable: true
+                });
+
+                canvas.add(img);
+                canvas.moveTo(img, 0);
+                canvas.renderAll();
+                salvarEstadoFoto();
+            }, { crossOrigin: 'anonymous' });
+        }
+
+        async function gerarFotoDoZeroIA() {
+            const prompt = document.getElementById('ai-prompt-imagem').value.trim();
+            if(!prompt) return alert("Digite o doce ou lanche desejado!");
+
+            const btn = document.getElementById('btn-gerar-img-ia');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Criando Fotografia 4K...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/marketing/gerar-imagem-ia', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ prompt: prompt, aspect_ratio: "1:1" })
+                });
+                const data = await res.json();
+                if(res.ok && data.imagem_base64) {
+                    carregarFotoNoCanvas(data.imagem_base64);
+                    alert("Foto criada com sucesso sem marcas d'água!");
+                }
+            } catch(e) {
+                alert("Erro ao conectar ao gerador.");
+            } finally {
+                btn.innerHTML = '<i class="ph-bold ph-magic-wand mr-2 text-base"></i> Gerar Fotografia sem Marca d\'Água';
+                btn.disabled = false;
+            }
+        }
+
+        function carregarCardapio() {
+            fetch('/api/cardapio')
+                .then(r => r.json())
+                .then(data => {
+                    produtosCatalogo = data;
+                    const sel = document.getElementById('sel-cardapio');
+                    sel.innerHTML = '<option value="">-- Selecione um Lanche ou Doce --</option>' + 
+                        data.map(p => `<option value="${p.id}">${p.nome} - R$ ${p.preco_venda.toFixed(2).replace('.',',')}</option>`).join('');
+                }).catch(()=>{});
+        }
+
+        function carregarConfiguracoes() {
+            fetch('/api/gestao/configuracoes')
+                .then(r => r.json())
+                .then(config => {
+                    if(config.nome_empresa) document.getElementById('header-nome-loja').innerText = `${config.nome_empresa} Studio Pro`;
+                    if(config.logo_url && config.logo_url.trim() !== '') {
+                        const img = document.getElementById('header-logo-img');
+                        img.src = config.logo_url;
+                        img.classList.remove('hidden');
+                        document.getElementById('header-logo-letra').classList.add('hidden');
+                        if(!logoBurguerBase64) logoBurguerBase64 = config.logo_url;
+                    }
+                }).catch(()=>{});
+        }
+
+        function setLogoFlyer(url) {
+            fabric.Image.fromURL(url, function(img) {
+                if(objLogo) canvas.remove(objLogo);
+                objLogo = img;
+                const scale = 75 / Math.max(img.width, img.height);
+                img.set({ left: 375, top: 20, scaleX: scale, scaleY: scale, cornerColor: '#ec4899', cornerSize: 8 });
+                canvas.add(img);
+                canvas.bringToFront(img);
+                canvas.renderAll();
+            }, { crossOrigin: 'anonymous' });
+        }
+
+        function mudarAba(aba, el) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            ['item', 'ia', 'varinha', 'grade', 'estilo'].forEach(id => {
+                const p = document.getElementById(`painel-${id}`);
+                if(p) p.classList.toggle('hidden', id !== aba);
+            });
+            if(aba !== 'varinha') alternarVarinhaContinua(false);
+        }
+
+        function centralizarElemento() {
+            const a = canvas.getActiveObject();
+            if(a) { canvas.centerObjectH(a); canvas.renderAll(); }
+        }
+        function trazerFrente() {
+            const a = canvas.getActiveObject();
+            if(a) { canvas.bringToFront(a); canvas.renderAll(); }
+        }
+
+        function aplicarFonte(f) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('fontFamily', f); canvas.renderAll(); }
+        }
+        function aplicarCorLetra(c) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('fill', c); canvas.renderAll(); }
+        }
+        function aplicarCorFundo(c) {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('backgroundColor', c); canvas.renderAll(); }
+        }
+        function tornarCaixaTransparente() {
+            const obj = canvas.getActiveObject() || objTitulo;
+            if(obj) { obj.set('backgroundColor', 'transparent'); canvas.renderAll(); }
+        }
+
+        function baixarImagemPNG() {
+            canvas.discardActiveObject();
+            canvas.renderAll();
+            setTimeout(() => {
+                const dataURL = canvas.toDataURL({ format: 'png', multiplier: 2 });
+                const link = document.createElement('a');
+                link.download = `Flyer_${marcaAtiva.toUpperCase()}_Promo.png`;
+                link.href = dataURL;
+                link.click();
+            }, 100);
+        }
+
+        function gerarVideoAnimado() {
+            const btn = document.getElementById('btn-video');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Gravando 5s...';
+            btn.disabled = true;
+
+            canvas.discardActiveObject();
+            canvas.renderAll();
+
+            const stream = document.getElementById('canvas-studio').captureStream(30);
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+                a.download = `Status_${marcaAtiva}_Animado.webm`;
+                a.click();
+                btn.innerHTML = '<i class="ph-bold ph-video-camera text-lg mr-2"></i> Criar Vídeo (Status)';
+                btn.disabled = false;
+            };
+
+            recorder.start();
+            let frame = 0;
+            function animar() {
+                frame++;
+                if(objFotoPrincipal) objFotoPrincipal.scale(objFotoPrincipal.scaleX * 1.0006);
+                if(objFaixa) objFaixa.set('scaleX', 1 + 0.03 * Math.sin(frame * 0.15));
+                canvas.renderAll();
+
+                if(frame < 150) requestAnimationFrame(animar);
+                else recorder.stop();
+            }
+            animar();
+        }
+    </script>
+</body>
+</html>
