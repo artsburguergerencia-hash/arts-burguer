@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from sqlalchemy import (
     create_engine, Column, Integer, String, Float, 
     Boolean, ForeignKey, Date, DateTime, text, JSON
@@ -17,15 +17,15 @@ engine = create_engine(
     DATABASE_URL, 
     connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
     pool_pre_ping=True,      # Evita erro de conexão fechada pelo SSL do Neon
-    pool_recycle=300,        # Recicla as conexões a cada 5 min (ideal para o Neon)
-    pool_size=5,             # Seguro para o plano gratuito
+    pool_recycle=300,        # Recicla conexões a cada 5 min
+    pool_size=5,             
     max_overflow=10
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # ==========================================
-# 1. CONFIGURAÇÕES DA LOJA
+# 1. CONFIGURAÇÕES DA LOJA & API KEYS
 # ==========================================
 class ConfiguracaoLojaModel(Base):
     __tablename__ = "configuracoes_loja"
@@ -54,13 +54,17 @@ class ConfiguracaoLojaModel(Base):
     fidelidade_resgate = Column(Float, default=0.0)
     fidelidade_elegibilidade = Column(String, default="TODOS")
 
-    # NOVAS COLUNAS: Integrações e API Keys Salvas
+    # API Keys persistidas no banco
     mp_access_token = Column(String, default="")
     mp_public_key = Column(String, default="")
     wa_api_url = Column(String, default="")
     wa_token = Column(String, default="")
 
-    class FornecedorModel(Base):
+
+# ==========================================
+# 2. FORNECEDORES & CONTAS A PAGAR
+# ==========================================
+class FornecedorModel(Base):
     """Cadastro de Fornecedores com representante e link de compras."""
     __tablename__ = "fornecedores"
     __table_args__ = {'extend_existing': True}
@@ -71,11 +75,13 @@ class ConfiguracaoLojaModel(Base):
     telefone = Column(String, nullable=True, default="")
     contato = Column(String, nullable=True, default="")
     categoria = Column(String, default="Geral")
-    site_pedidos = Column(String, default="")          # Link do site de compras
-    representante_nome = Column(String, default="")    # Nome do vendedor/rep
+    site_pedidos = Column(String, default="")          # Link direto do site de compras
+    representante_nome = Column(String, default="")    # Nome do vendedor
     representante_contato = Column(String, default="") # WhatsApp do vendedor
 
-    class ContaPagarModel(Base):
+
+class ContaPagarModel(Base):
+    """Contas a Pagar com desvinculação segura (ondelete SET NULL)."""
     __tablename__ = "contas_pagar"
     __table_args__ = {'extend_existing': True}
 
@@ -88,7 +94,11 @@ class ConfiguracaoLojaModel(Base):
     status = Column(String, default="Pendente")
     tipo_despesa = Column(String, default="Empresa")
 
-    class SorteioModel(Base):
+
+# ==========================================
+# 3. SORTEIOS / NÚMEROS DA SORTE
+# ==========================================
+class SorteioModel(Base):
     """Módulo de Sorteios Inteligentes por Lanche/Produto."""
     __tablename__ = "sorteios_promocoes"
     __table_args__ = {'extend_existing': True}
@@ -96,7 +106,7 @@ class ConfiguracaoLojaModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     titulo = Column(String, nullable=False)
     premio = Column(String, nullable=False)
-    produto_id_obrigatorio = Column(Integer, ForeignKey("produtos.id"), nullable=True) # Null = Qualquer item
+    produto_id_obrigatorio = Column(Integer, ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True) # Null = Qualquer item
     data_inicio = Column(Date, nullable=False)
     data_fim = Column(Date, nullable=False)
     ativo = Column(Boolean, default=True)
@@ -105,11 +115,11 @@ class ConfiguracaoLojaModel(Base):
     cliente_vencedor_telefone = Column(String, nullable=True)
     sorteado_em = Column(DateTime, nullable=True)
 
+
 # ==========================================
-# 2. CLIENTE UNIFICADO (Fim da Guerra dos Clientes!)
+# 4. CLIENTE UNIFICADO
 # ==========================================
 class ClienteModel(Base):
-    """Modelo único de clientes: reúne os campos do PDV e do Cardápio."""
     __tablename__ = "clientes"
     __table_args__ = {'extend_existing': True}
     
@@ -124,7 +134,7 @@ class ClienteModel(Base):
     bloqueado = Column(Boolean, default=False)
     permite_fiado = Column(Boolean, default=False)
     
-    # Endereço completo unificado
+    # Endereço
     cep = Column(String, default="")
     endereco = Column(String, default="")
     logradouro = Column(String, default="")
@@ -132,17 +142,17 @@ class ClienteModel(Base):
     bairro = Column(String, default="")
     complemento = Column(String, default="")
     
-    # Carteira de fidelidade
+    # Fidelidade
     pontos = Column(Integer, default=0)
     pontos_fidelidade = Column(Integer, default=0)
     cashback = Column(Float, default=0.0)
     saldo_cashback = Column(Float, default=0.0)
 
-# Alias para compatibilidade: se algum arquivo importar "Cliente", aponta para o mesmo modelo
 Cliente = ClienteModel
 
+
 # ==========================================
-# 3. RECURSOS HUMANOS E CARGOS
+# 5. RECURSOS HUMANOS E CARGOS
 # ==========================================
 class Cargo(Base):
     __tablename__ = "cargos"
@@ -252,7 +262,7 @@ class SolicitacaoFeriasModel(Base):
 
 
 # ==========================================
-# 4. INSUMOS, PRODUTOS E CARDÁPIO
+# 6. INSUMOS, PRODUTOS E CARDÁPIO
 # ==========================================
 class InsumoModel(Base):
     __tablename__ = "insumos"
@@ -286,8 +296,8 @@ class FichaTecnicaModel(Base):
     __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
-    produto_id = Column(Integer, ForeignKey("produtos.id"))
-    insumo_id = Column(Integer, ForeignKey("insumos.id"))
+    produto_id = Column(Integer, ForeignKey("produtos.id", ondelete="CASCADE"))
+    insumo_id = Column(Integer, ForeignKey("insumos.id", ondelete="CASCADE"))
     quantidade_necessaria = Column(Float)
 
 
@@ -296,7 +306,7 @@ class GrupoComplementoModel(Base):
     __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
-    produto_id = Column(Integer, ForeignKey("produtos.id"))
+    produto_id = Column(Integer, ForeignKey("produtos.id", ondelete="CASCADE"))
     nome = Column(String)
     obrigatorio = Column(Boolean, default=False)
     minimo_opcoes = Column(Integer, default=0)
@@ -309,20 +319,18 @@ class ItemComplementoModel(Base):
     __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
-    grupo_id = Column(Integer, ForeignKey("grupos_complementos.id"))
+    grupo_id = Column(Integer, ForeignKey("grupos_complementos.id", ondelete="CASCADE"))
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
 
 
 # ==========================================
-# 5. CUPONS, CAIXA E LOGÍSTICA
+# 7. CUPONS, CAIXA E LOGÍSTICA
 # ==========================================
 def data_infinita_str():
-    from datetime import timedelta
     return (datetime.utcnow() + timedelta(days=3650)).strftime("%Y-%m-%d")
 
 class CupomModel(Base):
-    """Modelo canônico e oficial de cupons de desconto."""
     __tablename__ = "cupons_desconto"
     __table_args__ = {'extend_existing': True}
     
@@ -341,7 +349,6 @@ class CupomModel(Base):
 
 
 class CaixaTurnoModel(Base):
-    """Modelo canônico e oficial de turnos do PDV."""
     __tablename__ = "caixa_turnos"
     __table_args__ = {'extend_existing': True}
     
@@ -367,10 +374,9 @@ class TaxaEntregaModel(Base):
 
 
 # ==========================================
-# 6. INICIALIZAÇÃO DO BANCO
+# 8. INICIALIZAÇÃO E BAIXA DE ESTOQUE
 # ==========================================
 def inicializar_banco():
-    """Garante que as tabelas e dados mestres existam no boot."""
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
@@ -405,9 +411,6 @@ def inicializar_banco():
 
 
 def processar_baixa_estoque(db, produto_id: int, quantidade_vendida: float):
-    """
-    Deduz os insumos da Ficha Técnica com trava pessimista (with_for_update) no PostgreSQL.
-    """
     fichas = db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).all()
     for f in fichas:
         insumo = db.query(InsumoModel).filter(InsumoModel.id == f.insumo_id).with_for_update().first()
