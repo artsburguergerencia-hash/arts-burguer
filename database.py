@@ -2,7 +2,7 @@ import os
 from datetime import datetime, date
 from sqlalchemy import (
     create_engine, Column, Integer, String, Float, 
-    Boolean, ForeignKey, Date, DateTime, text
+    Boolean, ForeignKey, Date, DateTime, text, JSON
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
@@ -54,6 +54,56 @@ class ConfiguracaoLojaModel(Base):
     fidelidade_resgate = Column(Float, default=0.0)
     fidelidade_elegibilidade = Column(String, default="TODOS")
 
+    # NOVAS COLUNAS: Integrações e API Keys Salvas
+    mp_access_token = Column(String, default="")
+    mp_public_key = Column(String, default="")
+    wa_api_url = Column(String, default="")
+    wa_token = Column(String, default="")
+
+    class FornecedorModel(Base):
+    """Cadastro de Fornecedores com representante e link de compras."""
+    __tablename__ = "fornecedores"
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(Integer, primary_key=True, index=True)
+    nome_fantasia = Column(String, nullable=False)
+    cnpj = Column(String, nullable=True)
+    telefone = Column(String, nullable=True, default="")
+    contato = Column(String, nullable=True, default="")
+    categoria = Column(String, default="Geral")
+    site_pedidos = Column(String, default="")          # Link do site de compras
+    representante_nome = Column(String, default="")    # Nome do vendedor/rep
+    representante_contato = Column(String, default="") # WhatsApp do vendedor
+
+    class ContaPagarModel(Base):
+    __tablename__ = "contas_pagar"
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(Integer, primary_key=True, index=True)
+    fornecedor_id = Column(Integer, ForeignKey("fornecedores.id", ondelete="SET NULL"), nullable=True)
+    descricao = Column(String, nullable=False) 
+    valor = Column(Float, nullable=False)
+    data_vencimento = Column(Date, nullable=False)
+    data_pagamento = Column(DateTime, nullable=True)
+    status = Column(String, default="Pendente")
+    tipo_despesa = Column(String, default="Empresa")
+
+    class SorteioModel(Base):
+    """Módulo de Sorteios Inteligentes por Lanche/Produto."""
+    __tablename__ = "sorteios_promocoes"
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(Integer, primary_key=True, index=True)
+    titulo = Column(String, nullable=False)
+    premio = Column(String, nullable=False)
+    produto_id_obrigatorio = Column(Integer, ForeignKey("produtos.id"), nullable=True) # Null = Qualquer item
+    data_inicio = Column(Date, nullable=False)
+    data_fim = Column(Date, nullable=False)
+    ativo = Column(Boolean, default=True)
+    pedido_vencedor_id = Column(Integer, nullable=True)
+    cliente_vencedor_nome = Column(String, nullable=True)
+    cliente_vencedor_telefone = Column(String, nullable=True)
+    sorteado_em = Column(DateTime, nullable=True)
 
 # ==========================================
 # 2. CLIENTE UNIFICADO (Fim da Guerra dos Clientes!)
