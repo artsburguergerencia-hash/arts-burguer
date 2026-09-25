@@ -62,59 +62,7 @@ class ConfiguracaoLojaModel(Base):
 
 
 # ==========================================
-# 2. FORNECEDORES & CONTAS A PAGAR
-# ==========================================
-class FornecedorModel(Base):
-    __tablename__ = "fornecedores"
-    __table_args__ = {'extend_existing': True}
-
-    id = Column(Integer, primary_key=True, index=True)
-    nome_fantasia = Column(String, nullable=False)
-    cnpj = Column(String, nullable=True)
-    telefone = Column(String, nullable=True, default="")
-    contato = Column(String, nullable=True, default="")
-    categoria = Column(String, default="Geral")
-    site_pedidos = Column(String, default="")
-    representante_nome = Column(String, default="")
-    representante_contato = Column(String, default="")
-
-
-class ContaPagarModel(Base):
-    __tablename__ = "contas_pagar"
-    __table_args__ = {'extend_existing': True}
-
-    id = Column(Integer, primary_key=True, index=True)
-    fornecedor_id = Column(Integer, ForeignKey("fornecedores.id", ondelete="SET NULL"), nullable=True)
-    descricao = Column(String, nullable=False) 
-    valor = Column(Float, nullable=False)
-    data_vencimento = Column(Date, nullable=False)
-    data_pagamento = Column(DateTime, nullable=True)
-    status = Column(String, default="Pendente")
-    tipo_despesa = Column(String, default="Empresa")
-
-
-# ==========================================
-# 3. SORTEIOS / NÚMEROS DA SORTE
-# ==========================================
-class SorteioModel(Base):
-    __tablename__ = "sorteios_promocoes"
-    __table_args__ = {'extend_existing': True}
-
-    id = Column(Integer, primary_key=True, index=True)
-    titulo = Column(String, nullable=False)
-    premio = Column(String, nullable=False)
-    produto_id_obrigatorio = Column(Integer, ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True)
-    data_inicio = Column(Date, nullable=False)
-    data_fim = Column(Date, nullable=False)
-    ativo = Column(Boolean, default=True)
-    pedido_vencedor_id = Column(Integer, nullable=True)
-    cliente_vencedor_nome = Column(String, nullable=True)
-    cliente_vencedor_telefone = Column(String, nullable=True)
-    sorteado_em = Column(DateTime, nullable=True)
-
-
-# ==========================================
-# 4. CLIENTE UNIFICADO
+# 2. CLIENTE UNIFICADO
 # ==========================================
 class ClienteModel(Base):
     __tablename__ = "clientes"
@@ -147,7 +95,7 @@ Cliente = ClienteModel
 
 
 # ==========================================
-# 5. RECURSOS HUMANOS E CARGOS
+# 3. RECURSOS HUMANOS E CARGOS
 # ==========================================
 class Cargo(Base):
     __tablename__ = "cargos"
@@ -257,7 +205,7 @@ class SolicitacaoFeriasModel(Base):
 
 
 # ==========================================
-# 6. INSUMOS, PRODUTOS E CARDÁPIO
+# 4. INSUMOS, PRODUTOS E CARDÁPIO (DECLARADOS ANTES DE SORTEIOS)
 # ==========================================
 class InsumoModel(Base):
     __tablename__ = "insumos"
@@ -285,6 +233,9 @@ class ProdutoModel(Base):
     participa_fidelidade = Column(Boolean, default=True)
     ordem = Column(Integer, default=0)
 
+    # Relacionamento para o cálculo do CMV no dashboard
+    itens_ficha = relationship("FichaTecnicaModel", backref="produto", cascade="all, delete-orphan")
+
 
 class FichaTecnicaModel(Base):
     __tablename__ = "fichas_tecnicas"
@@ -294,6 +245,8 @@ class FichaTecnicaModel(Base):
     produto_id = Column(Integer, ForeignKey("produtos.id", ondelete="CASCADE"))
     insumo_id = Column(Integer, ForeignKey("insumos.id", ondelete="CASCADE"))
     quantidade_necessaria = Column(Float)
+
+    insumo = relationship("InsumoModel")
 
 
 class GrupoComplementoModel(Base):
@@ -317,6 +270,58 @@ class ItemComplementoModel(Base):
     grupo_id = Column(Integer, ForeignKey("grupos_complementos.id", ondelete="CASCADE"))
     nome = Column(String)
     preco_adicional = Column(Float, default=0.0)
+
+
+# ==========================================
+# 5. FORNECEDORES & CONTAS A PAGAR
+# ==========================================
+class FornecedorModel(Base):
+    __tablename__ = "fornecedores"
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(Integer, primary_key=True, index=True)
+    nome_fantasia = Column(String, nullable=False)
+    cnpj = Column(String, nullable=True)
+    telefone = Column(String, nullable=True, default="")
+    contato = Column(String, nullable=True, default="")
+    categoria = Column(String, default="Geral")
+    site_pedidos = Column(String, default="")
+    representante_nome = Column(String, default="")
+    representante_contato = Column(String, default="")
+
+
+class ContaPagarModel(Base):
+    __tablename__ = "contas_pagar"
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(Integer, primary_key=True, index=True)
+    fornecedor_id = Column(Integer, ForeignKey("fornecedores.id", ondelete="SET NULL"), nullable=True)
+    descricao = Column(String, nullable=False) 
+    valor = Column(Float, nullable=False)
+    data_vencimento = Column(Date, nullable=False)
+    data_pagamento = Column(DateTime, nullable=True)
+    status = Column(String, default="Pendente")
+    tipo_despesa = Column(String, default="Empresa")
+
+
+# ==========================================
+# 6. SORTEIOS / NÚMEROS DA SORTE (AGORA DEPOIS DE PRODUTOS)
+# ==========================================
+class SorteioModel(Base):
+    __tablename__ = "sorteios_promocoes"
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(Integer, primary_key=True, index=True)
+    titulo = Column(String, nullable=False)
+    premio = Column(String, nullable=False)
+    produto_id_obrigatorio = Column(Integer, ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True)
+    data_inicio = Column(Date, nullable=False)
+    data_fim = Column(Date, nullable=False)
+    ativo = Column(Boolean, default=True)
+    pedido_vencedor_id = Column(Integer, nullable=True)
+    cliente_vencedor_nome = Column(String, nullable=True)
+    cliente_vencedor_telefone = Column(String, nullable=True)
+    sorteado_em = Column(DateTime, nullable=True)
 
 
 # ==========================================
