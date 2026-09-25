@@ -1,14 +1,16 @@
 import os
+import re
+import random
 from pathlib import Path
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import List, Optional
 
 import uvicorn
-from fastapi import FastAPI, Depends, HTTPException, Query, Request, Body, BackgroundTasks
-from fastapi.responses import HTMLResponse, JSONResponse, Response,FileResponse
+from fastapi import FastAPI, Depends, HTTPException, Query, Request, Body, BackgroundTasks, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse, JSONResponse, Response, FileResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text, DateTime
+from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text, DateTime, func, cast, Date
 from passlib.context import CryptContext
 
 # ==========================================
@@ -62,6 +64,7 @@ from database import (
     CupomModel,
     CaixaTurnoModel,
     TaxaEntregaModel,
+    SorteioModel,
     data_infinita_str
 )
 
@@ -75,18 +78,12 @@ from auth_security import (
 )
 
 # ==========================================
-# RELATÓRIOS
-# ==========================================
-from datetime import datetime, date, timedelta  # 👈 Adicione 'timedelta' aqui se não tiver
-from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text, DateTime, func, cast, Date  # 👈 Adicione 'func, cast, Date'
-
-# ==========================================
 # 4. CONFIGURAÇÃO DO SERVIDOR FASTAPI
 # ==========================================
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-app = FastAPI(title="API - Art's Burguer ERP Corporativo V5", version="5.0.0")
+app = FastAPI(title="API - Art's Burguer ERP Corporativo V5", version="5.1.0")
 
-# Inicializa banco e tabelas no Neon
+# Inicializa banco e tabelas no Postgres/Neon
 inicializar_banco()
 Base.metadata.create_all(bind=engine)
 
@@ -96,8 +93,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-from fastapi import WebSocket, WebSocketDisconnect
 
 # ==========================================
 # GERENCIADOR DE CONEXÕES EM TEMPO REAL (WEBSOCKETS)
@@ -124,7 +119,7 @@ class ConnectionManager:
             self.conexoes_tv.remove(websocket)
 
     async def notificar_kds(self):
-        """Avisa todas as telas da cozinha para recarregarem."""
+        """Avisa todas as telas da cozinha para recarregarem imediatamente."""
         for ws in list(self.conexoes_kds):
             try:
                 await ws.send_json({"evento": "ATUALIZAR_COZINHA"})
@@ -159,24 +154,18 @@ async def websocket_tv_endpoint(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         ws_manager.desconectar_tv(websocket)
-        
+
 # ==========================================
 # ROTA DE SAÚDE / KEEP-ALIVE (RENDER & NEON)
 # ==========================================
 @app.get("/health")
 def health_check(db: Session = Depends(get_db)):
-    """Rota leve para manter o Render e o Neon sempre aquecidos."""
     try:
-        # Testa a conexão com o Neon em milissegundos
         db.execute(text("SELECT 1;"))
         return {"status": "ok", "app": "online", "database": "connected"}
     except Exception as e:
-        return JSONResponse(
-            status_code=503, 
-            content={"status": "degraded", "erro": str(e)}
-        )
-        
-# Memória temporária única para telemetria de entregadores
+        return JSONResponse(status_code=503, content={"status": "degraded", "erro": str(e)})
+
 POSICOES_MOTOBOYS_AO_VIVO = {}
 rastreio_ao_vivo = {}
 
@@ -204,8 +193,9 @@ class CheckoutPedido(BaseModel):
     telefone_cliente: str
     nome_cliente: str
     itens: List[ItemCarrinho]
-    endereco_cliente:str = ""
+    endereco_cliente: str = ""
     cpf: str = ""
+    agendamento: Optional[str] = None
     token_cartao: Optional[str] = None
     payment_method_id: Optional[str] = None
     parcelas: Optional[int] = 1
@@ -228,6 +218,7 @@ class NovoProduto(BaseModel):
     categoria: str
     imagem_url: str = ""
     ordem: int = 0
+    participa_fidelidade: bool = True
     fichas: List[FichaItem] = []
 
 class CheckoutPDV(BaseModel):
@@ -235,6 +226,8 @@ class CheckoutPDV(BaseModel):
     telefone_cliente: str = "BALCAO"
     forma_pagamento: str
     itens: List[ItemCarrinho]
+    endereco_entrega: Optional[str] = None
+    taxa_entrega: Optional[float] = 0.0
     usar_saldo_cashback: float = 0.0
     usar_pontos: bool = False
 
@@ -260,6 +253,9 @@ class NovoFornecedor(BaseModel):
     categoria: str = "Geral"
     contato: str = ""
     cnpj: str = ""
+    site_pedidos: Optional[str] = ""
+    representante_nome: Optional[str] = ""
+    representante_contato: Optional[str] = ""
 
 class LoginClienteData(BaseModel):
     telefone: str
@@ -327,7 +323,7 @@ class FormularioAdmissao(BaseModel):
     qtd_filhos_menores: int = 0
     cnh: str = ""
     email: str = ""
-    plano_saude_escolhido:str = ""
+    plano_saude_escolhido: str = ""
     aceite_lgpd: bool = True
     foto_3x4: str = ""
 
@@ -402,50 +398,64 @@ class NovoComboFastFood(BaseModel):
     categoria: str = "Combos Promocionais"
     etapas: List[EtapaComboSchema]
 
-class ExtItemSchema(BaseModel):
-    name: str
-    quantity: int
-    price: float
-    options: Optional[str] = ""
-
-class ExtWebhookSchema(BaseModel):
-    displayId: str 
-    type: str 
-    customerName: str
-    customerPhone: str
-    deliveryAddress: Optional[str] = "Não informado"
-    paymentMethod: str
-    totalPrice: float
-    items: List[ExtItemSchema]
+class NovoSorteioSchema(BaseModel):
+    titulo: str
+    premio: str
+    produto_id: Optional[int] = None
+    data_inicio: str
+    data_fim: str
 
 class ConfirmacaoZerarDados(BaseModel):
     palavra_seguranca: str
 
 
 # ==========================================
-# 6. FUNÇÕES UTILITÁRIAS
+# 6. FUNÇÕES UTILITÁRIAS & REGRAS DE NEGÓCIO
 # ==========================================
-def gerar_senha_diaria(db: Session):
+def gerar_senha_diaria(db: Session) -> str:
+    """Gera sequência contínua para Totem, Balcão e Online com trava pessimista anti-colisão."""
     hoje = datetime.utcnow().date()
-    try:
-        ultimo = db.query(PedidoModel).order_by(PedidoModel.id.desc()).first()
-        if not ultimo: 
-            return "001"
-        
-        data_ultimo = getattr(ultimo, 'data_pedido', None)
-        if not data_ultimo:
-            dh = getattr(ultimo, 'data_hora', None)
-            if dh and hasattr(dh, 'date'): 
-                data_ultimo = dh.date()
-                
-        if data_ultimo == hoje:
-            try:
-                return str(int(ultimo.senha_diaria) + 1).zfill(3)
-            except Exception: 
-                return str(ultimo.id + 1).zfill(3)
-        else:return "001"
-    except Exception: 
+    ultimo = (
+        db.query(PedidoModel)
+        .filter(func.cast(PedidoModel.data_hora, Date) == hoje)
+        .order_by(PedidoModel.id.desc())
+        .with_for_update()
+        .first()
+    )
+    if not ultimo or not ultimo.senha_diaria:
         return "001"
+    try:
+        return str(int(ultimo.senha_diaria) + 1).zfill(3)
+    except Exception:
+        return str(ultimo.id + 1).zfill(3)
+
+def loja_esta_aberta(config: ConfiguracaoLojaModel) -> bool:
+    """Verifica se a loja está em horário de atendimento."""
+    if not config or not config.horario_funcionamento:
+        return True
+    
+    dias_map = {0: 'segunda', 1: 'terça', 2: 'quarta', 3: 'quinta', 4: 'sexta', 5: 'sábado', 6: 'domingo'}
+    agora = datetime.utcnow() - timedelta(hours=3) # Horário de Brasília
+    dia_atual = dias_map[agora.weekday()]
+    minutos_agora = agora.hour * 60 + agora.minute
+    
+    partes = config.horario_funcionamento.lower().split(',')
+    for parte in partes:
+        if dia_atual in parte or (dia_atual == 'terça' and 'terca' in parte) or (dia_atual == 'sábado' and 'sabado' in parte):
+            if 'fechado' in parte:
+                return False
+            times = re.findall(r'(\d{1,2})[h:]?(\d{2})?', parte)
+            if len(times) >= 2:
+                h_ini, m_ini = int(times[0][0]), int(times[0][1] or 0)
+                h_fim, m_fim = int(times[1][0]), int(times[1][1] or 0)
+                min_ini = h_ini * 60 + m_ini
+                min_fim = h_fim * 60 + m_fim
+                
+                if min_ini <= min_fim:
+                    return min_ini <= minutos_agora <= min_fim
+                else:
+                    return minutos_agora >= min_ini or minutos_agora <= min_fim
+    return True
 
 def pegar_modelo_banco(tabela: str):
     mapeamento = {
@@ -484,7 +494,6 @@ def listar_mesas_ocupadas(db: Session = Depends(get_db)):
                 })
         return mesas_ocupadas
     except Exception as e:
-        print(f"Erro no radar de mesas: {e}")
         return []
 
 @app.get("/mesas", response_class=HTMLResponse)
@@ -495,7 +504,7 @@ def abrir_tela_mesas():
 
 
 # ==========================================
-# 8. FORNECEDORES
+# 8. FORNECEDORES (COM LINKS E DESVINCULAÇÃO SEGURA)
 # ==========================================
 @app.get("/api/gestao/fornecedores")
 def listar_fornecedores(db: Session = Depends(get_db)):
@@ -505,7 +514,10 @@ def listar_fornecedores(db: Session = Depends(get_db)):
         "nome_fantasia": f.nome_fantasia, 
         "categoria": f.categoria, 
         "contato": getattr(f, 'contato', ''), 
-        "cnpj": getattr(f, 'cnpj', '')
+        "cnpj": getattr(f, 'cnpj', ''),
+        "site_pedidos": getattr(f, 'site_pedidos', ''),
+        "representante_nome": getattr(f, 'representante_nome', ''),
+        "representante_contato": getattr(f, 'representante_contato', '')
     } for f in fornecedores]
 
 @app.post("/api/gestao/fornecedores")
@@ -513,9 +525,13 @@ def cadastrar_fornecedor(dados: NovoFornecedor, db: Session = Depends(get_db)):
     try:
         cnpj_limpo = dados.cnpj.strip() if dados.cnpj and dados.cnpj.strip() != "" else None
         novo_fornecedor = FornecedorModel(
-            nome_fantasia=dados.nome_fantasia,categoria=dados.categoria, 
+            nome_fantasia=dados.nome_fantasia,
+            categoria=dados.categoria, 
             contato=dados.contato,
-            cnpj=cnpj_limpo
+            cnpj=cnpj_limpo,
+            site_pedidos=dados.site_pedidos or "",
+            representante_nome=dados.representante_nome or "",
+            representante_contato=dados.representante_contato or ""
         )
         if hasattr(novo_fornecedor, 'telefone'):
             novo_fornecedor.telefone = dados.contato
@@ -552,13 +568,13 @@ def excluir_fornecedor(fornecedor_id: int, db: Session = Depends(get_db)):
         if not fornecedor:
             raise HTTPException(status_code=404, detail="Fornecedor não encontrado")
             
+        # Desvincula contas anteriores para não disparar erro de Foreign Key
+        db.query(ContaPagarModel).filter(ContaPagarModel.fornecedor_id == fornecedor_id).update({"fornecedor_id": None})
         db.delete(fornecedor)
         db.commit()
-        return {"status": "sucesso"}
+        return {"status": "sucesso", "mensagem": "Fornecedor excluído!"}
     except Exception as e:
         db.rollback()
-        if "IntegrityError" in str(type(e)) or "Foreign Key" in str(e):
-            raise HTTPException(status_code=400, detail="Não é possível excluir: existem contas a pagar vinculadas a este fornecedor.")
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
 
@@ -605,8 +621,8 @@ def cadastrar_novo_cliente(dados: dict = Body(...), db: Session = Depends(get_db
         db.commit()
         db.refresh(novo_cliente)
         return {"mensagem": "Conta criada com sucesso!", "cliente_id": novo_cliente.id}
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro interno ao criar conta: {str(e)}")
@@ -726,7 +742,6 @@ def historico_pedidos_cliente_gestao(cliente_id: int, db: Session = Depends(get_
             "pagamento": getattr(p, "forma_pagamento", "Balcão")
         } for p in pedidos]
     except Exception as e:
-        print(f"Erro no histórico: {e}")
         return []
 
 @app.put("/api/gestao/clientes/{cliente_id}/editar")
@@ -843,9 +858,9 @@ async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
                 if pedido and str(pedido.status).split('.')[-1].upper() != "RECEBIDO":
                     pedido.status = "RECEBIDO" 
                     db.commit()
+                    await ws_manager.notificar_kds()
         return {"status": "ok"}
     except Exception as e:
-        print(f"❌ Erro Webhook Asaas: {e}")
         return {"status": "erro"}
 
 
@@ -853,11 +868,19 @@ async def webhook_do_asaas(payload: dict, db: Session = Depends(get_db)):
 # 11. CHECKOUT & VENDAS (ONLINE E PDV)
 # ==========================================
 @app.post("/api/pedidos/online")
-def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
+async def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query("entrega"), db: Session = Depends(get_db)):
     try:
         config = db.query(ConfiguracaoLojaModel).first()
-        cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_web.telefone_cliente).first()
         
+        # 🚨 BLOQUEIO SE A LOJA ESTIVER FECHADA E NÃO FOR AGENDADO 🚨
+        if not getattr(pedido_web, 'agendamento', None):
+            if not loja_esta_aberta(config):
+                raise HTTPException(
+                    status_code=400, 
+                    detail="A hamburgueria está fechada no momento! Utilize a opção de Agendamento para escolher o horário de entrega."
+                )
+
+        cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_web.telefone_cliente).first()
         if not cliente:
             cliente = ClienteModel(
                 nome=pedido_web.nome_cliente, 
@@ -884,6 +907,8 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
         if novo_pedido_real:
             novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
             novo_pedido_real.origem = "SITE (Online)"
+            if getattr(pedido_web, 'agendamento', None):
+                novo_pedido_real.observacao = f"[AGENDADO PARA: {pedido_web.agendamento}] {getattr(novo_pedido_real, 'observacao', '') or ''}"
             db.commit()
 
         aceite_auto = getattr(config, 'aceite_automatico', False) if config else False
@@ -896,10 +921,12 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
             if novo_pedido_real:
                 novo_pedido_real.status = "EM_PREPARO" if aceite_auto else "RECEBIDO"
                 db.commit()
+                # 🚨 AVISA O KDS IMEDIATAMENTE VIA WEBSOCKET 🚨
+                await ws_manager.notificar_kds()
             try:
                 notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
-            except Exception as err_wpp:
-                print(f"WhatsApp ignorado: {err_wpp}", flush=True)
+            except Exception:
+                pass
 
         if forma_pagamento == "pix":
             if not getattr(pedido_web, 'cpf', None):
@@ -936,6 +963,7 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
                 if novo_pedido_real:
                     novo_pedido_real.status = "EM_PREPARO" if aceite_auto else "RECEBIDO"
                     db.commit()
+                    await ws_manager.notificar_kds()
                 try:
                     notificar_status_pedido(cliente.telefone, cliente.nome, novo_pedido_real.senha_diaria, novo_pedido_real.status)
                 except Exception:
@@ -952,7 +980,6 @@ def receber_pedido_site(pedido_web: CheckoutPedido, forma_pagamento: str = Query
     except HTTPException:
         raise
     except Exception as global_e:
-        print(f"ERRO CRÍTICO NO CHECKOUT: {global_e}", flush=True)
         raise HTTPException(status_code=400, detail=f"Falha ao registrar pedido: {str(global_e)}")
 
 @app.get("/api/pdv/cliente/{telefone}")
@@ -970,7 +997,7 @@ def buscar_cliente_pdv(telefone: str, db: Session = Depends(get_db)):
     }
 
 @app.post("/api/pedidos/pdv")
-def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_db)):
+async def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_db)):
     cliente = db.query(ClienteModel).filter(ClienteModel.telefone == pedido_caixa.telefone_cliente).first()
     if not cliente:
         cliente = ClienteModel(nome=pedido_caixa.nome_cliente, telefone=pedido_caixa.telefone_cliente)
@@ -983,22 +1010,32 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
 
     itens_carrinho = [{"produto_id": i.produto_id, "quantidade": i.quantidade, "observacao": i.observacao} for i in pedido_caixa.itens]
     
+    # Suporte a entrega via balcão/totem
+    if getattr(pedido_caixa, 'endereco_entrega', None) and len(itens_carrinho) > 0:
+        obs_atual = itens_carrinho[0].get("observacao", "") or ""
+        itens_carrinho[0]["observacao"] = f"Entrega: {pedido_caixa.endereco_entrega} | {obs_atual}"
+
     try:
+        tipo_final = TipoPedido.DELIVERY if getattr(pedido_caixa, 'endereco_entrega', None) else TipoPedido.BALCAO
+        taxa = getattr(pedido_caixa, 'taxa_entrega', 0.0) or 0.0
+
         novo_pedido = registrar_venda_pdv(
             db=db, 
-            tipo=TipoPedido.BALCAO, 
+            tipo=tipo_final, 
             itens_carrinho=itens_carrinho, 
-            cliente_id=cliente.id
+            cliente_id=cliente.id,
+            taxa_entrega=taxa
         )
         
         novo_pedido_real = db.query(PedidoModel).filter(PedidoModel.id == novo_pedido.id).first()
         novo_pedido_real.senha_diaria = gerar_senha_diaria(db)
-        novo_pedido_real.origem = "PDV (Balcão)"
+        novo_pedido_real.origem = "PDV (Balcão)" if pedido_caixa.telefone_cliente != "TOTEM" else "TOTEM"
         novo_pedido_real.forma_pagamento = pedido_caixa.forma_pagamento
         
         config = db.query(ConfiguracaoLojaModel).first()
         
-        if cliente.telefone != "BALCAO":
+        # 🚨 CÁLCULO DE CASHBACK/FIDELIDADE COM ITENS PARTICIPANTES 🚨
+        if cliente.telefone not in ["BALCAO", "TOTEM"]:
             sis_fidelidade = getattr(config, 'sistema_fidelidade', 'CASHBACK')
             if sis_fidelidade == "PONTOS":
                 if pedido_caixa.usar_pontos and getattr(cliente, 'pontos', 0) >= 10:
@@ -1013,13 +1050,28 @@ def receber_pedido_balcao(pedido_caixa: CheckoutPDV, db: Session = Depends(get_d
                     cliente.cashback -= pedido_caixa.usar_saldo_cashback
                     cliente.saldo_cashback = cliente.cashback
                 
-                valor_real_pago = novo_pedido_real.total_pago - pedido_caixa.usar_saldo_cashback
-                if valor_real_pago > 0:
-                    ganho = (valor_real_pago * 0.05)
+                # Base de cálculo apenas para os itens que participam
+                base_calculo_cashback = 0.0
+                for item in pedido_caixa.itens:
+                    prod = db.query(ProdutoModel).filter(ProdutoModel.id == item.produto_id).first()
+                    if prod:
+                        if getattr(config, 'fidelidade_elegibilidade', 'TODOS') == "ESPECIFICOS":
+                            if getattr(prod, 'participa_fidelidade', True):
+                                base_calculo_cashback += (prod.preco_venda * item.quantidade)
+                        else:
+                            base_calculo_cashback += (prod.preco_venda * item.quantidade)
+
+                if base_calculo_cashback > 0:
+                    pct = (getattr(config, 'fidelidade_ganho', 5.0) or 5.0) / 100.0
+                    ganho = round(base_calculo_cashback * pct, 2)
                     cliente.cashback = getattr(cliente, 'cashback', 0.0) + ganho
                     cliente.saldo_cashback = cliente.cashback
 
         db.commit()
+
+        # 🚨 ACIONA O KDS INSTANTANEAMENTE VIA WEBSOCKET 🚨
+        await ws_manager.notificar_kds()
+
         return {
             "status": "sucesso", 
             "pedido_id": novo_pedido.id, 
@@ -1512,6 +1564,7 @@ def listar_cardapio_digital(db: Session = Depends(get_db)):
         "categoria": p.categoria,
         "imagem_url": getattr(p, "imagem_url", ""),
         "ordem": getattr(p, "ordem", 0),
+        "participa_fidelidade": getattr(p, "participa_fidelidade", True),
         "ativo": p.ativo
     } for p in produtos]
 
@@ -1524,7 +1577,8 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
             preco_venda=produto.preco, 
             categoria=produto.categoria,
             imagem_url=produto.imagem_url,
-            ordem=produto.ordem
+            ordem=produto.ordem,
+            participa_fidelidade=produto.participa_fidelidade
         )
         db.add(novo_produto)
         db.flush()
@@ -1546,7 +1600,7 @@ def receber_novo_produto(produto: NovoProduto, db: Session = Depends(get_db)):
 def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db)):
     produto = db.query(ProdutoModel).filter(ProdutoModel.id == produto_id).first()
     if not produto:
-        raise HTTPException(status_code=404,detail="Produto não encontrado")
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
     
     if 'nome' in dados: produto.nome = dados['nome']
     if 'descricao' in dados: produto.descricao = dados['descricao']
@@ -1555,6 +1609,7 @@ def atualizar_produto(produto_id: int, dados: dict, db: Session = Depends(get_db
     if 'ativo' in dados: produto.ativo = dados['ativo']
     if 'preco' in dados: produto.preco_venda = dados['preco']
     if 'ordem' in dados: produto.ordem = int(dados['ordem'])
+    if 'participa_fidelidade' in dados: produto.participa_fidelidade = bool(dados['participa_fidelidade'])
     
     if 'fichas' in dados:
         db.query(FichaTecnicaModel).filter(FichaTecnicaModel.produto_id == produto_id).delete()
@@ -1737,7 +1792,7 @@ def deletar_insumo(insumo_id: int, db: Session = Depends(get_db)):
 
 
 # ==========================================
-# 15. FINANCEIRO E DRE
+# 15. FINANCEIRO E DRE (COM EDIÇÃO DE DATA E BAIXA NO CAIXA)
 # ==========================================
 @app.post("/api/gestao/conta")
 def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
@@ -1764,7 +1819,7 @@ def receber_nova_conta(conta: NovaConta, db: Session = Depends(get_db)):
         return {"status": "sucesso"}
     except Exception as e: 
         db.rollback()
-        raise HTTPException(status_code=500,detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/api/contas_pagar/{conta_id}")
 def atualizar_conta(conta_id: int, dados: dict, db: Session = Depends(get_db)):
@@ -1774,8 +1829,15 @@ def atualizar_conta(conta_id: int, dados: dict, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="Conta não encontrada")
         
         for key, value in dados.items():
-            if hasattr(conta, key):
-                setattr(conta, key, value)
+            if hasattr(conta, key) and key != "id":
+                if key in ["vencimento", "data_vencimento"]:
+                    try:
+                        # 🚨 CONVERSÃO CORRETA DA DATA 🚨
+                        setattr(conta, "data_vencimento", datetime.strptime(str(value)[:10], "%Y-%m-%d").date())
+                    except Exception:
+                        pass
+                else:
+                    setattr(conta, key, value)
                 
         db.commit()
         return {"status": "sucesso"}
@@ -1804,8 +1866,15 @@ def pagar_conta(conta_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Conta não encontrada")
         
     conta.status = "PAGO"
+    conta.data_pagamento = datetime.utcnow()
+
+    # 🚨 BAIXA AUTOMÁTICA DO VALOR NO CAIXA ABERTO DO DIA 🚨
+    caixa_aberto = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
+    if caixa_aberto:
+        caixa_aberto.entradas_saidas -= conta.valor
+
     db.commit()
-    return {"status": "sucesso", "mensagem": "Conta paga e baixada do caixa com sucesso!"}
+    return {"status": "sucesso", "mensagem": f"Conta liquidada! R$ {conta.valor:.2f} baixado do caixa aberto."}
 
 @app.get("/api/gestao/financeiro/resumo")
 def resumo_financeiro(db: Session = Depends(get_db)):
@@ -1889,9 +1958,7 @@ def obter_relatorio_curva_abc(data_inicio: str = None, data_fim: str = None, db:
     lista.sort(key=lambda x: x["faturamento_gerado"], reverse=True)
     return lista[:10]
 
-# ==========================================
-# CENTRAL DE INTELIGÊNCIA & RELATÓRIOS (BI)
-# ==========================================
+
 # ==========================================
 # CENTRAL DE INTELIGÊNCIA & RELATÓRIOS (BI PRO)
 # ==========================================
@@ -1907,7 +1974,6 @@ def relatorio_bi_completo(
 
     config = db.query(ConfiguracaoLojaModel).first()
 
-    # 1. Pedidos no período
     pedidos_periodo = db.query(PedidoModel).filter(
         cast(PedidoModel.data_hora, Date) >= di,
         cast(PedidoModel.data_hora, Date) <= df
@@ -1916,13 +1982,11 @@ def relatorio_bi_completo(
     pedidos_validos = [p for p in pedidos_periodo if str(p.status).upper() != "CANCELADO"]
     pedidos_cancelados = [p for p in pedidos_periodo if str(p.status).upper() == "CANCELADO"]
 
-    # 2. Métricas Financeiras
     faturamento_bruto = sum(float(p.total_pago or 0.0) for p in pedidos_validos)
     total_pedidos = len(pedidos_validos)
     ticket_medio = (faturamento_bruto / total_pedidos) if total_pedidos > 0 else 0.0
     descontos_totais = sum(float(getattr(p, 'desconto', 0.0) or 0.0) for p in pedidos_validos)
 
-    # 3. Canais de Venda (com 99Food incluído)
     canais = {"Delivery": 0.0, "Balcão": 0.0, "Mesa": 0.0, "iFood": 0.0, "99Food": 0.0}
     for p in pedidos_validos:
         tp = str(p.tipo_pedido).split('.')[-1].upper()
@@ -1940,8 +2004,7 @@ def relatorio_bi_completo(
         else:
             canais["Balcão"] += val
 
-    # 4. Horários de Pico (Distribuição por Hora do Dia)
-    horas_pico = {f"{h:02d}h": 0 for h in range(11, 24)} # das 11h às 23h
+    horas_pico = {f"{h:02d}h": 0 for h in range(11, 24)}
     for p in pedidos_validos:
         if p.data_hora:
             h_str = f"{p.data_hora.hour:02d}h"
@@ -1950,7 +2013,6 @@ def relatorio_bi_completo(
             else:
                 horas_pico[h_str] = 1
 
-    # 5. Custo Teórico de Matéria-Prima (CMV) via Fichas Técnicas
     cmv_total = 0.0
     for p in pedidos_validos:
         for item in p.itens:
@@ -1960,7 +2022,6 @@ def relatorio_bi_completo(
                 if insumo:
                     cmv_total += (f.quantidade_necessaria * insumo.custo_unitario * item.quantidade)
 
-    # 6. DRE & Contas
     contas_periodo = db.query(ContaPagarModel).filter(
         ContaPagarModel.data_vencimento >= di,
         ContaPagarModel.data_vencimento <= df
@@ -1973,12 +2034,10 @@ def relatorio_bi_completo(
     lucro_liquido = lucro_operacional - despesas_casa
     margem_lucro = (lucro_operacional / faturamento_bruto * 100) if faturamento_bruto > 0 else 0.0
 
-    # 7. Clientes & Cashback Circulando
     clientes_todos = db.query(ClienteModel).all()
     cashback_ativo = sum(float(c.cashback or 0.0) for c in clientes_todos)
     pontos_ativos = sum(int(c.pontos or 0) for c in clientes_todos)
 
-    # Ranking Top 5 Clientes
     ranking_clientes = {}
     for p in pedidos_validos:
         if p.cliente_id:
@@ -1995,7 +2054,6 @@ def relatorio_bi_completo(
                 "pontos": cli.pontos
             })
 
-    # 8. Estoque Crítico
     insumos = db.query(InsumoModel).all()
     estoque_critico = [
         {"nome": i.nome, "atual": i.quantidade_atual, "minimo": i.quantidade_minima, "unidade": i.unidade_medida}
@@ -2154,7 +2212,7 @@ def despachar_pedido(pedido_id: int, payload: dict, db: Session = Depends(get_db
 @app.put("/api/logistica/pedidos/{pedido_id}/entregar")
 def concluir_entrega_final(pedido_id: int, db: Session = Depends(get_db)):
     pedido = db.query(PedidoModel).filter(PedidoModel.id == pedido_id).first()
-    if not pedido:raise HTTPException(status_code=404, detail="Pedido não encontrado")
+    if not pedido: raise HTTPException(status_code=404, detail="Pedido não encontrado")
     
     pedido.status = "ENTREGUE"
     db.commit()
@@ -2231,19 +2289,15 @@ async def mudar_status_pedido(pedido_id: int, payload: AtualizarStatus, backgrou
 
 
 # ==========================================
-# 17. TELEMETRIA GPS & RASTREIO (COM PERSISTÊNCIA NO BANCO)
+# 17. TELEMETRIA GPS & RASTREIO
 # ==========================================
 @app.post("/api/logistica/gps")
 def atualizar_gps_motoboy(dados: CoordenadasGPS, db: Session = Depends(get_db)):
-    """Atualiza a posição na memória RAM e grava no pedido no Neon."""
-    # 1. Atualiza memória rápida
     POSICOES_MOTOBOYS_AO_VIVO[dados.pedido_id] = {
         "lat": dados.lat, 
         "lng": dados.lng, 
         "atualizado_em": datetime.now().isoformat()
     }
-    
-    # 2. Persiste no banco de dados para segurança contra reinicializações
     try:
         pedido = db.query(PedidoModel).filter(
             (PedidoModel.id == dados.pedido_id) | (PedidoModel.senha_diaria == str(dados.pedido_id))
@@ -2252,7 +2306,7 @@ def atualizar_gps_motoboy(dados: CoordenadasGPS, db: Session = Depends(get_db)):
             pedido.entregador_lat = dados.lat
             pedido.entregador_lng = dados.lng
             db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         
     return {"status": "ok"}
@@ -2277,8 +2331,7 @@ def buscar_posicao_motoboy(pedido_id: int, db: Session = Depends(get_db)):
         if posicao:
             return {"status": "online", "posicao": {"lat": float(posicao["lat"]), "lng": float(posicao["lng"])}}
         return {"status": "online", "posicao": coord_padrao}
-    except Exception as e:
-        print(f"Erro ao processar GPS: {e}")
+    except Exception:
         return {"status": "online", "posicao": coord_padrao}
 
 @app.post("/api/logistica/gps/{pedido_id}/atualizar")
@@ -2297,7 +2350,6 @@ def atualizar_posicao_motoboy_endpoint(pedido_id: int, payload: dict, db: Sessio
                 "ultima_atualizacao": datetime.utcnow()
             }
             
-            # Grava no banco
             pedido = db.query(PedidoModel).filter(
                 (PedidoModel.id == pedido_id) | (PedidoModel.senha_diaria == str(pedido_id))
             ).first()
@@ -2343,15 +2395,14 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
             "tipo": str(pedido.tipo_pedido).split('.')[-1].upper(),
             "total": float(pedido.total_pago or 0.0)
         }
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        print(f"Erro no Rastreio: {e}")
+    except HTTPException:
+        raise
+    except Exception:
         raise HTTPException(status_code=500, detail="Erro interno no servidor")
 
 
 # ==========================================
-# 18. CONFIGURAÇÕES DA LOJA & SETUP
+# 18. CONFIGURAÇÕES DA LOJA & SETUP (COM API KEYS SALVAS)
 # ==========================================
 @app.get("/api/gestao/configuracoes")
 def ler_configuracoes(db: Session = Depends(get_db)):
@@ -2426,8 +2477,8 @@ def criar_cupom_pro(dados: dict, db: Session = Depends(get_db)):
         db.add(novo)
         db.commit()
         return {"status": "sucesso", "mensagem": f"Cupom {codigo} criado com sucesso!"}
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro interno no Banco de Dados: {str(e)}")
@@ -2480,13 +2531,14 @@ def validar_cupom(dados: dict, db: Session = Depends(get_db)):
         desconto = min(desconto, subtotal)
             
         return {"status": "sucesso", "codigo": cupom.codigo, "tipo": cupom.tipo, "valor_desconto": round(desconto, 2)}
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao validar cupom: {str(e)}")
-        
+
+
 # ==========================================
-# 20. CONTROLE DE TURNOS DO CAIXA
+# 20. CONTROLE DE TURNOS DO CAIXA (ENDPOINTS COMPLETOS RESTAURADOS)
 # ==========================================
 @app.get("/api/pdv/caixa/atual")
 def obter_caixa_atual(db: Session = Depends(get_db)):
@@ -2495,7 +2547,10 @@ def obter_caixa_atual(db: Session = Depends(get_db)):
         return {"status": "fechado"}
         
     data_hoje = datetime.utcnow().date()
-    vendas_hoje = db.query(PedidoModel).filter(PedidoModel.data_pedido == data_hoje, PedidoModel.status != "CANCELADO").all()
+    vendas_hoje = db.query(PedidoModel).filter(
+        func.cast(PedidoModel.data_hora, Date) == data_hoje, 
+        PedidoModel.status != "CANCELADO"
+    ).all()
     
     total_dinheiro = sum(p.total_pago for p in vendas_hoje if "dinheiro" in str(p.forma_pagamento).lower() and p.origem != "SITE (Online)")
     total_outros = sum(p.total_pago for p in vendas_hoje if "dinheiro" not in str(p.forma_pagamento).lower() and p.origem != "SITE (Online)")
@@ -2517,6 +2572,52 @@ def obter_caixa_atual(db: Session = Depends(get_db)):
         "saldo_esperado_gaveta": saldo_esperado
     }
 
+# 🚨 AQUI ESTAVAM FALTANDO OS 3 ENDPOINTS ABAIXO 🚨
+@app.post("/api/pdv/caixa/abrir")
+def abrir_turno_caixa(dados: AbrirCaixaSchema, db: Session = Depends(get_db)):
+    caixa_aberto = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
+    if caixa_aberto:
+        return {"status": "sucesso", "mensagem": "Caixa já estava aberto.", "caixa_id": caixa_aberto.id}
+    
+    novo = CaixaTurnoModel(
+        operador=dados.operador or "Caixa",
+        data_abertura=datetime.utcnow().strftime("%d/%m/%Y %H:%M"),
+        saldo_inicial=dados.saldo_inicial,
+        entradas_saidas=0.0,
+        total_vendas_dinheiro=0.0,
+        total_vendas_outros=0.0,
+        saldo_informado=0.0,
+        status="ABERTO"
+    )
+    db.add(novo)
+    db.commit()
+    db.refresh(novo)
+    return {"status": "sucesso", "caixa_id": novo.id}
+
+@app.post("/api/pdv/caixa/movimentacao")
+def movimentar_caixa(dados: MovimentacaoCaixaSchema, db: Session = Depends(get_db)):
+    caixa = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
+    if not caixa:
+        raise HTTPException(status_code=400, detail="Nenhum caixa aberto para sangria/suprimento.")
+    
+    valor_ajuste = dados.valor if dados.tipo.upper() == "SUPRIMENTO" else -dados.valor
+    caixa.entradas_saidas += valor_ajuste
+    db.commit()
+    return {"status": "sucesso", "saldo_atualizado": caixa.entradas_saidas}
+
+@app.post("/api/pdv/caixa/fechar")
+def fechar_turno_caixa(dados: FecharCaixaSchema, db: Session = Depends(get_db)):
+    caixa = db.query(CaixaTurnoModel).filter(CaixaTurnoModel.status == "ABERTO").first()
+    if not caixa:
+        raise HTTPException(status_code=400, detail="Nenhum caixa aberto no momento.")
+    
+    caixa.status = "FECHADO"
+    caixa.data_fechamento = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
+    caixa.saldo_informado = dados.saldo_informado
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Caixa fechado com sucesso!"}
+
+
 # ==========================================
 # 21. TAXAS DE ENTREGA (LOGÍSTICA)
 # ==========================================
@@ -2524,8 +2625,7 @@ def obter_caixa_atual(db: Session = Depends(get_db)):
 def listar_taxas(db: Session = Depends(get_db)):
     try:
         return db.query(TaxaEntregaModel).order_by(TaxaEntregaModel.bairro.asc()).all()
-    except Exception as e:
-        print(f"Erro ao listar taxas:{e}")
+    except Exception:
         return []
 
 @app.post("/api/taxas/salvar")
@@ -2557,7 +2657,94 @@ def deletar_taxa(id: int, db: Session = Depends(get_db)):
 
 
 # ==========================================
-# 22. MOTOR UNIVERSAL DE GESTÃO (CRUD GENÉRICO)
+# 22. MÓDULO DE SORTEIOS / NÚMEROS DA SORTE
+# ==========================================
+@app.post("/api/gestao/sorteios")
+def criar_sorteio(dados: NovoSorteioSchema, db: Session = Depends(get_db)):
+    novo = SorteioModel(
+        titulo=dados.titulo,
+        premio=dados.premio,
+        produto_id_obrigatorio=dados.produto_id,
+        data_inicio=datetime.strptime(dados.data_inicio, "%Y-%m-%d").date(),
+        data_fim=datetime.strptime(dados.data_fim, "%Y-%m-%d").date(),
+        ativo=True
+    )
+    db.add(novo)
+    db.commit()
+    db.refresh(novo)
+    return {"status": "sucesso", "sorteio_id": novo.id}
+
+@app.get("/api/gestao/sorteios")
+def listar_sorteios(db: Session = Depends(get_db)):
+    sorteios = db.query(SorteioModel).order_by(SorteioModel.id.desc()).all()
+    res = []
+    for s in sorteios:
+        prod_nome = "Qualquer Produto"
+        if s.produto_id_obrigatorio:
+            p = db.query(ProdutoModel).filter(ProdutoModel.id == s.produto_id_obrigatorio).first()
+            if p: prod_nome = p.nome
+        res.append({
+            "id": s.id,
+            "titulo": s.titulo,
+            "premio": s.premio,
+            "produto": prod_nome,
+            "produto_id": s.produto_id_obrigatorio,
+            "data_inicio": s.data_inicio.strftime("%d/%m/%Y"),
+            "data_fim": s.data_fim.strftime("%d/%m/%Y"),
+            "ativo": s.ativo,
+            "ganhador_pedido_id": s.pedido_vencedor_id,
+            "ganhador_nome": s.cliente_vencedor_nome,
+            "ganhador_tel": s.cliente_vencedor_telefone
+        })
+    return res
+
+@app.post("/api/gestao/sorteios/{sorteio_id}/executar")
+def sortear_ganhador(sorteio_id: int, db: Session = Depends(get_db)):
+    sorteio = db.query(SorteioModel).filter(SorteioModel.id == sorteio_id).first()
+    if not sorteio or not sorteio.ativo:
+        raise HTTPException(status_code=400, detail="Sorteio inexistente ou já finalizado.")
+    
+    query = (
+        db.query(PedidoModel)
+        .filter(
+            cast(PedidoModel.data_hora, Date) >= sorteio.data_inicio,
+            cast(PedidoModel.data_hora, Date) <= sorteio.data_fim,
+            PedidoModel.status != "CANCELADO"
+        )
+    )
+    
+    pedidos_candidatos = []
+    if sorteio.produto_id_obrigatorio:
+        for ped in query.all():
+            if any(item.produto_id == sorteio.produto_id_obrigatorio for item in ped.itens):
+                pedidos_candidatos.append(ped)
+    else:
+        pedidos_candidatos = query.all()
+        
+    if not pedidos_candidatos:
+        raise HTTPException(status_code=400, detail="Nenhum pedido elegível encontrado para este sorteio.")
+    
+    vencedor = random.choice(pedidos_candidatos)
+    cliente = vencedor.cliente
+    
+    sorteio.pedido_vencedor_id = vencedor.id
+    sorteio.cliente_vencedor_nome = cliente.nome if cliente else "Cliente Avulso"
+    sorteio.cliente_vencedor_telefone = cliente.telefone if cliente else "Sem contato"
+    sorteio.sorteado_em = datetime.utcnow()
+    sorteio.ativo = False
+    db.commit()
+    
+    return {
+        "status": "sucesso",
+        "pedido_sorteado_id": vencedor.id,
+        "senha_diaria": vencedor.senha_diaria,
+        "cliente_nome": sorteio.cliente_vencedor_nome,
+        "cliente_telefone": sorteio.cliente_vencedor_telefone
+    }
+
+
+# ==========================================
+# 23. MOTOR UNIVERSAL DE GESTÃO (CRUD GENÉRICO)
 # ==========================================
 @app.put("/api/gestao/{tabela}/{item_id}")
 def atualizar_item_generico(tabela: str, item_id: int, dados: dict, db: Session = Depends(get_db)):
@@ -2596,7 +2783,7 @@ def criar_item_generico(tabela: str, dados: dict, db: Session = Depends(get_db))
 def deletar_item_generico(tabela: str, item_id: int, db: Session = Depends(get_db)):
     try:
         modelo = pegar_modelo_banco(tabela)
-        if not modelo:raise HTTPException(status_code=404)
+        if not modelo: raise HTTPException(status_code=404)
         
         if tabela == "clientes":
             db.query(PedidoModel).filter(PedidoModel.cliente_id == item_id).update({"cliente_id": None})
@@ -2611,7 +2798,7 @@ def deletar_item_generico(tabela: str, item_id: int, db: Session = Depends(get_d
 
 
 # ==========================================
-# 23. ROTAS VISUAIS (TEMPLATES HTML)
+# 24. ROTAS VISUAIS (TEMPLATES HTML)
 # ==========================================
 @app.get("/portal", response_class=HTMLResponse)
 def abrir_portal_central(): 
@@ -2647,13 +2834,19 @@ def abrir_gestao():
 def abrir_tela_relatorios(): 
     if Path("templates/relatorios.html").exists():
         return Path("templates/relatorios.html").read_text(encoding="utf-8")
-    return "Erro: Arquivo relatorios.html não encontrado na pasta templates."
+    return "Erro: Arquivo relatorios.html não encontrado."
+
+@app.get("/sorteios", response_class=HTMLResponse)
+def abrir_tela_sorteios(): 
+    if Path("templates/sorteios.html").exists():
+        return Path("templates/sorteios.html").read_text(encoding="utf-8")
+    return "Erro: Arquivo sorteios.html não encontrado."
 
 @app.get("/marketing", response_class=HTMLResponse)
 def abrir_estudio_marketing():
     if Path("templates/marketing.html").exists():
         return Path("templates/marketing.html").read_text(encoding="utf-8")
-    return "Erro: Arquivo marketing.html não encontrado na pasta templates."
+    return "Erro: Arquivo marketing.html não encontrado."
     
 @app.get("/pdv", response_class=HTMLResponse)
 def abrir_pdv(): 
@@ -2669,7 +2862,8 @@ def abrir_logistica():
 
 @app.get("/tv", response_class=HTMLResponse)
 def abrir_tv_senhas(): 
-    if Path("templates/tv.html").exists():return Path("templates/tv.html").read_text(encoding="utf-8")
+    if Path("templates/tv.html").exists():
+        return Path("templates/tv.html").read_text(encoding="utf-8")
     return "Erro: Arquivo tv.html não encontrado."
     
 @app.get("/kds", response_class=HTMLResponse)
@@ -2704,8 +2898,9 @@ def tela_rastreio_mapa(request: Request):
 def tela_app_motoboy(request: Request):
     return FileResponse(os.path.join("templates", "motoboy.html"))
 
+
 # ==========================================
-# COPILOTO DE MARKETING COM COMANDO LIVRE GEMINI
+# 25. COPILOTO DE MARKETING GEMINI & IA
 # ==========================================
 import urllib.parse
 import base64
@@ -2723,17 +2918,12 @@ class RequisicaoTrocaObjetoIA(BaseModel):
     imagem_base64: str
     instrucao_troca: str
 
-
 @app.post("/api/marketing/gerar-copy-ia")
 def gerar_copy_com_gemini(payload: RequisicaoCopyIA):
     gemini_key = os.getenv("GEMINI_API_KEY")
-    
-    # 1. Se houver chave configurada, consulta a inteligência do Gemini
     if gemini_key:
         try:
-            import requests, json, re
-            
-            # Prompt limpo sem aspas triplas (cores perfeitas no editor!)
+            import requests, json
             prompt = (
                 f"Você é a diretora de marketing oficial da marca {payload.marca}. "
                 f"Comando de criação do lojista: {payload.comando}. "
@@ -2766,54 +2956,29 @@ def gerar_copy_com_gemini(payload: RequisicaoCopyIA):
         except Exception:
             pass
 
-    # 2. Resposta Rápida de Contingência (Nunca trava a sua tela!)
     item = payload.produto or "ESPECIALIDADE DA CASA"
-    if "cake" in str(payload.marca).lower():
-        return {
-            "titulos": [
-                f"{item}: AMOR EM CADA PEDAÇO! 💕",
-                f"{item}: A SOBREMESA QUE VOCÊ MERECE HOJE",
-                f"DOCES QUE ENCANTAM: {item}"
-            ],
-            "bilhetes": [
-                "Feito com muito carinho! 💕",
-                "Adoce o seu dia com o melhor sabor! ✨"
-            ],
-            "faixas": [
-                "💕 Garanta já o seu pelo WhatsApp! 💕",
-                "✨ Peça agora pelo Cardápio Online!"
-            ],
-            "legenda_whatsapp": f"🍰 *{item}*\n\n{payload.comando}\n\n👉 Peça agora pelo cardápio ou mande mensagem aqui! 💕"
-        }
-    else:
-        return {
-            "titulos": [
-                f"{item}: O MONSTRO DA CHAPA! 🔥",
-                f"{item}: SUCULÊNCIA EM CADA MORDIDA",
-                f"SÓ HOJE: {item} NO MELHOR PREÇO"
-            ],
-            "bilhetes": [
-                "Sabor de brasa de verdade! 🔥",
-                "Crocante e com queijo derretido! 🍔"
-            ],
-            "faixas": [
-                "🔥 Peça agora antes que acabe!",
-                "⚡ Peça pelo WhatsApp ou Cardápio Online!"
-            ],
-            "legenda_whatsapp": f"🍔 *{item}*\n\n{payload.comando}\n\n👉 Peça agora pelo nosso cardápio online! 🔥"
-        }
+    return {
+        "titulos": [
+            f"{item}: O MONSTRO DA CHAPA! 🔥",
+            f"{item}: SUCULÊNCIA EM CADA MORDIDA",
+            f"SÓ HOJE: {item} NO MELHOR PREÇO"
+        ],
+        "bilhetes": [
+            "Sabor de brasa de verdade! 🔥",
+            "Crocante e com queijo derretido! 🍔"
+        ],
+        "faixas": [
+            "🔥 Peça agora antes que acabe!",
+            "⚡ Peça pelo WhatsApp ou Cardápio Online!"
+        ],
+        "legenda_whatsapp": f"🍔 *{item}*\n\n{payload.comando}\n\n👉 Peça agora pelo nosso cardápio online! 🔥"
+    }
 
-
-# ==================================================================
-# IA GENERATIVA DE IMAGEM RESILIENTE (FOTOGRAFIA 4K SEM MARCAS)
-# ==================================================================
 @app.post("/api/marketing/gerar-imagem-ia")
 def gerar_imagem_com_ia(payload: RequisicaoImagemIA):
-    # Gera fotografia gastronômica comercial 4K sem marcas d'água
     gemini_key = os.getenv("GEMINI_API_KEY")
     prompt_culinario = f"Professional commercial food photography, {payload.prompt}, gourmet studio lighting, hyperrealistic, 8k resolution, appetizing culinary shoot, clean composition, no watermark, no text"
 
-    # Tentativa 1: Google Imagen 3 (se tiver billing ativo no Google Cloud)
     if gemini_key:
         try:
             import requests
@@ -2831,12 +2996,10 @@ def gerar_imagem_com_ia(payload: RequisicaoImagemIA):
         except Exception:
             pass
 
-    # Tentativa 2: Motor Fotográfico 4K (Sem custos, sem travas e 100% sem marca d'água)
     try:
         import requests
         prompt_encoded = urllib.parse.quote(prompt_culinario)
         url_flux = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=1024&height=1024&nologo=true&enhance=true&seed=42"
-        
         img_resp = requests.get(url_flux, timeout=25)
         if img_resp.status_code == 200:
             b64 = base64.b64encode(img_resp.content).decode("utf-8")
@@ -2846,16 +3009,13 @@ def gerar_imagem_com_ia(payload: RequisicaoImagemIA):
 
     raise HTTPException(status_code=400, detail="Não foi possível gerar a imagem no momento.")
 
-
 @app.post("/api/marketing/trocar-objeto-ia")
 def trocar_objeto_com_ia(payload: RequisicaoTrocaObjetoIA):
-    # Substitui o item da foto por outro mantendo o mesmo estilo visual
     prompt_troca = f"Gourmet culinary photography of {payload.instrucao_troca}, commercial food photography, studio lighting, hyperrealistic, delicious, no text, no watermark"
     try:
         import requests
         prompt_encoded = urllib.parse.quote(prompt_troca)
         url_flux = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=1024&height=1024&nologo=true&enhance=true"
-        
         img_resp = requests.get(url_flux, timeout=25)
         if img_resp.status_code == 200:
             b64 = base64.b64encode(img_resp.content).decode("utf-8")
@@ -2864,9 +3024,10 @@ def trocar_objeto_com_ia(payload: RequisicaoTrocaObjetoIA):
         raise HTTPException(status_code=500, detail=f"Erro ao trocar objeto: {str(e)}")
 
     raise HTTPException(status_code=400, detail="Não foi possível substituir o item.")
-    
+
+
 # ==========================================
-# 24. TV DO SALÃO & PAINEL DE SENHAS
+# 26. TV DO SALÃO & LIMPEZA DE BANCO
 # ==========================================
 @app.get("/api/tv/pedidos")
 def obter_pedidos_tv(db: Session = Depends(get_db)):
@@ -2888,13 +3049,9 @@ def obter_pedidos_tv(db: Session = Depends(get_db)):
     except Exception: 
         return {"em_preparo": [], "prontos": []}
 
-
-# ==========================================
-# 25. LIMPEZA SEGURA DO BANCO (COM SENHA E JWT)
-# ==========================================
 @app.delete("/api/sistema/zerar-dados")
 def limpar_banco_dados(
-    payload:ConfirmacaoZerarDados, 
+    payload: ConfirmacaoZerarDados, 
     admin: FuncionarioModel = Depends(exigir_administrador), 
     db: Session = Depends(get_db)
 ):
@@ -2924,7 +3081,7 @@ def limpar_banco_dados(
 
 
 # ==========================================
-# 26. INCLUSÃO DE ROUTERS EXTRAS E PWA
+# 27. ROUTERS EXTRAS E PWA UNIFICADO NO /PORTAL
 # ==========================================
 app.include_router(router_dashboard)
 app.include_router(router_pagamentos)
@@ -2953,16 +3110,20 @@ def receber_mensagem_cliente(payload: dict):
 
 @app.get("/manifest.json")
 def get_manifest():
+    """Manifesto PWA apontado para o HUB /portal."""
     manifest = {
-        "name": "Art's Burguer",
-        "short_name": "Art's Burguer",
-        "description": "O melhor burger da cidade no seu celular!",
-        "start_url": "/",
+        "name": "Art's Burguer Gestão & Operação",
+        "short_name": "Art's ERP",
+        "description": "Sistema Integrado de Gestão e Vendas Art's Burguer",
+        "start_url": "/portal",
+        "scope": "/",
         "display": "standalone",
-        "background_color": "#0f172a",
+        "orientation": "any",
+        "background_color": "#0b1120",
         "theme_color": "#ff4757",
         "icons": [
-            {"src": "/static/img/icon-192x192.png", "sizes": "192x192", "type": "image/png"},{"src": "/static/img/icon-512x512.png", "sizes": "512x512", "type": "image/png"}
+            {"src": "/static/img/icon-192x192.png", "sizes": "192x192", "type": "image/png"},
+            {"src": "/static/img/icon-512x512.png", "sizes": "512x512", "type": "image/png"}
         ]
     }
     return JSONResponse(content=manifest)
@@ -2970,7 +3131,7 @@ def get_manifest():
 @app.get("/sw.js")
 def get_service_worker():
     sw_content = """
-    const CACHE_NAME = "arts-burguer-v1";
+    const CACHE_NAME = "arts-burguer-v5";
     self.addEventListener("install", (event) => {
         self.skipWaiting();
     });
