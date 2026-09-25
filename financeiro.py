@@ -1,10 +1,10 @@
 from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Date, Enum
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Date
 from sqlalchemy.orm import relationship
 import enum
 
-# Importando a base de dados do nosso sistema
-from database import Base, SessionLocal
+# Importando a base e os modelos oficiais do database.py (sem duplicar tabelas)
+from database import Base, SessionLocal, FornecedorModel, ContaPagarModel
 
 # ==============================================================================
 # 1. ENUMS (Status Financeiros)
@@ -20,43 +20,11 @@ class StatusCaixa(str, enum.Enum):
     FECHADO = "Fechado"
 
 # ==============================================================================
-# 2. MODELOS DO BANCO DE DADOS (Tabelas Financeiras)
+# 2. MODELO DE CAIXA DIÁRIO
 # ==============================================================================
-
-class FornecedorModel(Base):
-    """Cadastro de Fornecedores de insumos do Art's Burguer."""
-    __tablename__ = "fornecedores"
-    __table_args__ = {'extend_existing': True}
-
-    id = Column(Integer, primary_key=True, index=True)
-    nome_fantasia = Column(String, nullable=False)
-    cnpj = Column(String, nullable=True) # <- Retirado o unique=True para não travar
-    telefone = Column(String, nullable=True, default="")
-    contato = Column(String, nullable=True, default="")
-    categoria = Column(String, default="Geral") 
-
-    contas = relationship("ContaPagarModel", back_populates="fornecedor")
-
-
-class ContaPagarModel(Base):
-    """Gestão de boletos e pagamentos a fornecedores."""
-    __tablename__ = "contas_pagar"
-
-    id = Column(Integer, primary_key=True, index=True)
-    fornecedor_id = Column(Integer, ForeignKey("fornecedores.id"), nullable=False)
-    descricao = Column(String, nullable=False) 
-    valor = Column(Float, nullable=False)
-    data_vencimento = Column(Date, nullable=False)
-    data_pagamento = Column(DateTime, nullable=True)
-    status = Column(String, default=StatusConta.PENDENTE)
-    tipo_despesa = Column(String, default="Empresa") # 👈 NOVA COLUNA: Identifica se é da hamburgueria ou de casa
-
-    fornecedor = relationship("FornecedorModel", back_populates="contas")
-
-
 class CaixaDiarioModel(Base):
-    """Fluxo de Caixa: Abertura, fechamento e sangria (retirada)."""
     __tablename__ = "caixa_diario"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     data_abertura = Column(DateTime, default=datetime.utcnow)
@@ -68,25 +36,29 @@ class CaixaDiarioModel(Base):
     status = Column(String, default=StatusCaixa.ABERTO)
 
 # ==============================================================================
-# 3. LÓGICA DE NEGÓCIO (Funções de Automação Financeira)
+# 3. FUNÇÕES DE AUTOMAÇÃO FINANCEIRA
 # ==============================================================================
-
 def cadastrar_fornecedor(db, nome: str, cnpj: str, telefone: str, categoria: str):
-    novo_fornecedor = FornecedorModel(nome_fantasia=nome, cnpj=cnpj, telefone=telefone, categoria=categoria)
+    novo_fornecedor = FornecedorModel(
+        nome_fantasia=nome, 
+        cnpj=cnpj, 
+        telefone=telefone, 
+        categoria=categoria
+    )
     db.add(novo_fornecedor)
     db.commit()
     db.refresh(novo_fornecedor)
     return novo_fornecedor
 
 def lancar_conta_pagar(db, fornecedor_id: int, descricao: str, valor: float, vencimento: date, tipo_despesa: str = "Empresa"):
-    """Cria uma nova conta a pagar, agora classificando como Empresa ou Casa."""
+    """Cria uma nova conta a pagar classificando como Empresa ou Casa."""
     nova_conta = ContaPagarModel(
         fornecedor_id=fornecedor_id,
         descricao=descricao,
         valor=valor,
         data_vencimento=vencimento,
-        status=StatusConta.PENDENTE,
-        tipo_despesa=tipo_despesa # 👈 Salvando a classificação
+        status="Pendente",
+        tipo_despesa=tipo_despesa
     )
     db.add(nova_conta)
     db.commit()
@@ -95,10 +67,10 @@ def lancar_conta_pagar(db, fornecedor_id: int, descricao: str, valor: float, ven
 
 def dar_baixa_conta(db, conta_id: int, caixa_id: int = None):
     conta = db.query(ContaPagarModel).filter(ContaPagarModel.id == conta_id).first()
-    if not conta or conta.status == StatusConta.PAGA:
+    if not conta or conta.status == "PAGO":
         return False
 
-    conta.status = StatusConta.PAGA
+    conta.status = "PAGO"
     conta.data_pagamento = datetime.utcnow()
 
     if caixa_id:
@@ -119,7 +91,8 @@ def gerenciar_caixa_diario(db, acao: str, valor_inicial: float = 0.0, caixa_id: 
         
     elif acao == "fechar" and caixa_id:
         caixa = db.query(CaixaDiarioModel).filter(CaixaDiarioModel.id == caixa_id).first()
-        if not caixa or caixa.status == StatusCaixa.FECHADO: return None
+        if not caixa or caixa.status == StatusCaixa.FECHADO: 
+            return None
             
         caixa.saldo_final_esperado = (caixa.saldo_inicial + caixa.total_entradas) - caixa.total_saidas
         caixa.status = StatusCaixa.FECHADO
