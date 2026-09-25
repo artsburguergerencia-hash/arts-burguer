@@ -16,8 +16,8 @@ if DATABASE_URL.startswith("postgres://"):
 engine = create_engine(
     DATABASE_URL, 
     connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
-    pool_pre_ping=True,      # Evita erro de conexão fechada pelo SSL do Neon
-    pool_recycle=300,        # Recicla conexões a cada 5 min
+    pool_pre_ping=True,
+    pool_recycle=300,
     pool_size=5,             
     max_overflow=10
 )
@@ -54,7 +54,7 @@ class ConfiguracaoLojaModel(Base):
     fidelidade_resgate = Column(Float, default=0.0)
     fidelidade_elegibilidade = Column(String, default="TODOS")
 
-    # API Keys persistidas no banco
+    # API Keys salvas no banco
     mp_access_token = Column(String, default="")
     mp_public_key = Column(String, default="")
     wa_api_url = Column(String, default="")
@@ -65,7 +65,6 @@ class ConfiguracaoLojaModel(Base):
 # 2. FORNECEDORES & CONTAS A PAGAR
 # ==========================================
 class FornecedorModel(Base):
-    """Cadastro de Fornecedores com representante e link de compras."""
     __tablename__ = "fornecedores"
     __table_args__ = {'extend_existing': True}
 
@@ -75,13 +74,12 @@ class FornecedorModel(Base):
     telefone = Column(String, nullable=True, default="")
     contato = Column(String, nullable=True, default="")
     categoria = Column(String, default="Geral")
-    site_pedidos = Column(String, default="")          # Link direto do site de compras
-    representante_nome = Column(String, default="")    # Nome do vendedor
-    representante_contato = Column(String, default="") # WhatsApp do vendedor
+    site_pedidos = Column(String, default="")
+    representante_nome = Column(String, default="")
+    representante_contato = Column(String, default="")
 
 
 class ContaPagarModel(Base):
-    """Contas a Pagar com desvinculação segura (ondelete SET NULL)."""
     __tablename__ = "contas_pagar"
     __table_args__ = {'extend_existing': True}
 
@@ -99,14 +97,13 @@ class ContaPagarModel(Base):
 # 3. SORTEIOS / NÚMEROS DA SORTE
 # ==========================================
 class SorteioModel(Base):
-    """Módulo de Sorteios Inteligentes por Lanche/Produto."""
     __tablename__ = "sorteios_promocoes"
     __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     titulo = Column(String, nullable=False)
     premio = Column(String, nullable=False)
-    produto_id_obrigatorio = Column(Integer, ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True) # Null = Qualquer item
+    produto_id_obrigatorio = Column(Integer, ForeignKey("produtos.id", ondelete="SET NULL"), nullable=True)
     data_inicio = Column(Date, nullable=False)
     data_fim = Column(Date, nullable=False)
     ativo = Column(Boolean, default=True)
@@ -134,7 +131,6 @@ class ClienteModel(Base):
     bloqueado = Column(Boolean, default=False)
     permite_fiado = Column(Boolean, default=False)
     
-    # Endereço
     cep = Column(String, default="")
     endereco = Column(String, default="")
     logradouro = Column(String, default="")
@@ -142,7 +138,6 @@ class ClienteModel(Base):
     bairro = Column(String, default="")
     complemento = Column(String, default="")
     
-    # Fidelidade
     pontos = Column(Integer, default=0)
     pontos_fidelidade = Column(Integer, default=0)
     cashback = Column(Float, default=0.0)
@@ -374,7 +369,7 @@ class TaxaEntregaModel(Base):
 
 
 # ==========================================
-# 8. INICIALIZAÇÃO E BAIXA DE ESTOQUE
+# 8. INICIALIZAÇÃO DO BANCO & ESTOQUE
 # ==========================================
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
