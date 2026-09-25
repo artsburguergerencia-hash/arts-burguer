@@ -8,11 +8,9 @@ from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./banco_v5_master_rh.db")
 
-# Ajuste automático de prefixo postgres para SQLAlchemy
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Configuração de Pool otimizada para o Neon PostgreSQL Serverless
 engine = create_engine(
     DATABASE_URL, 
     connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
@@ -24,9 +22,7 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# ==========================================
-# 1. CONFIGURAÇÕES DA LOJA & API KEYS
-# ==========================================
+
 class ConfiguracaoLojaModel(Base):
     __tablename__ = "configuracoes_loja"
     __table_args__ = {'extend_existing': True}
@@ -53,17 +49,12 @@ class ConfiguracaoLojaModel(Base):
     fidelidade_gasto_minimo = Column(Float, default=0.0)
     fidelidade_resgate = Column(Float, default=0.0)
     fidelidade_elegibilidade = Column(String, default="TODOS")
-
-    # API Keys salvas no banco
     mp_access_token = Column(String, default="")
     mp_public_key = Column(String, default="")
     wa_api_url = Column(String, default="")
     wa_token = Column(String, default="")
 
 
-# ==========================================
-# 2. CLIENTE UNIFICADO
-# ==========================================
 class ClienteModel(Base):
     __tablename__ = "clientes"
     __table_args__ = {'extend_existing': True}
@@ -78,14 +69,12 @@ class ClienteModel(Base):
     foto = Column(String, default="")
     bloqueado = Column(Boolean, default=False)
     permite_fiado = Column(Boolean, default=False)
-    
     cep = Column(String, default="")
     endereco = Column(String, default="")
     logradouro = Column(String, default="")
     numero = Column(String, default="")
     bairro = Column(String, default="")
     complemento = Column(String, default="")
-    
     pontos = Column(Integer, default=0)
     pontos_fidelidade = Column(Integer, default=0)
     cashback = Column(Float, default=0.0)
@@ -94,9 +83,6 @@ class ClienteModel(Base):
 Cliente = ClienteModel
 
 
-# ==========================================
-# 3. RECURSOS HUMANOS E CARGOS
-# ==========================================
 class Cargo(Base):
     __tablename__ = "cargos"
     __table_args__ = {'extend_existing': True}
@@ -204,9 +190,6 @@ class SolicitacaoFeriasModel(Base):
     observacao_gestor = Column(String, default="")
 
 
-# ==========================================
-# 4. INSUMOS, PRODUTOS E CARDÁPIO (DECLARADOS ANTES DE SORTEIOS)
-# ==========================================
 class InsumoModel(Base):
     __tablename__ = "insumos"
     __table_args__ = {'extend_existing': True}
@@ -232,8 +215,6 @@ class ProdutoModel(Base):
     ativo = Column(Boolean, default=True)
     participa_fidelidade = Column(Boolean, default=True)
     ordem = Column(Integer, default=0)
-
-    # Relacionamento para o cálculo do CMV no dashboard
     itens_ficha = relationship("FichaTecnicaModel", backref="produto", cascade="all, delete-orphan")
 
 
@@ -245,7 +226,6 @@ class FichaTecnicaModel(Base):
     produto_id = Column(Integer, ForeignKey("produtos.id", ondelete="CASCADE"))
     insumo_id = Column(Integer, ForeignKey("insumos.id", ondelete="CASCADE"))
     quantidade_necessaria = Column(Float)
-
     insumo = relationship("InsumoModel")
 
 
@@ -272,9 +252,6 @@ class ItemComplementoModel(Base):
     preco_adicional = Column(Float, default=0.0)
 
 
-# ==========================================
-# 5. FORNECEDORES & CONTAS A PAGAR
-# ==========================================
 class FornecedorModel(Base):
     __tablename__ = "fornecedores"
     __table_args__ = {'extend_existing': True}
@@ -304,9 +281,6 @@ class ContaPagarModel(Base):
     tipo_despesa = Column(String, default="Empresa")
 
 
-# ==========================================
-# 6. SORTEIOS / NÚMEROS DA SORTE (AGORA DEPOIS DE PRODUTOS)
-# ==========================================
 class SorteioModel(Base):
     __tablename__ = "sorteios_promocoes"
     __table_args__ = {'extend_existing': True}
@@ -324,9 +298,6 @@ class SorteioModel(Base):
     sorteado_em = Column(DateTime, nullable=True)
 
 
-# ==========================================
-# 7. CUPONS, CAIXA E LOGÍSTICA
-# ==========================================
 def data_infinita_str():
     return (datetime.utcnow() + timedelta(days=3650)).strftime("%Y-%m-%d")
 
@@ -373,9 +344,6 @@ class TaxaEntregaModel(Base):
     taxa = Column(Float, default=0.0)
 
 
-# ==========================================
-# 8. INICIALIZAÇÃO DO BANCO & ESTOQUE
-# ==========================================
 def inicializar_banco():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
