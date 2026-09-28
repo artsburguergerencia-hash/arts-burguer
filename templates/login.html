@@ -95,50 +95,48 @@
         });
 
         async function fazerLogin(e) {
-            // A MÁGICA QUE IMPEDE A TELA DE PISCAR:
-            e.preventDefault(); 
-            
-            const btn = e.target.querySelector('button[type="submit"]');
-            const textoOriginal = btn.innerHTML;
-            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i>Acessando...";
-            btn.disabled = true;
-
-            // Puxa o que foi digitado nos campos (verifique se os IDs no seu HTML são 'usuario' e 'senha')
-            const usuarioStr = document.getElementById('usuario').value;
-            const senhaStr = document.getElementById('senha').value;
-
-            try {
-                const res = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario: usuarioStr, senha: senhaStr })
-                });
-                
-                const data = await res.json();
-
-                // ✅ MUDE APENAS PARA FICAR ASSIM:
-if (res.ok && data.status === "sucesso") {
-    // 🚨 SALVA O TOKEN JWT CRIPTOGRAFADO NO NAVEGADOR
-    if (data.access_token) {
-        localStorage.setItem('access_token', data.access_token);
-    }
-
-    // Mantém exatamente o que você já tinha:
-    localStorage.setItem('funcionario_nome', data.nome);
-    localStorage.setItem('funcionario_cargo', data.cargo_id.toString());
+    e.preventDefault(); 
     
-    // SMART REDIRECT: Administrador (1) vai pro Gestão, outros vão pro Portal Hub
-    if (data.cargo_id === 1 || data.cargo_id === '1') {
-        window.location.replace('/gestao');
-    } else {
-        window.location.replace('/portal');
+    const btn = e.target.querySelector('button[type="submit"]');
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin mr-2'></i>Acessando...";
+    btn.disabled = true;
+
+    const usuarioStr = document.getElementById('usuario').value.trim();
+    const senhaStr = document.getElementById('senha').value;
+
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario: usuarioStr, senha: senhaStr })
+        });
+        
+        const data = await res.json();
+
+        if (res.ok && data.status === "sucesso") {
+            if (data.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+            }
+            localStorage.setItem('funcionario_nome', data.nome);
+            localStorage.setItem('funcionario_cargo', data.cargo_id.toString());
+            
+            // Administrador vai para o Gestão, outros cargos vão para o Portal
+            if (data.cargo_id === 1 || data.cargo_id === '1') {
+                window.location.replace('/gestao');
+            } else {
+                window.location.replace('/portal');
+            }
+        } else {
+            alert(data.detail || "Usuário ou senha incorretos!");
+        }
+    } catch (err) {
+        alert("Erro de conexão com o servidor.");
+    } finally {
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
     }
 }
-
-            // Devolve o botão ao estado normal se algo der errado
-            btn.innerHTML = textoOriginal;
-            btn.disabled = false;
-        }
     </script>
 </body>
 </html>
