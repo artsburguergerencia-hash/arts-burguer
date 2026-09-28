@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, Column, Integer, String, Float, Boolean, text, DateTime, func, cast, Date
 from passlib.context import CryptContext
+from fastapi.staticfiles import StaticFiles
 
 # ==========================================
 # 1. IMPORTAÇÕES DOS MÓDULOS DE NEGÓCIO
