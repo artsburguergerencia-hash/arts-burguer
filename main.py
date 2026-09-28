@@ -84,6 +84,21 @@ from auth_security import (
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 app = FastAPI(title="API - Art's Burguer ERP Corporativo V5", version="5.1.0")
 
+# Garante que a pasta static exista no servidor
+os.makedirs("static/img", exist_ok=True)
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Rota de contingência para os ícones do PWA nunca darem 404
+@app.get("/static/img/{icone_nome}")
+def obter_icone_pwa(icone_nome: str):
+    caminho = Path(f"static/img/{icone_nome}")
+    if caminho.exists():
+        return FileResponse(caminho)
+    # Se não houver arquivo físico na pasta, redireciona para um ícone PNG de alta resolução
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("https://cdn-icons-png.flaticon.com/512/3075/3075977.png")
+    
 # Inicializa banco e tabelas no Postgres/Neon
 inicializar_banco()
 Base.metadata.create_all(bind=engine)
