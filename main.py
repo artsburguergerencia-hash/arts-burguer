@@ -3108,17 +3108,39 @@ async def webhook_social(request: Request):
 def receber_mensagem_cliente(payload: dict): 
     return {"status": "sucesso"}
 
+# ==========================================
+# MANIFEST DO CLIENTE (CARDÁPIO DE VENDAS)
+# ==========================================
 @app.get("/manifest.json")
-def get_manifest():
-    """Manifesto PWA apontado para o HUB /portal."""
-    manifest = {
-        "name": "Art's Burguer Gestão & Operação",
+def get_manifest_cliente():
+    manifest_cliente = {
+        "name": "Art's Burguer",
+        "short_name": "Art's Burguer",
+        "description": "Peça seu burger artesanal favorito!",
+        "start_url": "/",
+        "scope": "/",
+        "display": "standalone",
+        "background_color": "#0f172a",
+        "theme_color": "#ff4757",
+        "icons": [
+            {"src": "/static/img/icon-192x192.png", "sizes": "192x192", "type": "image/png"},
+            {"src": "/static/img/icon-512x512.png", "sizes": "512x512", "type": "image/png"}
+        ]
+    }
+    return JSONResponse(content=manifest_cliente)
+
+# ==========================================
+# MANIFEST DA EQUIPE (PORTAL ERP / GESTÃO)
+# ==========================================
+@app.get("/manifest-portal.json")
+def get_manifest_portal():
+    manifest_portal = {
+        "name": "Art's ERP Corporativo",
         "short_name": "Art's ERP",
-        "description": "Sistema Integrado de Gestão e Vendas Art's Burguer",
+        "description": "Painel Operacional e Gestão Art's Burguer",
         "start_url": "/portal",
         "scope": "/",
         "display": "standalone",
-        "orientation": "any",
         "background_color": "#0b1120",
         "theme_color": "#ff4757",
         "icons": [
@@ -3126,7 +3148,7 @@ def get_manifest():
             {"src": "/static/img/icon-512x512.png", "sizes": "512x512", "type": "image/png"}
         ]
     }
-    return JSONResponse(content=manifest)
+    return JSONResponse(content=manifest_portal)
 
 @app.get("/sw.js")
 def get_service_worker():
