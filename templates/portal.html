@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HUB Central | Art's Burguer ERP</title>
+    <!-- METAS PARA O APP INSTALÁVEL (PWA) -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Art's ERP">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/static/img/icon-192x192.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,6 +47,32 @@
             }
         }
     </script>
+
+    <!-- BOTÃO INSTALAR APP NO PORTAL -->
+<button id="btn-instalar-portal" onclick="instalarAppPortal()" class="hidden md:flex items-center bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95">
+    <i class="ph-bold ph-download-simple mr-2 text-base"></i> Instalar App
+</button>
+
+<script>
+    let disparoInstalacao;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        disparoInstalacao = e;
+        const btn = document.getElementById('btn-instalar-portal');
+        if(btn) btn.classList.remove('hidden');
+    });
+
+    function instalarAppPortal() {
+        if (disparoInstalacao) {
+            disparoInstalacao.prompt();
+            disparoInstalacao.userChoice.then(() => {
+                disparoInstalacao = null;
+            });
+        } else {
+            alert("No iPhone/Safari: toque no botão 'Compartilhar' e depois em 'Adicionar à Tela de Início'.\nNo Chrome/Android: toque nos 3 pontinhos e 'Instalar aplicativo'.");
+        }
+    }
+</script>
 
     <!-- SCRIPT DE SINCRONIZAÇÃO GLOBAL -->
     <script>
