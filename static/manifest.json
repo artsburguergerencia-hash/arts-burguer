@@ -1,12 +1,9 @@
 {
-  "name": "Art's Burguer Gestão & Operação",
-  "short_name": "Art's ERP",
-  "description": "Sistema Integrado de Gestão e Operação Art's Burguer",
-  "start_url": "/portal",
-  "scope": "/",
+  "name": "Art's Burguer",
+  "short_name": "Art's Burguer",
+  "start_url": "/",
   "display": "standalone",
-  "orientation": "any",
-  "background_color": "#0b1120",
+  "background_color": "#0f172a",
   "theme_color": "#ff4757",
   "icons": [
     {
