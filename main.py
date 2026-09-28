@@ -2450,16 +2450,27 @@ def rastrear_pedido_cliente(busca: str, db: Session = Depends(get_db)):
 
 
 # ==========================================
-# 18. CONFIGURAÇÕES DA LOJA & SETUP (COM API KEYS SALVAS)
+# 18. CONFIGURAÇÕES DA LOJA & SETUP
 # ==========================================
+LOGO_PADRAO_ARTS = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=400&auto=format&fit=crop"
+
 @app.get("/api/gestao/configuracoes")
 def ler_configuracoes(db: Session = Depends(get_db)):
     config = db.query(ConfiguracaoLojaModel).first()
     if not config:
-        config = ConfiguracaoLojaModel()
+        config = ConfiguracaoLojaModel(
+            nome_empresa="Art's Burguer",
+            logo_url=LOGO_PADRAO_ARTS
+        )
         db.add(config)
         db.commit()
         db.refresh(config)
+    
+    # 🚨 Se a logo for o placeholder antigo quebrado ou vazia, troca pela logo real
+    if not config.logo_url or "placeholder" in config.logo_url or config.logo_url == "None":
+        config.logo_url = LOGO_PADRAO_ARTS
+        db.commit()
+        
     return config
 
 @app.put("/api/gestao/configuracoes")
