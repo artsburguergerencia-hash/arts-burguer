@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar do Entregador | Art's Burguer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .radar-pulse { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); animation: pulse-blue 2s infinite; }
+        @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 30px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white flex flex-col items-center justify-center h-screen p-6">
+
+    <div class="bg-slate-800 p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-slate-700">
+        
+        <div id="header-logo-container" class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border-2 border-transparent overflow-hidden shrink-0 transition-colors">
+            <i id="header-logo-letra" class="ph-fill ph-navigation-arrow text-4xl text-blue-500"></i>
+            <img id="header-logo-img" src="" class="w-full h-full object-cover hidden">
+        </div>
+
+        <h1 class="text-2xl font-black mb-2 tracking-tight" id="nome-loja-header">Transmissão GPS</h1>
+        <p class="text-slate-400 text-sm mb-6 font-medium">Insira a Senha do Pedido para compartilhar sua localização ao vivo com o cliente.</p>
+
+        <div id="painel-setup">
+            <input type="number" id="pedido-id" placeholder="Nº do Pedido (Ex: 42)" class="w-full bg-slate-900 border border-slate-700 text-white text-center font-black text-3xl py-4 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
+            <button onclick="iniciarTransmissao()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl text-lg uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-blue-500/30">
+                🚀 Iniciar Rota
+            </button>
+        </div>
+
+        <div id="painel-ativo" class="hidden flex-col items-center w-full">
+            
+            <!-- 🚨 CAIXA NOVA: NAVEGAÇÃO WAZE/MAPS 🚨 -->
+            <div id="box-endereco" class="hidden w-full bg-slate-900 border border-slate-700 p-4 rounded-xl mb-6 text-left shadow-inner">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1 flex items-center"><i class="ph-fill ph-map-pin mr-1 text-blue-500"></i> Destino da Entrega:</p>
+                <p id="txt-endereco" class="text-sm font-medium text-slate-300 mb-4 leading-snug">...</p>
+                <button onclick="abrirWazeMaps()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl uppercase tracking-widest text-[11px] transition-colors shadow-md flex justify-center items-center active:scale-95">
+                    <i class="ph-bold ph-navigation-arrow mr-2 text-lg"></i> Abrir GPS (Waze/Maps)
+                </button>
+            </div>
+
+            <div class="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center radar-pulse mb-4 mt-2">
+                <i class="ph-bold ph-broadcast text-3xl text-white"></i>
+            </div>
+            <h2 class="text-lg font-black text-blue-400 mb-1">Transmitindo...</h2>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6" id="status-txt">Sinal conectado</p>
+            
+            <button onclick="pararTransmissao()" class="w-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/30 font-black py-4 rounded-xl uppercase tracking-widest transition-all text-xs active:scale-95">
+                🛑 Finalizar Entrega
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let watchId = null;
+        let wakeLock = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/gestao/configuracoes'); 
+                const configLoja = await res.json();
+                
+                if(configLoja.nome_empresa) document.getElementById('nome-loja-header').innerText = `${configLoja.nome_empresa} GPS`;
+
+                if(configLoja.logo_url && configLoja.logo_url.trim() !== '' && configLoja.logo_url !== 'None') {
+                    const letra = document.getElementById('header-logo-letra'); 
+                    const img = document.getElementById('header-logo-img'); 
+                    const container = document.getElementById('header-logo-container');
+                    if(letra && img && container) {
+                        img.onerror = function() { this.classList.add('hidden'); letra.classList.remove('hidden'); };
+                        img.src = configLoja.logo_url; 
+                        img.classList.remove('hidden');
+                        letra.classList.add('hidden'); 
+                        container.classList.remove('bg-blue-500/10'); 
+                        container.classList.add('bg-slate-900', 'border-slate-600');
+                    }
+                }
+            } catch(e) {}
+        });
+
+        async function ativarWakeLock() {
+            try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } catch (err) {}
+        }
+
+        async function iniciarTransmissao() {
+            const pedidoId = document.getElementById('pedido-id').value;
+            if (!pedidoId) return alert("Digite o número do pedido!");
+
+            document.getElementById('painel-setup').classList.add('hidden');
+            document.getElementById('painel-ativo').classList.remove('hidden');
+            document.getElementById('painel-ativo').classList.add('flex');
+
+            await ativarWakeLock();
+
+            if (navigator.geolocation) {
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => enviarParaServidor(pedidoId, position.coords.latitude, position.coords.longitude),
+                    (error) => alert("Erro no GPS. O Cliente não poderá acompanhar a moto. Verifique a permissão do navegador!"),
+                    { enableHighAccuracy: true, maximumAge: 0 }
+                );
+            } else {
+                alert("Seu navegador não suporta GPS.");
+            }
+        }
+
+        async function enviarParaServidor(pedido, lat, lng) {
+            try {
+                await fetch('/api/logistica/gps', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pedido_id: parseInt(pedido), lat: lat, lng: lng })
+                });
+                document.getElementById('status-txt').innerText = `Sinal Enviado: ${new Date().toLocaleTimeString()}`;
+            } catch (e) {
+                console.log("Erro ao enviar coordenadas.");
+            }
+        }
+
+        function pararTransmissao() {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            if (wakeLock) wakeLock.release();
+            document.getElementById('painel-ativo').classList.add('hidden');
+            document.getElementById('painel-ativo').classList.remove('flex');
+            document.getElementById('painel-setup').classList.remove('hidden');
+            document.getElementById('pedido-id').value = '';
+        }
+
+        // 🚨 FUNÇÃO QUE ABRE O MAPA NATIVO DO CELULAR 🚨
+        function abrirWazeMaps() {
+            const endereco = document.getElementById('txt-endereco').innerText;
+            if(!endereco || endereco === '...') return alert('Endereço não informado no link.');
+            const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
+            window.open(url, '_blank');
+        }
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pedID = urlParams.get('pedido');
+            const end = urlParams.get('end'); // Captura o endereço da URL
+            
+            if(pedID) document.getElementById('pedido-id').value = pedID;
+            
+            // Se tiver o endereço no link, mostra a caixinha pro motoboy!
+            if(end) {
+                document.getElementById('box-endereco').classList.remove('hidden');
+                document.getElementById('txt-endereco').innerText = end;
+            }
+        }
+    </script>
+</body>
+</html>
