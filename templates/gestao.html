@@ -63,6 +63,56 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .aba-dossie { display: none; }
         .aba-dossie.active { display: block; }
+
+        /* ============================================================
+           AJUSTES RESPONSIVOS PARA CELULAR (SEM MEXER NO HTML)
+        ============================================================ */
+        @media (max-width: 768px) {
+            /* 1. Transforma o menu lateral em gaveta retrátil no celular */
+            aside {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                height: 100vh !important;
+                z-index: 50 !important;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            aside.sidebar-aberta {
+                transform: translateX(0) !important;
+            }
+
+            /* 2. Faz o conteúdo principal ocupar 100% da tela do celular */
+            main {
+                width: 100% !important;
+                max-width: 100vw !important;
+                padding-bottom: 5rem !important;
+            }
+
+            /* 3. Evita que tabelas estourem a largura da tela */
+            table {
+                display: block !important;
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* 4. Ajusta espaçamentos que eram grandes demais no PC */
+            .p-8 {
+                padding: 1rem !important;
+            }
+            header.h-20 {
+                height: 4.5rem !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            /* 5. Grids que eram de 4 colunas viram 2 colunas no celular */
+            .grid-cols-4, .grid-cols-3 {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+        }
     </style>
 </head>
 
@@ -180,6 +230,10 @@
         
         <!-- HEADER -->
         <header class="bg-white dark:bg-slate-900 h-20 px-8 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-0 z-10 transition-colors duration-300">
+            <!-- ADICIONE APENAS ESTA LINHA: -->
+    <button type="button" onclick="toggleMenuMobile()" class="md:hidden mr-3 p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-700 dark:text-slate-200">
+        <i class="ph-bold ph-list text-2xl"></i>
+    </button>
             <h2 id="titulo-painel" class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Painel de Gestão Corporativa</h2>
             
             <!-- 🚨 ENVELOPE PARA OS DOIS BOTÕES FICAREM JUNTOS NA DIREITA -->
@@ -3998,5 +4052,41 @@ async function abrirModalEditarProduto(id) {
         }
         
     </script>
+
+    <script>
+    // ============================================================
+    // CONTROLE MOBILE: ABRE E FECHA O MENU NO CELULAR
+    // ============================================================
+    function toggleMenuMobile() {
+        const aside = document.querySelector('aside');
+        let overlay = document.getElementById('overlay-mobile-gestao');
+
+        // Cria o fundo escuro transparente se ainda não existir
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'overlay-mobile-gestao';
+            overlay.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 md:hidden';
+            overlay.onclick = toggleMenuMobile;
+            document.body.appendChild(overlay);
+        }
+
+        const aberto = aside.classList.toggle('sidebar-aberta');
+        overlay.style.display = aberto ? 'block' : 'none';
+    }
+
+    // Fecha o menu automaticamente quando o usuário clica em qualquer item no celular
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('aside nav button, aside nav a').forEach(el => {
+            el.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    const aside = document.querySelector('aside');
+                    const overlay = document.getElementById('overlay-mobile-gestao');
+                    aside.classList.remove('sidebar-aberta');
+                    if (overlay) overlay.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>
